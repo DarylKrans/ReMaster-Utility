@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -202,6 +201,7 @@ namespace V_Max_Tool
                 }
             }
         }
+
         (int, byte[]) Get_Loader_Len(byte[] data, int start_pos, int comp_length, int skip_length)
         {
             int q = 8192;
@@ -239,6 +239,7 @@ namespace V_Max_Tool
                 return p + 80;
             }
         }
+
         int Get_Track_Len(byte[] data)
         {
             int p = 0;
@@ -282,6 +283,7 @@ namespace V_Max_Tool
             }
             return n;
         }
+
         byte[] Adjust_Sync_CBM(byte[] data, int expected_sync, int minimum_sync, int exception, int Data_Start_Pos, int Data_End_Pos, int Sec_0, int Track_Len, int Track_Num)
         {
             if (exception > expected_sync && expected_sync > minimum_sync)
@@ -570,18 +572,18 @@ namespace V_Max_Tool
                 }
 
                 // Create array containing non-repeating track data and rotate so track 0 is at the start of the array
-                    byte[] temp_data = new byte[data_end - data_start];
-                    Array.Copy(data, data_start, temp_data, 0, data_end - data_start);
-                    for (int i = 0; i < temp_data.Length - 5; i++)
+                byte[] temp_data = new byte[data_end - data_start];
+                Array.Copy(data, data_start, temp_data, 0, data_end - data_start);
+                for (int i = 0; i < temp_data.Length - 5; i++)
+                {
+                    Array.Copy(temp_data, i, compare, 0, compare.Length);
+                    if (Hex_Val(compare) == Hex_Val(pattern))
                     {
-                        Array.Copy(temp_data, i, compare, 0, compare.Length);
-                        if (Hex_Val(compare) == Hex_Val(pattern))
-                        {
-                            sec_zero = i - 1;
-                            temp_data = Rotate_Left(temp_data, i - 5);
-                            break;
-                        }
+                        sec_zero = i - 1;
+                        temp_data = Rotate_Left(temp_data, i - 5);
+                        break;
                     }
+                }
                 if (Fix_Sync) // <- if the "Fix_Sync" bool is true, otherwise just return track info without any adjustments
                 {
                     // ---------------------- Build new track with adjusted sync markers -------------------------------------- //
@@ -728,7 +730,7 @@ namespace V_Max_Tool
             //
             //
 
-            return (s.ToArray(), data_start, data_end, sector_zero, (data_end - data_start) );
+            return (s.ToArray(), data_start, data_end, sector_zero, (data_end - data_start));
         }
 
         (byte[], int, int) Adjust_Vmax_V3_Sync(byte[] data, int sds, int sde, int ssz, int trk)
@@ -746,10 +748,11 @@ namespace V_Max_Tool
 
             while (spos < tdata.Length)
             {
-                
-                    if (spos + 2 < tdata.Length && tdata[spos + 2] == 0x49)
+
+                if (spos + 2 < tdata.Length && tdata[spos + 2] == 0x49)
+                {
+                    try
                     {
-                    try { 
                         Array.Copy(tdata, spos + 2, comp, 0, comp.Length);
                         if (Hex_Val(comp) == Hex_Val(hd))
                         {
@@ -767,15 +770,15 @@ namespace V_Max_Tool
                             write.Write(sync);
                             for (int i = 0; i < 3; i++) write.Write(hd);
                         }
-                } catch { }
                     }
-                    if (spos < tdata.Length) write.Write(tdata[spos]);
-                    spos++;
+                    catch { }
+                }
+                if (spos < tdata.Length) write.Write(tdata[spos]);
+                spos++;
             }
             return (buffer.ToArray(), (int)buffer.Length << 3, 0);
-
-
         }
+
         (byte[], bool) Fix_Loader(byte[] data)
         {
             byte[] tdata = data;
@@ -818,7 +821,6 @@ namespace V_Max_Tool
                 }
             }
         }
-        
 
         private void Drag_Enter(object sender, DragEventArgs e)
         {
@@ -931,6 +933,7 @@ namespace V_Max_Tool
                         string[] f = new string[0];
                         (f, NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], len) = Get_vmv3_track_length(NDS.Track_Data[i], i);
                         NDS.Track_Length[i] = len * 8;
+                        NDS.Sector_Zero[i] *= 8;
                         for (int j = 0; j < f.Length; j++)
                         {
                             if (j < f.Length - 1) listBox3.Items.Add($"{j} {f[j]}"); else listBox3.Items.Add($"{f[j]}");
@@ -1008,7 +1011,7 @@ namespace V_Max_Tool
                 }
                 void Process_VMAX_V3(int trk)
                 {
-                    (NDG.Track_Data[trk], NDA.Track_Length[trk], NDA.Sector_Zero[trk]) = 
+                    (NDG.Track_Data[trk], NDA.Track_Length[trk], NDA.Sector_Zero[trk]) =
                         Adjust_Vmax_V3_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], trk);
                     NDG.Track_Length[trk] = NDG.Track_Data[trk].Length;
                     if (NDG.Track_Data[trk].Length > 0)
@@ -1025,7 +1028,7 @@ namespace V_Max_Tool
                 void Process_Loader(int trk)
                 {
                     bool f = false;
-                    if(f_load.Checked) (NDG.Track_Data[trk], f) = Fix_Loader(NDG.Track_Data[trk]);
+                    if (f_load.Checked) (NDG.Track_Data[trk], f) = Fix_Loader(NDG.Track_Data[trk]);
                     NDA.Track_Data[trk] = new byte[8192];
                     if (NDG.Track_Data[trk].Length < 8192)
                     {
@@ -1124,76 +1127,6 @@ namespace V_Max_Tool
                 if (NDG.Track_Length[i] >= 6400) td[r] = 1;
                 if (NDG.Track_Length[i] >= 6700) td[r] = 2;
                 if (NDG.Track_Length[i] >= 7300) td[r] = 3;
-            }
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            List<string> list = new List<string>();
-            for (int i = 0; i < tracks; i++)
-            {
-                if (NDS.cbm[i] == 3)
-                {
-                    string[] f = (Get(NDS.Track_Data[i], i));
-                    if (f.Length > 0)
-                    {
-                        listBox3.Items.Add($"track {i}");
-                        for (int j = 0; j < f.Length; j++)
-                        {
-                            if (j < f.Length - 1) listBox3.Items.Add($"{j} {f[j]}"); else listBox3.Items.Add($"{f[j]}");
-                        }
-                    }
-                }
-            }
-
-            string[] Get(byte[] data, int trk)
-            {
-                int data_start = 0;
-                int data_end = 0;
-                int sector_zero = 0;
-                bool start_found = false;
-                bool end_found = false;
-                bool szero = false;
-                byte[] sz = new byte[] { 0xee, 0xf6, 0xf3 };
-                byte[] hd = new byte[] { 0x49, 0x49 };
-                byte[] comp = new byte[2];
-                byte[] head = new byte[18];
-                //var ls = 0;
-                List<string> s = new List<string>();
-                List<string> ss = new List<string>();
-                for (int i = 0; i < data.Length - comp.Length; i++)
-                {
-
-                    Array.Copy(data, i, comp, 0, comp.Length);
-                    if (Hex_Val(comp) == Hex_Val(hd))
-                    {
-                        var a = 0;
-                        while (data[i + a] == 0x49) a++;
-                        i += a;
-                        if (data[i] == 0xee)
-                        {
-                            if (i + head.Length < data.Length) Array.Copy(data, i, head, 0, head.Length);
-                            if (!ss.Any(b => b == Hex_Val(head)))
-                            {
-                                if (Hex_Val(head).Contains(Hex_Val(sz))) { sector_zero = i - a; szero = true; }
-                                if (!start_found) { data_start = i - a; start_found = true; }
-                                ss.Add(Hex_Val(head));
-                                s.Add($"Pos {i - a} {Hex_Val(head)}");
-                            }
-                            else 
-                            { 
-                                end_found = true;
-                                data_end = i - a;
-                                s.Add($"Pos {i - a} repeat {Hex_Val(head)}");
-                                string stats = $"Track Length ({data_end - data_start}) Sectors {ss.Count} ";
-                                if (szero) stats += $" sector 0 {sector_zero}"; else stats += "Sector 0 not found";
-                                s.Add (stats);
-                            }
-                        }
-                    }
-                    if (end_found) break;
-                }
-                return s.ToArray();
             }
         }
     }
