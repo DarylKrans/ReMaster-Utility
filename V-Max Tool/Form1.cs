@@ -58,7 +58,7 @@ namespace V_Max_Tool
         {
             InitializeComponent();
             label1.Text = label2.Text = "";
-            button1.Enabled = button2.Enabled = button3.Enabled = false;
+            button1.Enabled = button2.Enabled = false;
             this.AllowDrop = true;
             this.DragEnter += new DragEventHandler(Drag_Enter);
             this.DragDrop += new DragEventHandler(Drag_Drop);
@@ -704,7 +704,7 @@ namespace V_Max_Tool
                         {
                             end_found = true;
                             data_end = i - a;
-                            s.Add($"Pos {i - a} repeat {Hex_Val(head)}");
+                            s.Add($"Pos {i - a} **repeat** {Hex_Val(head)}");
                             string stats = $"Track Length ({data_end - data_start}) Sectors {ss.Count} ";
                             if (szero) stats += $" sector 0 {sector_zero}"; else stats += "Sector 0 not found";
                             s.Add(stats);
@@ -725,6 +725,11 @@ namespace V_Max_Tool
             {
                 if (data_start > 3000) data_start = 0;
                 data_end = 7400;
+            }
+            if (start_found && end_found && (data_end -  data_start) < 7000)
+            {
+                var a = 7400 -(data_end - data_start);
+                if (data_end + a < 8192) data_end += a;
             }
             //
             //
@@ -828,7 +833,7 @@ namespace V_Max_Tool
         }
         private void Drag_Drop(object sender, DragEventArgs e)
         {
-            button1.Enabled = button2.Enabled = button3.Enabled = false;
+            button1.Enabled = button2.Enabled = false;
             string[] headers = new string[0];
             listBox1.DataSource = null;
             listBox2.DataSource = null;
@@ -870,7 +875,7 @@ namespace V_Max_Tool
                 listBox1.Update();
                 Process_Nib_Data();
                 listBox2.DataSource = haps;
-                button1.Enabled = button2.Enabled = button3.Enabled = true;
+                button1.Enabled = button2.Enabled = true;
             }
             else
             {

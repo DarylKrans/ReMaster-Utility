@@ -39,8 +39,8 @@
             this.label6 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.listBox3 = new System.Windows.Forms.ListBox();
-            this.button3 = new System.Windows.Forms.Button();
             this.f_load = new System.Windows.Forms.CheckBox();
+            this.label7 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // button1
@@ -145,32 +145,33 @@
             this.listBox3.Size = new System.Drawing.Size(1542, 1027);
             this.listBox3.TabIndex = 10;
             // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(1209, 92);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(159, 43);
-            this.button3.TabIndex = 11;
-            this.button3.Text = "Get Headers";
-            this.button3.UseVisualStyleBackColor = true;
-            // 
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(735, 106);
+            this.f_load.Location = new System.Drawing.Point(346, 60);
             this.f_load.Name = "f_load";
             this.f_load.Size = new System.Drawing.Size(206, 29);
             this.f_load.TabIndex = 12;
             this.f_load.Text = "Fix Loader Track";
             this.f_load.UseVisualStyleBackColor = true;
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(1279, 113);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(340, 29);
+            this.label7.TabIndex = 13;
+            this.label7.Text = "V-Max v2/v3 sector header info";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(2289, 1233);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.f_load);
-            this.Controls.Add(this.button3);
             this.Controls.Add(this.listBox3);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label6);
@@ -202,8 +203,8 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.ListBox listBox3;
-        private System.Windows.Forms.Button button3;
         private System.Windows.Forms.CheckBox f_load;
+        private System.Windows.Forms.Label label7;
     }
 }
 
