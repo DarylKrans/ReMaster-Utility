@@ -202,25 +202,42 @@ namespace V_Max_Tool
                 }
             }
         }
-        int Get_Loader_Len(byte[] data)
+        (int, byte[]) Get_Loader_Len(byte[] data, int start_pos, int comp_length, int skip_length)
         {
-            int p = 0;
-            if (data != null)
+            int q = 8192;
+            int qq = 0;
+            byte[] dataa = data;
+            while (q == 8192 && qq < 32)
             {
-                byte[] star = new byte[16];
-                Array.Copy(data, 0, star, 0, 16);
-                byte[] comp = new byte[8176];
-                Array.Copy(data, 16, comp, 0, 8176);
-
-                for (p = 7100; p < comp.Length; p++)
+                q = find();
+                if (q == 8192)
                 {
-                    if (comp.Skip(p).Take(star.Length).SequenceEqual(star))
-                    {
-                        break;
-                    }
+                    dataa = Rotate_Left(data, qq);
+                    qq++;
+                    //this.Text = qq.ToString() + Encoding.ASCII.GetString(dataa);
                 }
             }
-            return p + 16;
+            return (q, dataa);
+            int find()
+            {
+                int p = 0;
+                if (dataa != null)
+                {
+                    byte[] star = new byte[comp_length];
+                    Array.Copy(dataa, start_pos, star, 0, comp_length);
+                    byte[] comp = new byte[8192 - (comp_length + start_pos)];
+                    Array.Copy(dataa, comp_length, comp, 0, 8192 - (comp_length + start_pos));
+
+                    for (p = skip_length; p < comp.Length; p++)
+                    {
+                        if (comp.Skip(p).Take(star.Length).SequenceEqual(star))
+                        {
+                            break;
+                        }
+                    }
+                }
+                return p + 80;
+            }
         }
         int Get_Track_Len(byte[] data)
         {
@@ -424,7 +441,9 @@ namespace V_Max_Tool
 
             bool Check_Loader(byte[] d)
             {
-                byte[][] p = new byte[7][];
+                byte[][] p = new byte[8][];
+                // byte[] p contains a list of commonly repeating patters in the V-Max track 20 loader
+                // the following (for) statement checks the track for these patters, if 30 matches are found, we assume its a loader track
                 p[0] = new byte[] { 0xd2, 0x4b, 0xff, 0x64 };
                 p[1] = new byte[] { 0x4d, 0x6d, 0x5b, 0xff };
                 p[2] = new byte[] { 0x92, 0x49, 0x24, 0x92 };
@@ -432,11 +451,10 @@ namespace V_Max_Tool
                 p[4] = new byte[] { 0x93, 0xff, 0x69, 0x25 };
                 p[5] = new byte[] { 0x5a, 0x5a, 0x5a, 0x5a };
                 p[6] = new byte[] { 0x69, 0x69, 0x69, 0x69 };
+                p[7] = new byte[] { 0x4b, 0x4b, 0x4b, 0x4b };
 
                 int l = 0;
                 byte[] cmp = new byte[4];
-                ////byte[] ldr = new byte[] { 0x69, 0x5a, 0x4b, 0x92, 0x24, 0x49, 0x33, 0xb4, 0x2d, 0xd2, 0x96, 0xb4 };
-                //byte[] ldr = new byte[] { 0x69, 0x5a, 0x4b, 0x92, 0x24, 0x33, 0xb4, 0x2d, 0xd2, 0x96, 0xb4 };
                 for (int i = 0; i < d.Length - cmp.Length; i++)
                 {
                     Array.Copy(d, i, cmp, 0, cmp.Length);
@@ -693,6 +711,23 @@ namespace V_Max_Tool
                 }
                 if (end_found) break;
             }
+            // -------------------------- Temporary Code for track 19 long sync track ---------------------------------------- //
+            // if track 19 starts on sync and none of the sectors repeat in the track, the track length cannot be properly determined so we
+            // need to guess how long the track is.  Too short or too long and it won't work.  Judging from other titles that use the long
+            // sync track 19, the track length is usually about 7417 bytes.  In the condition that the start was found (data_start > 0) and
+            // the end was not found (data_end is only set when a repeat of a sector marker is found, if no repeat is found, data_end = 0 and
+            // bool end_found = false)  when these conditions are met, data_start is set to 0 and data_end is set to 7400.
+            // this trick may not work for every title that uses the track 19 long sync track so a better solution needs to be found, but this
+            // will have to do for now.
+            if (start_found && !end_found)
+            {
+                if (data_start > 3000) data_start = 0;
+                data_end = 7400;
+            }
+            //
+            //
+            //
+
             return (s.ToArray(), data_start, data_end, sector_zero, (data_end - data_start) );
         }
 
@@ -702,7 +737,6 @@ namespace V_Max_Tool
             Array.Copy(data, sds, tdata, 0, sde - sds);
             if (ssz - sds - 5 >= 0) tdata = Rotate_Left(tdata, ssz - sds - 5);
             else tdata = Rotate_Right(tdata, 5);
-            //File.WriteAllBytes($@"c:\{trk}.bin", tdata);
             var buffer = new MemoryStream();
             var write = new BinaryWriter(buffer);
             int spos = 0;
@@ -712,30 +746,32 @@ namespace V_Max_Tool
 
             while (spos < tdata.Length)
             {
-                if (spos + 2 < tdata.Length && tdata[spos + 2] == 0x49)
-                {
-                    Array.Copy(tdata, spos + 2, comp, 0, comp.Length);
-                    if (Hex_Val(comp) == Hex_Val(hd))
+                
+                    if (spos + 2 < tdata.Length && tdata[spos + 2] == 0x49)
                     {
-                        var a = 0;
-                        while (tdata[spos + a] != 0x49)
+                    try { 
+                        Array.Copy(tdata, spos + 2, comp, 0, comp.Length);
+                        if (Hex_Val(comp) == Hex_Val(hd))
                         {
-                            if (tdata[spos + a] != 0x7f && tdata[spos + a] != 0xff) write.Write(tdata[spos + a]);
-                            a++;
-                            
+                            var a = 0;
+                            while (tdata[spos + a] != 0x49)
+                            {
+                                if (tdata[spos + a] != 0x7f && tdata[spos + a] != 0xff) write.Write(tdata[spos + a]);
+                                a++;
+
+                            }
+                            var b = 0;
+                            while (spos + (a + b) < tdata.Length && tdata[spos + (a + b)] == 0x49) b++;
+                            if (b > 20) for (int i = 0; i < (b + a); i++) write.Write((byte)0x49);
+                            spos += (a + b);
+                            write.Write(sync);
+                            for (int i = 0; i < 3; i++) write.Write(hd);
                         }
-                        var b = 0;
-                        while (spos + (a + b) < tdata.Length && tdata[spos + (a + b)] == 0x49) b++;
-                        if (b > 20) for (int i = 0; i < (b + a); i++) write.Write((byte)0x49);
-                        spos += (a + b);
-                        write.Write(sync);
-                        for (int i = 0; i < 3; i++) write.Write(hd);
+                } catch { }
                     }
-                }
-                if (spos < tdata.Length) write.Write(tdata[spos]);
-                spos++;
+                    if (spos < tdata.Length) write.Write(tdata[spos]);
+                    spos++;
             }
-            //File.WriteAllBytes($@"c:\test-{trk}.bin", buffer.ToArray());
             return (buffer.ToArray(), (int)buffer.Length << 3, 0);
 
 
@@ -870,7 +906,7 @@ namespace V_Max_Tool
                     ht = 0.5;
                 }
                 else ht = 0;
-                for (int i = 0; i < tracks; i++) // tracks
+                for (int i = 0; i < tracks; i++)
                 {
                     NDS.Track_Data[i] = new byte[8192];
                     Stream.Seek(256 + (8192 * i), SeekOrigin.Begin);
@@ -882,7 +918,6 @@ namespace V_Max_Tool
                     }
                     if (NDS.cbm[i] == 2)
                     {
-                        //Get V-Max v2 variant and data for processing
                         (NDA.Track_Data[i], NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], NDS.Track_Length[i], headers) = Adjust_Vmax_V2_Sync(NDS.Track_Data[i], i, false);
                         for (int j = 0; j < headers.Length; j++)
                         {
@@ -904,7 +939,9 @@ namespace V_Max_Tool
                     }
                     if (NDS.cbm[i] == 4)
                     {
-                        NDS.Track_Length[i] = (Get_Loader_Len(NDS.Track_Data[i])) * 8;
+                        int q = 0;
+                        (q, NDS.Track_Data[i]) = (Get_Loader_Len(NDS.Track_Data[i], 0, 80, 6800));
+                        NDS.Track_Length[i] = q * 8;
                         NDG.Track_Data[i] = new byte[NDS.Track_Length[i] / 8];
                         Array.Copy(NDS.Track_Data[i], 0, NDG.Track_Data[i], 0, NDG.Track_Data[i].Length);
                         NDG.Track_Length[i] = NDG.Track_Data[i].Length;
@@ -930,7 +967,7 @@ namespace V_Max_Tool
                     if (halftracks) ht += .5; else ht += 1;
                     if (NDS.Track_Length[i] > 0)
                     {
-                        gaps.Add($"Track {ht:F1}: {NDS.Track_Length[i] / 8} / {NDS.Sector_Zero[i] / 8}"); // / {a} ");
+                        gaps.Add($"Track {ht:F1}: {NDS.Track_Length[i] / 8} / {NDS.Sector_Zero[i] / 8}");
                     }
                 }
             }
@@ -1108,7 +1145,6 @@ namespace V_Max_Tool
                     }
                 }
             }
-            //listBox3.DataSource = list;
 
             string[] Get(byte[] data, int trk)
             {
