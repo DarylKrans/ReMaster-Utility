@@ -161,9 +161,9 @@
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label7.Location = new System.Drawing.Point(1279, 113);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(340, 29);
+            this.label7.Size = new System.Drawing.Size(199, 29);
             this.label7.TabIndex = 13;
-            this.label7.Text = "V-Max v2/v3 sector header info";
+            this.label7.Text = "Track Information";
             // 
             // Form1
             // 
