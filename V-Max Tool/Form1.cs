@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -382,7 +381,8 @@ namespace V_Max_Tool
                         {
                             Array.Copy(dest, 0, t, 0, dest.Length);
                             Array.Copy(dest, 0, t, dest.Length, g);
-                        } catch { }
+                        }
+                        catch { }
                     }
                     else
                     {
@@ -484,6 +484,7 @@ namespace V_Max_Tool
             byte[] start_byte = new byte[1];
             byte[] end_byte = new byte[1];
             byte[] pattern = new byte[] { 0xa5, 0xa5, 0xa5, 0xa5, 0xa5 };
+            byte[] pattern2 = new byte[] { 0xa4, 0xa5, 0xa4, 0xa5, 0xa4 };
             byte[] compare = new byte[5];
             bool found = false;
             List<string> all_headers = new List<string>();
@@ -584,7 +585,7 @@ namespace V_Max_Tool
                         break;
                     }
                 }
-                all_headers.Add($"Track length ({data_end - data_start}) Sectors ({a - 1}) Sector 0 ({sec_zero}) Header length ({hd.Count + 2})" );
+                all_headers.Add($"Track length ({data_end - data_start}) Sectors ({a - 1}) Sector 0 ({sec_zero}) Header length ({hd.Count + 2})");
                 all_headers.Add(" ");
                 if (Fix_Sync) // <- if the "Fix_Sync" bool is true, otherwise just return track info without any adjustments
                 {
@@ -637,13 +638,16 @@ namespace V_Max_Tool
                     compare = new byte[5];
                     for (int i = 0; i < temp_data.Length - 5; i++)
                     {
-                        //Array.Copy(temp_data, i, compare, 0, compare.Length);
-                        Array.Copy(buffer.ToArray(), i, compare, 0, compare.Length);
-                        if (Hex_Val(compare) == Hex_Val(pattern))
+                        try
                         {
-                            sec_zero = i - 1;
-                            break;
-                        }
+                            //Array.Copy(temp_data, i, compare, 0, compare.Length);
+                            Array.Copy(buffer.ToArray(), i, compare, 0, compare.Length);
+                            if (Hex_Val(compare) == Hex_Val(pattern))
+                            {
+                                sec_zero = i - 1;
+                                break;
+                            }
+                        } catch { }
                     }
                     return buffer.ToArray(); // <- Return new array with sync markers adjusted
 
@@ -721,16 +725,18 @@ namespace V_Max_Tool
             // bool end_found = false)  when these conditions are met, data_start is set to 0 and data_end is set to 7400.
             // this trick may not work for every title that uses the track 19 long sync track so a better solution needs to be found, but this
             // will have to do for now.
-            if (start_found && !end_found)
+            if ((tracks > 42 && trk == 36) || (tracks <= 42 && trk == 19))
             {
-                if (data_start > 3000) data_start = 0;
-                data_end = 7400;
-            }
-            if ((tracks >= 43 && trk == 36) || (tracks <= 42 && trk == 19))
-            {
+                if (start_found && !end_found)
+                {
+                    //this.Text = "1"; Thread.Sleep(1000);
+                    if (data_start > 3000) data_start = 0;
+                    data_end = 7417;
+                }
                 if (start_found && end_found && (data_end - data_start) < 7000)
                 {
-                    var a = 7400 - (data_end - data_start);
+                    //this.Text = "2"; Thread.Sleep(1000);
+                    var a = 7417 - (data_end - data_start);
                     if (data_end + a < 8192) data_end += a;
                 }
             }
@@ -769,7 +775,6 @@ namespace V_Max_Tool
                             {
                                 if (tdata[spos + a] != 0x7f && tdata[spos + a] != 0xff) write.Write(tdata[spos + a]);
                                 a++;
-
                             }
                             var b = 0;
                             while (spos + (a + b) < tdata.Length && tdata[spos + (a + b)] == 0x49) b++;
@@ -805,9 +810,7 @@ namespace V_Max_Tool
                 if (Hex_Val(comp) == Hex_Val(v4)) { Patch_V2(i - 3); f = true; }
                 if (f) break;
             }
-            if (f) this.Text = " Found";
-            Thread.Sleep(1000);
-            this.Text = "";
+            if (f) f_load.Text = "Fix Loader Track (Sync added to header)";
             return (tdata, f);
 
             void Patch_V2(int pos)
@@ -836,6 +839,7 @@ namespace V_Max_Tool
         }
         private void Drag_Drop(object sender, DragEventArgs e)
         {
+            f_load.Text = "Fix Loader Track";
             button1.Enabled = button2.Enabled = false;
             string[] headers = new string[0];
             listBox1.DataSource = null;
@@ -910,6 +914,7 @@ namespace V_Max_Tool
 
             void Get_Nib_Data()
             {
+                listBox3.BeginUpdate();
                 string tr = "Track";
                 string le = "Length";
                 string fm = "Format";
@@ -987,6 +992,8 @@ namespace V_Max_Tool
                             Array.Copy(NDS.Track_Data[i], NDA.Track_Data[i], NDS.Track_Data[i].Length);
                             NDA.Track_Length[i] = NDG.Track_Length[i] = NDG.Track_Data[i].Length;
                             NDS.Track_Length[i] *= 8; NDS.D_Start[i] = 0; NDS.D_End[i] = NDS.Track_Length[i];
+                            listBox3.Items.Add($"{tr} {i} Length ({NDG.Track_Data[i].Length}) Format {secF[NDS.cbm[i]]}");
+                            listBox3.Items.Add(" ");
                         }
                         else { NDS.Track_Length[i] = 0; }
                     }
@@ -996,6 +1003,7 @@ namespace V_Max_Tool
                         gaps.Add($"{tr} {ht:F1}: {NDS.Track_Length[i] / 8} / {NDS.Sector_Zero[i] / 8}");
                     }
                 }
+                listBox3.EndUpdate();
             }
 
             void Process_Nib_Data()
