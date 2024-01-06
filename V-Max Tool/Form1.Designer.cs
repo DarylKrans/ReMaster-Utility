@@ -46,7 +46,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(335, 1180);
+            this.button1.Location = new System.Drawing.Point(1879, 59);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(150, 41);
             this.button1.TabIndex = 0;
@@ -57,7 +57,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(12, 1177);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(70, 25);
             this.label1.TabIndex = 1;
@@ -66,7 +66,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 34);
+            this.label2.Location = new System.Drawing.Point(12, 1202);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(70, 25);
             this.label2.TabIndex = 2;
@@ -83,6 +83,7 @@
             // 
             // listBox1
             // 
+            this.listBox1.BackColor = System.Drawing.Color.Gainsboro;
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 25;
             this.listBox1.Location = new System.Drawing.Point(12, 145);
@@ -92,6 +93,7 @@
             // 
             // listBox2
             // 
+            this.listBox2.BackColor = System.Drawing.Color.Gainsboro;
             this.listBox2.FormattingEnabled = true;
             this.listBox2.ItemHeight = 25;
             this.listBox2.Location = new System.Drawing.Point(335, 145);
@@ -128,7 +130,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(491, 1182);
+            this.button2.Location = new System.Drawing.Point(1879, 14);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(150, 39);
             this.button2.TabIndex = 9;
@@ -138,18 +140,20 @@
             // 
             // listBox3
             // 
+            this.listBox3.BackColor = System.Drawing.Color.DarkGray;
             this.listBox3.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listBox3.ForeColor = System.Drawing.Color.Black;
             this.listBox3.FormattingEnabled = true;
             this.listBox3.ItemHeight = 31;
-            this.listBox3.Location = new System.Drawing.Point(735, 145);
+            this.listBox3.Location = new System.Drawing.Point(658, 145);
             this.listBox3.Name = "listBox3";
-            this.listBox3.Size = new System.Drawing.Size(1542, 1027);
+            this.listBox3.Size = new System.Drawing.Size(1371, 1027);
             this.listBox3.TabIndex = 10;
             // 
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(18, 60);
+            this.f_load.Location = new System.Drawing.Point(658, 110);
             this.f_load.Name = "f_load";
             this.f_load.Size = new System.Drawing.Size(206, 29);
             this.f_load.TabIndex = 12;
@@ -160,7 +164,7 @@
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(1279, 113);
+            this.label7.Location = new System.Drawing.Point(1259, 110);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(199, 29);
             this.label7.TabIndex = 13;
@@ -170,7 +174,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2289, 1233);
+            this.ClientSize = new System.Drawing.Size(2041, 1233);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.f_load);
             this.Controls.Add(this.listBox3);
