@@ -86,7 +86,6 @@ namespace V_Max_Tool
                 otrack.Height = os.Height = ol.Height = od.Height = of.Height = os.PreferredHeight;
                 ss.Height = strack.Height = sl.Height = ss.PreferredHeight; // (items * 12);
                 os.BeginUpdate(); ol.BeginUpdate(); od.BeginUpdate(); of.BeginUpdate(); ss.BeginUpdate(); strack.BeginUpdate(); otrack.BeginUpdate(); sl.BeginUpdate();
-                //groupBox1.Visible = !r;
             }
             else
             {
@@ -102,6 +101,7 @@ namespace V_Max_Tool
             string[] o = { "G64", "NIB", "NIB & G64" };
             Out_Type.DataSource = o;
             label1.Text = label2.Text = "";
+            listBox3.Visible = label7.Visible = false;
             Source.Visible = Output.Visible = false;
             button1.Enabled = false;
             this.AllowDrop = true;
@@ -202,35 +202,6 @@ namespace V_Max_Tool
             data = data.Skip(s).Concat(data.Take(s)).ToArray();
             return data;
         }
-
-        //byte[] Rotate_Right(byte[] data, int s)
-        //{
-        //    s -= 1;
-        //    byte[] ret; // = new byte[data.Length];
-        //    ret = data.Skip(data.Length - s).Concat(data.Take(data.Length - s)).ToArray();
-        //    return ret;
-        //}
-        //
-        //byte[] Shift_Right(byte[] data, int s, int pos)
-        //{
-        //    pos -= 1;
-        //    if (pos + s < data.Length)
-        //    {
-        //        Array.Copy(data, pos, data, pos + s, data.Length - pos - s);
-        //        for (int i = 0; i < s; i++) data[pos + i] = 0x00;
-        //    }
-        //    return data;
-        //}
-
-        //string Bin_Val(BitArray bits)
-        //{
-        //    string bin = "";
-        //    for (int bi = 0; bi < bits.Count; bi++)
-        //    {
-        //        bin += Convert.ToInt32(bits[bi]);
-        //    }
-        //    return bin;
-        //}
 
         string Hex_Val(byte[] data)
         {
@@ -536,7 +507,6 @@ namespace V_Max_Tool
 
         int Get_Data_Format(byte[] data)
         {
-            //byte[] v = { 0x28, 0x2c, 0x48, 0x4c, 0x38, 0x3c, 0x58, 0x5c, 0x24, 0x64, 0x68, 0x6c, 0x34, 0x74, 0x78, 0x54, 0xa8, 0xac, 0xc8, 0xcc, 0xbb };
             int t = 0;
             int csec = 0;
             byte[] comp = new byte[4];
@@ -645,7 +615,9 @@ namespace V_Max_Tool
                 }
                 if (found) break;
             }
-            all_headers.Add($"track {trk} Format : {secF[NDS.cbm[trk]]}");
+            int tr;
+            if (tracks > 42) tr = (trk / 2) + 1; else tr = (trk + 1);
+            all_headers.Add($"track {tr} Format : {secF[NDS.cbm[trk]]}");
 
             byte[] track_data = Get_Track_Data(process_Data);
             byte[] t = new byte[8192];
@@ -661,7 +633,6 @@ namespace V_Max_Tool
                     NDA.Track_Data[trk] = t;
                     data_start = 0;
                     data_end = track_data.Length << 3;
-                    //sec_zero = 0;
                 }
                 catch { }
             }
@@ -1007,8 +978,6 @@ namespace V_Max_Tool
         {
             double ht;
             bool halftracks = false;
-            //List<string> gaps = new List<string>();
-
             string[] f;
             string[] headers;
             listBox3.BeginUpdate();
@@ -1108,7 +1077,6 @@ namespace V_Max_Tool
         {
             double ht;
             bool halftracks = false;
-            //List<string> haps = new List<string>();
             string[] f;
             string[] headers;
             if (tracks > 42)
@@ -1270,7 +1238,10 @@ namespace V_Max_Tool
 
         private void CheckBox1_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox1.Checked) Width = 890; else Width = 390;
+            listBox3.Visible = label7.Visible = !listBox3.Visible;
+            listBox3.Width = listBox3.PreferredSize.Width;
+            Width = PreferredSize.Width;
+            //if (checkBox1.Checked) Width = 890; else Width = 390;
         }
     }
 }

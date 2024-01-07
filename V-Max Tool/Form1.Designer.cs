@@ -83,13 +83,13 @@
             // listBox3
             // 
             this.listBox3.BackColor = System.Drawing.Color.DarkGray;
-            this.listBox3.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listBox3.ForeColor = System.Drawing.Color.Black;
             this.listBox3.FormattingEnabled = true;
-            this.listBox3.ItemHeight = 31;
+            this.listBox3.ItemHeight = 29;
             this.listBox3.Location = new System.Drawing.Point(761, 72);
             this.listBox3.Name = "listBox3";
-            this.listBox3.Size = new System.Drawing.Size(969, 1151);
+            this.listBox3.Size = new System.Drawing.Size(969, 1135);
             this.listBox3.TabIndex = 10;
             // 
             // f_load
@@ -279,7 +279,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(745, 1228);
+            this.ClientSize = new System.Drawing.Size(743, 1228);
             this.Controls.Add(this.Output);
             this.Controls.Add(this.Source);
             this.Controls.Add(this.groupBox1);
