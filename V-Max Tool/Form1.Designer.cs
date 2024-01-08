@@ -151,6 +151,7 @@
             this.sl.ItemHeight = 25;
             this.sl.Location = new System.Drawing.Point(65, 30);
             this.sl.Name = "sl";
+            this.sl.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.sl.Size = new System.Drawing.Size(90, 1002);
             this.sl.TabIndex = 22;
             // 
@@ -210,6 +211,7 @@
             this.ss.ItemHeight = 25;
             this.ss.Location = new System.Drawing.Point(149, 30);
             this.ss.Name = "ss";
+            this.ss.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.ss.Size = new System.Drawing.Size(82, 1002);
             this.ss.TabIndex = 27;
             // 
@@ -222,6 +224,7 @@
             this.strack.ItemHeight = 25;
             this.strack.Location = new System.Drawing.Point(17, 30);
             this.strack.Name = "strack";
+            this.strack.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.strack.Size = new System.Drawing.Size(53, 1002);
             this.strack.TabIndex = 28;
             // 
@@ -234,6 +237,7 @@
             this.otrack.ItemHeight = 25;
             this.otrack.Location = new System.Drawing.Point(286, 30);
             this.otrack.Name = "otrack";
+            this.otrack.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.otrack.Size = new System.Drawing.Size(53, 1002);
             this.otrack.TabIndex = 29;
             // 
