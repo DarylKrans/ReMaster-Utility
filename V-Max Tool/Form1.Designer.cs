@@ -38,11 +38,11 @@
             this.Out_Type = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.T_Info = new System.Windows.Forms.CheckBox();
-            this.os = new System.Windows.Forms.ListBox();
-            this.ol = new System.Windows.Forms.ListBox();
-            this.od = new System.Windows.Forms.ListBox();
-            this.of = new System.Windows.Forms.ListBox();
-            this.otrack = new System.Windows.Forms.ListBox();
+            this.out_size = new System.Windows.Forms.ListBox();
+            this.out_len = new System.Windows.Forms.ListBox();
+            this.out_diff = new System.Windows.Forms.ListBox();
+            this.out_fmt = new System.Windows.Forms.ListBox();
+            this.out_track = new System.Windows.Forms.ListBox();
             this.outbox = new System.Windows.Forms.GroupBox();
             this.Source = new System.Windows.Forms.Label();
             this.Output = new System.Windows.Forms.Label();
@@ -55,6 +55,7 @@
             this.V2_Len = new System.Windows.Forms.NumericUpDown();
             this.V2H = new System.Windows.Forms.Button();
             this.Warn = new System.Windows.Forms.Label();
+            this.Add_Sync = new System.Windows.Forms.CheckBox();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -153,75 +154,75 @@
             this.T_Info.UseVisualStyleBackColor = true;
             this.T_Info.CheckedChanged += new System.EventHandler(this.CheckBox1_CheckedChanged);
             // 
-            // os
+            // out_size
             // 
-            this.os.BackColor = System.Drawing.Color.Gainsboro;
-            this.os.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.os.FormattingEnabled = true;
-            this.os.ItemHeight = 25;
-            this.os.Location = new System.Drawing.Point(55, 30);
-            this.os.Name = "os";
-            this.os.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.os.Size = new System.Drawing.Size(100, 1002);
-            this.os.TabIndex = 23;
+            this.out_size.BackColor = System.Drawing.Color.Gainsboro;
+            this.out_size.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_size.FormattingEnabled = true;
+            this.out_size.ItemHeight = 25;
+            this.out_size.Location = new System.Drawing.Point(55, 30);
+            this.out_size.Name = "out_size";
+            this.out_size.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.out_size.Size = new System.Drawing.Size(100, 1002);
+            this.out_size.TabIndex = 23;
             // 
-            // ol
+            // out_len
             // 
-            this.ol.BackColor = System.Drawing.Color.Gainsboro;
-            this.ol.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ol.FormattingEnabled = true;
-            this.ol.ItemHeight = 25;
-            this.ol.Location = new System.Drawing.Point(149, 30);
-            this.ol.Name = "ol";
-            this.ol.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.ol.Size = new System.Drawing.Size(73, 1002);
-            this.ol.TabIndex = 24;
+            this.out_len.BackColor = System.Drawing.Color.Gainsboro;
+            this.out_len.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_len.FormattingEnabled = true;
+            this.out_len.ItemHeight = 25;
+            this.out_len.Location = new System.Drawing.Point(149, 30);
+            this.out_len.Name = "out_len";
+            this.out_len.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.out_len.Size = new System.Drawing.Size(73, 1002);
+            this.out_len.TabIndex = 24;
             // 
-            // od
+            // out_diff
             // 
-            this.od.BackColor = System.Drawing.Color.Gainsboro;
-            this.od.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.od.FormattingEnabled = true;
-            this.od.ItemHeight = 25;
-            this.od.Location = new System.Drawing.Point(217, 30);
-            this.od.Name = "od";
-            this.od.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.od.Size = new System.Drawing.Size(62, 1002);
-            this.od.TabIndex = 25;
+            this.out_diff.BackColor = System.Drawing.Color.Gainsboro;
+            this.out_diff.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_diff.FormattingEnabled = true;
+            this.out_diff.ItemHeight = 25;
+            this.out_diff.Location = new System.Drawing.Point(217, 30);
+            this.out_diff.Name = "out_diff";
+            this.out_diff.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.out_diff.Size = new System.Drawing.Size(62, 1002);
+            this.out_diff.TabIndex = 25;
             // 
-            // of
+            // out_fmt
             // 
-            this.of.BackColor = System.Drawing.Color.Gainsboro;
-            this.of.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.of.FormattingEnabled = true;
-            this.of.ItemHeight = 25;
-            this.of.Location = new System.Drawing.Point(275, 30);
-            this.of.Name = "of";
-            this.of.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.of.Size = new System.Drawing.Size(145, 1002);
-            this.of.TabIndex = 26;
+            this.out_fmt.BackColor = System.Drawing.Color.Gainsboro;
+            this.out_fmt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_fmt.FormattingEnabled = true;
+            this.out_fmt.ItemHeight = 25;
+            this.out_fmt.Location = new System.Drawing.Point(275, 30);
+            this.out_fmt.Name = "out_fmt";
+            this.out_fmt.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.out_fmt.Size = new System.Drawing.Size(145, 1002);
+            this.out_fmt.TabIndex = 26;
             // 
-            // otrack
+            // out_track
             // 
-            this.otrack.BackColor = System.Drawing.Color.Gainsboro;
-            this.otrack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.otrack.ForeColor = System.Drawing.Color.Blue;
-            this.otrack.FormattingEnabled = true;
-            this.otrack.ItemHeight = 25;
-            this.otrack.Location = new System.Drawing.Point(6, 30);
-            this.otrack.Name = "otrack";
-            this.otrack.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.otrack.Size = new System.Drawing.Size(53, 1002);
-            this.otrack.TabIndex = 29;
+            this.out_track.BackColor = System.Drawing.Color.Gainsboro;
+            this.out_track.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_track.ForeColor = System.Drawing.Color.Blue;
+            this.out_track.FormattingEnabled = true;
+            this.out_track.ItemHeight = 25;
+            this.out_track.Location = new System.Drawing.Point(6, 30);
+            this.out_track.Name = "out_track";
+            this.out_track.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.out_track.Size = new System.Drawing.Size(53, 1002);
+            this.out_track.TabIndex = 29;
             // 
             // outbox
             // 
             this.outbox.BackColor = System.Drawing.Color.Gainsboro;
-            this.outbox.Controls.Add(this.otrack);
-            this.outbox.Controls.Add(this.of);
-            this.outbox.Controls.Add(this.od);
-            this.outbox.Controls.Add(this.ol);
-            this.outbox.Controls.Add(this.os);
+            this.outbox.Controls.Add(this.out_track);
+            this.outbox.Controls.Add(this.out_fmt);
+            this.outbox.Controls.Add(this.out_diff);
+            this.outbox.Controls.Add(this.out_len);
+            this.outbox.Controls.Add(this.out_size);
             this.outbox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.outbox.ForeColor = System.Drawing.Color.Indigo;
             this.outbox.Location = new System.Drawing.Point(292, 160);
@@ -316,7 +317,7 @@
             // CustomV2headers
             // 
             this.CustomV2headers.AutoSize = true;
-            this.CustomV2headers.Location = new System.Drawing.Point(22, 1243);
+            this.CustomV2headers.Location = new System.Drawing.Point(28, 1264);
             this.CustomV2headers.Name = "CustomV2headers";
             this.CustomV2headers.Size = new System.Drawing.Size(396, 29);
             this.CustomV2headers.TabIndex = 28;
@@ -331,7 +332,7 @@
             0,
             0,
             0});
-            this.V2_Len.Location = new System.Drawing.Point(424, 1241);
+            this.V2_Len.Location = new System.Drawing.Point(430, 1262);
             this.V2_Len.Maximum = new decimal(new int[] {
             36,
             0,
@@ -353,7 +354,7 @@
             // 
             // V2H
             // 
-            this.V2H.Location = new System.Drawing.Point(583, 1237);
+            this.V2H.Location = new System.Drawing.Point(589, 1258);
             this.V2H.Name = "V2H";
             this.V2H.Size = new System.Drawing.Size(100, 44);
             this.V2H.TabIndex = 30;
@@ -364,17 +365,29 @@
             // Warn
             // 
             this.Warn.AutoSize = true;
-            this.Warn.Location = new System.Drawing.Point(26, 1213);
+            this.Warn.Location = new System.Drawing.Point(32, 1234);
             this.Warn.Name = "Warn";
             this.Warn.Size = new System.Drawing.Size(672, 25);
             this.Warn.TabIndex = 31;
             this.Warn.Text = "Advanced users only! Setting value too high could corrupt the output!";
             // 
+            // Add_Sync
+            // 
+            this.Add_Sync.AutoSize = true;
+            this.Add_Sync.Location = new System.Drawing.Point(28, 1299);
+            this.Add_Sync.Name = "Add_Sync";
+            this.Add_Sync.Size = new System.Drawing.Size(537, 29);
+            this.Add_Sync.TabIndex = 32;
+            this.Add_Sync.Text = "Add sync to syncless tracks  [ Cannot be un-done! ]";
+            this.Add_Sync.UseVisualStyleBackColor = true;
+            this.Add_Sync.CheckedChanged += new System.EventHandler(this.Add_Sync_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(750, 1284);
+            this.ClientSize = new System.Drawing.Size(750, 1341);
+            this.Controls.Add(this.Add_Sync);
             this.Controls.Add(this.Warn);
             this.Controls.Add(this.V2H);
             this.Controls.Add(this.V2_Len);
@@ -416,11 +429,11 @@
         private System.Windows.Forms.ComboBox Out_Type;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.CheckBox T_Info;
-        private System.Windows.Forms.ListBox os;
-        private System.Windows.Forms.ListBox ol;
-        private System.Windows.Forms.ListBox od;
-        private System.Windows.Forms.ListBox of;
-        private System.Windows.Forms.ListBox otrack;
+        private System.Windows.Forms.ListBox out_size;
+        private System.Windows.Forms.ListBox out_len;
+        private System.Windows.Forms.ListBox out_diff;
+        private System.Windows.Forms.ListBox out_fmt;
+        private System.Windows.Forms.ListBox out_track;
         private System.Windows.Forms.GroupBox outbox;
         private System.Windows.Forms.Label Source;
         private System.Windows.Forms.Label Output;
@@ -433,6 +446,7 @@
         private System.Windows.Forms.NumericUpDown V2_Len;
         private System.Windows.Forms.Button V2H;
         private System.Windows.Forms.Label Warn;
+        private System.Windows.Forms.CheckBox Add_Sync;
     }
 }
 

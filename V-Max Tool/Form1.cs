@@ -83,17 +83,17 @@ namespace V_Max_Tool
         {
             if (r)
             {
-                os.Items.Clear(); ol.Items.Clear(); od.Items.Clear(); of.Items.Clear(); strack.Items.Clear(); otrack.Items.Clear(); ss.Items.Clear(); sl.Items.Clear();
-                otrack.Height = os.Height = ol.Height = od.Height = of.Height = os.PreferredHeight;
+                out_size.Items.Clear(); out_len.Items.Clear(); out_diff.Items.Clear(); out_fmt.Items.Clear(); strack.Items.Clear(); out_track.Items.Clear(); ss.Items.Clear(); sl.Items.Clear();
+                out_track.Height = out_size.Height = out_len.Height = out_diff.Height = out_fmt.Height = out_size.PreferredHeight;
                 ss.Height = strack.Height = sl.Height = ss.PreferredHeight; // (items * 12);
-                os.BeginUpdate(); ol.BeginUpdate(); od.BeginUpdate(); of.BeginUpdate(); ss.BeginUpdate(); strack.BeginUpdate(); otrack.BeginUpdate(); sl.BeginUpdate();
+                out_size.BeginUpdate(); out_len.BeginUpdate(); out_diff.BeginUpdate(); out_fmt.BeginUpdate(); ss.BeginUpdate(); strack.BeginUpdate(); out_track.BeginUpdate(); sl.BeginUpdate();
             }
             else
             {
-                os.EndUpdate(); ol.EndUpdate(); od.EndUpdate(); of.EndUpdate(); ss.EndUpdate(); strack.EndUpdate(); otrack.EndUpdate(); sl.EndUpdate();
+                out_size.EndUpdate(); out_len.EndUpdate(); out_diff.EndUpdate(); out_fmt.EndUpdate(); ss.EndUpdate(); strack.EndUpdate(); out_track.EndUpdate(); sl.EndUpdate();
             }
             outbox.Visible = inbox.Visible = !r;
-            otrack.Height = os.Height = ol.Height = od.Height = of.Height = os.PreferredHeight;
+            out_track.Height = out_size.Height = out_len.Height = out_diff.Height = out_fmt.Height = out_size.PreferredHeight;
             ss.Height = strack.Height = sl.Height = ss.PreferredHeight; // (items * 12);
             outbox.Height = outbox.PreferredSize.Height;
             inbox.Height = inbox.PreferredSize.Height;
@@ -113,7 +113,7 @@ namespace V_Max_Tool
             this.DragDrop += new DragEventHandler(Drag_Drop);
             listBox3.HorizontalScrollbar = true;
             CustomV2headers.Visible = false;
-            V2_Len.Visible = V2_Len.Enabled = V2H.Visible = V2H.Enabled = Warn.Visible = false;
+            V2_Len.Visible = V2_Len.Enabled = V2H.Visible = V2H.Enabled = Warn.Visible = Add_Sync.Visible = false;
         }
         void Make_NIB()
         {
@@ -446,7 +446,7 @@ namespace V_Max_Tool
 
                     if (dest_pos < d.Length)
                     {
-                        Pad_Bits(dest_pos, d.Length - dest_pos, d); //- dest_pos, d);
+                        Pad_Bits(dest_pos, d.Length - dest_pos, d);
                     }
                     int bcnt;
                     var a = Math.Abs(((dest_pos >> 3) << 3) - dest_pos);
@@ -473,7 +473,7 @@ namespace V_Max_Tool
                         for (int i = 0; i < expected_sync; i++) { if (temp[temp.Length - (i + 1)] == true) ver++; }
                         if (ver < sync_count && ver < expected_sync && ver >= minimum_sync)
                         {
-                            for (int i = 0; i < expected_sync; i++) temp[(temp.Length - 1) - i] = true;   // d[(dest_pos - (sync_count + add) + i)] = true;
+                            for (int i = 0; i < expected_sync; i++) temp[(temp.Length - 1) - i] = true;
                         }
                     }
                     byte[] dest = new byte[bcnt];
@@ -713,6 +713,7 @@ namespace V_Max_Tool
                     var sector_header = Convert.ToInt32((V2_Len.Value - 2) * 2) / 2;
                     byte[] sync_marker = new byte[] { 0x7f, 0xff };  // set the sync bytes (5b-ff) = 10 sync bits (7f-ff) = 15 sync bits
                     byte[] sec_header = new byte[0];
+                    byte[] ignore = new byte[] { 0x7f, 0xff, 0x5f, 0xbf };
                     bool no_sync = false;
                     compare = new byte[2];
                     // begin processing the track
@@ -720,14 +721,15 @@ namespace V_Max_Tool
                     {
                         try
                         {
-                            if (s_pos + 2 < temp_data.Length && temp_data[s_pos + 2] == start_byte[0])
+                            //if (s_pos + 2 < temp_data.Length && temp_data[s_pos + 2] == start_byte[0])
+                            if (s_pos + 3 < temp_data.Length && temp_data[s_pos + 3] == start_byte[0])  // s_pos + 2 
                             {
                                 byte[] header_ID = new byte[2];
-                                if (s_pos + 4 < temp_data.Length - 1) Array.Copy(temp_data, s_pos + 3, header_ID, 0, 2);
+                                if (s_pos + 5 < temp_data.Length - 1) Array.Copy(temp_data, s_pos + 4, header_ID, 0, 2); // s_pos + 4, s_pos + 3
                                 while (temp_data[s_pos] != start_byte[0])
                                 {
                                     // We're copying remaing sector data and ignoring potential sync (0x7f/0xff) in the source because we're going to add our own sync later.
-                                    if (temp_data[s_pos] != 0x7f && temp_data[s_pos] != 0xff) write.Write(temp_data[s_pos]);
+                                    if (!ignore.Any(s => s == temp_data[s_pos])) write.Write(temp_data[s_pos]);
                                     s_pos++;
                                 }
                                 s_pos++; // sets source position 1 byte after the header start byte to get the header pattern data
@@ -735,8 +737,14 @@ namespace V_Max_Tool
                                 if (headers.Any(s => s == Hex_Val(compare))) // <- checks to verify header pattern is in the list of valid headers
                                 {
                                     // check that it's not sector 0 which needs sync, then check if a sync marker is before the header start byte.  If not, its a syncless track
-                                    if (Hex_Val(compare) != "A5-A5" && (!sync_marker.Any(s => s == temp_data[s_pos - 2])) && temp_data[s_pos - 1] == start_byte[0]) no_sync = true;
-                                    else no_sync = false;
+                                    if (!Add_Sync.Checked)
+                                    {
+                                        if (Hex_Val(compare) != "A5-A5" && (!sync_marker.Any(s => s == temp_data[s_pos - 2])) && temp_data[s_pos - 1] == start_byte[0])
+                                        {
+                                            no_sync = true;
+                                        }
+                                        else no_sync = false;
+                                    }
                                     var header_length = 0;
                                     while (s_pos < temp_data.Length && temp_data[s_pos] != end_byte[0]) // <- getting the length of the header pattern
                                     {
@@ -831,8 +839,21 @@ namespace V_Max_Tool
                             data_end = i - a;
                             build_list();
                             s.Add($"Pos {i - a} **repeat** {Hex_Val(head).Remove(8, Hex_Val(head).Length - 8)}");
-                            string stats = $"Track Length ({data_end - data_start}) Sectors ({ss.Count}) ";
-                            if (s_zero) stats += $" sector 0 ({sector_zero})"; else stats += "Sector 0 not found!";
+                            string stats = $"Track Length ({data_end - data_start}) Sectors ({ss.Count})";
+                            if (!s_zero)
+                            {
+                                byte vvml = 0xf3; 
+                                if (hb.Count < 10 && !s_zero)
+                                {
+                                    int p = Array.FindIndex(hb.ToArray(), se => se == vvml);
+                                    if (p != -1)
+                                    {
+                                        s_zero = true;
+                                        sector_zero = spos[p];
+                                    }
+                                }
+                            }
+                            stats += $" sector 0 ({sector_zero})  Header Length ({a + 3})";
                             s.Add(stats);
                         }
                     }
@@ -856,7 +877,7 @@ namespace V_Max_Tool
                     for (int u = 0; u < hl[j]; u++) hdr += "49-";
                     s.Add($"Sector ({h}){sz} Pos ({spos[j]}) {hdr}{ss[j].Remove(8, ss[j].Length - 8)}");
                 }
-                if (!end_found) s.Add($"Track Length [est] (7400) Sectors ({hb.Count}) Sector 0 ({sector_zero})");
+                if (!end_found) s.Add($"Track Length [est] (7400) Sectors ({hb.Count})");
             }
             // -------------------------- Temporary Code for track 19 long sync track ---------------------------------------- //
             // if track 19 starts on sync and none of the sectors repeat in the track, the track length cannot be properly determined so we
@@ -1019,7 +1040,7 @@ namespace V_Max_Tool
                         listBox3.Items.Add(headers[j]);
                         listBox3.Update();
                     }
-                    V2_Len.Visible = CustomV2headers.Visible = V2H.Visible = Warn.Visible = true;
+                    V2_Len.Visible = CustomV2headers.Visible = V2H.Visible = Warn.Visible = Add_Sync.Visible = true;
                 }
                 if (NDS.cbm[i] == 3)
                 {
@@ -1037,6 +1058,7 @@ namespace V_Max_Tool
                 }
                 if (NDS.cbm[i] == 4)
                 {
+                    if (tracks > 42) t = i / 2 + 1; else t = i + 1;
                     int q;
                     (q, NDS.Track_Data[i]) = (Get_Loader_Len(NDS.Track_Data[i], 0, 80, 7000));
                     NDS.Track_Length[i] = q * 8;
@@ -1045,7 +1067,7 @@ namespace V_Max_Tool
                     NDG.Track_Length[i] = NDG.Track_Data[i].Length;
                     NDA.Track_Length[i] = NDG.Track_Data[i].Length * 8;
                     NDA.Track_Data[i] = NDS.Track_Data[i];
-                    listBox3.Items.Add($"{tr} {i} {fm} : {secF[NDS.cbm[i]]} {tr} {le} ({NDG.Track_Data[i].Length})");
+                    listBox3.Items.Add($"{tr} {t} {fm} : {secF[NDS.cbm[i]]} {tr} {le} ({NDG.Track_Data[i].Length})");
                     if (NDG.Track_Data[i].Length > 7400) listBox3.Items.Add(bl);
                     listBox3.Items.Add(" ");
                 }
@@ -1098,11 +1120,11 @@ namespace V_Max_Tool
                     if (NDS.cbm[i] == 4) Process_Loader(i);
                     if (NDA.Track_Length[i] > 0 && NDS.cbm[i] != 6)
                     {
-                        os.Items.Add((NDA.Track_Length[i] / 8).ToString("N0"));
-                        ol.Items.Add(NDA.Sector_Zero[i] / 8);
-                        od.Items.Add((NDA.Track_Length[i] - NDS.Track_Length[i] >> 3).ToString("+#;-#;0"));
-                        of.Items.Add(secF[NDS.cbm[i]]);
-                        otrack.Items.Add(ht);
+                        out_size.Items.Add((NDA.Track_Length[i] / 8).ToString("N0"));
+                        out_len.Items.Add(NDA.Sector_Zero[i] / 8);
+                        out_diff.Items.Add((NDA.Track_Length[i] - NDS.Track_Length[i] >> 3).ToString("+#;-#;0"));
+                        out_fmt.Items.Add(secF[NDS.cbm[i]]);
+                        out_track.Items.Add(ht);
                     }
                 }
                 else { NDA.Track_Data[i] = NDS.Track_Data[i]; }
@@ -1157,12 +1179,12 @@ namespace V_Max_Tool
         }
         private void Drag_Drop(object sender, DragEventArgs e)
         {
-            V2_Len.Visible = V2_Len.Enabled = V2H.Visible = V2H.Enabled = Warn.Visible = CustomV2headers.Visible = false;
+            V2_Len.Visible = V2_Len.Enabled = V2H.Visible = V2H.Enabled = Warn.Visible = CustomV2headers.Visible = Add_Sync.Visible = false;
             Source.Visible = Output.Visible = false;
             f_load.Text = "Fix Loader Track";
             button1.Enabled = false;
             sl.DataSource = null;
-            os.DataSource = null;
+            out_size.DataSource = null;
             string[] File_List = (string[])e.Data.GetData(DataFormats.FileDrop);
             string l = "Not ok";
             if (File.Exists(File_List[0]))
@@ -1288,7 +1310,8 @@ namespace V_Max_Tool
 
         private void CustomV2headers_CheckedChanged(object sender, EventArgs e)
         {
-            V2_Len.Enabled = V2H.Enabled = CustomV2headers.Checked;
+            V2_Len.Enabled = CustomV2headers.Checked;
+            if (CustomV2headers.Checked || Add_Sync.Checked) V2H.Enabled = true; else V2H.Enabled = false;
         }
 
         private void V2H_Click(object sender, EventArgs e)
@@ -1298,14 +1321,20 @@ namespace V_Max_Tool
                 int i = Convert.ToInt32(V2_Len.Value);
                 if (i >= V2_Len.Minimum && i <= V2_Len.Maximum)
                 {
-                    otrack.Items.Clear();
-                    os.Items.Clear();
-                    ol.Items.Clear();
-                    od.Items.Clear();
-                    of.Items.Clear();
-                    Process_Nib_Data(false);
+                    out_track.Items.Clear();
+                    out_size.Items.Clear();
+                    out_len.Items.Clear();
+                    out_diff.Items.Clear();
+                    out_fmt.Items.Clear();
+                    Process_Nib_Data(false); // false flag instructs the routine NOT to process CBM tracks again
                 }
             }
+        }
+
+        private void Add_Sync_CheckedChanged(object sender, EventArgs e)
+        {
+            //v2h
+            if (Add_Sync.Checked || CustomV2headers.Checked) V2H.Enabled = true; else V2H.Enabled = false;
         }
     }
 }
