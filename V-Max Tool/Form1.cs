@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Threading;
 
 /// -- Currently not being used, but may be handy later
 //private readonly byte[] vvm3l = { 0xf6, 0xf4, 0xf5, 0xe9, 0xe7, 0xe6, 0xe4, 0xec, 0xed, 0xea, 0xeb, 0xd9, 0xdb, 0xd3, 0xd7, 0xe5, 0xde, 0xdc, 0xdd, 0xcd,
@@ -26,6 +27,7 @@ namespace V_Max_Tool
         private string dirname = "";
         private int tracks = 0;
         private byte[] nib_header = new byte[256];
+        private readonly byte[] g64_header = new byte[684];
         private readonly string fnappend = "(sync_fixed)";
         private readonly byte[] sz = { 0x52, 0xc0, 0x0f, 0xfc };
         // vsec = the block header values & against byte[] sz
@@ -145,7 +147,7 @@ namespace V_Max_Tool
             for (int i = 0; i < 84; i++) write.Write(td[i]);
             for (int i = 0; i < tracks; i++)
             {
-                if (NDG.Track_Length[i] > 0)
+                if (NDG.Track_Length[i] > 6000)
                 {
                     write.Write((short)NDG.Track_Length[i]);
                     if (NDG.Track_Data[i].Length < m) write.Write(NDG.Track_Data[i]);
@@ -164,7 +166,7 @@ namespace V_Max_Tool
             {
                 for (int i = 0; i < 84; i++)
                 {
-                    if (i < NDG.Track_Data.Length && NDG.Track_Length[i] > 0)
+                    if (i < NDG.Track_Data.Length && NDG.Track_Length[i] > 6000)
                     {
                         write.Write((int)offset + th);
                         th += 2;
@@ -842,7 +844,7 @@ namespace V_Max_Tool
                             string stats = $"Track Length ({data_end - data_start}) Sectors ({ss.Count})";
                             if (!s_zero)
                             {
-                                byte vvml = 0xf3; 
+                                byte vvml = 0xf3;
                                 if (hb.Count < 10 && !s_zero)
                                 {
                                     int p = Array.FindIndex(hb.ToArray(), se => se == vvml);
@@ -940,10 +942,9 @@ namespace V_Max_Tool
                             }
                             var b = 0;
                             while (spos + (a + b) < tdata.Length && tdata[spos + (a + b)] == 0x49) b++;
-                            if (b > 20) for (int i = 0; i < (b + a); i++) write.Write((byte)0x49);
                             spos += (a + b);
                             write.Write(sync);
-                            if (b < 20) for (int i = 0; i < b; i++) write.Write((byte)0x49);
+                            for (int i = 0; i < b; i++) write.Write((byte)0x49);
                         }
                     }
                     catch { }
@@ -996,7 +997,7 @@ namespace V_Max_Tool
             }
         }
 
-        void Get_Nib_Data(string file)
+        void Get_Nib_Data(string file, bool nib)
         {
             double ht;
             bool halftracks = false;
@@ -1017,9 +1018,13 @@ namespace V_Max_Tool
             int t;
             for (int i = 0; i < tracks; i++)
             {
-                NDS.Track_Data[i] = new byte[8192];
-                Stream.Seek(256 + (8192 * i), SeekOrigin.Begin);
-                Stream.Read(NDS.Track_Data[i], 0, 8192);
+                if (nib)
+                {
+                    NDS.Track_Data[i] = new byte[8192];
+                    Stream.Seek(256 + (8192 * i), SeekOrigin.Begin);
+                    Stream.Read(NDS.Track_Data[i], 0, 8192);
+                }
+
                 NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
                 if (NDS.cbm[i] == 1)
                 {
@@ -1192,13 +1197,13 @@ namespace V_Max_Tool
                 dirname = Path.GetDirectoryName(File_List[0]);
                 fname = Path.GetFileNameWithoutExtension(File_List[0]);
                 fext = Path.GetExtension(File_List[0]);
-                long length = new System.IO.FileInfo(File_List[0]).Length;
-                tracks = (int)(length - 256) / 8192;
-                if ((tracks * 8192) + 256 == length) l = "File Size OK!";
             }
             FileStream Stream = new FileStream(File_List[0], FileMode.Open, FileAccess.Read);
             if (fext.ToLower() == ".nib")
             {
+                long length = new System.IO.FileInfo(File_List[0]).Length;
+                tracks = (int)(length - 256) / 8192;
+                if ((tracks * 8192) + 256 == length) l = "File Size OK!";
                 listBox3.Items.Clear();
                 Set_ListBox_Items(true);
                 nib_header = new byte[256];
@@ -1211,21 +1216,64 @@ namespace V_Max_Tool
                 label2.Text = $"Total Track ({tracks}), {l}, {hm}";
                 label1.Update();
                 label2.Update();
-            }
-            Stream.Close();
-            if (fext.ToLower() != ".g64")
-            {
+                Stream.Close();
                 Set_Arrays(tracks);
-                Get_Nib_Data(File_List[0]);
+                Get_Nib_Data(File_List[0], true);
                 Process_Nib_Data(true);
                 Set_ListBox_Items(false);
+                Out_Type.Enabled = true;
                 button1.Enabled = true;
                 Source.Visible = Output.Visible = true;
             }
-            else
+            if (fext.ToLower() == ".g64")
             {
-                label1.Text = "Not a NIB file!";
-                label2.Text = "";
+                listBox3.Items.Clear();
+                Set_ListBox_Items(true);
+                Stream.Seek(0, SeekOrigin.Begin);
+                Stream.Read(g64_header, 0, 684);
+                var head = Encoding.ASCII.GetString(g64_header, 0, 8);
+                tracks = Convert.ToInt32(g64_header[9]);
+                Set_Arrays(tracks);
+                int tr_size = BitConverter.ToInt16(g64_header, 10);
+                var hm = "Bad Header";
+                if (head == "GCR-1541") hm = "Header Match!";
+                byte[] temp = new byte[2];
+                for (int i = 0; i < tracks; i++)
+                {
+                    int pos = BitConverter.ToInt32(g64_header, 12 + (i * 4));
+                    if (pos != 0)
+                    {
+                        Stream.Seek(pos, SeekOrigin.Begin);
+                        Stream.Read(temp, 0, 2);
+                        short ts = BitConverter.ToInt16(temp, 0);
+                        NDS.Track_Data[i] = new byte[8192];
+                        byte[] tdata = new byte[ts];
+                        Stream.Seek(pos + 2, SeekOrigin.Begin);
+                        Stream.Read(tdata, 0, ts);
+                        Array.Copy(tdata, 0, NDS.Track_Data[i], 0, ts);
+                        Array.Copy(tdata, 0, NDS.Track_Data[i], ts, 8192 - ts);
+                    }
+                    else
+                    {
+                        NDS.Track_Data[i] = new byte[8192];
+                        for (int j = 0; j < NDS.Track_Data[i].Length; j++)
+                        {
+                            NDS.Track_Data[i][j] = 0;
+                        }
+                    }
+                }
+                label1.Text = $"{fname}{fext}";
+                label2.Text = $"Total Track ({tracks}), {l}, {hm} Track Size ({tr_size:N0})";
+                label1.Update();
+                label2.Update();
+                Stream.Close();
+                Get_Nib_Data(File_List[0], false);
+                Process_Nib_Data(true);
+                Set_ListBox_Items(false);
+                Out_Type.SelectedIndex = 0;
+                Out_Type.Enabled = false;
+                button1.Enabled = true;
+                Source.Visible = Output.Visible = true;
             }
 
             void Set_Arrays(int len)

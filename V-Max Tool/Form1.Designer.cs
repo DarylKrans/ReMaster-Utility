@@ -209,7 +209,7 @@
             this.out_track.ForeColor = System.Drawing.Color.Blue;
             this.out_track.FormattingEnabled = true;
             this.out_track.ItemHeight = 25;
-            this.out_track.Location = new System.Drawing.Point(6, 30);
+            this.out_track.Location = new System.Drawing.Point(5, 30);
             this.out_track.Name = "out_track";
             this.out_track.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_track.Size = new System.Drawing.Size(53, 1002);
@@ -272,7 +272,7 @@
             this.strack.ForeColor = System.Drawing.Color.Blue;
             this.strack.FormattingEnabled = true;
             this.strack.ItemHeight = 25;
-            this.strack.Location = new System.Drawing.Point(11, 30);
+            this.strack.Location = new System.Drawing.Point(6, 30);
             this.strack.Name = "strack";
             this.strack.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.strack.Size = new System.Drawing.Size(53, 1002);
