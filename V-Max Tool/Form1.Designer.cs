@@ -380,7 +380,6 @@
             this.Add_Sync.TabIndex = 32;
             this.Add_Sync.Text = "Add sync to syncless tracks  [ Cannot be un-done! ]";
             this.Add_Sync.UseVisualStyleBackColor = true;
-            this.Add_Sync.CheckedChanged += new System.EventHandler(this.Add_Sync_CheckedChanged);
             // 
             // Form1
             // 

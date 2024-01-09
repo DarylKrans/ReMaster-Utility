@@ -115,7 +115,7 @@ namespace V_Max_Tool
             this.DragDrop += new DragEventHandler(Drag_Drop);
             listBox3.HorizontalScrollbar = true;
             CustomV2headers.Visible = false;
-            V2_Len.Visible = V2_Len.Enabled = V2H.Visible = V2H.Enabled = Warn.Visible = Add_Sync.Visible = false;
+            V2_Len.Visible = V2_Len.Enabled = V2H.Visible = Warn.Visible = Add_Sync.Visible = false;
         }
         void Make_NIB()
         {
@@ -723,7 +723,6 @@ namespace V_Max_Tool
                     {
                         try
                         {
-                            //if (s_pos + 2 < temp_data.Length && temp_data[s_pos + 2] == start_byte[0])
                             if (s_pos + 3 < temp_data.Length && temp_data[s_pos + 3] == start_byte[0])  // s_pos + 2 
                             {
                                 byte[] header_ID = new byte[2];
@@ -1184,7 +1183,7 @@ namespace V_Max_Tool
         }
         private void Drag_Drop(object sender, DragEventArgs e)
         {
-            V2_Len.Visible = V2_Len.Enabled = V2H.Visible = V2H.Enabled = Warn.Visible = CustomV2headers.Visible = Add_Sync.Visible = false;
+            V2_Len.Visible = V2H.Visible = Warn.Visible = CustomV2headers.Visible = Add_Sync.Visible = false;
             Source.Visible = Output.Visible = false;
             f_load.Text = "Fix Loader Track";
             button1.Enabled = false;
@@ -1218,12 +1217,7 @@ namespace V_Max_Tool
                 label2.Update();
                 Stream.Close();
                 Set_Arrays(tracks);
-                Get_Nib_Data(File_List[0], true);
-                Process_Nib_Data(true);
-                Set_ListBox_Items(false);
-                Out_Type.Enabled = true;
-                button1.Enabled = true;
-                Source.Visible = Output.Visible = true;
+                Process(File_List[0], true);
             }
             if (fext.ToLower() == ".g64")
             {
@@ -1263,15 +1257,20 @@ namespace V_Max_Tool
                     }
                 }
                 label1.Text = $"{fname}{fext}";
-                label2.Text = $"Total Track ({tracks}), {l}, {hm} Track Size ({tr_size:N0})";
+                label2.Text = $"Total Track ({tracks}), {hm} Track Size ({tr_size:N0})";
                 label1.Update();
                 label2.Update();
                 Stream.Close();
-                Get_Nib_Data(File_List[0], false);
+                Out_Type.SelectedIndex = 0;
+                Process(File_List[0], false);
+            }
+
+            void Process(string file, bool get)
+            {
+                Get_Nib_Data(file, get);
                 Process_Nib_Data(true);
                 Set_ListBox_Items(false);
-                Out_Type.SelectedIndex = 0;
-                Out_Type.Enabled = false;
+                Out_Type.Enabled = get;
                 button1.Enabled = true;
                 Source.Visible = Output.Visible = true;
             }
@@ -1359,7 +1358,6 @@ namespace V_Max_Tool
         private void CustomV2headers_CheckedChanged(object sender, EventArgs e)
         {
             V2_Len.Enabled = CustomV2headers.Checked;
-            if (CustomV2headers.Checked || Add_Sync.Checked) V2H.Enabled = true; else V2H.Enabled = false;
         }
 
         private void V2H_Click(object sender, EventArgs e)
@@ -1377,12 +1375,6 @@ namespace V_Max_Tool
                     Process_Nib_Data(false); // false flag instructs the routine NOT to process CBM tracks again
                 }
             }
-        }
-
-        private void Add_Sync_CheckedChanged(object sender, EventArgs e)
-        {
-            //v2h
-            if (Add_Sync.Checked || CustomV2headers.Checked) V2H.Enabled = true; else V2H.Enabled = false;
         }
     }
 }
