@@ -23,13 +23,15 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
         private string fname = "";
-        private string fext = ".g64";
+        private string fext = "";
         private string dirname = "";
         private int tracks = 0;
         private byte[] nib_header = new byte[256];
         private readonly byte[] g64_header = new byte[684];
-        private readonly string fnappend = "(sync_fixed)";
         private readonly byte[] sz = { 0x52, 0xc0, 0x0f, 0xfc };
+        private readonly int[] density = { 7692, 7142, 6666, 6250 };
+        private readonly string[] supported = { ".nib", ".g64" }; // Supported file extensions list
+        private readonly string fnappend = "(sync_fixed)";
         // vsec = the block header values & against byte[] sz
         private readonly string[] vcbm = { "52-40-05-28", "52-40-05-2C", "52-40-05-48", "52-40-05-4C", "52-40-05-38", "52-40-05-3C", "52-40-05-58", "52-40-05-5C",
             "52-40-05-24", "52-40-05-64", "52-40-05-68", "52-40-05-6C", "52-40-05-34", "52-40-05-74", "52-40-05-78", "52-40-05-54", "52-40-05-A8",
@@ -85,15 +87,14 @@ namespace V_Max_Tool
         {
             if (r)
             {
-                out_size.Items.Clear(); out_len.Items.Clear(); out_diff.Items.Clear(); out_fmt.Items.Clear(); strack.Items.Clear(); out_track.Items.Clear(); ss.Items.Clear(); sl.Items.Clear();
+                out_size.Items.Clear(); out_len.Items.Clear(); out_diff.Items.Clear(); out_fmt.Items.Clear(); strack.Items.Clear(); 
+                out_track.Items.Clear(); ss.Items.Clear(); sl.Items.Clear();
                 out_track.Height = out_size.Height = out_len.Height = out_diff.Height = out_fmt.Height = out_size.PreferredHeight;
                 ss.Height = strack.Height = sl.Height = ss.PreferredHeight; // (items * 12);
-                out_size.BeginUpdate(); out_len.BeginUpdate(); out_diff.BeginUpdate(); out_fmt.BeginUpdate(); ss.BeginUpdate(); strack.BeginUpdate(); out_track.BeginUpdate(); sl.BeginUpdate();
+                out_size.BeginUpdate(); out_len.BeginUpdate(); out_diff.BeginUpdate(); out_fmt.BeginUpdate(); ss.BeginUpdate();
+                strack.BeginUpdate(); out_track.BeginUpdate(); sl.BeginUpdate();
             }
-            else
-            {
-                out_size.EndUpdate(); out_len.EndUpdate(); out_diff.EndUpdate(); out_fmt.EndUpdate(); ss.EndUpdate(); strack.EndUpdate(); out_track.EndUpdate(); sl.EndUpdate();
-            }
+            out_size.EndUpdate(); out_len.EndUpdate(); out_diff.EndUpdate(); out_fmt.EndUpdate(); ss.EndUpdate(); strack.EndUpdate(); out_track.EndUpdate(); sl.EndUpdate();
             outbox.Visible = inbox.Visible = !r;
             out_track.Height = out_size.Height = out_len.Height = out_diff.Height = out_fmt.Height = out_size.PreferredHeight;
             ss.Height = strack.Height = sl.Height = ss.PreferredHeight; // (items * 12);
@@ -114,8 +115,8 @@ namespace V_Max_Tool
             this.DragEnter += new DragEventHandler(Drag_Enter);
             this.DragDrop += new DragEventHandler(Drag_Drop);
             listBox3.HorizontalScrollbar = true;
-            CustomV2headers.Visible = false;
-            V2_Len.Visible = V2_Len.Enabled = V2H.Visible = Warn.Visible = Add_Sync.Visible = false;
+            Adv_V2_opts.Enabled = false;
+            Adv_V2_opts.Visible = false;
         }
         void Make_NIB()
         {
@@ -703,6 +704,35 @@ namespace V_Max_Tool
                         break;
                     }
                 }
+                byte[] ignore = new byte[] { 0x7e, 0x7f, 0xff, 0x5f, 0xbf };
+                bool st = false;
+                var co = 0;
+                for (int i = 0; i < temp_data.Length; i++)
+                {
+                    if (temp_data[i] == start_byte[0] && i > 0) 
+                    {
+                        if (ignore.Any(s => s == temp_data[i - 1])) co++;
+                    }
+                    if (co > 15) { st = true; break; }
+                }
+                int head_len = hd.Count;
+                if (AutoAdj.Checked)
+                {
+                    int sdat = (headers.Count * 320) + (hd.Count * headers.Count);
+                    int sync = headers.Count * 2;
+                    if (!st && !Add_Sync.Checked) sync = 0;
+                    int rem = (temp_data.Length) - sdat - (sync * 2);
+                    int d = 0;
+                    int k = temp_data.Length;
+                    if (k >= density[1] && k >= density[0]) d = density[0]; else d = density[1];
+                    if (k >= density[2] && k < density[1]) d = density[2];
+                    if (k >= density[3] && k < density[2]) d = density[3];
+                    int sub = Math.Abs(d - (rem + sdat + (sync * 2)));
+                    int hdd = (((sub / headers.Count + 1)) / 2) * 2;
+                    if (hdd > 6) hdd = 0;
+                    if (hdd > head_len) head_len += hdd; else head_len -= hdd;
+                }
+
                 all_headers.Add($"Track length ({data_end - data_start}) Sectors ({headers.Count}) Sector 0 ({sec_zero}) Header length ({hd.Count + 2})");
                 all_headers.Add(" ");
                 if (Fix_Sync) // <- if the "Fix_Sync" bool is true, otherwise just return track info without any adjustments
@@ -713,9 +743,10 @@ namespace V_Max_Tool
                     var s_pos = 0;
                     // Set the length of the sector header in multiples of 2 including the start and end marker.  Minimum = 6
                     var sector_header = Convert.ToInt32((V2_Len.Value - 2) * 2) / 2;
+                    if (AutoAdj.Checked) sector_header = head_len; 
                     byte[] sync_marker = new byte[] { 0x7f, 0xff };  // set the sync bytes (5b-ff) = 10 sync bits (7f-ff) = 15 sync bits
                     byte[] sec_header = new byte[0];
-                    byte[] ignore = new byte[] { 0x7f, 0xff, 0x5f, 0xbf };
+                    byte[] secz = { 0xa5, 0xa5 };
                     bool no_sync = false;
                     compare = new byte[2];
                     // begin processing the track
@@ -723,27 +754,21 @@ namespace V_Max_Tool
                     {
                         try
                         {
-                            if (s_pos + 3 < temp_data.Length && temp_data[s_pos + 3] == start_byte[0])  // s_pos + 2 
+                            if (s_pos + 2 < temp_data.Length && temp_data[s_pos] == start_byte[0] && VM2_Valid.Any(s => s == temp_data[s_pos + 1]))  // s_pos + 2 
                             {
+                                var m = 0;
                                 byte[] header_ID = new byte[2];
-                                if (s_pos + 5 < temp_data.Length - 1) Array.Copy(temp_data, s_pos + 4, header_ID, 0, 2); // s_pos + 4, s_pos + 3
-                                while (temp_data[s_pos] != start_byte[0])
-                                {
-                                    // We're copying remaing sector data and ignoring potential sync (0x7f/0xff) in the source because we're going to add our own sync later.
-                                    if (!ignore.Any(s => s == temp_data[s_pos])) write.Write(temp_data[s_pos]);
-                                    s_pos++;
-                                }
-                                s_pos++; // sets source position 1 byte after the header start byte to get the header pattern data
+                                if (s_pos + 3 < temp_data.Length - 1) Array.Copy(temp_data, s_pos + 2, header_ID, 0, 2); // s_pos + 4, s_pos + 3
+                                while (temp_data[s_pos] != start_byte[0]) m++; // s_pos++;
+                                s_pos+= m + 1; // sets source position 1 byte after the header start byte to get the header pattern data
                                 Array.Copy(temp_data, s_pos, compare, 0, compare.Length);
                                 if (headers.Any(s => s == Hex_Val(compare))) // <- checks to verify header pattern is in the list of valid headers
                                 {
                                     // check that it's not sector 0 which needs sync, then check if a sync marker is before the header start byte.  If not, its a syncless track
                                     if (!Add_Sync.Checked)
                                     {
-                                        if (Hex_Val(compare) != "A5-A5" && (!sync_marker.Any(s => s == temp_data[s_pos - 2])) && temp_data[s_pos - 1] == start_byte[0])
-                                        {
-                                            no_sync = true;
-                                        }
+                                        //if (Hex_Val(compare) != "A5-A5" && (!sync_marker.Any(s => s == temp_data[s_pos - 2])) && temp_data[s_pos - 1] == start_byte[0])
+                                        if (compare != secz && (!sync_marker.Any(s => s == temp_data[s_pos - 2])) && temp_data[s_pos - 1] == start_byte[0]) no_sync = true;
                                         else no_sync = false;
                                     }
                                     var header_length = 0;
@@ -752,14 +777,14 @@ namespace V_Max_Tool
                                         s_pos++; header_length++;
                                     }
                                     s_pos++;
-                                    if (CustomV2headers.Checked) header_length = sector_header;
+                                    if (CustomV2headers.Checked || AutoAdj.Checked) header_length = sector_header;
                                     if (!no_sync) write.Write(sync_marker); // <- Here's where we add the sync (unless its a syncless track)
-                                    write.Write(Build_Header(start_byte, end_byte, compare, (header_length / 2) * 2)); // building new header and writing to buffer
+                                    write.Write(Build_Header(start_byte, end_byte, compare, ((header_length) / 2) * 2)); // building new header and writing to buffer
                                 }
                             }
                         }
                         catch { }
-                        if (s_pos < temp_data.Length) write.Write(temp_data[s_pos]); // <- loop writes sector data to the buffer until it hits another header
+                        if (s_pos < temp_data.Length && !ignore.Any(s => s == temp_data[s_pos])) write.Write(temp_data[s_pos]); // <- loop writes sector data to the buffer until it hits another header
                         s_pos++;
                     }
                     compare = new byte[5];
@@ -996,7 +1021,7 @@ namespace V_Max_Tool
             }
         }
 
-        void Get_Nib_Data(string file, bool nib)
+        void Parse_Nib_Data() //string file, bool nib)
         {
             double ht;
             bool halftracks = false;
@@ -1013,17 +1038,9 @@ namespace V_Max_Tool
                 ht = 0.5;
             }
             else ht = 0;
-            FileStream Stream = new FileStream(file, FileMode.Open, FileAccess.Read);
             int t;
             for (int i = 0; i < tracks; i++)
             {
-                if (nib)
-                {
-                    NDS.Track_Data[i] = new byte[8192];
-                    Stream.Seek(256 + (8192 * i), SeekOrigin.Begin);
-                    Stream.Read(NDS.Track_Data[i], 0, 8192);
-                }
-
                 NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
                 if (NDS.cbm[i] == 1)
                 {
@@ -1044,7 +1061,7 @@ namespace V_Max_Tool
                         listBox3.Items.Add(headers[j]);
                         listBox3.Update();
                     }
-                    V2_Len.Visible = CustomV2headers.Visible = V2H.Visible = Warn.Visible = Add_Sync.Visible = true;
+                    Adv_V2_opts.Enabled = true;
                 }
                 if (NDS.cbm[i] == 3)
                 {
@@ -1183,7 +1200,7 @@ namespace V_Max_Tool
         }
         private void Drag_Drop(object sender, DragEventArgs e)
         {
-            V2_Len.Visible = V2H.Visible = Warn.Visible = CustomV2headers.Visible = Add_Sync.Visible = false;
+            Adv_V2_opts.Enabled = false;
             Source.Visible = Output.Visible = false;
             f_load.Text = "Fix Loader Track";
             button1.Enabled = false;
@@ -1198,7 +1215,7 @@ namespace V_Max_Tool
                 fext = Path.GetExtension(File_List[0]);
             }
             FileStream Stream = new FileStream(File_List[0], FileMode.Open, FileAccess.Read);
-            if (fext.ToLower() == ".nib")
+            if (fext.ToLower() == supported[0])
             {
                 long length = new System.IO.FileInfo(File_List[0]).Length;
                 tracks = (int)(length - 256) / 8192;
@@ -1208,18 +1225,21 @@ namespace V_Max_Tool
                 nib_header = new byte[256];
                 Stream.Seek(0, SeekOrigin.Begin);
                 Stream.Read(nib_header, 0, 256);
+                Set_Arrays(tracks);
+                for (int i = 0; i < tracks; i++)
+                {
+                    NDS.Track_Data[i] = new byte[8192];
+                    Stream.Seek(256 + (8192 * i), SeekOrigin.Begin);
+                    Stream.Read(NDS.Track_Data[i], 0, 8192);
+                }
+                Stream.Close();
                 var head = Encoding.ASCII.GetString(nib_header, 0, 13);
                 var hm = "Bad Header";
                 if (head == "MNIB-1541-RAW") hm = "Header Match!";
-                label1.Text = $"{fname}{fext}";
-                label2.Text = $"Total Track ({tracks}), {l}, {hm}";
-                label1.Update();
-                label2.Update();
-                Stream.Close();
-                Set_Arrays(tracks);
-                Process(File_List[0], true);
+                var lab = $"Total Track ({tracks}), {l}, {hm}";
+                Process(true, lab);
             }
-            if (fext.ToLower() == ".g64")
+            if (fext.ToLower() == supported[1])
             {
                 listBox3.Items.Clear();
                 Set_ListBox_Items(true);
@@ -1256,23 +1276,30 @@ namespace V_Max_Tool
                         }
                     }
                 }
-                label1.Text = $"{fname}{fext}";
-                label2.Text = $"Total Track ({tracks}), {hm} Track Size ({tr_size:N0})";
-                label1.Update();
-                label2.Update();
                 Stream.Close();
+                var lab = $"Total Track ({tracks}), {hm} Max G64 Track Size ({tr_size:N0})";
                 Out_Type.SelectedIndex = 0;
-                Process(File_List[0], false);
+                Process(false, lab);
+            }
+            if (!supported.Any(s => s == fext.ToLower()))
+            {
+                Set_ListBox_Items(true);
+                label1.Text = "File not Valid!";
+                label2.Text = string.Empty;
             }
 
-            void Process(string file, bool get)
+            void Process(bool get, string l2)
             {
-                Get_Nib_Data(file, get);
+                Parse_Nib_Data();
                 Process_Nib_Data(true);
                 Set_ListBox_Items(false);
                 Out_Type.Enabled = get;
                 button1.Enabled = true;
                 Source.Visible = Output.Visible = true;
+                label1.Text = $"{fname}{fext}";
+                label2.Text = l2;
+                label1.Update();
+                label2.Update();
             }
 
             void Set_Arrays(int len)
@@ -1312,7 +1339,9 @@ namespace V_Max_Tool
         {
             listBox3.Visible = label7.Visible = !listBox3.Visible;
             listBox3.Width = listBox3.PreferredSize.Width;
+            Adv_V2_opts.Visible = T_Info.Checked;
             Width = PreferredSize.Width;
+            if (PreferredSize.Height < 680) Height = 680; else Height = PreferredSize.Height;
         }
 
         private void F_load_CheckedChanged(object sender, EventArgs e)
@@ -1358,6 +1387,7 @@ namespace V_Max_Tool
         private void CustomV2headers_CheckedChanged(object sender, EventArgs e)
         {
             V2_Len.Enabled = CustomV2headers.Checked;
+            if (CustomV2headers.Checked) AutoAdj.Checked = false;
         }
 
         private void V2H_Click(object sender, EventArgs e)
@@ -1375,6 +1405,11 @@ namespace V_Max_Tool
                     Process_Nib_Data(false); // false flag instructs the routine NOT to process CBM tracks again
                 }
             }
+        }
+
+        private void AutoAdj_CheckedChanged(object sender, EventArgs e)
+        {
+            if (AutoAdj.Checked) CustomV2headers.Checked = false;
         }
     }
 }
