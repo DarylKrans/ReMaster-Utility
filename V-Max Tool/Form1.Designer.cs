@@ -39,8 +39,8 @@
             this.label8 = new System.Windows.Forms.Label();
             this.T_Info = new System.Windows.Forms.CheckBox();
             this.out_size = new System.Windows.Forms.ListBox();
-            this.out_len = new System.Windows.Forms.ListBox();
-            this.out_diff = new System.Windows.Forms.ListBox();
+            this.out_dif = new System.Windows.Forms.ListBox();
+            this.out_sec = new System.Windows.Forms.ListBox();
             this.out_fmt = new System.Windows.Forms.ListBox();
             this.out_track = new System.Windows.Forms.ListBox();
             this.outbox = new System.Windows.Forms.GroupBox();
@@ -56,17 +56,21 @@
             this.V2H = new System.Windows.Forms.Button();
             this.Add_Sync = new System.Windows.Forms.CheckBox();
             this.AutoAdj = new System.Windows.Forms.CheckBox();
-            this.Adv_V2_opts = new System.Windows.Forms.GroupBox();
+            this.Tabs = new System.Windows.Forms.TabControl();
+            this.Main = new System.Windows.Forms.TabPage();
+            this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.V2_Len)).BeginInit();
-            this.Adv_V2_opts.SuspendLayout();
+            this.Tabs.SuspendLayout();
+            this.Main.SuspendLayout();
+            this.Adv_V2_Opts.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(369, 63);
+            this.button1.Location = new System.Drawing.Point(631, 155);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(96, 43);
             this.button1.TabIndex = 0;
@@ -77,7 +81,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 10);
+            this.label1.Location = new System.Drawing.Point(6, 89);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(70, 25);
             this.label1.TabIndex = 1;
@@ -86,7 +90,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 34);
+            this.label2.Location = new System.Drawing.Point(6, 113);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(70, 25);
             this.label2.TabIndex = 2;
@@ -99,15 +103,15 @@
             this.listBox3.ForeColor = System.Drawing.Color.Black;
             this.listBox3.FormattingEnabled = true;
             this.listBox3.ItemHeight = 29;
-            this.listBox3.Location = new System.Drawing.Point(770, 46);
+            this.listBox3.Location = new System.Drawing.Point(770, 51);
             this.listBox3.Name = "listBox3";
-            this.listBox3.Size = new System.Drawing.Size(969, 1309);
+            this.listBox3.Size = new System.Drawing.Size(969, 1251);
             this.listBox3.TabIndex = 10;
             // 
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(17, 105);
+            this.f_load.Location = new System.Drawing.Point(11, 57);
             this.f_load.Name = "f_load";
             this.f_load.Size = new System.Drawing.Size(206, 29);
             this.f_load.TabIndex = 12;
@@ -130,7 +134,7 @@
             this.Out_Type.AllowDrop = true;
             this.Out_Type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Out_Type.FormattingEnabled = true;
-            this.Out_Type.Location = new System.Drawing.Point(189, 66);
+            this.Out_Type.Location = new System.Drawing.Point(183, 6);
             this.Out_Type.Name = "Out_Type";
             this.Out_Type.Size = new System.Drawing.Size(174, 33);
             this.Out_Type.TabIndex = 14;
@@ -138,7 +142,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(12, 69);
+            this.label8.Location = new System.Drawing.Point(6, 9);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(171, 25);
             this.label8.TabIndex = 15;
@@ -148,11 +152,11 @@
             // 
             this.T_Info.AutoSize = true;
             this.T_Info.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.T_Info.Location = new System.Drawing.Point(589, 132);
+            this.T_Info.Location = new System.Drawing.Point(500, 214);
             this.T_Info.Name = "T_Info";
-            this.T_Info.Size = new System.Drawing.Size(140, 29);
+            this.T_Info.Size = new System.Drawing.Size(225, 29);
             this.T_Info.TabIndex = 16;
-            this.T_Info.Text = "Advanced";
+            this.T_Info.Text = "Verbose Track Info";
             this.T_Info.UseVisualStyleBackColor = true;
             this.T_Info.CheckedChanged += new System.EventHandler(this.CheckBox1_CheckedChanged);
             // 
@@ -168,29 +172,29 @@
             this.out_size.Size = new System.Drawing.Size(100, 1002);
             this.out_size.TabIndex = 23;
             // 
-            // out_len
+            // out_dif
             // 
-            this.out_len.BackColor = System.Drawing.Color.Gainsboro;
-            this.out_len.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.out_len.FormattingEnabled = true;
-            this.out_len.ItemHeight = 25;
-            this.out_len.Location = new System.Drawing.Point(149, 30);
-            this.out_len.Name = "out_len";
-            this.out_len.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_len.Size = new System.Drawing.Size(73, 1002);
-            this.out_len.TabIndex = 24;
+            this.out_dif.BackColor = System.Drawing.Color.Gainsboro;
+            this.out_dif.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_dif.FormattingEnabled = true;
+            this.out_dif.ItemHeight = 25;
+            this.out_dif.Location = new System.Drawing.Point(149, 30);
+            this.out_dif.Name = "out_dif";
+            this.out_dif.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.out_dif.Size = new System.Drawing.Size(73, 1002);
+            this.out_dif.TabIndex = 24;
             // 
-            // out_diff
+            // out_sec
             // 
-            this.out_diff.BackColor = System.Drawing.Color.Gainsboro;
-            this.out_diff.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.out_diff.FormattingEnabled = true;
-            this.out_diff.ItemHeight = 25;
-            this.out_diff.Location = new System.Drawing.Point(217, 30);
-            this.out_diff.Name = "out_diff";
-            this.out_diff.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_diff.Size = new System.Drawing.Size(62, 1002);
-            this.out_diff.TabIndex = 25;
+            this.out_sec.BackColor = System.Drawing.Color.Gainsboro;
+            this.out_sec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_sec.FormattingEnabled = true;
+            this.out_sec.ItemHeight = 25;
+            this.out_sec.Location = new System.Drawing.Point(217, 30);
+            this.out_sec.Name = "out_sec";
+            this.out_sec.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.out_sec.Size = new System.Drawing.Size(62, 1002);
+            this.out_sec.TabIndex = 25;
             // 
             // out_fmt
             // 
@@ -222,22 +226,22 @@
             this.outbox.BackColor = System.Drawing.Color.Gainsboro;
             this.outbox.Controls.Add(this.out_track);
             this.outbox.Controls.Add(this.out_fmt);
-            this.outbox.Controls.Add(this.out_diff);
-            this.outbox.Controls.Add(this.out_len);
+            this.outbox.Controls.Add(this.out_sec);
+            this.outbox.Controls.Add(this.out_dif);
             this.outbox.Controls.Add(this.out_size);
             this.outbox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.outbox.ForeColor = System.Drawing.Color.Indigo;
-            this.outbox.Location = new System.Drawing.Point(292, 160);
+            this.outbox.Location = new System.Drawing.Point(296, 245);
             this.outbox.Name = "outbox";
             this.outbox.Size = new System.Drawing.Size(437, 1047);
             this.outbox.TabIndex = 22;
             this.outbox.TabStop = false;
-            this.outbox.Text = "Track / Size / Start / Diff  /   Format";
+            this.outbox.Text = "Track/ Size  / Diff / Sectors /   Format";
             // 
             // Source
             // 
             this.Source.AutoSize = true;
-            this.Source.Location = new System.Drawing.Point(17, 132);
+            this.Source.Location = new System.Drawing.Point(22, 214);
             this.Source.Name = "Source";
             this.Source.Size = new System.Drawing.Size(121, 25);
             this.Source.TabIndex = 23;
@@ -246,7 +250,7 @@
             // Output
             // 
             this.Output.AutoSize = true;
-            this.Output.Location = new System.Drawing.Point(293, 132);
+            this.Output.Location = new System.Drawing.Point(296, 213);
             this.Output.Name = "Output";
             this.Output.Size = new System.Drawing.Size(76, 25);
             this.Output.TabIndex = 24;
@@ -260,7 +264,7 @@
             this.inbox.Controls.Add(this.sl);
             this.inbox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.inbox.ForeColor = System.Drawing.Color.Indigo;
-            this.inbox.Location = new System.Drawing.Point(17, 160);
+            this.inbox.Location = new System.Drawing.Point(21, 245);
             this.inbox.Name = "inbox";
             this.inbox.Size = new System.Drawing.Size(235, 1047);
             this.inbox.TabIndex = 25;
@@ -310,7 +314,7 @@
             this.Drag_pic.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("Drag_pic.BackgroundImage")));
             this.Drag_pic.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.Drag_pic.InitialImage = null;
-            this.Drag_pic.Location = new System.Drawing.Point(50, 211);
+            this.Drag_pic.Location = new System.Drawing.Point(54, 296);
             this.Drag_pic.Name = "Drag_pic";
             this.Drag_pic.Size = new System.Drawing.Size(648, 964);
             this.Drag_pic.TabIndex = 27;
@@ -319,7 +323,7 @@
             // CustomV2headers
             // 
             this.CustomV2headers.AutoSize = true;
-            this.CustomV2headers.Location = new System.Drawing.Point(22, 65);
+            this.CustomV2headers.Location = new System.Drawing.Point(6, 41);
             this.CustomV2headers.Name = "CustomV2headers";
             this.CustomV2headers.Size = new System.Drawing.Size(295, 29);
             this.CustomV2headers.TabIndex = 28;
@@ -334,7 +338,7 @@
             0,
             0,
             0});
-            this.V2_Len.Location = new System.Drawing.Point(323, 63);
+            this.V2_Len.Location = new System.Drawing.Point(307, 39);
             this.V2_Len.Maximum = new decimal(new int[] {
             36,
             0,
@@ -356,7 +360,7 @@
             // 
             // V2H
             // 
-            this.V2H.Location = new System.Drawing.Point(595, 83);
+            this.V2H.Location = new System.Drawing.Point(432, 99);
             this.V2H.Name = "V2H";
             this.V2H.Size = new System.Drawing.Size(100, 44);
             this.V2H.TabIndex = 30;
@@ -367,7 +371,7 @@
             // Add_Sync
             // 
             this.Add_Sync.AutoSize = true;
-            this.Add_Sync.Location = new System.Drawing.Point(22, 98);
+            this.Add_Sync.Location = new System.Drawing.Point(6, 74);
             this.Add_Sync.Name = "Add_Sync";
             this.Add_Sync.Size = new System.Drawing.Size(311, 29);
             this.Add_Sync.TabIndex = 32;
@@ -377,7 +381,7 @@
             // AutoAdj
             // 
             this.AutoAdj.AutoSize = true;
-            this.AutoAdj.Location = new System.Drawing.Point(22, 30);
+            this.AutoAdj.Location = new System.Drawing.Point(6, 6);
             this.AutoAdj.Name = "AutoAdj";
             this.AutoAdj.Size = new System.Drawing.Size(383, 29);
             this.AutoAdj.TabIndex = 33;
@@ -385,41 +389,61 @@
             this.AutoAdj.UseVisualStyleBackColor = true;
             this.AutoAdj.CheckedChanged += new System.EventHandler(this.AutoAdj_CheckedChanged);
             // 
-            // Adv_V2_opts
+            // Tabs
             // 
-            this.Adv_V2_opts.BackColor = System.Drawing.Color.Gainsboro;
-            this.Adv_V2_opts.Controls.Add(this.AutoAdj);
-            this.Adv_V2_opts.Controls.Add(this.CustomV2headers);
-            this.Adv_V2_opts.Controls.Add(this.Add_Sync);
-            this.Adv_V2_opts.Controls.Add(this.V2_Len);
-            this.Adv_V2_opts.Controls.Add(this.V2H);
-            this.Adv_V2_opts.Location = new System.Drawing.Point(17, 1231);
-            this.Adv_V2_opts.Name = "Adv_V2_opts";
-            this.Adv_V2_opts.Size = new System.Drawing.Size(712, 133);
-            this.Adv_V2_opts.TabIndex = 34;
-            this.Adv_V2_opts.TabStop = false;
-            this.Adv_V2_opts.Text = "Advanced Options (V-Max v2 Custom Sectors)";
+            this.Tabs.Controls.Add(this.Main);
+            this.Tabs.Controls.Add(this.Adv_V2_Opts);
+            this.Tabs.Location = new System.Drawing.Point(21, 12);
+            this.Tabs.Name = "Tabs";
+            this.Tabs.SelectedIndex = 0;
+            this.Tabs.Size = new System.Drawing.Size(604, 193);
+            this.Tabs.TabIndex = 35;
+            // 
+            // Main
+            // 
+            this.Main.BackColor = System.Drawing.Color.Gainsboro;
+            this.Main.Controls.Add(this.label1);
+            this.Main.Controls.Add(this.label2);
+            this.Main.Controls.Add(this.f_load);
+            this.Main.Controls.Add(this.Out_Type);
+            this.Main.Controls.Add(this.label8);
+            this.Main.Location = new System.Drawing.Point(8, 39);
+            this.Main.Name = "Main";
+            this.Main.Padding = new System.Windows.Forms.Padding(3);
+            this.Main.Size = new System.Drawing.Size(588, 146);
+            this.Main.TabIndex = 0;
+            this.Main.Text = "Main";
+            // 
+            // Adv_V2_Opts
+            // 
+            this.Adv_V2_Opts.BackColor = System.Drawing.Color.Gainsboro;
+            this.Adv_V2_Opts.Controls.Add(this.AutoAdj);
+            this.Adv_V2_Opts.Controls.Add(this.CustomV2headers);
+            this.Adv_V2_Opts.Controls.Add(this.V2H);
+            this.Adv_V2_Opts.Controls.Add(this.V2_Len);
+            this.Adv_V2_Opts.Controls.Add(this.Add_Sync);
+            this.Adv_V2_Opts.Location = new System.Drawing.Point(8, 39);
+            this.Adv_V2_Opts.Name = "Adv_V2_Opts";
+            this.Adv_V2_Opts.Padding = new System.Windows.Forms.Padding(3);
+            this.Adv_V2_Opts.Size = new System.Drawing.Size(586, 146);
+            this.Adv_V2_Opts.TabIndex = 1;
+            this.Adv_V2_Opts.Text = "V-Max v2 Advanced";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(745, 1235);
-            this.Controls.Add(this.Adv_V2_opts);
+            this.ClientSize = new System.Drawing.Size(750, 1334);
+            this.Controls.Add(this.Tabs);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.Drag_pic);
             this.Controls.Add(this.inbox);
             this.Controls.Add(this.Output);
             this.Controls.Add(this.Source);
             this.Controls.Add(this.outbox);
             this.Controls.Add(this.T_Info);
-            this.Controls.Add(this.label8);
-            this.Controls.Add(this.Out_Type);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.f_load);
             this.Controls.Add(this.listBox3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.button1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "V-Max Sync Tool";
@@ -427,8 +451,11 @@
             this.inbox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.V2_Len)).EndInit();
-            this.Adv_V2_opts.ResumeLayout(false);
-            this.Adv_V2_opts.PerformLayout();
+            this.Tabs.ResumeLayout(false);
+            this.Main.ResumeLayout(false);
+            this.Main.PerformLayout();
+            this.Adv_V2_Opts.ResumeLayout(false);
+            this.Adv_V2_Opts.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -446,8 +473,8 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.CheckBox T_Info;
         private System.Windows.Forms.ListBox out_size;
-        private System.Windows.Forms.ListBox out_len;
-        private System.Windows.Forms.ListBox out_diff;
+        private System.Windows.Forms.ListBox out_dif;
+        private System.Windows.Forms.ListBox out_sec;
         private System.Windows.Forms.ListBox out_fmt;
         private System.Windows.Forms.ListBox out_track;
         private System.Windows.Forms.GroupBox outbox;
@@ -463,7 +490,9 @@
         private System.Windows.Forms.Button V2H;
         private System.Windows.Forms.CheckBox Add_Sync;
         private System.Windows.Forms.CheckBox AutoAdj;
-        private System.Windows.Forms.GroupBox Adv_V2_opts;
+        private System.Windows.Forms.TabControl Tabs;
+        private System.Windows.Forms.TabPage Main;
+        private System.Windows.Forms.TabPage Adv_V2_Opts;
     }
 }
 
