@@ -51,26 +51,33 @@
             this.ss = new System.Windows.Forms.ListBox();
             this.sl = new System.Windows.Forms.ListBox();
             this.Drag_pic = new System.Windows.Forms.PictureBox();
-            this.CustomV2headers = new System.Windows.Forms.CheckBox();
-            this.V2_Len = new System.Windows.Forms.NumericUpDown();
-            this.V2H = new System.Windows.Forms.Button();
-            this.Add_Sync = new System.Windows.Forms.CheckBox();
-            this.AutoAdj = new System.Windows.Forms.CheckBox();
+            this.V2_Custom = new System.Windows.Forms.CheckBox();
+            this.V2_hlen = new System.Windows.Forms.NumericUpDown();
+            this.V2_Apply = new System.Windows.Forms.Button();
+            this.V2_Add_Sync = new System.Windows.Forms.CheckBox();
+            this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.Main = new System.Windows.Forms.TabPage();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
+            this.Adv_V3_Opts = new System.Windows.Forms.TabPage();
+            this.V3_Apply = new System.Windows.Forms.Button();
+            this.V3_hlen = new System.Windows.Forms.NumericUpDown();
+            this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
+            this.V3_Custom = new System.Windows.Forms.CheckBox();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.V2_Len)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
             this.Adv_V2_Opts.SuspendLayout();
+            this.Adv_V3_Opts.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(631, 155);
+            this.button1.Location = new System.Drawing.Point(631, 148);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(96, 43);
             this.button1.TabIndex = 0;
@@ -320,79 +327,81 @@
             this.Drag_pic.TabIndex = 27;
             this.Drag_pic.TabStop = false;
             // 
-            // CustomV2headers
+            // V2_Custom
             // 
-            this.CustomV2headers.AutoSize = true;
-            this.CustomV2headers.Location = new System.Drawing.Point(6, 41);
-            this.CustomV2headers.Name = "CustomV2headers";
-            this.CustomV2headers.Size = new System.Drawing.Size(295, 29);
-            this.CustomV2headers.TabIndex = 28;
-            this.CustomV2headers.Text = "Use custom header length";
-            this.CustomV2headers.UseVisualStyleBackColor = true;
-            this.CustomV2headers.CheckedChanged += new System.EventHandler(this.CustomV2headers_CheckedChanged);
+            this.V2_Custom.AutoSize = true;
+            this.V2_Custom.Location = new System.Drawing.Point(6, 39);
+            this.V2_Custom.Name = "V2_Custom";
+            this.V2_Custom.Size = new System.Drawing.Size(295, 29);
+            this.V2_Custom.TabIndex = 28;
+            this.V2_Custom.Text = "Use custom header length";
+            this.V2_Custom.UseVisualStyleBackColor = true;
+            this.V2_Custom.CheckedChanged += new System.EventHandler(this.V2_Custom_CheckedChanged);
             // 
-            // V2_Len
+            // V2_hlen
             // 
-            this.V2_Len.Increment = new decimal(new int[] {
+            this.V2_hlen.Increment = new decimal(new int[] {
             2,
             0,
             0,
             0});
-            this.V2_Len.Location = new System.Drawing.Point(307, 39);
-            this.V2_Len.Maximum = new decimal(new int[] {
+            this.V2_hlen.Location = new System.Drawing.Point(307, 37);
+            this.V2_hlen.Maximum = new decimal(new int[] {
             36,
             0,
             0,
             0});
-            this.V2_Len.Minimum = new decimal(new int[] {
+            this.V2_hlen.Minimum = new decimal(new int[] {
             8,
             0,
             0,
             0});
-            this.V2_Len.Name = "V2_Len";
-            this.V2_Len.Size = new System.Drawing.Size(120, 31);
-            this.V2_Len.TabIndex = 29;
-            this.V2_Len.Value = new decimal(new int[] {
+            this.V2_hlen.Name = "V2_hlen";
+            this.V2_hlen.Size = new System.Drawing.Size(120, 31);
+            this.V2_hlen.TabIndex = 29;
+            this.V2_hlen.Value = new decimal(new int[] {
             18,
             0,
             0,
             0});
             // 
-            // V2H
+            // V2_Apply
             // 
-            this.V2H.Location = new System.Drawing.Point(432, 99);
-            this.V2H.Name = "V2H";
-            this.V2H.Size = new System.Drawing.Size(100, 44);
-            this.V2H.TabIndex = 30;
-            this.V2H.Text = "Apply";
-            this.V2H.UseVisualStyleBackColor = true;
-            this.V2H.Click += new System.EventHandler(this.V2H_Click);
+            this.V2_Apply.Location = new System.Drawing.Point(482, 96);
+            this.V2_Apply.Name = "V2_Apply";
+            this.V2_Apply.Size = new System.Drawing.Size(100, 44);
+            this.V2_Apply.TabIndex = 30;
+            this.V2_Apply.Text = "Apply";
+            this.V2_Apply.UseVisualStyleBackColor = true;
+            this.V2_Apply.Click += new System.EventHandler(this.V2_Apply_Click);
             // 
-            // Add_Sync
+            // V2_Add_Sync
             // 
-            this.Add_Sync.AutoSize = true;
-            this.Add_Sync.Location = new System.Drawing.Point(6, 74);
-            this.Add_Sync.Name = "Add_Sync";
-            this.Add_Sync.Size = new System.Drawing.Size(311, 29);
-            this.Add_Sync.TabIndex = 32;
-            this.Add_Sync.Text = "Add sync to syncless tracks";
-            this.Add_Sync.UseVisualStyleBackColor = true;
+            this.V2_Add_Sync.AutoSize = true;
+            this.V2_Add_Sync.Location = new System.Drawing.Point(6, 74);
+            this.V2_Add_Sync.Name = "V2_Add_Sync";
+            this.V2_Add_Sync.Size = new System.Drawing.Size(311, 29);
+            this.V2_Add_Sync.TabIndex = 32;
+            this.V2_Add_Sync.Text = "Add sync to syncless tracks";
+            this.V2_Add_Sync.UseVisualStyleBackColor = true;
             // 
-            // AutoAdj
+            // V2_Auto_Adj
             // 
-            this.AutoAdj.AutoSize = true;
-            this.AutoAdj.Location = new System.Drawing.Point(6, 6);
-            this.AutoAdj.Name = "AutoAdj";
-            this.AutoAdj.Size = new System.Drawing.Size(383, 29);
-            this.AutoAdj.TabIndex = 33;
-            this.AutoAdj.Text = "Auto adjust for 300 rpm write speed";
-            this.AutoAdj.UseVisualStyleBackColor = true;
-            this.AutoAdj.CheckedChanged += new System.EventHandler(this.AutoAdj_CheckedChanged);
+            this.V2_Auto_Adj.AutoSize = true;
+            this.V2_Auto_Adj.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.V2_Auto_Adj.Location = new System.Drawing.Point(6, 6);
+            this.V2_Auto_Adj.Name = "V2_Auto_Adj";
+            this.V2_Auto_Adj.Size = new System.Drawing.Size(491, 29);
+            this.V2_Auto_Adj.TabIndex = 33;
+            this.V2_Auto_Adj.Text = "Auto Adjust tracks to fit track density (300 rpm)";
+            this.V2_Auto_Adj.UseVisualStyleBackColor = true;
+            this.V2_Auto_Adj.CheckedChanged += new System.EventHandler(this.AutoAdj_CheckedChanged);
             // 
             // Tabs
             // 
             this.Tabs.Controls.Add(this.Main);
             this.Tabs.Controls.Add(this.Adv_V2_Opts);
+            this.Tabs.Controls.Add(this.Adv_V3_Opts);
             this.Tabs.Location = new System.Drawing.Point(21, 12);
             this.Tabs.Name = "Tabs";
             this.Tabs.SelectedIndex = 0;
@@ -417,17 +426,86 @@
             // Adv_V2_Opts
             // 
             this.Adv_V2_Opts.BackColor = System.Drawing.Color.Gainsboro;
-            this.Adv_V2_Opts.Controls.Add(this.AutoAdj);
-            this.Adv_V2_Opts.Controls.Add(this.CustomV2headers);
-            this.Adv_V2_Opts.Controls.Add(this.V2H);
-            this.Adv_V2_Opts.Controls.Add(this.V2_Len);
-            this.Adv_V2_Opts.Controls.Add(this.Add_Sync);
+            this.Adv_V2_Opts.Controls.Add(this.V2_Auto_Adj);
+            this.Adv_V2_Opts.Controls.Add(this.V2_Custom);
+            this.Adv_V2_Opts.Controls.Add(this.V2_Apply);
+            this.Adv_V2_Opts.Controls.Add(this.V2_hlen);
+            this.Adv_V2_Opts.Controls.Add(this.V2_Add_Sync);
             this.Adv_V2_Opts.Location = new System.Drawing.Point(8, 39);
             this.Adv_V2_Opts.Name = "Adv_V2_Opts";
             this.Adv_V2_Opts.Padding = new System.Windows.Forms.Padding(3);
-            this.Adv_V2_Opts.Size = new System.Drawing.Size(586, 146);
+            this.Adv_V2_Opts.Size = new System.Drawing.Size(588, 146);
             this.Adv_V2_Opts.TabIndex = 1;
             this.Adv_V2_Opts.Text = "V-Max v2 Advanced";
+            // 
+            // Adv_V3_Opts
+            // 
+            this.Adv_V3_Opts.BackColor = System.Drawing.Color.Gainsboro;
+            this.Adv_V3_Opts.Controls.Add(this.V3_Apply);
+            this.Adv_V3_Opts.Controls.Add(this.V3_hlen);
+            this.Adv_V3_Opts.Controls.Add(this.V3_Auto_Adj);
+            this.Adv_V3_Opts.Controls.Add(this.V3_Custom);
+            this.Adv_V3_Opts.Location = new System.Drawing.Point(8, 39);
+            this.Adv_V3_Opts.Name = "Adv_V3_Opts";
+            this.Adv_V3_Opts.Padding = new System.Windows.Forms.Padding(3);
+            this.Adv_V3_Opts.Size = new System.Drawing.Size(588, 146);
+            this.Adv_V3_Opts.TabIndex = 2;
+            this.Adv_V3_Opts.Text = "V-Max v3 Advanced";
+            // 
+            // V3_Apply
+            // 
+            this.V3_Apply.Location = new System.Drawing.Point(482, 96);
+            this.V3_Apply.Name = "V3_Apply";
+            this.V3_Apply.Size = new System.Drawing.Size(100, 44);
+            this.V3_Apply.TabIndex = 37;
+            this.V3_Apply.Text = "Apply";
+            this.V3_Apply.UseVisualStyleBackColor = true;
+            this.V3_Apply.Click += new System.EventHandler(this.V3_Apply_Click);
+            // 
+            // V3_hlen
+            // 
+            this.V3_hlen.Location = new System.Drawing.Point(307, 37);
+            this.V3_hlen.Maximum = new decimal(new int[] {
+            12,
+            0,
+            0,
+            0});
+            this.V3_hlen.Minimum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.V3_hlen.Name = "V3_hlen";
+            this.V3_hlen.Size = new System.Drawing.Size(120, 31);
+            this.V3_hlen.TabIndex = 36;
+            this.V3_hlen.Value = new decimal(new int[] {
+            6,
+            0,
+            0,
+            0});
+            // 
+            // V3_Auto_Adj
+            // 
+            this.V3_Auto_Adj.AutoSize = true;
+            this.V3_Auto_Adj.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.V3_Auto_Adj.Location = new System.Drawing.Point(6, 6);
+            this.V3_Auto_Adj.Name = "V3_Auto_Adj";
+            this.V3_Auto_Adj.Size = new System.Drawing.Size(491, 29);
+            this.V3_Auto_Adj.TabIndex = 35;
+            this.V3_Auto_Adj.Text = "Auto Adjust tracks to fit track density (300 rpm)";
+            this.V3_Auto_Adj.UseVisualStyleBackColor = true;
+            this.V3_Auto_Adj.CheckedChanged += new System.EventHandler(this.V3_Auto_Adj_CheckedChanged);
+            // 
+            // V3_Custom
+            // 
+            this.V3_Custom.AutoSize = true;
+            this.V3_Custom.Location = new System.Drawing.Point(6, 39);
+            this.V3_Custom.Name = "V3_Custom";
+            this.V3_Custom.Size = new System.Drawing.Size(295, 29);
+            this.V3_Custom.TabIndex = 34;
+            this.V3_Custom.Text = "Use custom header length";
+            this.V3_Custom.UseVisualStyleBackColor = true;
+            this.V3_Custom.CheckedChanged += new System.EventHandler(this.V3_Custom_CheckedChanged);
             // 
             // Form1
             // 
@@ -450,12 +528,15 @@
             this.outbox.ResumeLayout(false);
             this.inbox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.V2_Len)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).EndInit();
             this.Tabs.ResumeLayout(false);
             this.Main.ResumeLayout(false);
             this.Main.PerformLayout();
             this.Adv_V2_Opts.ResumeLayout(false);
             this.Adv_V2_Opts.PerformLayout();
+            this.Adv_V3_Opts.ResumeLayout(false);
+            this.Adv_V3_Opts.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -485,14 +566,19 @@
         private System.Windows.Forms.ListBox ss;
         private System.Windows.Forms.ListBox sl;
         private System.Windows.Forms.PictureBox Drag_pic;
-        private System.Windows.Forms.CheckBox CustomV2headers;
-        private System.Windows.Forms.NumericUpDown V2_Len;
-        private System.Windows.Forms.Button V2H;
-        private System.Windows.Forms.CheckBox Add_Sync;
-        private System.Windows.Forms.CheckBox AutoAdj;
+        private System.Windows.Forms.CheckBox V2_Custom;
+        private System.Windows.Forms.NumericUpDown V2_hlen;
+        private System.Windows.Forms.Button V2_Apply;
+        private System.Windows.Forms.CheckBox V2_Add_Sync;
+        private System.Windows.Forms.CheckBox V2_Auto_Adj;
         private System.Windows.Forms.TabControl Tabs;
         private System.Windows.Forms.TabPage Main;
         private System.Windows.Forms.TabPage Adv_V2_Opts;
+        private System.Windows.Forms.TabPage Adv_V3_Opts;
+        private System.Windows.Forms.Button V3_Apply;
+        private System.Windows.Forms.NumericUpDown V3_hlen;
+        private System.Windows.Forms.CheckBox V3_Auto_Adj;
+        private System.Windows.Forms.CheckBox V3_Custom;
     }
 }
 
