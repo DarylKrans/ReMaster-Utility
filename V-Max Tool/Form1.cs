@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 
 /// -- Currently not being used, but may be handy later
@@ -22,11 +21,13 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        private readonly string ver = " v0.7 (beta)";
+        private readonly string ver = " v0.8 (beta)";
         private string fname = "";
         private string fext = "";
         private string dirname = "";
-        private string fnappend = "(sync_fixed)";
+        private string fnappend = "";
+        private string fix = "(sync_fixed)";
+        private string mod = "(modified)";
         private int tracks = 0;
         private byte[] nib_header = new byte[256];
         private readonly byte[] g64_header = new byte[684];
@@ -139,6 +140,7 @@ namespace V_Max_Tool
         {
             Tabs.Visible = true;
             string[] o = { "G64", "NIB", "NIB & G64" };
+            fnappend = fix;
             Out_Type.DataSource = o;
             label1.Text = label2.Text = "";
             listBox3.Visible = label7.Visible = false;
@@ -270,6 +272,23 @@ namespace V_Max_Tool
             if (len >= 6400 && len < 6850) i = 2;
             if (len >= 6000 && len < 6400) i = 3;
             return i;
+        }
+
+        void Shrink_Short_Sector(int trk)
+        {
+            if (Original.OT[trk].Length == 0)
+            {
+                Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
+                Array.Copy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);
+            }
+            int d = Get_Density(NDG.Track_Data[trk].Length);
+            byte[] temp = Shrink_Track(NDG.Track_Data[trk], d);
+            NDG.Track_Data[trk] = new byte[temp.Length];
+            Array.Copy(temp, 0, NDG.Track_Data[trk], 0, temp.Length);
+            Array.Copy(temp, 0, NDA.Track_Data[trk], 0, temp.Length);
+            Array.Copy(temp, 0, NDA.Track_Data[trk], temp.Length, NDA.Track_Data[trk].Length - temp.Length);
+            NDG.Track_Length[trk] = NDG.Track_Data[trk].Length;
+            NDA.Track_Length[trk] = NDG.Track_Length[trk] * 8;
         }
 
         byte[] Shrink_Track(byte[] data, int trk_density)
@@ -1162,7 +1181,7 @@ namespace V_Max_Tool
                 NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
                 if (NDS.cbm[i] == 0)
                 {
-                    
+
                     int l = Get_Track_Len(NDS.Track_Data[i]);
                     if (l > 6000 && l < 8192)
                     {
@@ -1176,7 +1195,7 @@ namespace V_Max_Tool
                         listBox3.Items.Add($"Track Length {l}");
                     }
 
-                    
+
                 }
                 if (NDS.cbm[i] == 1)
                 {
@@ -1305,10 +1324,10 @@ namespace V_Max_Tool
 
             void Process_Ndos(int trk)
             {
-                    NDA.Track_Data[trk] = NDS.Track_Data[trk];
-                    NDG.Track_Data[trk] = new byte[NDS.Track_Length[trk >> 3]];
-                    Array.Copy(NDS.Track_Data[trk], 0, NDG.Track_Data[trk], 0, NDS.D_End[trk] - NDS.D_Start[trk]);
-                    NDA.Track_Length[trk] = NDG.Track_Length[trk];
+                NDA.Track_Data[trk] = NDS.Track_Data[trk];
+                NDG.Track_Data[trk] = new byte[NDS.Track_Length[trk >> 3]];
+                Array.Copy(NDS.Track_Data[trk], 0, NDG.Track_Data[trk], 0, NDS.D_End[trk] - NDS.D_Start[trk]);
+                NDA.Track_Length[trk] = NDG.Track_Length[trk];
             }
 
             void Process_CBM(int trk)
@@ -1341,19 +1360,20 @@ namespace V_Max_Tool
                 V3_Auto_Adj.Checked = V3_Custom.Checked = false;
                 (NDA.Track_Data[trk], NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], headers, NDA.sectors[trk]) = Adjust_Vmax_V2_Sync(NDS.Track_Data[trk], trk, true);
                 headers[0] = "";
-                if (V2_Auto_Adj.Checked || V2_Custom.Checked || V2_Add_Sync.Checked) fnappend = "(sync_fixed)(modified)";
-                else fnappend = "(sync_fixed)";
+                if (V2_Auto_Adj.Checked || V2_Custom.Checked || V2_Add_Sync.Checked) fnappend = mod; // "(sync_fixed)(modified)";
+                else fnappend = fix;
             }
             void Process_VMAX_V3(int trk)
             {
                 V2_Auto_Adj.Checked = V2_Custom.Checked = V2_Add_Sync.Checked = false;
-                if (V3_Auto_Adj.Checked || V3_Custom.Checked) fnappend = "(sync_fixed)(modified)";
-                else fnappend = "(sync_fixed)";
+                if (V3_Auto_Adj.Checked || V3_Custom.Checked) fnappend = mod;
+                else fnappend = fix;
                 if (!(short_sector && NDS.sectors[trk] < 16))
                 {
                     (NDG.Track_Data[trk], NDA.Track_Length[trk], NDA.Sector_Zero[trk]) =
                         Adjust_Vmax_V3_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.sectors[trk], NDS.Header_Len[trk]);
-                }
+                } 
+                else Shrink_Short_Sector(trk);
                 NDG.Track_Length[trk] = NDG.Track_Data[trk].Length;
                 if (NDG.Track_Data[trk].Length > 0)
                 {
@@ -1370,6 +1390,18 @@ namespace V_Max_Tool
                 }
             }
 
+            void Shrink_Loader(int trk)
+            {
+                byte[] temp = Shrink_Track(NDG.Track_Data[trk], 1);
+                NDG.Track_Data[trk] = new byte[temp.Length];
+                Array.Copy(temp, 0, NDG.Track_Data[trk], 0, temp.Length);
+                Array.Copy(temp, 0, NDA.Track_Data[trk], 0, temp.Length);
+                Array.Copy(temp, 0, NDA.Track_Data[trk], temp.Length, NDA.Track_Data[trk].Length - temp.Length);
+                NDG.Track_Length[trk] = NDG.Track_Data[trk].Length;
+                NDA.Track_Length[trk] = NDG.Track_Length[trk] * 8;
+
+            }
+
 
             void Process_Loader(int trk)
             {
@@ -1380,17 +1412,8 @@ namespace V_Max_Tool
                     Array.Copy(NDG.Track_Data[trk], 0, Original.SG, 0, NDG.Track_Data[trk].Length);
                     Array.Copy(NDA.Track_Data[trk], 0, Original.SA, 0, NDA.Track_Data[trk].Length);
                 }
-                if (NDG.Track_Length[trk] > 7600 || (V2_Auto_Adj.Checked || V3_Auto_Adj.Checked))
-                {
-                    byte[] temp = Shrink_Track(NDG.Track_Data[trk], 1);
-                    NDG.Track_Data[trk] = new byte[temp.Length];
-                    Array.Copy(temp, 0, NDG.Track_Data[trk], 0, temp.Length);
-                    Array.Copy(temp, 0, NDA.Track_Data[trk], 0, temp.Length);
-                    Array.Copy(temp, 0, NDA.Track_Data[trk], temp.Length, NDA.Track_Data[trk].Length - temp.Length);
-                    NDG.Track_Length[trk] = NDG.Track_Data[trk].Length;
-                    NDA.Track_Length[trk] = NDG.Track_Length[trk] * 8;
-
-                }
+                if (NDG.Track_Length[trk] > 7600) Shrink_Loader(trk);
+                if (V2_Auto_Adj.Checked || V3_Auto_Adj.Checked) Shrink_Loader(trk);
                 if (f_load.Checked) (NDG.Track_Data[trk]) = Fix_Loader(NDG.Track_Data[trk]);
                 NDA.Track_Data[trk] = new byte[8192];
 
@@ -1732,19 +1755,7 @@ namespace V_Max_Tool
                 {
                     if (NDS.cbm[t] == 4 || NDS.cbm[t] == 1 || (NDS.cbm[t] == 3 && NDS.sectors[t] < 16))
                     {
-                        if (Original.OT[t].Length == 0)
-                        {
-                            Original.OT[t] = new byte[NDG.Track_Data[t].Length];
-                            Array.Copy(NDG.Track_Data[t], 0, Original.OT[t], 0, NDG.Track_Data[t].Length);
-                        }
-                        int d = Get_Density(NDG.Track_Data[t].Length);
-                        byte[] temp = Shrink_Track(NDG.Track_Data[t], d);
-                        NDG.Track_Data[t] = new byte[temp.Length];
-                        Array.Copy(temp, 0, NDG.Track_Data[t], 0, temp.Length);
-                        Array.Copy(temp, 0, NDA.Track_Data[t], 0, temp.Length);
-                        Array.Copy(temp, 0, NDA.Track_Data[t], temp.Length, NDA.Track_Data[t].Length - temp.Length);
-                        NDG.Track_Length[t] = NDG.Track_Data[t].Length;
-                        NDA.Track_Length[t] = NDG.Track_Length[t] * 8;
+                        Shrink_Short_Sector(t);
                     }
                 }
             }
