@@ -44,9 +44,11 @@
             this.out_fmt = new System.Windows.Forms.ListBox();
             this.out_track = new System.Windows.Forms.ListBox();
             this.outbox = new System.Windows.Forms.GroupBox();
+            this.out_rpm = new System.Windows.Forms.ListBox();
             this.Source = new System.Windows.Forms.Label();
             this.Output = new System.Windows.Forms.Label();
             this.inbox = new System.Windows.Forms.GroupBox();
+            this.sd = new System.Windows.Forms.ListBox();
             this.strack = new System.Windows.Forms.ListBox();
             this.ss = new System.Windows.Forms.ListBox();
             this.sl = new System.Windows.Forms.ListBox();
@@ -59,7 +61,11 @@
             this.Tabs = new System.Windows.Forms.TabControl();
             this.Main = new System.Windows.Forms.TabPage();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
+            this.v2exp = new System.Windows.Forms.Label();
+            this.v2adv = new System.Windows.Forms.Label();
             this.Adv_V3_Opts = new System.Windows.Forms.TabPage();
+            this.v3exp = new System.Windows.Forms.Label();
+            this.v3adv = new System.Windows.Forms.Label();
             this.V3_Apply = new System.Windows.Forms.Button();
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
@@ -77,7 +83,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(631, 148);
+            this.button1.Location = new System.Drawing.Point(825, 149);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(96, 43);
             this.button1.TabIndex = 0;
@@ -110,7 +116,7 @@
             this.listBox3.ForeColor = System.Drawing.Color.Black;
             this.listBox3.FormattingEnabled = true;
             this.listBox3.ItemHeight = 29;
-            this.listBox3.Location = new System.Drawing.Point(770, 51);
+            this.listBox3.Location = new System.Drawing.Point(949, 49);
             this.listBox3.Name = "listBox3";
             this.listBox3.Size = new System.Drawing.Size(969, 1251);
             this.listBox3.TabIndex = 10;
@@ -130,7 +136,7 @@
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(765, 14);
+            this.label7.Location = new System.Drawing.Point(944, 17);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(332, 29);
             this.label7.TabIndex = 13;
@@ -159,7 +165,7 @@
             // 
             this.T_Info.AutoSize = true;
             this.T_Info.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.T_Info.Location = new System.Drawing.Point(500, 214);
+            this.T_Info.Location = new System.Drawing.Point(678, 209);
             this.T_Info.Name = "T_Info";
             this.T_Info.Size = new System.Drawing.Size(225, 29);
             this.T_Info.TabIndex = 16;
@@ -173,7 +179,7 @@
             this.out_size.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_size.FormattingEnabled = true;
             this.out_size.ItemHeight = 25;
-            this.out_size.Location = new System.Drawing.Point(55, 30);
+            this.out_size.Location = new System.Drawing.Point(140, 30);
             this.out_size.Name = "out_size";
             this.out_size.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_size.Size = new System.Drawing.Size(100, 1002);
@@ -183,9 +189,10 @@
             // 
             this.out_dif.BackColor = System.Drawing.Color.Gainsboro;
             this.out_dif.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_dif.ForeColor = System.Drawing.Color.BlueViolet;
             this.out_dif.FormattingEnabled = true;
             this.out_dif.ItemHeight = 25;
-            this.out_dif.Location = new System.Drawing.Point(149, 30);
+            this.out_dif.Location = new System.Drawing.Point(237, 30);
             this.out_dif.Name = "out_dif";
             this.out_dif.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_dif.Size = new System.Drawing.Size(73, 1002);
@@ -197,7 +204,7 @@
             this.out_sec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_sec.FormattingEnabled = true;
             this.out_sec.ItemHeight = 25;
-            this.out_sec.Location = new System.Drawing.Point(217, 30);
+            this.out_sec.Location = new System.Drawing.Point(306, 30);
             this.out_sec.Name = "out_sec";
             this.out_sec.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_sec.Size = new System.Drawing.Size(62, 1002);
@@ -209,7 +216,7 @@
             this.out_fmt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_fmt.FormattingEnabled = true;
             this.out_fmt.ItemHeight = 25;
-            this.out_fmt.Location = new System.Drawing.Point(275, 30);
+            this.out_fmt.Location = new System.Drawing.Point(364, 30);
             this.out_fmt.Name = "out_fmt";
             this.out_fmt.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_fmt.Size = new System.Drawing.Size(145, 1002);
@@ -231,6 +238,7 @@
             // outbox
             // 
             this.outbox.BackColor = System.Drawing.Color.Gainsboro;
+            this.outbox.Controls.Add(this.out_rpm);
             this.outbox.Controls.Add(this.out_track);
             this.outbox.Controls.Add(this.out_fmt);
             this.outbox.Controls.Add(this.out_sec);
@@ -238,12 +246,25 @@
             this.outbox.Controls.Add(this.out_size);
             this.outbox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.outbox.ForeColor = System.Drawing.Color.Indigo;
-            this.outbox.Location = new System.Drawing.Point(296, 245);
+            this.outbox.Location = new System.Drawing.Point(398, 245);
             this.outbox.Name = "outbox";
-            this.outbox.Size = new System.Drawing.Size(437, 1047);
+            this.outbox.Size = new System.Drawing.Size(521, 1047);
             this.outbox.TabIndex = 22;
             this.outbox.TabStop = false;
-            this.outbox.Text = "Track/ Size  / Diff / Sectors /   Format";
+            this.outbox.Text = "Track/ RPM /  Size  /  Diff  / Sectors /   Format / ";
+            // 
+            // out_rpm
+            // 
+            this.out_rpm.BackColor = System.Drawing.Color.Gainsboro;
+            this.out_rpm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.out_rpm.ForeColor = System.Drawing.Color.ForestGreen;
+            this.out_rpm.FormattingEnabled = true;
+            this.out_rpm.ItemHeight = 25;
+            this.out_rpm.Location = new System.Drawing.Point(57, 30);
+            this.out_rpm.Name = "out_rpm";
+            this.out_rpm.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.out_rpm.Size = new System.Drawing.Size(86, 1002);
+            this.out_rpm.TabIndex = 30;
             // 
             // Source
             // 
@@ -257,7 +278,7 @@
             // Output
             // 
             this.Output.AutoSize = true;
-            this.Output.Location = new System.Drawing.Point(296, 213);
+            this.Output.Location = new System.Drawing.Point(381, 214);
             this.Output.Name = "Output";
             this.Output.Size = new System.Drawing.Size(76, 25);
             this.Output.TabIndex = 24;
@@ -266,6 +287,7 @@
             // inbox
             // 
             this.inbox.BackColor = System.Drawing.Color.Gainsboro;
+            this.inbox.Controls.Add(this.sd);
             this.inbox.Controls.Add(this.strack);
             this.inbox.Controls.Add(this.ss);
             this.inbox.Controls.Add(this.sl);
@@ -273,10 +295,22 @@
             this.inbox.ForeColor = System.Drawing.Color.Indigo;
             this.inbox.Location = new System.Drawing.Point(21, 245);
             this.inbox.Name = "inbox";
-            this.inbox.Size = new System.Drawing.Size(235, 1047);
+            this.inbox.Size = new System.Drawing.Size(319, 1047);
             this.inbox.TabIndex = 25;
             this.inbox.TabStop = false;
-            this.inbox.Text = "Track / Size / Start";
+            this.inbox.Text = "Track / Size / Start / Density";
+            // 
+            // sd
+            // 
+            this.sd.BackColor = System.Drawing.Color.Gainsboro;
+            this.sd.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sd.FormattingEnabled = true;
+            this.sd.ItemHeight = 25;
+            this.sd.Location = new System.Drawing.Point(222, 30);
+            this.sd.Name = "sd";
+            this.sd.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.sd.Size = new System.Drawing.Size(82, 1002);
+            this.sd.TabIndex = 32;
             // 
             // strack
             // 
@@ -321,16 +355,16 @@
             this.Drag_pic.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("Drag_pic.BackgroundImage")));
             this.Drag_pic.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.Drag_pic.InitialImage = null;
-            this.Drag_pic.Location = new System.Drawing.Point(54, 296);
+            this.Drag_pic.Location = new System.Drawing.Point(27, 266);
             this.Drag_pic.Name = "Drag_pic";
-            this.Drag_pic.Size = new System.Drawing.Size(648, 964);
+            this.Drag_pic.Size = new System.Drawing.Size(863, 1011);
             this.Drag_pic.TabIndex = 27;
             this.Drag_pic.TabStop = false;
             // 
             // V2_Custom
             // 
             this.V2_Custom.AutoSize = true;
-            this.V2_Custom.Location = new System.Drawing.Point(6, 39);
+            this.V2_Custom.Location = new System.Drawing.Point(5, 74);
             this.V2_Custom.Name = "V2_Custom";
             this.V2_Custom.Size = new System.Drawing.Size(295, 29);
             this.V2_Custom.TabIndex = 28;
@@ -345,7 +379,7 @@
             0,
             0,
             0});
-            this.V2_hlen.Location = new System.Drawing.Point(307, 37);
+            this.V2_hlen.Location = new System.Drawing.Point(306, 72);
             this.V2_hlen.Maximum = new decimal(new int[] {
             36,
             0,
@@ -367,7 +401,7 @@
             // 
             // V2_Apply
             // 
-            this.V2_Apply.Location = new System.Drawing.Point(482, 96);
+            this.V2_Apply.Location = new System.Drawing.Point(678, 99);
             this.V2_Apply.Name = "V2_Apply";
             this.V2_Apply.Size = new System.Drawing.Size(100, 44);
             this.V2_Apply.TabIndex = 30;
@@ -378,7 +412,7 @@
             // V2_Add_Sync
             // 
             this.V2_Add_Sync.AutoSize = true;
-            this.V2_Add_Sync.Location = new System.Drawing.Point(6, 74);
+            this.V2_Add_Sync.Location = new System.Drawing.Point(5, 109);
             this.V2_Add_Sync.Name = "V2_Add_Sync";
             this.V2_Add_Sync.Size = new System.Drawing.Size(311, 29);
             this.V2_Add_Sync.TabIndex = 32;
@@ -402,10 +436,10 @@
             this.Tabs.Controls.Add(this.Main);
             this.Tabs.Controls.Add(this.Adv_V2_Opts);
             this.Tabs.Controls.Add(this.Adv_V3_Opts);
-            this.Tabs.Location = new System.Drawing.Point(21, 12);
+            this.Tabs.Location = new System.Drawing.Point(19, 10);
             this.Tabs.Name = "Tabs";
             this.Tabs.SelectedIndex = 0;
-            this.Tabs.Size = new System.Drawing.Size(604, 193);
+            this.Tabs.Size = new System.Drawing.Size(800, 193);
             this.Tabs.TabIndex = 35;
             // 
             // Main
@@ -419,13 +453,15 @@
             this.Main.Location = new System.Drawing.Point(8, 39);
             this.Main.Name = "Main";
             this.Main.Padding = new System.Windows.Forms.Padding(3);
-            this.Main.Size = new System.Drawing.Size(588, 146);
+            this.Main.Size = new System.Drawing.Size(784, 146);
             this.Main.TabIndex = 0;
             this.Main.Text = "Main";
             // 
             // Adv_V2_Opts
             // 
             this.Adv_V2_Opts.BackColor = System.Drawing.Color.Gainsboro;
+            this.Adv_V2_Opts.Controls.Add(this.v2exp);
+            this.Adv_V2_Opts.Controls.Add(this.v2adv);
             this.Adv_V2_Opts.Controls.Add(this.V2_Auto_Adj);
             this.Adv_V2_Opts.Controls.Add(this.V2_Custom);
             this.Adv_V2_Opts.Controls.Add(this.V2_Apply);
@@ -434,13 +470,34 @@
             this.Adv_V2_Opts.Location = new System.Drawing.Point(8, 39);
             this.Adv_V2_Opts.Name = "Adv_V2_Opts";
             this.Adv_V2_Opts.Padding = new System.Windows.Forms.Padding(3);
-            this.Adv_V2_Opts.Size = new System.Drawing.Size(588, 146);
+            this.Adv_V2_Opts.Size = new System.Drawing.Size(784, 146);
             this.Adv_V2_Opts.TabIndex = 1;
             this.Adv_V2_Opts.Text = "V-Max v2 Advanced";
+            // 
+            // v2exp
+            // 
+            this.v2exp.AutoSize = true;
+            this.v2exp.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.v2exp.Location = new System.Drawing.Point(503, 7);
+            this.v2exp.Name = "v2exp";
+            this.v2exp.Size = new System.Drawing.Size(137, 25);
+            this.v2exp.TabIndex = 35;
+            this.v2exp.Text = "Experimental";
+            // 
+            // v2adv
+            // 
+            this.v2adv.AutoSize = true;
+            this.v2adv.Location = new System.Drawing.Point(50, 38);
+            this.v2adv.Name = "v2adv";
+            this.v2adv.Size = new System.Drawing.Size(240, 25);
+            this.v2adv.TabIndex = 34;
+            this.v2adv.Text = "Advanced Users ONLY!";
             // 
             // Adv_V3_Opts
             // 
             this.Adv_V3_Opts.BackColor = System.Drawing.Color.Gainsboro;
+            this.Adv_V3_Opts.Controls.Add(this.v3exp);
+            this.Adv_V3_Opts.Controls.Add(this.v3adv);
             this.Adv_V3_Opts.Controls.Add(this.V3_Apply);
             this.Adv_V3_Opts.Controls.Add(this.V3_hlen);
             this.Adv_V3_Opts.Controls.Add(this.V3_Auto_Adj);
@@ -448,13 +505,32 @@
             this.Adv_V3_Opts.Location = new System.Drawing.Point(8, 39);
             this.Adv_V3_Opts.Name = "Adv_V3_Opts";
             this.Adv_V3_Opts.Padding = new System.Windows.Forms.Padding(3);
-            this.Adv_V3_Opts.Size = new System.Drawing.Size(588, 146);
+            this.Adv_V3_Opts.Size = new System.Drawing.Size(784, 146);
             this.Adv_V3_Opts.TabIndex = 2;
             this.Adv_V3_Opts.Text = "V-Max v3 Advanced";
             // 
+            // v3exp
+            // 
+            this.v3exp.AutoSize = true;
+            this.v3exp.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.v3exp.Location = new System.Drawing.Point(507, 7);
+            this.v3exp.Name = "v3exp";
+            this.v3exp.Size = new System.Drawing.Size(137, 25);
+            this.v3exp.TabIndex = 39;
+            this.v3exp.Text = "Experimental";
+            // 
+            // v3adv
+            // 
+            this.v3adv.AutoSize = true;
+            this.v3adv.Location = new System.Drawing.Point(50, 72);
+            this.v3adv.Name = "v3adv";
+            this.v3adv.Size = new System.Drawing.Size(240, 25);
+            this.v3adv.TabIndex = 38;
+            this.v3adv.Text = "Advanced Users ONLY!";
+            // 
             // V3_Apply
             // 
-            this.V3_Apply.Location = new System.Drawing.Point(482, 96);
+            this.V3_Apply.Location = new System.Drawing.Point(678, 99);
             this.V3_Apply.Name = "V3_Apply";
             this.V3_Apply.Size = new System.Drawing.Size(100, 44);
             this.V3_Apply.TabIndex = 37;
@@ -464,7 +540,7 @@
             // 
             // V3_hlen
             // 
-            this.V3_hlen.Location = new System.Drawing.Point(307, 37);
+            this.V3_hlen.Location = new System.Drawing.Point(307, 101);
             this.V3_hlen.Maximum = new decimal(new int[] {
             12,
             0,
@@ -499,7 +575,7 @@
             // V3_Custom
             // 
             this.V3_Custom.AutoSize = true;
-            this.V3_Custom.Location = new System.Drawing.Point(6, 39);
+            this.V3_Custom.Location = new System.Drawing.Point(6, 103);
             this.V3_Custom.Name = "V3_Custom";
             this.V3_Custom.Size = new System.Drawing.Size(295, 29);
             this.V3_Custom.TabIndex = 34;
@@ -511,7 +587,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(750, 1334);
+            this.ClientSize = new System.Drawing.Size(933, 1334);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.Drag_pic);
@@ -579,6 +655,12 @@
         private System.Windows.Forms.NumericUpDown V3_hlen;
         private System.Windows.Forms.CheckBox V3_Auto_Adj;
         private System.Windows.Forms.CheckBox V3_Custom;
+        private System.Windows.Forms.ListBox sd;
+        private System.Windows.Forms.ListBox out_rpm;
+        private System.Windows.Forms.Label v2adv;
+        private System.Windows.Forms.Label v2exp;
+        private System.Windows.Forms.Label v3exp;
+        private System.Windows.Forms.Label v3adv;
     }
 }
 
