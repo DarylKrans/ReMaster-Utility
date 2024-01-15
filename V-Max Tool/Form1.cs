@@ -46,6 +46,7 @@ namespace V_Max_Tool
         private readonly string v2 = "A5-A5-A5-A5"; // V-MAX v2 sector 0 header (cinemaware)
         private readonly string v3 = "49-49-49"; // V-MAX v3 sector header
         private readonly string[] secF = { "NDOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "tbd", "Unformatted" };
+        private bool error = false;
 
         public static class NDS  // Global variables for Nib file source data
         {
@@ -357,8 +358,9 @@ namespace V_Max_Tool
             return temp;
         }
 
-        byte[] Shrink_Gap_CBM(byte[] data, int d, int last, int trk)
+        byte[] Shrink_Gap_CBM(byte[] data, int d, int last, int trk) // <-- int trk only needed for debugging
         {
+            if (trk == 0) trk += 0; // <-- aboslutely useless but gets rid of a dumb in the editor message
             byte[] temp = new byte[density[d] - 2];
             int skip = data.Length - (density[d] - 2);
             byte[] comp = new byte[4];
@@ -1407,9 +1409,21 @@ namespace V_Max_Tool
             {
                 if (cbm)
                 {
-                    NDA.Track_Data[trk] = Adjust_Sync_CBM(NDS.Track_Data[trk], 40, 15, 55, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk);
-                    (NDA.D_Start[trk], NDS.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk]) = Find_Sector_Zero(NDA.Track_Data[trk]);
-                    f[0] = "";
+                    try
+                    {
+                        NDA.Track_Data[trk] = Adjust_Sync_CBM(NDS.Track_Data[trk], 40, 15, 55, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk);
+                        (NDA.D_Start[trk], NDS.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk]) = Find_Sector_Zero(NDA.Track_Data[trk]);
+                        f[0] = "";
+                    } catch 
+                    {
+                        if (!error)
+                        {
+                            string m = "This image is not compatible with this program!";
+                            string t = "This is not a CBM or (known) V-Max variant";
+                            MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            error = true;
+                        }
+                    }
                 }
                 if (V3_Auto_Adj.Checked || V2_Auto_Adj.Checked)
                 {
@@ -1421,7 +1435,6 @@ namespace V_Max_Tool
                     int d = Get_Density(NDG.Track_Data[trk].Length);
                     if (NDG.Track_Data[trk].Length > density[d] - 2)
                     {
-                        //int g = NDS.cbm_sector[trk][NDS.cbm_sector[trk].Length - 1] >> 3;
                         byte[] temp = Shrink_Gap_CBM(NDG.Track_Data[trk], d, NDS.cbm_sector[trk][NDS.cbm_sector[trk].Length - 1] >> 3, trk);
                         NDG.Track_Data[trk] = new byte[temp.Length];
                         NDA.Track_Data[trk] = new byte[8192];
@@ -1630,19 +1643,29 @@ namespace V_Max_Tool
                     Process_Nib_Data(false, true);
                 }
             }
+            if (error)
+            {
+                Set_ListBox_Items(true);
+                label1.Text = "File not Valid!";
+                label2.Text = string.Empty;
+                error = false;
+            }
 
             void Process(bool get, string l2)
             {
                 Parse_Nib_Data();
-                Process_Nib_Data(true, false);
-                Set_ListBox_Items(false);
-                Out_Type.Enabled = get;
-                button1.Enabled = true;
-                Source.Visible = Output.Visible = true;
-                label1.Text = $"{fname}{fext}";
-                label2.Text = l2;
-                label1.Update();
-                label2.Update();
+                if (!error)
+                {
+                    Process_Nib_Data(true, false);
+                    Set_ListBox_Items(false);
+                    Out_Type.Enabled = get;
+                    button1.Enabled = true;
+                    Source.Visible = Output.Visible = true;
+                    label1.Text = $"{fname}{fext}";
+                    label2.Text = l2;
+                    label1.Update();
+                    label2.Update();
+                }
             }
 
             void Set_Arrays(int len)
