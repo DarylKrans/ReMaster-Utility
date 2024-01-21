@@ -1703,6 +1703,7 @@ namespace V_Max_Tool
                         }
                     }
                 }
+                //
                 if (V3_Auto_Adj.Checked || V2_Auto_Adj.Checked)
                 {
                     if (Original.OT[trk].Length == 0)
