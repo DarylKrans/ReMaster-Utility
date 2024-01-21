@@ -60,9 +60,9 @@
             this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.Main = new System.Windows.Forms.TabPage();
+            this.Adj_cbm = new System.Windows.Forms.CheckBox();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
             this.V2_rb = new System.Windows.Forms.CheckBox();
-            this.RebuildV2 = new System.Windows.Forms.Button();
             this.v2exp = new System.Windows.Forms.Label();
             this.v2adv = new System.Windows.Forms.Label();
             this.Adv_V3_Opts = new System.Windows.Forms.TabPage();
@@ -72,7 +72,7 @@
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
-            this.Adj_cbm = new System.Windows.Forms.CheckBox();
+            this.Re_Align = new System.Windows.Forms.CheckBox();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -461,11 +461,22 @@
             this.Main.TabIndex = 0;
             this.Main.Text = "Main";
             // 
+            // Adj_cbm
+            // 
+            this.Adj_cbm.AutoSize = true;
+            this.Adj_cbm.Location = new System.Drawing.Point(393, 9);
+            this.Adj_cbm.Name = "Adj_cbm";
+            this.Adj_cbm.Size = new System.Drawing.Size(343, 29);
+            this.Adj_cbm.TabIndex = 16;
+            this.Adj_cbm.Text = "Adjust CBM tracks to fit density";
+            this.Adj_cbm.UseVisualStyleBackColor = true;
+            this.Adj_cbm.CheckedChanged += new System.EventHandler(this.Adj_cbm_CheckedChanged);
+            // 
             // Adv_V2_Opts
             // 
             this.Adv_V2_Opts.BackColor = System.Drawing.Color.Gainsboro;
+            this.Adv_V2_Opts.Controls.Add(this.Re_Align);
             this.Adv_V2_Opts.Controls.Add(this.V2_rb);
-            this.Adv_V2_Opts.Controls.Add(this.RebuildV2);
             this.Adv_V2_Opts.Controls.Add(this.v2exp);
             this.Adv_V2_Opts.Controls.Add(this.v2adv);
             this.Adv_V2_Opts.Controls.Add(this.V2_Auto_Adj);
@@ -483,23 +494,13 @@
             // V2_rb
             // 
             this.V2_rb.AutoSize = true;
-            this.V2_rb.Location = new System.Drawing.Point(336, 109);
+            this.V2_rb.Location = new System.Drawing.Point(432, 109);
             this.V2_rb.Name = "V2_rb";
             this.V2_rb.Size = new System.Drawing.Size(188, 29);
             this.V2_rb.TabIndex = 37;
             this.V2_rb.Text = "Rebuild Tracks";
             this.V2_rb.UseVisualStyleBackColor = true;
             this.V2_rb.CheckedChanged += new System.EventHandler(this.V2_rb_CheckedChanged);
-            // 
-            // RebuildV2
-            // 
-            this.RebuildV2.Location = new System.Drawing.Point(479, 41);
-            this.RebuildV2.Name = "RebuildV2";
-            this.RebuildV2.Size = new System.Drawing.Size(132, 43);
-            this.RebuildV2.TabIndex = 36;
-            this.RebuildV2.Text = "Don\'t Use";
-            this.RebuildV2.UseVisualStyleBackColor = true;
-            this.RebuildV2.Click += new System.EventHandler(this.RebuildV2_Click);
             // 
             // v2exp
             // 
@@ -514,7 +515,7 @@
             // v2adv
             // 
             this.v2adv.AutoSize = true;
-            this.v2adv.Location = new System.Drawing.Point(50, 38);
+            this.v2adv.Location = new System.Drawing.Point(211, 38);
             this.v2adv.Name = "v2adv";
             this.v2adv.Size = new System.Drawing.Size(240, 25);
             this.v2adv.TabIndex = 34;
@@ -549,7 +550,7 @@
             // v3adv
             // 
             this.v3adv.AutoSize = true;
-            this.v3adv.Location = new System.Drawing.Point(50, 72);
+            this.v3adv.Location = new System.Drawing.Point(48, 65);
             this.v3adv.Name = "v3adv";
             this.v3adv.Size = new System.Drawing.Size(240, 25);
             this.v3adv.TabIndex = 38;
@@ -610,16 +611,15 @@
             this.V3_Custom.UseVisualStyleBackColor = true;
             this.V3_Custom.CheckedChanged += new System.EventHandler(this.V3_Custom_CheckedChanged);
             // 
-            // Adj_cbm
+            // Re_Align
             // 
-            this.Adj_cbm.AutoSize = true;
-            this.Adj_cbm.Location = new System.Drawing.Point(393, 9);
-            this.Adj_cbm.Name = "Adj_cbm";
-            this.Adj_cbm.Size = new System.Drawing.Size(343, 29);
-            this.Adj_cbm.TabIndex = 16;
-            this.Adj_cbm.Text = "Adjust CBM tracks to fit density";
-            this.Adj_cbm.UseVisualStyleBackColor = true;
-            this.Adj_cbm.CheckedChanged += new System.EventHandler(this.Adj_cbm_CheckedChanged);
+            this.Re_Align.AutoSize = true;
+            this.Re_Align.Location = new System.Drawing.Point(432, 74);
+            this.Re_Align.Name = "Re_Align";
+            this.Re_Align.Size = new System.Drawing.Size(199, 29);
+            this.Re_Align.TabIndex = 38;
+            this.Re_Align.Text = "Re-Align Loader";
+            this.Re_Align.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -699,9 +699,9 @@
         private System.Windows.Forms.Label v2exp;
         private System.Windows.Forms.Label v3exp;
         private System.Windows.Forms.Label v3adv;
-        private System.Windows.Forms.Button RebuildV2;
         private System.Windows.Forms.CheckBox V2_rb;
         private System.Windows.Forms.CheckBox Adj_cbm;
+        private System.Windows.Forms.CheckBox Re_Align;
     }
 }
 
