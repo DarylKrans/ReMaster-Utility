@@ -62,6 +62,7 @@
             this.Main = new System.Windows.Forms.TabPage();
             this.Adj_cbm = new System.Windows.Forms.CheckBox();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
+            this.Re_Align = new System.Windows.Forms.CheckBox();
             this.V2_rb = new System.Windows.Forms.CheckBox();
             this.v2exp = new System.Windows.Forms.Label();
             this.v2adv = new System.Windows.Forms.Label();
@@ -72,7 +73,6 @@
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
-            this.Re_Align = new System.Windows.Forms.CheckBox();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -491,6 +491,16 @@
             this.Adv_V2_Opts.TabIndex = 1;
             this.Adv_V2_Opts.Text = "V-Max v2 Advanced";
             // 
+            // Re_Align
+            // 
+            this.Re_Align.AutoSize = true;
+            this.Re_Align.Location = new System.Drawing.Point(432, 74);
+            this.Re_Align.Name = "Re_Align";
+            this.Re_Align.Size = new System.Drawing.Size(199, 29);
+            this.Re_Align.TabIndex = 38;
+            this.Re_Align.Text = "Re-Align Loader";
+            this.Re_Align.UseVisualStyleBackColor = true;
+            // 
             // V2_rb
             // 
             this.V2_rb.AutoSize = true;
@@ -610,16 +620,6 @@
             this.V3_Custom.Text = "Use custom header length";
             this.V3_Custom.UseVisualStyleBackColor = true;
             this.V3_Custom.CheckedChanged += new System.EventHandler(this.V3_Custom_CheckedChanged);
-            // 
-            // Re_Align
-            // 
-            this.Re_Align.AutoSize = true;
-            this.Re_Align.Location = new System.Drawing.Point(432, 74);
-            this.Re_Align.Name = "Re_Align";
-            this.Re_Align.Size = new System.Drawing.Size(199, 29);
-            this.Re_Align.TabIndex = 38;
-            this.Re_Align.Text = "Re-Align Loader";
-            this.Re_Align.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
