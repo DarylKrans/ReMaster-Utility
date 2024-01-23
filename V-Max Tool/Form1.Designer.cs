@@ -62,17 +62,19 @@
             this.Main = new System.Windows.Forms.TabPage();
             this.Adj_cbm = new System.Windows.Forms.CheckBox();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
+            this.Re_Align = new System.Windows.Forms.CheckBox();
             this.V2_rb = new System.Windows.Forms.CheckBox();
             this.v2exp = new System.Windows.Forms.Label();
             this.v2adv = new System.Windows.Forms.Label();
             this.Adv_V3_Opts = new System.Windows.Forms.TabPage();
+            this.V3_rb = new System.Windows.Forms.CheckBox();
+            this.v3_test = new System.Windows.Forms.Button();
             this.v3exp = new System.Windows.Forms.Label();
             this.v3adv = new System.Windows.Forms.Label();
             this.V3_Apply = new System.Windows.Forms.Button();
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
-            this.Re_Align = new System.Windows.Forms.CheckBox();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -491,6 +493,16 @@
             this.Adv_V2_Opts.TabIndex = 1;
             this.Adv_V2_Opts.Text = "V-Max v2 Advanced";
             // 
+            // Re_Align
+            // 
+            this.Re_Align.AutoSize = true;
+            this.Re_Align.Location = new System.Drawing.Point(432, 74);
+            this.Re_Align.Name = "Re_Align";
+            this.Re_Align.Size = new System.Drawing.Size(199, 29);
+            this.Re_Align.TabIndex = 38;
+            this.Re_Align.Text = "Re-Align Loader";
+            this.Re_Align.UseVisualStyleBackColor = true;
+            // 
             // V2_rb
             // 
             this.V2_rb.AutoSize = true;
@@ -524,6 +536,8 @@
             // Adv_V3_Opts
             // 
             this.Adv_V3_Opts.BackColor = System.Drawing.Color.Gainsboro;
+            this.Adv_V3_Opts.Controls.Add(this.V3_rb);
+            this.Adv_V3_Opts.Controls.Add(this.v3_test);
             this.Adv_V3_Opts.Controls.Add(this.v3exp);
             this.Adv_V3_Opts.Controls.Add(this.v3adv);
             this.Adv_V3_Opts.Controls.Add(this.V3_Apply);
@@ -536,6 +550,27 @@
             this.Adv_V3_Opts.Size = new System.Drawing.Size(784, 146);
             this.Adv_V3_Opts.TabIndex = 2;
             this.Adv_V3_Opts.Text = "V-Max v3 Advanced";
+            // 
+            // V3_rb
+            // 
+            this.V3_rb.AutoSize = true;
+            this.V3_rb.Location = new System.Drawing.Point(6, 72);
+            this.V3_rb.Name = "V3_rb";
+            this.V3_rb.Size = new System.Drawing.Size(188, 29);
+            this.V3_rb.TabIndex = 41;
+            this.V3_rb.Text = "Re-build tracks";
+            this.V3_rb.UseVisualStyleBackColor = true;
+            this.V3_rb.CheckedChanged += new System.EventHandler(this.V3_rb_CheckedChanged);
+            // 
+            // v3_test
+            // 
+            this.v3_test.Location = new System.Drawing.Point(678, 44);
+            this.v3_test.Name = "v3_test";
+            this.v3_test.Size = new System.Drawing.Size(100, 46);
+            this.v3_test.TabIndex = 40;
+            this.v3_test.Text = "don\'t use";
+            this.v3_test.UseVisualStyleBackColor = true;
+            this.v3_test.Click += new System.EventHandler(this.V3_test_Click);
             // 
             // v3exp
             // 
@@ -550,7 +585,7 @@
             // v3adv
             // 
             this.v3adv.AutoSize = true;
-            this.v3adv.Location = new System.Drawing.Point(48, 65);
+            this.v3adv.Location = new System.Drawing.Point(58, 44);
             this.v3adv.Name = "v3adv";
             this.v3adv.Size = new System.Drawing.Size(240, 25);
             this.v3adv.TabIndex = 38;
@@ -610,16 +645,6 @@
             this.V3_Custom.Text = "Use custom header length";
             this.V3_Custom.UseVisualStyleBackColor = true;
             this.V3_Custom.CheckedChanged += new System.EventHandler(this.V3_Custom_CheckedChanged);
-            // 
-            // Re_Align
-            // 
-            this.Re_Align.AutoSize = true;
-            this.Re_Align.Location = new System.Drawing.Point(432, 74);
-            this.Re_Align.Name = "Re_Align";
-            this.Re_Align.Size = new System.Drawing.Size(199, 29);
-            this.Re_Align.TabIndex = 38;
-            this.Re_Align.Text = "Re-Align Loader";
-            this.Re_Align.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -702,6 +727,8 @@
         private System.Windows.Forms.CheckBox V2_rb;
         private System.Windows.Forms.CheckBox Adj_cbm;
         private System.Windows.Forms.CheckBox Re_Align;
+        private System.Windows.Forms.Button v3_test;
+        private System.Windows.Forms.CheckBox V3_rb;
     }
 }
 
