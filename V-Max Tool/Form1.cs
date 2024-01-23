@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace V_Max_Tool
 {
@@ -1270,6 +1271,7 @@ namespace V_Max_Tool
             int d = Get_Density(data.Length);
             int sectors = 0;
             int header_len = 0;
+            int oh_len = 0;
             int tlen = 0;
             int fill = 0;
             byte[] sec_0_ID = { 0xf6, 0xf3 };
@@ -1288,7 +1290,7 @@ namespace V_Max_Tool
             List<string> hdr_ID = new List<string>();
             List<int> s_end = new List<int>();
             byte[] comp = new byte[3];
-            listBox3.Items.Add($"Track {trk}");
+            //listBox3.Items.Add($"Track {trk}");
             var a = Find_Data($"{Hex_Val(header)}-EE", data, 4);
             while (data[a] == 0x49) a -= 1;
             data = Rotate_Left(data, a);
@@ -1302,6 +1304,7 @@ namespace V_Max_Tool
                     if (b < 20 && data[i + b] == eb[0])
                     {
                         header_len = b;
+                        oh_len = b;
                         s_st.Add(i + b);
                     }
                     i += b;
@@ -1310,6 +1313,7 @@ namespace V_Max_Tool
                     {
                         sectors++;
                         headers.Add($"{Hex_Val(comp)} ({header_len}) sectors {sectors}");
+                        h2.Add(Hex_Val(comp));
                         hdr_ID.Add(Hex(comp, 2, 1));
                     }
                 }
@@ -1383,25 +1387,51 @@ namespace V_Max_Tool
                 }
                 if (!p_fill.Any(s => s == filler)) filler = 0xff;
             }
-            int index = 0;
-            if (sectors > 6)
-            {
-                int countt = 0;
-                byte[] gap_data = { 0x55, 0xaa, 0x00, 0x11, 0x22, 0x44, 0x88 };
-                for (int i = 0; i < data.Length; i++)
-                {
-                    if (gap_data.Any(s => s == data[i])) countt++; else countt = 0;
-                    if (countt > 10) { countt = i; break; }
-                }
-                data = Rotate_Left(data, countt);
-                var l = Find_Data(Hex_Val(header), data, 3);
-                while (data[l] == 0x49) l++;
-                Array.Copy(data, l, comp, 0, comp.Length);
-                index = hdr_ID.FindIndex(x => x.StartsWith(Hex(comp, 2, 1)));
-            } else index = hdr_ID.FindIndex(x => x.StartsWith("F3"));
+           
+            //int index = 0;
+            //if (sectors > 6)
+            //{
+            //    int countt = 0;
+            //    byte[] gap_data = { 0x55, 0xaa, 0x00, 0x11, 0x22, 0x44, 0x88 };
+            //    for (int i = 0; i < data.Length; i++)
+            //    {
+            //        if (gap_data.Any(s => s == data[i])) countt++; else countt = 0;
+            //        if (countt > 10) { countt = i; break; }
+            //    }
+            //    data = Rotate_Left(data, countt);
+            //    File.WriteAllBytes($@"c:\t{trk}", data);
+            //    var l = Find_Data(Hex_Val(header), data, 3);
+            //    while (data[l] == 0x49) l++;
+            //    Array.Copy(data, l, comp, 0, comp.Length);
+            //    index = hdr_ID.FindIndex(x => x.StartsWith(Hex(comp, 2, 1)));
+            //} else index = hdr_ID.FindIndex(x => x.StartsWith("F3"));
+            int index = hdr_ID.FindIndex(x => x.StartsWith("F3"));
 
+            // Trying to find if a track contains Track-ID marker (helps the 1541/71 find which track it's on)
+            byte[] track_ID = new byte[8];
+            var tin = index - 1;
+            if (tin < 0) tin = sectors - 1;
+            var tid = Find_Data(h2[tin], data, 3);
+            tid += sec_data[tin].Length + oh_len;
+            bool tdd = false;
+            while (tid < data.Length - 8)
+            {
+                Array.Copy(data, tid, track_ID, 0, track_ID.Length);
+                if (track_ID[0] == 0xff && track_ID[1] == 0x52) 
+                { 
+                    tdd = true; 
+                    gap_len -= track_ID.Length;
+                    if (gap_len < 0) gap_len = 0;
+                    break;
+                }
+                tid++;
+            }
+            if (!tdd) track_ID = new byte[0];
+
+            // Start rebuilding the track
             var buff = new MemoryStream();
             var wrt = new BinaryWriter(buff);
+            if (track_ID.Length > 0) wrt.Write(track_ID);
             for (int q = 0; q < gap_len; q++) wrt.Write((byte)gap);
             for (int i = 0; i < sectors; i++)
             {
