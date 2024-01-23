@@ -1305,7 +1305,7 @@ namespace V_Max_Tool
                         s_st.Add(i + b);
                     }
                     i += b;
-                    Array.Copy(data, i, comp, 0, comp.Length);
+                    try { Array.Copy(data, i, comp, 0, comp.Length); } catch { };
                     if (comp[0] == eb[0])
                     {
                         sectors++;
@@ -1314,10 +1314,10 @@ namespace V_Max_Tool
                     }
                 }
             }
-            for (int i = 0; i < headers.Count; i++)
-            {
-                try { listBox3.Items.Add($"{headers[i]} {s_st[i]} {hdr_ID[i]}"); } catch { }; //  {s_st[i]}");
-            }
+            //for (int i = 0; i < headers.Count; i++)
+            //{
+            //    try { listBox3.Items.Add($"{headers[i]} {s_st[i]} {hdr_ID[i]}"); } catch { }; //  {s_st[i]}");
+            //}
             sec_data = new byte[sectors][];
             for (int i = 0; i < sectors; i++)
             {
