@@ -55,7 +55,6 @@
             this.Drag_pic = new System.Windows.Forms.PictureBox();
             this.V2_Custom = new System.Windows.Forms.CheckBox();
             this.V2_hlen = new System.Windows.Forms.NumericUpDown();
-            this.V2_Apply = new System.Windows.Forms.Button();
             this.V2_Add_Sync = new System.Windows.Forms.CheckBox();
             this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
@@ -63,15 +62,11 @@
             this.Adj_cbm = new System.Windows.Forms.CheckBox();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
             this.Re_Align = new System.Windows.Forms.CheckBox();
-            this.V2_rb = new System.Windows.Forms.CheckBox();
             this.v2exp = new System.Windows.Forms.Label();
             this.v2adv = new System.Windows.Forms.Label();
             this.Adv_V3_Opts = new System.Windows.Forms.TabPage();
-            this.V3_rb = new System.Windows.Forms.CheckBox();
-            this.v3_test = new System.Windows.Forms.Button();
             this.v3exp = new System.Windows.Forms.Label();
             this.v3adv = new System.Windows.Forms.Label();
-            this.V3_Apply = new System.Windows.Forms.Button();
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
@@ -369,7 +364,7 @@
             // V2_Custom
             // 
             this.V2_Custom.AutoSize = true;
-            this.V2_Custom.Location = new System.Drawing.Point(5, 74);
+            this.V2_Custom.Location = new System.Drawing.Point(114, 76);
             this.V2_Custom.Name = "V2_Custom";
             this.V2_Custom.Size = new System.Drawing.Size(295, 29);
             this.V2_Custom.TabIndex = 28;
@@ -384,7 +379,7 @@
             0,
             0,
             0});
-            this.V2_hlen.Location = new System.Drawing.Point(306, 72);
+            this.V2_hlen.Location = new System.Drawing.Point(415, 74);
             this.V2_hlen.Maximum = new decimal(new int[] {
             36,
             0,
@@ -403,26 +398,18 @@
             0,
             0,
             0});
-            // 
-            // V2_Apply
-            // 
-            this.V2_Apply.Location = new System.Drawing.Point(678, 99);
-            this.V2_Apply.Name = "V2_Apply";
-            this.V2_Apply.Size = new System.Drawing.Size(100, 44);
-            this.V2_Apply.TabIndex = 30;
-            this.V2_Apply.Text = "Apply";
-            this.V2_Apply.UseVisualStyleBackColor = true;
-            this.V2_Apply.Click += new System.EventHandler(this.V2_Apply_Click);
+            this.V2_hlen.ValueChanged += new System.EventHandler(this.V2_hlen_ValueChanged);
             // 
             // V2_Add_Sync
             // 
             this.V2_Add_Sync.AutoSize = true;
-            this.V2_Add_Sync.Location = new System.Drawing.Point(5, 109);
+            this.V2_Add_Sync.Location = new System.Drawing.Point(114, 111);
             this.V2_Add_Sync.Name = "V2_Add_Sync";
             this.V2_Add_Sync.Size = new System.Drawing.Size(311, 29);
             this.V2_Add_Sync.TabIndex = 32;
             this.V2_Add_Sync.Text = "Add sync to syncless tracks";
             this.V2_Add_Sync.UseVisualStyleBackColor = true;
+            this.V2_Add_Sync.CheckedChanged += new System.EventHandler(this.V2_Add_Sync_CheckedChanged);
             // 
             // V2_Auto_Adj
             // 
@@ -478,12 +465,10 @@
             // 
             this.Adv_V2_Opts.BackColor = System.Drawing.Color.Gainsboro;
             this.Adv_V2_Opts.Controls.Add(this.Re_Align);
-            this.Adv_V2_Opts.Controls.Add(this.V2_rb);
             this.Adv_V2_Opts.Controls.Add(this.v2exp);
             this.Adv_V2_Opts.Controls.Add(this.v2adv);
             this.Adv_V2_Opts.Controls.Add(this.V2_Auto_Adj);
             this.Adv_V2_Opts.Controls.Add(this.V2_Custom);
-            this.Adv_V2_Opts.Controls.Add(this.V2_Apply);
             this.Adv_V2_Opts.Controls.Add(this.V2_hlen);
             this.Adv_V2_Opts.Controls.Add(this.V2_Add_Sync);
             this.Adv_V2_Opts.Location = new System.Drawing.Point(8, 39);
@@ -496,23 +481,12 @@
             // Re_Align
             // 
             this.Re_Align.AutoSize = true;
-            this.Re_Align.Location = new System.Drawing.Point(432, 74);
+            this.Re_Align.Location = new System.Drawing.Point(6, 41);
             this.Re_Align.Name = "Re_Align";
             this.Re_Align.Size = new System.Drawing.Size(199, 29);
             this.Re_Align.TabIndex = 38;
             this.Re_Align.Text = "Re-Align Loader";
             this.Re_Align.UseVisualStyleBackColor = true;
-            // 
-            // V2_rb
-            // 
-            this.V2_rb.AutoSize = true;
-            this.V2_rb.Location = new System.Drawing.Point(432, 109);
-            this.V2_rb.Name = "V2_rb";
-            this.V2_rb.Size = new System.Drawing.Size(188, 29);
-            this.V2_rb.TabIndex = 37;
-            this.V2_rb.Text = "Rebuild Tracks";
-            this.V2_rb.UseVisualStyleBackColor = true;
-            this.V2_rb.CheckedChanged += new System.EventHandler(this.V2_rb_CheckedChanged);
             // 
             // v2exp
             // 
@@ -527,7 +501,7 @@
             // v2adv
             // 
             this.v2adv.AutoSize = true;
-            this.v2adv.Location = new System.Drawing.Point(211, 38);
+            this.v2adv.Location = new System.Drawing.Point(257, 41);
             this.v2adv.Name = "v2adv";
             this.v2adv.Size = new System.Drawing.Size(240, 25);
             this.v2adv.TabIndex = 34;
@@ -536,11 +510,8 @@
             // Adv_V3_Opts
             // 
             this.Adv_V3_Opts.BackColor = System.Drawing.Color.Gainsboro;
-            this.Adv_V3_Opts.Controls.Add(this.V3_rb);
-            this.Adv_V3_Opts.Controls.Add(this.v3_test);
             this.Adv_V3_Opts.Controls.Add(this.v3exp);
             this.Adv_V3_Opts.Controls.Add(this.v3adv);
-            this.Adv_V3_Opts.Controls.Add(this.V3_Apply);
             this.Adv_V3_Opts.Controls.Add(this.V3_hlen);
             this.Adv_V3_Opts.Controls.Add(this.V3_Auto_Adj);
             this.Adv_V3_Opts.Controls.Add(this.V3_Custom);
@@ -550,27 +521,6 @@
             this.Adv_V3_Opts.Size = new System.Drawing.Size(784, 146);
             this.Adv_V3_Opts.TabIndex = 2;
             this.Adv_V3_Opts.Text = "V-Max v3 Advanced";
-            // 
-            // V3_rb
-            // 
-            this.V3_rb.AutoSize = true;
-            this.V3_rb.Location = new System.Drawing.Point(6, 72);
-            this.V3_rb.Name = "V3_rb";
-            this.V3_rb.Size = new System.Drawing.Size(188, 29);
-            this.V3_rb.TabIndex = 41;
-            this.V3_rb.Text = "Re-build tracks";
-            this.V3_rb.UseVisualStyleBackColor = true;
-            this.V3_rb.CheckedChanged += new System.EventHandler(this.V3_rb_CheckedChanged);
-            // 
-            // v3_test
-            // 
-            this.v3_test.Location = new System.Drawing.Point(678, 44);
-            this.v3_test.Name = "v3_test";
-            this.v3_test.Size = new System.Drawing.Size(100, 46);
-            this.v3_test.TabIndex = 40;
-            this.v3_test.Text = "don\'t use";
-            this.v3_test.UseVisualStyleBackColor = true;
-            this.v3_test.Click += new System.EventHandler(this.V3_test_Click);
             // 
             // v3exp
             // 
@@ -590,16 +540,6 @@
             this.v3adv.Size = new System.Drawing.Size(240, 25);
             this.v3adv.TabIndex = 38;
             this.v3adv.Text = "Advanced Users ONLY!";
-            // 
-            // V3_Apply
-            // 
-            this.V3_Apply.Location = new System.Drawing.Point(678, 99);
-            this.V3_Apply.Name = "V3_Apply";
-            this.V3_Apply.Size = new System.Drawing.Size(100, 44);
-            this.V3_Apply.TabIndex = 37;
-            this.V3_Apply.Text = "Apply";
-            this.V3_Apply.UseVisualStyleBackColor = true;
-            this.V3_Apply.Click += new System.EventHandler(this.V3_Apply_Click);
             // 
             // V3_hlen
             // 
@@ -622,6 +562,7 @@
             0,
             0,
             0});
+            this.V3_hlen.ValueChanged += new System.EventHandler(this.V3_hlen_ValueChanged);
             // 
             // V3_Auto_Adj
             // 
@@ -707,14 +648,12 @@
         private System.Windows.Forms.PictureBox Drag_pic;
         private System.Windows.Forms.CheckBox V2_Custom;
         private System.Windows.Forms.NumericUpDown V2_hlen;
-        private System.Windows.Forms.Button V2_Apply;
         private System.Windows.Forms.CheckBox V2_Add_Sync;
         private System.Windows.Forms.CheckBox V2_Auto_Adj;
         private System.Windows.Forms.TabControl Tabs;
         private System.Windows.Forms.TabPage Main;
         private System.Windows.Forms.TabPage Adv_V2_Opts;
         private System.Windows.Forms.TabPage Adv_V3_Opts;
-        private System.Windows.Forms.Button V3_Apply;
         private System.Windows.Forms.NumericUpDown V3_hlen;
         private System.Windows.Forms.CheckBox V3_Auto_Adj;
         private System.Windows.Forms.CheckBox V3_Custom;
@@ -724,11 +663,8 @@
         private System.Windows.Forms.Label v2exp;
         private System.Windows.Forms.Label v3exp;
         private System.Windows.Forms.Label v3adv;
-        private System.Windows.Forms.CheckBox V2_rb;
         private System.Windows.Forms.CheckBox Adj_cbm;
         private System.Windows.Forms.CheckBox Re_Align;
-        private System.Windows.Forms.Button v3_test;
-        private System.Windows.Forms.CheckBox V3_rb;
     }
 }
 
