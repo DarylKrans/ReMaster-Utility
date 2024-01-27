@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -40,8 +41,8 @@
             this.T_Info = new System.Windows.Forms.CheckBox();
             this.out_size = new System.Windows.Forms.ListBox();
             this.out_dif = new System.Windows.Forms.ListBox();
-            this.out_sec = new System.Windows.Forms.ListBox();
-            this.out_fmt = new System.Windows.Forms.ListBox();
+            this.ss = new System.Windows.Forms.ListBox();
+            this.sf = new System.Windows.Forms.ListBox();
             this.out_track = new System.Windows.Forms.ListBox();
             this.outbox = new System.Windows.Forms.GroupBox();
             this.out_rpm = new System.Windows.Forms.ListBox();
@@ -50,7 +51,6 @@
             this.inbox = new System.Windows.Forms.GroupBox();
             this.sd = new System.Windows.Forms.ListBox();
             this.strack = new System.Windows.Forms.ListBox();
-            this.ss = new System.Windows.Forms.ListBox();
             this.sl = new System.Windows.Forms.ListBox();
             this.Drag_pic = new System.Windows.Forms.PictureBox();
             this.V2_Custom = new System.Windows.Forms.CheckBox();
@@ -70,6 +70,8 @@
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
+            this.Out_density = new System.Windows.Forms.ListBox();
+            this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -79,6 +81,7 @@
             this.Adv_V2_Opts.SuspendLayout();
             this.Adv_V3_Opts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -179,7 +182,7 @@
             this.out_size.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_size.FormattingEnabled = true;
             this.out_size.ItemHeight = 25;
-            this.out_size.Location = new System.Drawing.Point(140, 30);
+            this.out_size.Location = new System.Drawing.Point(150, 30);
             this.out_size.Name = "out_size";
             this.out_size.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_size.Size = new System.Drawing.Size(100, 1002);
@@ -192,35 +195,35 @@
             this.out_dif.ForeColor = System.Drawing.Color.BlueViolet;
             this.out_dif.FormattingEnabled = true;
             this.out_dif.ItemHeight = 25;
-            this.out_dif.Location = new System.Drawing.Point(237, 30);
+            this.out_dif.Location = new System.Drawing.Point(247, 30);
             this.out_dif.Name = "out_dif";
             this.out_dif.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_dif.Size = new System.Drawing.Size(73, 1002);
             this.out_dif.TabIndex = 24;
             // 
-            // out_sec
+            // ss
             // 
-            this.out_sec.BackColor = System.Drawing.Color.Gainsboro;
-            this.out_sec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.out_sec.FormattingEnabled = true;
-            this.out_sec.ItemHeight = 25;
-            this.out_sec.Location = new System.Drawing.Point(306, 30);
-            this.out_sec.Name = "out_sec";
-            this.out_sec.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_sec.Size = new System.Drawing.Size(62, 1002);
-            this.out_sec.TabIndex = 25;
+            this.ss.BackColor = System.Drawing.Color.Gainsboro;
+            this.ss.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ss.FormattingEnabled = true;
+            this.ss.ItemHeight = 25;
+            this.ss.Location = new System.Drawing.Point(266, 30);
+            this.ss.Name = "ss";
+            this.ss.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.ss.Size = new System.Drawing.Size(62, 1002);
+            this.ss.TabIndex = 25;
             // 
-            // out_fmt
+            // sf
             // 
-            this.out_fmt.BackColor = System.Drawing.Color.Gainsboro;
-            this.out_fmt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.out_fmt.FormattingEnabled = true;
-            this.out_fmt.ItemHeight = 25;
-            this.out_fmt.Location = new System.Drawing.Point(364, 30);
-            this.out_fmt.Name = "out_fmt";
-            this.out_fmt.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_fmt.Size = new System.Drawing.Size(145, 1002);
-            this.out_fmt.TabIndex = 26;
+            this.sf.BackColor = System.Drawing.Color.Gainsboro;
+            this.sf.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sf.FormattingEnabled = true;
+            this.sf.ItemHeight = 25;
+            this.sf.Location = new System.Drawing.Point(153, 30);
+            this.sf.Name = "sf";
+            this.sf.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.sf.Size = new System.Drawing.Size(115, 1002);
+            this.sf.TabIndex = 26;
             // 
             // out_track
             // 
@@ -229,7 +232,7 @@
             this.out_track.ForeColor = System.Drawing.Color.Blue;
             this.out_track.FormattingEnabled = true;
             this.out_track.ItemHeight = 25;
-            this.out_track.Location = new System.Drawing.Point(5, 30);
+            this.out_track.Location = new System.Drawing.Point(15, 30);
             this.out_track.Name = "out_track";
             this.out_track.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_track.Size = new System.Drawing.Size(53, 1002);
@@ -238,20 +241,19 @@
             // outbox
             // 
             this.outbox.BackColor = System.Drawing.Color.Gainsboro;
+            this.outbox.Controls.Add(this.Out_density);
             this.outbox.Controls.Add(this.out_rpm);
             this.outbox.Controls.Add(this.out_track);
-            this.outbox.Controls.Add(this.out_fmt);
-            this.outbox.Controls.Add(this.out_sec);
             this.outbox.Controls.Add(this.out_dif);
             this.outbox.Controls.Add(this.out_size);
             this.outbox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.outbox.ForeColor = System.Drawing.Color.Indigo;
-            this.outbox.Location = new System.Drawing.Point(398, 245);
+            this.outbox.Location = new System.Drawing.Point(476, 245);
             this.outbox.Name = "outbox";
-            this.outbox.Size = new System.Drawing.Size(521, 1047);
+            this.outbox.Size = new System.Drawing.Size(427, 1047);
             this.outbox.TabIndex = 22;
             this.outbox.TabStop = false;
-            this.outbox.Text = "Track/ RPM /  Size  /  Diff  / Sectors /   Format / ";
+            this.outbox.Text = "Track/ RPM /    Size    /  Diff  / Density";
             // 
             // out_rpm
             // 
@@ -260,7 +262,7 @@
             this.out_rpm.ForeColor = System.Drawing.Color.ForestGreen;
             this.out_rpm.FormattingEnabled = true;
             this.out_rpm.ItemHeight = 25;
-            this.out_rpm.Location = new System.Drawing.Point(57, 30);
+            this.out_rpm.Location = new System.Drawing.Point(67, 30);
             this.out_rpm.Name = "out_rpm";
             this.out_rpm.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_rpm.Size = new System.Drawing.Size(86, 1002);
@@ -278,7 +280,7 @@
             // Output
             // 
             this.Output.AutoSize = true;
-            this.Output.Location = new System.Drawing.Point(381, 214);
+            this.Output.Location = new System.Drawing.Point(509, 213);
             this.Output.Name = "Output";
             this.Output.Size = new System.Drawing.Size(76, 25);
             this.Output.TabIndex = 24;
@@ -289,16 +291,17 @@
             this.inbox.BackColor = System.Drawing.Color.Gainsboro;
             this.inbox.Controls.Add(this.sd);
             this.inbox.Controls.Add(this.strack);
+            this.inbox.Controls.Add(this.sf);
             this.inbox.Controls.Add(this.ss);
             this.inbox.Controls.Add(this.sl);
             this.inbox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.inbox.ForeColor = System.Drawing.Color.Indigo;
             this.inbox.Location = new System.Drawing.Point(21, 245);
             this.inbox.Name = "inbox";
-            this.inbox.Size = new System.Drawing.Size(319, 1047);
+            this.inbox.Size = new System.Drawing.Size(396, 1047);
             this.inbox.TabIndex = 25;
             this.inbox.TabStop = false;
-            this.inbox.Text = "Track / Size / Start / Density";
+            this.inbox.Text = "Trk / Size / Format / Sectors / Dens";
             // 
             // sd
             // 
@@ -306,10 +309,10 @@
             this.sd.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sd.FormattingEnabled = true;
             this.sd.ItemHeight = 25;
-            this.sd.Location = new System.Drawing.Point(222, 30);
+            this.sd.Location = new System.Drawing.Point(323, 30);
             this.sd.Name = "sd";
             this.sd.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.sd.Size = new System.Drawing.Size(82, 1002);
+            this.sd.Size = new System.Drawing.Size(48, 1002);
             this.sd.TabIndex = 32;
             // 
             // strack
@@ -319,23 +322,11 @@
             this.strack.ForeColor = System.Drawing.Color.Blue;
             this.strack.FormattingEnabled = true;
             this.strack.ItemHeight = 25;
-            this.strack.Location = new System.Drawing.Point(6, 30);
+            this.strack.Location = new System.Drawing.Point(14, 30);
             this.strack.Name = "strack";
             this.strack.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.strack.Size = new System.Drawing.Size(53, 1002);
             this.strack.TabIndex = 31;
-            // 
-            // ss
-            // 
-            this.ss.BackColor = System.Drawing.Color.Gainsboro;
-            this.ss.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ss.FormattingEnabled = true;
-            this.ss.ItemHeight = 25;
-            this.ss.Location = new System.Drawing.Point(143, 30);
-            this.ss.Name = "ss";
-            this.ss.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.ss.Size = new System.Drawing.Size(82, 1002);
-            this.ss.TabIndex = 30;
             // 
             // sl
             // 
@@ -343,7 +334,7 @@
             this.sl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sl.FormattingEnabled = true;
             this.sl.ItemHeight = 25;
-            this.sl.Location = new System.Drawing.Point(59, 30);
+            this.sl.Location = new System.Drawing.Point(67, 30);
             this.sl.Name = "sl";
             this.sl.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.sl.Size = new System.Drawing.Size(90, 1002);
@@ -428,7 +419,7 @@
             this.Tabs.Controls.Add(this.Main);
             this.Tabs.Controls.Add(this.Adv_V2_Opts);
             this.Tabs.Controls.Add(this.Adv_V3_Opts);
-            this.Tabs.Location = new System.Drawing.Point(19, 10);
+            this.Tabs.Location = new System.Drawing.Point(21, 10);
             this.Tabs.Name = "Tabs";
             this.Tabs.SelectedIndex = 0;
             this.Tabs.Size = new System.Drawing.Size(800, 193);
@@ -587,11 +578,23 @@
             this.V3_Custom.UseVisualStyleBackColor = true;
             this.V3_Custom.CheckedChanged += new System.EventHandler(this.V3_Custom_CheckedChanged);
             // 
+            // Out_density
+            // 
+            this.Out_density.BackColor = System.Drawing.Color.Gainsboro;
+            this.Out_density.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Out_density.FormattingEnabled = true;
+            this.Out_density.ItemHeight = 25;
+            this.Out_density.Location = new System.Drawing.Point(316, 30);
+            this.Out_density.Name = "Out_density";
+            this.Out_density.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.Out_density.Size = new System.Drawing.Size(100, 1002);
+            this.Out_density.TabIndex = 33;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(933, 1334);
+            this.ClientSize = new System.Drawing.Size(928, 1334);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.Drag_pic);
@@ -617,6 +620,7 @@
             this.Adv_V3_Opts.ResumeLayout(false);
             this.Adv_V3_Opts.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -635,15 +639,14 @@
         private System.Windows.Forms.CheckBox T_Info;
         private System.Windows.Forms.ListBox out_size;
         private System.Windows.Forms.ListBox out_dif;
-        private System.Windows.Forms.ListBox out_sec;
-        private System.Windows.Forms.ListBox out_fmt;
+        private System.Windows.Forms.ListBox ss;
+        private System.Windows.Forms.ListBox sf;
         private System.Windows.Forms.ListBox out_track;
         private System.Windows.Forms.GroupBox outbox;
         private System.Windows.Forms.Label Source;
         private System.Windows.Forms.Label Output;
         private System.Windows.Forms.GroupBox inbox;
         private System.Windows.Forms.ListBox strack;
-        private System.Windows.Forms.ListBox ss;
         private System.Windows.Forms.ListBox sl;
         private System.Windows.Forms.PictureBox Drag_pic;
         private System.Windows.Forms.CheckBox V2_Custom;
@@ -665,6 +668,8 @@
         private System.Windows.Forms.Label v3adv;
         private System.Windows.Forms.CheckBox Adj_cbm;
         private System.Windows.Forms.CheckBox Re_Align;
+        private System.Windows.Forms.ListBox Out_density;
+        private System.Windows.Forms.BindingSource bindingSource1;
     }
 }
 
