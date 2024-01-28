@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Configuration;
 using System.Text;
 using System.Windows.Forms;
 
@@ -81,6 +82,7 @@ namespace V_Max_Tool
             public static byte[][] Track_Data = new byte[0][];
             public static int[] Track_Length = new int[0];
             public static bool L_Rot = false;
+            public static int[] s_len = new int[0];
         }
 
         public static class Original  // Global variable for retaining original loader track data
@@ -1454,6 +1456,7 @@ namespace V_Max_Tool
         /// ------------------------------------------------------------------------------------------------------------------------
         (string[], int, int, int, int, int, int) Get_vmv3_track_length(byte[] data, int trk)
         {
+            string msg = "";
             int data_start = 0;
             int data_end = 0;
             int sector_zero = 0;
@@ -1544,15 +1547,15 @@ namespace V_Max_Tool
                     for (int u = 0; u < hl[j]; u++) hdr += "49-";
                     s.Add($"Sector ({h}){sz} Pos ({spos[j]}) {hdr}{ss[j].Remove(8, ss[j].Length - 8)}");
                 }
-                if (!end_found) s.Add($"Track Length [est] (7400) Sectors ({hb.Count})");
+                if (!end_found) s.Add($"{msg}");
             }
-            if (ss.Count < 10)
+            if (ss.Count < 16)
             {
                 int de = density[Get_Density(data_end - data_start)];
                 if ((tracks > 42 && trk == 36) || (tracks <= 42 && trk == 19)) de = density[1];
                 if (start_found && !end_found)
                 {
-                    if (data_start > 3000) data_start = 0;
+                    if (data_start > 500) data_start = 0;
                     data_end = de + 200;
                 }
                 if (start_found && end_found && (data_end - data_start) < 7000)
@@ -1560,10 +1563,17 @@ namespace V_Max_Tool
                     var a = de - (data_end - data_start);
                     if (data_end + a < 8192) data_end += a;
                 }
-                if (!end_found)
-                {
-                    build_list();
-                }
+                msg = $"Track Length [est] (7400) Sectors ({hb.Count})";
+            }
+            if (fext.ToLower() == ".g64")
+            {
+                data_start = 0; data_end = NDG.s_len[trk];
+                int p = Array.FindIndex(hb.ToArray(), se => se == sec_0_ID);
+                msg = $"Track Length ({NDG.s_len[trk]}) Sectors ({hb.Count})";
+            }
+            if (!end_found)
+            {
+                build_list();
             }
             return (s.ToArray(), data_start, data_end, sector_zero, (data_end - data_start), ss.Count, header_avg);
         }
@@ -1803,7 +1813,8 @@ namespace V_Max_Tool
                 {
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
                     int q = 0;
-                    (q, NDS.Track_Data[i]) = (Get_Loader_Len(NDS.Track_Data[i], 0, 80, 7000));
+                    if (fext.ToLower() == ".g64") q = NDG.s_len[i];
+                    else (q, NDS.Track_Data[i]) = (Get_Loader_Len(NDS.Track_Data[i], 0, 80, 7000));
                     NDS.Track_Length[i] = q * 8;
                     NDG.Track_Data[i] = new byte[NDS.Track_Length[i] / 8];
                     Array.Copy(NDS.Track_Data[i], 0, NDG.Track_Data[i], 0, NDG.Track_Data[i].Length);
@@ -2146,6 +2157,7 @@ namespace V_Max_Tool
                                 byte[] tdata = new byte[ts];
                                 Stream.Seek(pos + 2, SeekOrigin.Begin);
                                 Stream.Read(tdata, 0, ts);
+                                NDG.s_len[i] = tdata.Length;
                                 Array.Copy(tdata, 0, NDS.Track_Data[i], 0, ts);
                                 Array.Copy(tdata, 0, NDS.Track_Data[i], ts, 8192 - ts);
                             }
@@ -2239,6 +2251,7 @@ namespace V_Max_Tool
                 NDG.Track_Length = new int[len];
                 NDG.Track_Data = new byte[len][];
                 NDG.L_Rot = false;
+                NDG.s_len = new int[len];
                 // Original is the arrays that keep the original track data for the Auto Adjust feature
                 Original.A = new byte[0];
                 Original.G = new byte[0];
