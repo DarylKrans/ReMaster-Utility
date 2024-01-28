@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net.Configuration;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace V_Max_Tool
 {
@@ -94,6 +97,189 @@ namespace V_Max_Tool
             public static byte[][] OT = new byte[0][];
         }
 
+        class LineColor
+        {
+            public string Text;
+            public Color Color;
+        };
+
+        public class Message_Center : IDisposable
+        {
+            private readonly IWin32Window owner;
+            private readonly HookProc hookProc;
+            private readonly IntPtr hHook = IntPtr.Zero;
+
+            public Message_Center(IWin32Window owner)
+            {
+                if (owner == null) throw new ArgumentNullException("owner");
+
+                this.owner = owner;
+                hookProc = DialogHookProc;
+
+                hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, hookProc, IntPtr.Zero, GetCurrentThreadId());
+            }
+
+            private IntPtr DialogHookProc(int nCode, IntPtr wParam, IntPtr lParam)
+            {
+                if (nCode < 0)
+                {
+                    return CallNextHookEx(hHook, nCode, wParam, lParam);
+                }
+
+                CWPRETSTRUCT msg = (CWPRETSTRUCT)Marshal.PtrToStructure(lParam, typeof(CWPRETSTRUCT));
+                IntPtr hook = hHook;
+
+                if (msg.message == (int)CbtHookAction.HCBT_ACTIVATE)
+                {
+                    try
+                    {
+                        CenterWindow(msg.hwnd);
+                    }
+                    finally
+                    {
+                        UnhookWindowsHookEx(hHook);
+                    }
+                }
+
+                return CallNextHookEx(hook, nCode, wParam, lParam);
+            }
+
+            public void Dispose()
+            {
+                UnhookWindowsHookEx(hHook);
+            }
+
+            private void CenterWindow(IntPtr hChildWnd)
+            {
+                Rectangle recChild = new Rectangle(0, 0, 0, 0);
+                bool success = GetWindowRect(hChildWnd, ref recChild);
+
+                if (!success)
+                {
+                    return;
+                }
+
+                int width = recChild.Width - recChild.X;
+                int height = recChild.Height - recChild.Y;
+
+                Rectangle recParent = new Rectangle(0, 0, 0, 0);
+                success = GetWindowRect(owner.Handle, ref recParent);
+
+                if (!success)
+                {
+                    return;
+                }
+
+                Point ptCenter = new Point(0, 0);
+                ptCenter.X = recParent.X + ((recParent.Width - recParent.X) / 2);
+                ptCenter.Y = recParent.Y + ((recParent.Height - recParent.Y) / 2);
+
+
+                Point ptStart = new Point(0, 0);
+                ptStart.X = (ptCenter.X - (width / 2));
+                ptStart.Y = (ptCenter.Y - (height / 2));
+
+                //MoveWindow(hChildWnd, ptStart.X, ptStart.Y, width, height, false);
+                Task.Factory.StartNew(() => SetWindowPos(hChildWnd, (IntPtr)0, ptStart.X, ptStart.Y, width, height, SetWindowPosFlags.SWP_ASYNCWINDOWPOS | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_NOZORDER));
+            }
+
+            public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+            public delegate void TimerProc(IntPtr hWnd, uint uMsg, UIntPtr nIDEvent, uint dwTime);
+            private const int WH_CALLWNDPROCRET = 12;
+            private enum CbtHookAction : int
+            {
+                HCBT_MOVESIZE = 0,
+                HCBT_MINMAX = 1,
+                HCBT_QS = 2,
+                HCBT_CREATEWND = 3,
+                HCBT_DESTROYWND = 4,
+                HCBT_ACTIVATE = 5,
+                HCBT_CLICKSKIPPED = 6,
+                HCBT_KEYSKIPPED = 7,
+                HCBT_SYSCOMMAND = 8,
+                HCBT_SETFOCUS = 9
+            }
+
+            [DllImport("kernel32.dll")]
+            static extern int GetCurrentThreadId();
+
+            [DllImport("user32.dll")]
+            private static extern bool GetWindowRect(IntPtr hWnd, ref Rectangle lpRect);
+
+            [DllImport("user32.dll")]
+            private static extern int MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+            [DllImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, SetWindowPosFlags uFlags);
+
+            [DllImport("User32.dll")]
+            public static extern UIntPtr SetTimer(IntPtr hWnd, UIntPtr nIDEvent, uint uElapse, TimerProc lpTimerFunc);
+
+            [DllImport("User32.dll")]
+            public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+            [DllImport("user32.dll")]
+            public static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hInstance, int threadId);
+
+            [DllImport("user32.dll")]
+            public static extern int UnhookWindowsHookEx(IntPtr idHook);
+
+            [DllImport("user32.dll")]
+            public static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, IntPtr wParam, IntPtr lParam);
+
+            [DllImport("user32.dll")]
+            public static extern int GetWindowTextLength(IntPtr hWnd);
+
+            [DllImport("user32.dll")]
+            public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int maxLength);
+
+            [DllImport("user32.dll")]
+            public static extern int EndDialog(IntPtr hDlg, IntPtr nResult);
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct CWPRETSTRUCT
+            {
+                public IntPtr lResult;
+                public IntPtr lParam;
+                public IntPtr wParam;
+                public uint message;
+                public IntPtr hwnd;
+            };
+        }
+
+        [Flags]
+        public enum SetWindowPosFlags : uint
+        {
+            SWP_ASYNCWINDOWPOS = 0x4000,
+            SWP_DEFERERASE = 0x2000,
+            SWP_DRAWFRAME = 0x0020,
+            SWP_FRAMECHANGED = 0x0020,
+            SWP_HIDEWINDOW = 0x0080,
+            SWP_NOACTIVATE = 0x0010,
+            SWP_NOCOPYBITS = 0x0100,
+            SWP_NOMOVE = 0x0002,
+            SWP_NOOWNERZORDER = 0x0200,
+            SWP_NOREDRAW = 0x0008,
+            SWP_NOREPOSITION = 0x0200,
+            SWP_NOSENDCHANGING = 0x0400,
+            SWP_NOSIZE = 0x0001,
+            SWP_NOZORDER = 0x0004,
+            SWP_SHOWWINDOW = 0x0040,
+        }
+
+        void Out_density_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (Out_density.Items[e.Index] is LineColor item)
+            {
+                e.Graphics.DrawString(
+                    item.Text,
+                    e.Font,
+                    new SolidBrush(item.Color),
+                e.Bounds);
+            }
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -150,6 +336,9 @@ namespace V_Max_Tool
 
         void Init()
         {
+            Out_density.DrawMode = DrawMode.OwnerDrawFixed;
+            this.Out_density.DrawItem += new DrawItemEventHandler(Out_density_DrawItem);
+            Out_density.ItemHeight = 13;
             Adj_cbm.Visible = false;
             Tabs.Visible = true;
             string[] o = { "G64", "NIB", "NIB & G64" };
@@ -189,9 +378,12 @@ namespace V_Max_Tool
             }
             catch (Exception ex)
             {
-                string t = "Something went wrong!";
-                string s = ex.Message;
-                MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                using (Message_Center centeringService = new Message_Center(this)) // center message box
+                {
+                    string t = "Something went wrong!";
+                    string s = ex.Message;
+                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
             buffer.Close();
             write.Close();
@@ -237,9 +429,12 @@ namespace V_Max_Tool
             }
             catch (Exception ex)
             {
-                string t = "Something went wrong!";
-                string s = ex.Message;
-                MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                using (Message_Center centeringService = new Message_Center(this)) // center message box
+                {
+                    string t = "Something went wrong!";
+                    string s = ex.Message;
+                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             void Big() // 84 track nib file
@@ -730,6 +925,18 @@ namespace V_Max_Tool
 
                     BitArray temp = new BitArray(bcnt << 3);
                     for (int i = 0; i < (bcnt << 3); i++) temp[i] = d[i];
+                    if (sync)
+                    {
+                        var ver = 0;
+                        for (int i = 0; i < expected_sync; i++) { if (temp[temp.Length - (i + 1)] == true) ver++; }
+                        if (ver < sync_count && ver < expected_sync && ver >= minimum_sync)
+                        {
+                            for (int i = 0; i < expected_sync; i++) temp[(temp.Length - 1) - i] = true;
+                        }
+                        temp[(temp.Length - 1) - expected_sync] = false;
+                        temp[(temp.Length - 2) - expected_sync] = true;
+                    }
+
                     byte[] dest = new byte[bcnt];
                     temp.CopyTo(dest, 0);
                     dest = Flip_Endian(dest);
@@ -1442,7 +1649,7 @@ namespace V_Max_Tool
             {
                 wrt.Write(v3_sync_marker);
                 for (int j = 0; j < header_len; j++) wrt.Write(sb[0]);
-                wrt.Write(sec_data[index]);
+                try { wrt.Write(sec_data[index]); } catch { }
                 index++;
                 if (index == sectors) index = 0;
             }
@@ -1528,9 +1735,12 @@ namespace V_Max_Tool
             }
             catch
             {
-                string m = "Output image may not work!";
-                string t = $"Error processing track {(trk / 2) + 1}";
-                MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                using (Message_Center centeringService = new Message_Center(this)) // center message box
+                {
+                    string m = "Output image may not work!";
+                    string t = $"Error processing track {(trk / 2) + 1}";
+                    MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
             header_avg = header_total / ss.Count;
 
@@ -1874,7 +2084,7 @@ namespace V_Max_Tool
                 ht = 0.5;
             }
             else ht = 0;
-            bool over = false;
+            Color color = new Color(); // = Color.Green;
             for (int i = 0; i < tracks; i++)
             {
                 if (halftracks) ht += .5; else ht += 1;
@@ -1893,13 +2103,13 @@ namespace V_Max_Tool
                         var d = Get_Density(NDG.Track_Data[i].Length);
                         if (NDG.Track_Data[i].Length > density[d])
                         {
-                            if (NDG.Track_Data[i].Length > density[d] + 3) over = true;
+                            if (NDG.Track_Data[i].Length > density[d] + 3) color = Color.Red;
+                            if (NDG.Track_Data[i].Length > density[d] && NDG.Track_Data[i].Length < density[d] + 5) color = Color.Goldenrod;
                             o = $" + {NDG.Track_Data[i].Length - density[d]}";
                         }
-
-                        if (over) Out_density.ForeColor = System.Drawing.Color.Red;
-                        else Out_density.ForeColor = System.Drawing.Color.Green;
-                        Out_density.Items.Add($"{3 - d}{o}");
+                        else color = Color.Green;
+                        if (NDG.Track_Data[i].Length < density[d]) o = $" - {density[d] - NDG.Track_Data[i].Length}";
+                        Out_density.Items.Add(new LineColor { Color = color, Text = $"{3 - d}{o}" });
                         out_track.Items.Add(ht);
                         double r = Math.Round(((double)density[Get_Density(NDA.Track_Length[i] >> 3)] / (double)(NDA.Track_Length[i] >> 3) * 300), 1);
                         if (r > 300) r = Math.Floor(r);
@@ -1950,7 +2160,28 @@ namespace V_Max_Tool
                     try
                     {
                         byte[] temp = Adjust_Sync_CBM(NDS.Track_Data[trk], exp_snc, min_snc, ign_snc, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk);
-                        if (adj && temp.Length > density[d]) temp = Shrink_Track(temp, d);
+                        if (adj && temp.Length > density[d])
+                        {
+                            // ---------- Get rid of this section if images error on CBM tracks --------------------------
+                            byte[] p_gap = { 0x55, 0xaa, 0x00, 0x11, 0x22, 0x44, 0x88, 0x45, 0x12, 0x15, 0x51 };
+                            int gap = 0;
+                            var tb = temp.Length - density[d];
+                            byte[] nt = new byte[temp.Length - tb];
+                            for (int i = 1; i < 200; i++)
+                            {
+                                if (p_gap.Any(s => s == temp[temp.Length - i])) gap++; else gap = 0;
+                                if (gap == tb + 2)
+                                {
+                                    Array.Copy(temp, 0, nt, 0, temp.Length - i);
+                                    Array.Copy(temp, (temp.Length - i) + tb, nt, temp.Length - i, nt.Length - (temp.Length - i));
+                                    temp = new byte[nt.Length];
+                                    Array.Copy(nt, 0, temp, 0, temp.Length);
+                                    break;
+                                }
+                            }
+                            // -------------------------------------------------------------------------------------------
+                            if (temp.Length > density[d]) temp = Shrink_Track(temp, d);
+                        }
                         Set_Dest_Arrays(temp, trk);
                         (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk]) = Find_Sector_Zero(NDA.Track_Data[trk]);
                         f[0] = "";
@@ -1959,10 +2190,12 @@ namespace V_Max_Tool
                     {
                         if (!error)
                         {
-                            string m = "This image is not compatible with this program!";
-                            string t = "This is not a CBM or (known) V-Max variant";
-                            MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            error = true;
+                            using (Message_Center center = new Message_Center(this)) // center message box
+                            {
+                                string m = "This image is not compatible with this program!";
+                                string t = "This is not a CBM or (known) V-Max variant";
+                                MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
                         }
                     }
                 }
@@ -2103,7 +2336,7 @@ namespace V_Max_Tool
             }
             try
             {
-                FileStream Stream = new FileStream(File_List[0], FileMode.Open, FileAccess.Read);
+                FileStream Stream = new FileStream(File_List[0], FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 if (fext.ToLower() == supported[0])
                 {
                     long length = new System.IO.FileInfo(File_List[0]).Length;
@@ -2184,11 +2417,13 @@ namespace V_Max_Tool
             }
             catch (Exception ex)
             {
-                string t = "Something went wrong!";
-                string s = ex.Message;
-
-                MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                error = true;
+                using (Message_Center center = new Message_Center(this)) // center message box
+                {
+                    string t = "Something went wrong!";
+                    string s = ex.Message;
+                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    error = true;
+                }
             }
 
             if (!error && !supported.Any(s => s == fext.ToLower()))
