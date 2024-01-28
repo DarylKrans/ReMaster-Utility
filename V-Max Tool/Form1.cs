@@ -181,7 +181,16 @@ namespace V_Max_Tool
             var write = new BinaryWriter(buffer);
             write.Write(nib_header);
             for (int i = 0; i < tracks; i++) write.Write(NDA.Track_Data[i]);
-            File.WriteAllBytes($@"{dirname}\Output\{fname}{fnappend}{fext}", buffer.ToArray());
+            try
+            {
+                File.WriteAllBytes($@"{dirname}\Output\{fname}{fnappend}{fext}", buffer.ToArray());
+            }
+            catch (Exception ex)
+            {
+                string t = "Something went wrong!";
+                string s = ex.Message;
+                MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             buffer.Close();
             write.Close();
         }
@@ -220,7 +229,16 @@ namespace V_Max_Tool
                     if (o > 0) for (int j = 0; j < o; j++) write.Write((byte)0);
                 }
             }
-            File.WriteAllBytes($@"{dirname}\Output\{fname}{fnappend}.g64", buffer.ToArray());
+            try
+            {
+                File.WriteAllBytes($@"{dirname}\Output\{fname}{fnappend}.g64", buffer.ToArray());
+            }
+            catch (Exception ex)
+            {
+                string t = "Something went wrong!";
+                string s = ex.Message;
+                MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             void Big() // 84 track nib file
             {
@@ -1266,7 +1284,7 @@ namespace V_Max_Tool
             else return temp_data; // <- Return array without any adjustments to sync
         }
 
-        /// ---------------------- V-Max v3 test -----------------------------------------------------------------------------------
+        /// ---------------------- Rebuilt V-Max v3 --------------------------------------------------------------------------------
 
         byte[] Rebuild_V3(byte[] data, int trk)
         {
@@ -1444,7 +1462,7 @@ namespace V_Max_Tool
             bool start_found = false;
             bool end_found = false;
             bool s_zero = false;
-            byte[] sec_0_ID = { 0xf6, 0xf3 }; // V-Max v3 sector 0 ID marker (f6 found on tracks > 15 sectors, f3 found on short tracks < 15 sectors)
+            byte sec_0_ID = 0xf3; // V-Max v3 sector 0 ID marker (f6 found on tracks > 15 sectors, f3 found on short tracks < 15 sectors)
             byte[] header = new byte[] { 0x49, 0x49 }; // V-Max v3 header pattern
             byte head_end = 0xee; // V-Max v3 common sector ID start byte located directly following the 49-49-49 pattern
             byte[] comp = new byte[2];
@@ -1467,7 +1485,7 @@ namespace V_Max_Tool
                         if (i + head.Length < data.Length) Array.Copy(data, i, head, 0, head.Length);
                         if (!ss.Any(b => b == Hex_Val(head)))
                         {
-                            if (head[2] == sec_0_ID[0]) { sector_zero = i - a; s_zero = true; }
+                            if (head[2] == sec_0_ID) { sector_zero = i - a; s_zero = true; }
                             if (!start_found) { data_start = i - a; start_found = true; }
                             ss.Add(Hex_Val(head));
                             hb.Add(head[2]);
@@ -1486,7 +1504,7 @@ namespace V_Max_Tool
                             {
                                 if (hb.Count < 10 && !s_zero)
                                 {
-                                    int p = Array.FindIndex(hb.ToArray(), se => se == sec_0_ID[1]);
+                                    int p = Array.FindIndex(hb.ToArray(), se => se == sec_0_ID);
                                     if (p != -1)
                                     {
                                         s_zero = true;
@@ -1503,7 +1521,7 @@ namespace V_Max_Tool
             }
             try
             {
-                if (end_found && hb.Count < 10) sector_zero = spos[Array.FindIndex(hb.ToArray(), se => se == sec_0_ID[1])];
+                if (end_found && hb.Count < 10) sector_zero = spos[Array.FindIndex(hb.ToArray(), se => se == sec_0_ID)];
             }
             catch
             {
@@ -1515,10 +1533,8 @@ namespace V_Max_Tool
 
             void build_list()
             {
-                byte vvm3l = 0xf6;
                 int h;
-                if (hb.Count > 10) vvm3l = 0xf6; else vvm3l = sec_0_ID[1];
-                int p = Array.FindIndex(hb.ToArray(), se => se == vvm3l);
+                int p = Array.FindIndex(hb.ToArray(), se => se == sec_0_ID);
                 for (int j = 0; j < ss.Count; j++)
                 {
                     string hdr = "";
@@ -2074,84 +2090,96 @@ namespace V_Max_Tool
                 fname = Path.GetFileNameWithoutExtension(File_List[0]);
                 fext = Path.GetExtension(File_List[0]);
             }
-            FileStream Stream = new FileStream(File_List[0], FileMode.Open, FileAccess.Read);
-            if (fext.ToLower() == supported[0])
+            try
             {
-                long length = new System.IO.FileInfo(File_List[0]).Length;
-                tracks = (int)(length - 256) / 8192;
-                if ((tracks * 8192) + 256 == length) l = "File Size OK!";
-                listBox3.Items.Clear();
-                Set_ListBox_Items(true);
-                nib_header = new byte[256];
-                Stream.Seek(0, SeekOrigin.Begin);
-                Stream.Read(nib_header, 0, 256);
-                Set_Arrays(tracks);
-                for (int i = 0; i < tracks; i++)
+                FileStream Stream = new FileStream(File_List[0], FileMode.Open, FileAccess.Read);
+                if (fext.ToLower() == supported[0])
                 {
-                    NDS.Track_Data[i] = new byte[8192];
-                    Stream.Seek(256 + (8192 * i), SeekOrigin.Begin);
-                    Stream.Read(NDS.Track_Data[i], 0, 8192);
-                    Original.OT[i] = new byte[0];
-                }
-                Stream.Close();
-                var head = Encoding.ASCII.GetString(nib_header, 0, 13);
-                var hm = "Bad Header";
-                if (head == "MNIB-1541-RAW") hm = "Header Match!";
-                var lab = $"Total Track ({tracks}), {l}, {hm}";
-                Process(true, lab);
-            }
-            if (fext.ToLower() == supported[1])
-            {
-                listBox3.Items.Clear();
-                Set_ListBox_Items(true);
-                Stream.Seek(0, SeekOrigin.Begin);
-                Stream.Read(g64_header, 0, 684);
-                var head = Encoding.ASCII.GetString(g64_header, 0, 8);
-                tracks = Convert.ToInt32(g64_header[9]);
-                Set_Arrays(tracks);
-                int tr_size = BitConverter.ToInt16(g64_header, 10);
-                var hm = "Bad Header";
-                if (head == "GCR-1541")
-                {
-                    hm = "Header Match!";
-                    byte[] temp = new byte[2];
+                    long length = new System.IO.FileInfo(File_List[0]).Length;
+                    tracks = (int)(length - 256) / 8192;
+                    if ((tracks * 8192) + 256 == length) l = "File Size OK!";
+                    listBox3.Items.Clear();
+                    Set_ListBox_Items(true);
+                    nib_header = new byte[256];
+                    Stream.Seek(0, SeekOrigin.Begin);
+                    Stream.Read(nib_header, 0, 256);
+                    Set_Arrays(tracks);
                     for (int i = 0; i < tracks; i++)
                     {
+                        NDS.Track_Data[i] = new byte[8192];
+                        Stream.Seek(256 + (8192 * i), SeekOrigin.Begin);
+                        Stream.Read(NDS.Track_Data[i], 0, 8192);
                         Original.OT[i] = new byte[0];
-                        int pos = BitConverter.ToInt32(g64_header, 12 + (i * 4));
-                        if (pos != 0)
-                        {
-                            Stream.Seek(pos, SeekOrigin.Begin);
-                            Stream.Read(temp, 0, 2);
-                            short ts = BitConverter.ToInt16(temp, 0);
-                            NDS.Track_Data[i] = new byte[8192];
-                            byte[] tdata = new byte[ts];
-                            Stream.Seek(pos + 2, SeekOrigin.Begin);
-                            Stream.Read(tdata, 0, ts);
-                            Array.Copy(tdata, 0, NDS.Track_Data[i], 0, ts);
-                            Array.Copy(tdata, 0, NDS.Track_Data[i], ts, 8192 - ts);
-                        }
-                        else
-                        {
-                            NDS.Track_Data[i] = new byte[8192];
-                            for (int j = 0; j < NDS.Track_Data[i].Length; j++)
-                            {
-                                NDS.Track_Data[i][j] = 0;
-                            }
-                        }
                     }
                     Stream.Close();
-                    var lab = $"Total Track ({tracks}), G64 Track Size ({tr_size:N0})";
-                    Out_Type.SelectedIndex = 0;
-                    Process(false, lab);
+                    var head = Encoding.ASCII.GetString(nib_header, 0, 13);
+                    var hm = "Bad Header";
+                    if (head == "MNIB-1541-RAW") hm = "Header Match!";
+                    var lab = $"Total Track ({tracks}), {l}, {hm}";
+                    Process(true, lab);
                 }
-                else
+                if (fext.ToLower() == supported[1])
                 {
-                    label1.Text = $"{hm}"; //Invalid Header!";
-                    label2.Text = "";
+                    listBox3.Items.Clear();
+                    Set_ListBox_Items(true);
+                    Stream.Seek(0, SeekOrigin.Begin);
+                    Stream.Read(g64_header, 0, 684);
+                    var head = Encoding.ASCII.GetString(g64_header, 0, 8);
+                    tracks = Convert.ToInt32(g64_header[9]);
+                    Set_Arrays(tracks);
+                    int tr_size = BitConverter.ToInt16(g64_header, 10);
+                    var hm = "Bad Header";
+                    if (head == "GCR-1541")
+                    {
+                        hm = "Header Match!";
+                        byte[] temp = new byte[2];
+                        for (int i = 0; i < tracks; i++)
+                        {
+                            Original.OT[i] = new byte[0];
+                            int pos = BitConverter.ToInt32(g64_header, 12 + (i * 4));
+                            if (pos != 0)
+                            {
+                                Stream.Seek(pos, SeekOrigin.Begin);
+                                Stream.Read(temp, 0, 2);
+                                short ts = BitConverter.ToInt16(temp, 0);
+                                NDS.Track_Data[i] = new byte[8192];
+                                byte[] tdata = new byte[ts];
+                                Stream.Seek(pos + 2, SeekOrigin.Begin);
+                                Stream.Read(tdata, 0, ts);
+                                Array.Copy(tdata, 0, NDS.Track_Data[i], 0, ts);
+                                Array.Copy(tdata, 0, NDS.Track_Data[i], ts, 8192 - ts);
+                            }
+                            else
+                            {
+                                NDS.Track_Data[i] = new byte[8192];
+                                for (int j = 0; j < NDS.Track_Data[i].Length; j++)
+                                {
+                                    NDS.Track_Data[i][j] = 0;
+                                }
+                            }
+                        }
+                        Stream.Close();
+                        var lab = $"Total Track ({tracks}), G64 Track Size ({tr_size:N0})";
+                        Out_Type.SelectedIndex = 0;
+                        Process(false, lab);
+                    }
+                    else
+                    {
+                        label1.Text = $"{hm}"; //Invalid Header!";
+                        label2.Text = "";
+                    }
                 }
             }
-            if (!supported.Any(s => s == fext.ToLower()))
+            catch (Exception ex)
+            {
+                string t = "Something went wrong!";
+                string s = ex.Message;
+
+                MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                error = true;
+            }
+
+            if (!error && !supported.Any(s => s == fext.ToLower()))
             {
                 Set_ListBox_Items(true);
                 label1.Text = "File not Valid!";
@@ -2160,7 +2188,7 @@ namespace V_Max_Tool
             if (error)
             {
                 Set_ListBox_Items(true);
-                label1.Text = "File not Valid!";
+                label1.Text = "";
                 label2.Text = string.Empty;
                 error = false;
             }
