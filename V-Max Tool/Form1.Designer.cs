@@ -178,7 +178,7 @@
             // 
             // out_size
             // 
-            this.out_size.BackColor = System.Drawing.Color.Lavender;
+            this.out_size.BackColor = System.Drawing.Color.LightGray;
             this.out_size.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_size.FormattingEnabled = true;
             this.out_size.ItemHeight = 25;
@@ -190,7 +190,7 @@
             // 
             // out_dif
             // 
-            this.out_dif.BackColor = System.Drawing.Color.Lavender;
+            this.out_dif.BackColor = System.Drawing.Color.LightGray;
             this.out_dif.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_dif.ForeColor = System.Drawing.Color.BlueViolet;
             this.out_dif.FormattingEnabled = true;
@@ -227,7 +227,7 @@
             // 
             // out_track
             // 
-            this.out_track.BackColor = System.Drawing.Color.Lavender;
+            this.out_track.BackColor = System.Drawing.Color.LightGray;
             this.out_track.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_track.ForeColor = System.Drawing.Color.Blue;
             this.out_track.FormattingEnabled = true;
@@ -240,7 +240,7 @@
             // 
             // outbox
             // 
-            this.outbox.BackColor = System.Drawing.Color.Lavender;
+            this.outbox.BackColor = System.Drawing.Color.LightGray;
             this.outbox.Controls.Add(this.Out_density);
             this.outbox.Controls.Add(this.out_rpm);
             this.outbox.Controls.Add(this.out_track);
@@ -257,7 +257,7 @@
             // 
             // Out_density
             // 
-            this.Out_density.BackColor = System.Drawing.Color.Lavender;
+            this.Out_density.BackColor = System.Drawing.Color.LightGray;
             this.Out_density.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Out_density.FormattingEnabled = true;
             this.Out_density.ItemHeight = 25;
@@ -269,7 +269,7 @@
             // 
             // out_rpm
             // 
-            this.out_rpm.BackColor = System.Drawing.Color.Lavender;
+            this.out_rpm.BackColor = System.Drawing.Color.LightGray;
             this.out_rpm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_rpm.ForeColor = System.Drawing.Color.ForestGreen;
             this.out_rpm.FormattingEnabled = true;

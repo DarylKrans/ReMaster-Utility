@@ -49,6 +49,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes.cs" />
+    <Compile Include="CBM.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Make_file.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Process_file.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Loader_Track.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="V-Max_v3.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="V-Max_v2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Functions.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
