@@ -10,38 +10,63 @@ namespace V_Max_Tool
     {
         void Out_Density_Color(object sender, DrawItemEventArgs e)
         {
-            if (Out_density.Items[e.Index] is LineColor item)
+            try
             {
-                e.Graphics.DrawString(
-                    item.Text,
-                    e.Font,
-                    new SolidBrush(item.Color),
-                e.Bounds);
+                if (Out_density.Items[e.Index] is LineColor item)
+                {
+                    e.Graphics.DrawString(
+                        item.Text,
+                        e.Font,
+                        new SolidBrush(item.Color),
+                    e.Bounds);
+                }
+            } catch { }
+        }
+
+        void Source_Info_Color(object sender, DrawItemEventArgs e)
+        {
+            try
+            {
+                if (Track_Info.Items[e.Index] is LineColor item)
+                {
+                    e.Graphics.DrawString(
+                        item.Text,
+                        e.Font,
+                        new SolidBrush(item.Color),
+                    e.Bounds);
+                }
             }
+            catch { }
         }
 
         void Track_Format_Color(object sender, DrawItemEventArgs e)
         {
-            if (sf.Items[e.Index] is LineColor item)
+            try
             {
-                e.Graphics.DrawString(
-                    item.Text,
-                    e.Font,
-                    new SolidBrush(item.Color),
-                e.Bounds);
-            }
+                if (sf.Items[e.Index] is LineColor item)
+                {
+                    e.Graphics.DrawString(
+                        item.Text,
+                        e.Font,
+                        new SolidBrush(item.Color),
+                    e.Bounds);
+                }
+            } catch { }
         }
 
         void RPM_Color(object sender, DrawItemEventArgs e)
         {
-            if (out_rpm.Items[e.Index] is LineColor item)
+            try
             {
-                e.Graphics.DrawString(
-                    item.Text,
-                    e.Font,
-                    new SolidBrush(item.Color),
-                e.Bounds);
-            }
+                if (out_rpm.Items[e.Index] is LineColor item)
+                {
+                    e.Graphics.DrawString(
+                        item.Text,
+                        e.Font,
+                        new SolidBrush(item.Color),
+                    e.Bounds);
+                }
+            } catch { }
         }
 
         byte[] Rotate_Left(byte[] data, int s)
@@ -228,26 +253,33 @@ namespace V_Max_Tool
 
         void Init()
         {
+            Disk_Image.SizeMode = PictureBoxSizeMode.StretchImage;
+            panPic.AutoSize = false;
+            panPic.AutoScroll = true;
+            panPic.Controls.Add(Disk_Image);
             this.Out_density.DrawItem += new DrawItemEventHandler(Out_Density_Color);
+            this.Track_Info.DrawItem += new DrawItemEventHandler(Source_Info_Color);
             this.sf.DrawItem += new DrawItemEventHandler(Track_Format_Color);
             this.out_rpm.DrawItem += new DrawItemEventHandler(RPM_Color);
             Out_density.DrawMode = DrawMode.OwnerDrawFixed;
+            Track_Info.DrawMode = DrawMode.OwnerDrawFixed;
             out_rpm.DrawMode = DrawMode.OwnerDrawFixed;
             sf.DrawMode = DrawMode.OwnerDrawFixed;
             Out_density.ItemHeight = out_rpm.ItemHeight = sf.ItemHeight = 13;
-            Adj_cbm.Visible = false;
+            Track_Info.ItemHeight = 15;
+            Track_Info.HorizontalScrollbar = true;
+            Adj_cbm.Visible = Adv_ctrl.Visible = false;
             Tabs.Visible = true;
             string[] o = { "G64", "NIB", "NIB & G64" };
             fnappend = fix;
             Out_Type.DataSource = o;
             label1.Text = label2.Text = "";
-            listBox3.Visible = label7.Visible = false;
+            Track_Info.Visible = false;
             Source.Visible = Output.Visible = false;
             button1.Enabled = false;
             this.AllowDrop = true;
             this.DragEnter += new DragEventHandler(Drag_Enter);
             this.DragDrop += new DragEventHandler(Drag_Drop);
-            listBox3.HorizontalScrollbar = true;
             f_load.Visible = false;
             Tabs.Controls.Remove(Adv_V2_Opts);
             Tabs.Controls.Remove(Adv_V3_Opts);

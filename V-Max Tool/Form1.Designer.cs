@@ -33,9 +33,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.listBox3 = new System.Windows.Forms.ListBox();
             this.f_load = new System.Windows.Forms.CheckBox();
-            this.label7 = new System.Windows.Forms.Label();
             this.Out_Type = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.T_Info = new System.Windows.Forms.CheckBox();
@@ -72,6 +70,13 @@
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
+            this.Adv_ctrl = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.Track_Info = new System.Windows.Forms.ListBox();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.Disk_Image = new System.Windows.Forms.PictureBox();
+            this.panPic = new System.Windows.Forms.Panel();
+            this.Img_zoom = new System.Windows.Forms.CheckBox();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -82,6 +87,11 @@
             this.Adv_V3_Opts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
+            this.Adv_ctrl.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Disk_Image)).BeginInit();
+            this.panPic.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -112,18 +122,6 @@
             this.label2.TabIndex = 2;
             this.label2.Text = "label2";
             // 
-            // listBox3
-            // 
-            this.listBox3.BackColor = System.Drawing.Color.DarkGray;
-            this.listBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listBox3.ForeColor = System.Drawing.Color.Black;
-            this.listBox3.FormattingEnabled = true;
-            this.listBox3.ItemHeight = 29;
-            this.listBox3.Location = new System.Drawing.Point(949, 49);
-            this.listBox3.Name = "listBox3";
-            this.listBox3.Size = new System.Drawing.Size(969, 1251);
-            this.listBox3.TabIndex = 10;
-            // 
             // f_load
             // 
             this.f_load.AutoSize = true;
@@ -134,16 +132,6 @@
             this.f_load.Text = "Fix Loader Track";
             this.f_load.UseVisualStyleBackColor = true;
             this.f_load.CheckedChanged += new System.EventHandler(this.F_load_CheckedChanged);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(944, 17);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(332, 29);
-            this.label7.TabIndex = 13;
-            this.label7.Text = "Track Information (source file)";
             // 
             // Out_Type
             // 
@@ -590,11 +578,89 @@
             this.V3_Custom.UseVisualStyleBackColor = true;
             this.V3_Custom.CheckedChanged += new System.EventHandler(this.V3_Custom_CheckedChanged);
             // 
+            // Adv_ctrl
+            // 
+            this.Adv_ctrl.Controls.Add(this.tabPage1);
+            this.Adv_ctrl.Controls.Add(this.tabPage2);
+            this.Adv_ctrl.Location = new System.Drawing.Point(949, 12);
+            this.Adv_ctrl.Name = "Adv_ctrl";
+            this.Adv_ctrl.SelectedIndex = 0;
+            this.Adv_ctrl.Size = new System.Drawing.Size(1319, 1315);
+            this.Adv_ctrl.TabIndex = 36;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.Track_Info);
+            this.tabPage1.Location = new System.Drawing.Point(8, 39);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(1303, 1268);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Source Image Info";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // Track_Info
+            // 
+            this.Track_Info.BackColor = System.Drawing.Color.DarkGray;
+            this.Track_Info.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Track_Info.ForeColor = System.Drawing.Color.Black;
+            this.Track_Info.FormattingEnabled = true;
+            this.Track_Info.HorizontalScrollbar = true;
+            this.Track_Info.ItemHeight = 29;
+            this.Track_Info.Location = new System.Drawing.Point(6, 6);
+            this.Track_Info.Name = "Track_Info";
+            this.Track_Info.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.Track_Info.Size = new System.Drawing.Size(1291, 1251);
+            this.Track_Info.TabIndex = 11;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.BackColor = System.Drawing.Color.DimGray;
+            this.tabPage2.Controls.Add(this.Img_zoom);
+            this.tabPage2.Controls.Add(this.panPic);
+            this.tabPage2.Location = new System.Drawing.Point(8, 39);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(1303, 1268);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Visualize Disk Image";
+            // 
+            // Disk_Image
+            // 
+            this.Disk_Image.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.Disk_Image.Location = new System.Drawing.Point(3, 5);
+            this.Disk_Image.Name = "Disk_Image";
+            this.Disk_Image.Size = new System.Drawing.Size(1288, 1219);
+            this.Disk_Image.TabIndex = 0;
+            this.Disk_Image.TabStop = false;
+            // 
+            // panPic
+            // 
+            this.panPic.BackColor = System.Drawing.Color.DimGray;
+            this.panPic.Controls.Add(this.Disk_Image);
+            this.panPic.Location = new System.Drawing.Point(6, 38);
+            this.panPic.Name = "panPic";
+            this.panPic.Size = new System.Drawing.Size(1294, 1227);
+            this.panPic.TabIndex = 0;
+            // 
+            // checkBox1
+            // 
+            this.Img_zoom.AutoSize = true;
+            this.Img_zoom.ForeColor = System.Drawing.Color.Gainsboro;
+            this.Img_zoom.Location = new System.Drawing.Point(9, 8);
+            this.Img_zoom.Name = "checkBox1";
+            this.Img_zoom.Size = new System.Drawing.Size(98, 29);
+            this.Img_zoom.TabIndex = 37;
+            this.Img_zoom.Text = "Zoom";
+            this.Img_zoom.UseVisualStyleBackColor = true;
+            this.Img_zoom.CheckedChanged += new System.EventHandler(this.ImageZoom_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(929, 1334);
+            this.ClientSize = new System.Drawing.Size(2486, 1334);
+            this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.Drag_pic);
@@ -603,8 +669,6 @@
             this.Controls.Add(this.Source);
             this.Controls.Add(this.outbox);
             this.Controls.Add(this.T_Info);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.listBox3);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "V-Max Sync Tool";
@@ -621,6 +685,12 @@
             this.Adv_V3_Opts.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
+            this.Adv_ctrl.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Disk_Image)).EndInit();
+            this.panPic.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -631,9 +701,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ListBox listBox3;
         private System.Windows.Forms.CheckBox f_load;
-        private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox Out_Type;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.CheckBox T_Info;
@@ -670,6 +738,13 @@
         private System.Windows.Forms.CheckBox Re_Align;
         private System.Windows.Forms.ListBox Out_density;
         private System.Windows.Forms.BindingSource bindingSource1;
+        private System.Windows.Forms.TabControl Adv_ctrl;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.ListBox Track_Info;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.PictureBox Disk_Image;
+        private System.Windows.Forms.Panel panPic;
+        private System.Windows.Forms.CheckBox Img_zoom;
     }
 }
 

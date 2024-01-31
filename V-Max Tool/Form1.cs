@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using System.Drawing.Imaging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace V_Max_Tool
 {
@@ -182,7 +186,7 @@ namespace V_Max_Tool
                     long length = new System.IO.FileInfo(File_List[0]).Length;
                     tracks = (int)(length - 256) / 8192;
                     if ((tracks * 8192) + 256 == length) l = "File Size OK!";
-                    listBox3.Items.Clear();
+                    Track_Info.Items.Clear();
                     Set_ListBox_Items(true);
                     nib_header = new byte[256];
                     Stream.Seek(0, SeekOrigin.Begin);
@@ -204,7 +208,7 @@ namespace V_Max_Tool
                 }
                 if (fext.ToLower() == supported[1])
                 {
-                    listBox3.Items.Clear();
+                    Track_Info.Items.Clear();
                     Set_ListBox_Items(true);
                     Stream.Seek(0, SeekOrigin.Begin);
                     Stream.Read(g64_header, 0, 684);
@@ -379,8 +383,8 @@ namespace V_Max_Tool
 
         private void CheckBox1_CheckedChanged(object sender, EventArgs e)
         {
-            listBox3.Visible = label7.Visible = !listBox3.Visible;
-            listBox3.Width = listBox3.PreferredSize.Width;
+            Adv_ctrl.Visible = Track_Info.Visible = !Adv_ctrl.Visible;
+            Track_Info.Width = Adv_ctrl.Width - 15;
             Width = PreferredSize.Width;
         }
 
@@ -498,6 +502,23 @@ namespace V_Max_Tool
         private void V3_hlen_ValueChanged(object sender, EventArgs e)
         {
             V3_Auto_Adjust();
+        }
+       
+        private void ImageZoom_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Img_zoom.Checked)
+            {
+                panPic.AutoSize = false;
+                panPic.AutoScroll = true;
+                panPic.Controls.Add(Disk_Image);
+                Disk_Image.SizeMode = PictureBoxSizeMode.AutoSize;
+            }
+            else
+            {
+                panPic.AutoSize = true;
+                panPic.AutoScroll = false;
+                Disk_Image.SizeMode = PictureBoxSizeMode.StretchImage;
+            }
         }
     }
 }
