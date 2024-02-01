@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
-using System.Drawing.Imaging;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace V_Max_Tool
 {
@@ -503,22 +499,15 @@ namespace V_Max_Tool
         {
             V3_Auto_Adjust();
         }
-       
+
         private void ImageZoom_CheckedChanged(object sender, EventArgs e)
         {
-            if (Img_zoom.Checked)
-            {
-                panPic.AutoSize = false;
-                panPic.AutoScroll = true;
-                panPic.Controls.Add(Disk_Image);
-                Disk_Image.SizeMode = PictureBoxSizeMode.AutoSize;
-            }
-            else
-            {
-                panPic.AutoSize = true;
-                panPic.AutoScroll = false;
-                Disk_Image.SizeMode = PictureBoxSizeMode.StretchImage;
-            }
+            panPic2.Visible = Img_zoom.Checked;
         }
+        private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Check_Before_Draw();
+        }
+
     }
 }

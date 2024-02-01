@@ -20,7 +20,8 @@ namespace V_Max_Tool
                         new SolidBrush(item.Color),
                     e.Bounds);
                 }
-            } catch { }
+            }
+            catch { }
         }
 
         void Source_Info_Color(object sender, DrawItemEventArgs e)
@@ -51,7 +52,8 @@ namespace V_Max_Tool
                         new SolidBrush(item.Color),
                     e.Bounds);
                 }
-            } catch { }
+            }
+            catch { }
         }
 
         void RPM_Color(object sender, DrawItemEventArgs e)
@@ -66,7 +68,8 @@ namespace V_Max_Tool
                         new SolidBrush(item.Color),
                     e.Bounds);
                 }
-            } catch { }
+            }
+            catch { }
         }
 
         byte[] Rotate_Left(byte[] data, int s)
@@ -251,12 +254,30 @@ namespace V_Max_Tool
             return temp;
         }
 
+        void Check_Before_Draw()
+        {
+            if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
+            {
+                if (Out_view.Checked) Visualize_Flat(0);
+                if (Src_view.Checked) Visualize_Flat(1);
+            }
+        }
+
         void Init()
         {
-            Disk_Image.SizeMode = PictureBoxSizeMode.StretchImage;
             panPic.AutoSize = false;
             panPic.AutoScroll = true;
             panPic.Controls.Add(Disk_Image);
+            panPic2.Controls.Add(Disk_Image_Large);
+            panPic2.Visible = Img_zoom.Checked;
+            Out_view.Select();
+            Disk_Image.Image = new Bitmap(8192, 42 * 15);
+            Disk_Image_Large.Image = new Bitmap(8192, 42 * 15);
+            panPic2.Width = 8192;
+            panPic2.AutoScroll = false;
+            Disk_Image.SizeMode = PictureBoxSizeMode.StretchImage;
+            Disk_Image_Large.SizeMode = PictureBoxSizeMode.AutoSize;
+            Adv_ctrl.SelectedIndexChanged += new System.EventHandler(Adv_Ctrl_SelectedIndexChanged);
             this.Out_density.DrawItem += new DrawItemEventHandler(Out_Density_Color);
             this.Track_Info.DrawItem += new DrawItemEventHandler(Source_Info_Color);
             this.sf.DrawItem += new DrawItemEventHandler(Track_Format_Color);

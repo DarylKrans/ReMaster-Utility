@@ -53,6 +53,9 @@
     <Compile Include="CBM.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Visualizer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Make_file.cs">
       <SubType>Form</SubType>
     </Compile>

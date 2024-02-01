@@ -55,8 +55,8 @@ namespace V_Max_Tool
                         NDS.D_End[i] = l;
                         NDS.sectors[i] = 0;
                         NDS.Sector_Zero[i] = 0;
-                        Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}"});
-                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = $"Track Length {l}"});
+                        Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
+                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = $"Track Length {l}" });
                     }
                 }
                 if (NDS.cbm[i] == 1)
@@ -167,8 +167,9 @@ namespace V_Max_Tool
 
         void Process_Nib_Data(bool cbm, bool short_sector, bool rb_vm)
         {
-            Disk_Image.Image = new Bitmap(8192, 1148);
-            Disk_Image.Enabled = false;
+            //var it = tracks;
+            //if (it > 42) it = tracks / 2;
+
             double ht;
             bool halftracks = false;
             string[] f;
@@ -217,27 +218,8 @@ namespace V_Max_Tool
                     }
                 }
                 else { NDA.Track_Data[i] = NDS.Track_Data[i]; }
-                if (NDG.Track_Length[i] > 0) Draw_Track(NDG.Track_Data[i], i);
-
             }
-            Disk_Image.Enabled = true;
-
-            void Draw_Track(byte[] data, int trk)
-            {
-                //((Bitmap)Disk_Image.Image).SetPixel(1, 1, Color.Yellow);
-                for (int j = 0; j < data.Length; j++)
-                {
-                    Pen pen = new Pen(Color.FromArgb(30, (char)data[j], 0), 30);
-                    int x1 = j;
-                    int y1 = 1 + (trk * 14);
-                    int x2 = j;
-                    int y2 = 12 + (trk * 14);
-                    using (var graphics = Graphics.FromImage(Disk_Image.Image))
-                    {
-                        graphics.DrawLine(pen, x1, y1, x2, y2);
-                    }
-                }
-            }
+            if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"]) Check_Before_Draw();
 
             void Process_Ndos(int trk)
             {
