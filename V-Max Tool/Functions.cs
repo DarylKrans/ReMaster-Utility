@@ -258,6 +258,7 @@ namespace V_Max_Tool
         {
             if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
             {
+
                 if (Out_view.Checked) Visualize_Flat(0);
                 if (Src_view.Checked) Visualize_Flat(1);
             }
@@ -271,11 +272,12 @@ namespace V_Max_Tool
             panPic2.Controls.Add(Disk_Image_Large);
             panPic2.Visible = Img_zoom.Checked;
             Out_view.Select();
-            Disk_Image.Image = new Bitmap(8192, 42 * 15);
+            //Disk_Image.Image = new Bitmap(8192, 42 * 15);
+            Disk_Image.Image = new Bitmap(panPic.Width, panPic.Height);
             Disk_Image_Large.Image = new Bitmap(8192, 42 * 15);
             panPic2.Width = 8192;
-            panPic2.AutoScroll = false;
-            Disk_Image.SizeMode = PictureBoxSizeMode.StretchImage;
+            panPic2.AutoScroll = true;
+            Disk_Image.SizeMode = PictureBoxSizeMode.Normal;
             Disk_Image_Large.SizeMode = PictureBoxSizeMode.AutoSize;
             Adv_ctrl.SelectedIndexChanged += new System.EventHandler(Adv_Ctrl_SelectedIndexChanged);
             this.Out_density.DrawItem += new DrawItemEventHandler(Out_Density_Color);

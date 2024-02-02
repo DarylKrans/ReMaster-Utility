@@ -74,6 +74,8 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.Show_sec = new System.Windows.Forms.CheckBox();
+            this.Cap_margins = new System.Windows.Forms.CheckBox();
             this.Src_view = new System.Windows.Forms.RadioButton();
             this.Out_view = new System.Windows.Forms.RadioButton();
             this.Img_zoom = new System.Windows.Forms.CheckBox();
@@ -622,6 +624,8 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.DimGray;
+            this.tabPage2.Controls.Add(this.Show_sec);
+            this.tabPage2.Controls.Add(this.Cap_margins);
             this.tabPage2.Controls.Add(this.Src_view);
             this.tabPage2.Controls.Add(this.Out_view);
             this.tabPage2.Controls.Add(this.Img_zoom);
@@ -633,11 +637,35 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Visualize Disk Image";
             // 
+            // Show_sec
+            // 
+            this.Show_sec.AutoSize = true;
+            this.Show_sec.ForeColor = System.Drawing.Color.LightGray;
+            this.Show_sec.Location = new System.Drawing.Point(400, 7);
+            this.Show_sec.Name = "Show_sec";
+            this.Show_sec.Size = new System.Drawing.Size(205, 29);
+            this.Show_sec.TabIndex = 41;
+            this.Show_sec.Text = "Sector Identifiers";
+            this.Show_sec.UseVisualStyleBackColor = true;
+            this.Show_sec.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
+            // 
+            // Cap_margins
+            // 
+            this.Cap_margins.AutoSize = true;
+            this.Cap_margins.ForeColor = System.Drawing.Color.LightGray;
+            this.Cap_margins.Location = new System.Drawing.Point(124, 8);
+            this.Cap_margins.Name = "Cap_margins";
+            this.Cap_margins.Size = new System.Drawing.Size(270, 29);
+            this.Cap_margins.TabIndex = 40;
+            this.Cap_margins.Text = "Show Capacity Margins";
+            this.Cap_margins.UseVisualStyleBackColor = true;
+            this.Cap_margins.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
+            // 
             // Src_view
             // 
             this.Src_view.AutoSize = true;
             this.Src_view.ForeColor = System.Drawing.Color.Silver;
-            this.Src_view.Location = new System.Drawing.Point(449, 7);
+            this.Src_view.Location = new System.Drawing.Point(1137, 9);
             this.Src_view.Name = "Src_view";
             this.Src_view.Size = new System.Drawing.Size(160, 29);
             this.Src_view.TabIndex = 39;
@@ -650,7 +678,7 @@
             // 
             this.Out_view.AutoSize = true;
             this.Out_view.ForeColor = System.Drawing.Color.Silver;
-            this.Out_view.Location = new System.Drawing.Point(268, 8);
+            this.Out_view.Location = new System.Drawing.Point(956, 10);
             this.Out_view.Name = "Out_view";
             this.Out_view.Size = new System.Drawing.Size(156, 29);
             this.Out_view.TabIndex = 38;
@@ -712,7 +740,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2486, 1334);
+            this.ClientSize = new System.Drawing.Size(933, 1334);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
@@ -804,6 +832,8 @@
         private System.Windows.Forms.PictureBox Disk_Image_Large;
         private System.Windows.Forms.RadioButton Src_view;
         private System.Windows.Forms.RadioButton Out_view;
+        private System.Windows.Forms.CheckBox Cap_margins;
+        private System.Windows.Forms.CheckBox Show_sec;
     }
 }
 
