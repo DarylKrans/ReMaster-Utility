@@ -7,73 +7,83 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        bool interp = false;
 
-        void Visualize_Flat(int w)
+        void Visualize_Flat(int w, bool chg_itrp)
         {
-            double ht;
-            bool halftracks = false;
-            if (tracks > 42)
-            {
-                ht = 0.5;
-                halftracks = true;
-            }
-            else ht = 0;
-            Disk_Image_Large.Image = new Bitmap(8192, 42 * 14);
-            //Disk_Image_Large.Image = new Bitmap(8192, out_track.Items.Count * 14);
             var d = 0;
-            for (int i = 0; i < tracks; i++)
+            if (!chg_itrp)
             {
-                if (w == 0)
+                double ht;
+                bool halftracks = false;
+                if (tracks > 42)
                 {
-                    if (NDG.Track_Length[i] > 0)
-                    {
-                        d = Get_Density(NDG.Track_Data[i].Length);
-                        Draw_Track(NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i]);
-                        Image orig = Disk_Image_Large.Image;
-                        Disk_Image.Image = ResizeImage(orig, new Size(panPic.Width, panPic.Height));
-                    }
+                    ht = 0.5;
+                    halftracks = true;
                 }
-                if (w == 1)
+                else ht = 0;
+                Disk_Image_Large.Image = new Bitmap(8192, panPic2.Height - 16);
+                for (int i = 0; i < tracks; i++)
                 {
-                    var ds = NDS.D_Start[i];
-                    var de = NDS.D_End[i];
-                    if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; }
-                    if (NDS.Track_Length[i] > 0)
+                    if (w == 0)
                     {
-                        Draw_Track(NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i]);
-                        Image orig = Disk_Image_Large.Image;
-                        Disk_Image.Image = ResizeImage(orig, new Size(panPic.Width, panPic.Height));
+                        if (NDG.Track_Length[i] > 0)
+                        {
+                            d = Get_Density(NDG.Track_Data[i].Length);
+                            Draw_Track(NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i]);
+                            Resize();
+                        }
                     }
+                    if (w == 1)
+                    {
+                        var ds = NDS.D_Start[i];
+                        var de = NDS.D_End[i];
+                        if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; }
+                        if (NDS.Track_Length[i] > 0)
+                        {
+                            Draw_Track(NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i]);
+                            Resize();
+                        }
+                    }
+                    if (halftracks) ht += .5; else ht += 1;
                 }
-                if (halftracks) ht += .5; else ht += 1;
             }
+            else Resize();
 
-            Image ResizeImage(Image image, Size size, bool preserveAspectRatio = false)
+            void Resize()
             {
-                int newWidth;
-                int newHeight;
-                if (preserveAspectRatio)
+                Image orig = Disk_Image_Large.Image;
+                Disk_Image.Image = ResizeImage(orig, new Size(panPic.Width, panPic.Height - 16));
+
+                Image ResizeImage(Image image, Size size, bool preserveAspectRatio = false)
                 {
-                    int originalWidth = image.Width;
-                    int originalHeight = image.Height;
-                    float percentWidth = (float)size.Width / (float)originalWidth;
-                    float percentHeight = (float)size.Height / (float)originalHeight;
-                    float percent = percentHeight < percentWidth ? percentHeight : percentWidth;
-                    newWidth = (int)(originalWidth * percent);
-                    newHeight = (int)(originalHeight * percent);
+                    int newWidth;
+                    int newHeight;
+                    if (preserveAspectRatio)
+                    {
+                        int originalWidth = image.Width;
+                        int originalHeight = image.Height;
+                        float percentWidth = (float)size.Width / (float)originalWidth;
+                        float percentHeight = (float)size.Height / (float)originalHeight;
+                        float percent = percentHeight < percentWidth ? percentHeight : percentWidth;
+                        newWidth = (int)(originalWidth * percent);
+                        newHeight = (int)(originalHeight * percent);
+                    }
+                    else
+                    {
+                        newWidth = size.Width;
+                        newHeight = size.Height;
+                    }
+                    Image newImage = new Bitmap(newWidth, newHeight);
+                    using (Graphics graphicsHandle = Graphics.FromImage(newImage))
+                    {
+                        if (!interp) graphicsHandle.InterpolationMode = InterpolationMode.NearestNeighbor;
+                        else graphicsHandle.InterpolationMode = InterpolationMode.High;
+                        graphicsHandle.DrawImage(image, 0, 0, newWidth, newHeight);
+                    }
+                    return newImage;
                 }
-                else
-                {
-                    newWidth = size.Width;
-                    newHeight = size.Height;
-                }
-                Image newImage = new Bitmap(newWidth, newHeight);
-                using (Graphics graphicsHandle = Graphics.FromImage(newImage))
-                {
-                    graphicsHandle.InterpolationMode = InterpolationMode.NearestNeighbor;
-                    graphicsHandle.DrawImage(image, 0, 0, newWidth, newHeight);
-                }
-                return newImage;
+
             }
 
 
@@ -84,6 +94,7 @@ namespace V_Max_Tool
                 Array.Copy(data, 0, tdata, 0, data.Length);
                 Pen pen; // = new Pen (Color.Green);
                 bool v2 = false;
+                int t_height = (panPic2.Height / 42) - 4;
                 for (int j = 0; j < tdata.Length; j++)
                 {
                     if (w == 0)
@@ -112,9 +123,11 @@ namespace V_Max_Tool
                         if (Show_sec.Checked && ((tf == 3 && tdata[j] == 0x49) || v2)) pen = new Pen(Color.FromArgb(30, 30, 255));
                     }
                     int x1 = j;
-                    int y1 = 0 + (trk * 14);
+                    //int y1 = 0 + (trk * 14);
+                    int y1 = 0 + (trk * ((panPic.Height - 16) / 42));
                     int x2 = j;
-                    int y2 = 10 + (trk * 14);
+                    //int y2 = 10 + (trk * 14);
+                    int y2 = t_height + (trk * ((panPic.Height - 16) / 42));
                     using (var graphics = Graphics.FromImage(Disk_Image_Large.Image))
                     {
                         graphics.DrawLine(pen, x1, y1, x2, y2);

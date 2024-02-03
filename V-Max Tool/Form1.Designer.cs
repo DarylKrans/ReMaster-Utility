@@ -715,7 +715,7 @@
             this.panPic2.Controls.Add(this.Disk_Image_Large);
             this.panPic2.Location = new System.Drawing.Point(3, 6);
             this.panPic2.Name = "panPic2";
-            this.panPic2.Size = new System.Drawing.Size(1288, 1218);
+            this.panPic2.Size = new System.Drawing.Size(1288, 1221);
             this.panPic2.TabIndex = 37;
             // 
             // Disk_Image_Large
@@ -723,7 +723,7 @@
             this.Disk_Image_Large.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.Disk_Image_Large.Location = new System.Drawing.Point(0, 3);
             this.Disk_Image_Large.Name = "Disk_Image_Large";
-            this.Disk_Image_Large.Size = new System.Drawing.Size(1291, 1212);
+            this.Disk_Image_Large.Size = new System.Drawing.Size(1291, 1218);
             this.Disk_Image_Large.TabIndex = 0;
             this.Disk_Image_Large.TabStop = false;
             // 
@@ -735,12 +735,13 @@
             this.Disk_Image.Size = new System.Drawing.Size(1288, 1222);
             this.Disk_Image.TabIndex = 0;
             this.Disk_Image.TabStop = false;
+            this.Disk_Image.Click += new System.EventHandler(this.Disk_Image_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(933, 1334);
+            this.ClientSize = new System.Drawing.Size(933, 1371);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);

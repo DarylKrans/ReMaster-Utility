@@ -259,8 +259,8 @@ namespace V_Max_Tool
             if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
             {
 
-                if (Out_view.Checked) Visualize_Flat(0);
-                if (Src_view.Checked) Visualize_Flat(1);
+                if (Out_view.Checked) Visualize_Flat(0, false);
+                if (Src_view.Checked) Visualize_Flat(1, false);
             }
         }
 

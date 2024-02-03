@@ -380,6 +380,7 @@ namespace V_Max_Tool
         private void CheckBox1_CheckedChanged(object sender, EventArgs e)
         {
             Adv_ctrl.Visible = Track_Info.Visible = !Adv_ctrl.Visible;
+            if (!T_Info.Checked) Adv_ctrl.SelectedTab = Adv_ctrl.TabPages["tabPage1"];
             Track_Info.Width = Adv_ctrl.Width - 15;
             Width = PreferredSize.Width;
         }
@@ -507,6 +508,12 @@ namespace V_Max_Tool
         private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
         {
             Check_Before_Draw();
+        }
+
+        private void Disk_Image_Click(object sender, EventArgs e)
+        {
+            interp = !interp;
+            Visualize_Flat(0, true); ;
         }
     }
 }
