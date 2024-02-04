@@ -10,10 +10,12 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        string def_text = "";
         bool interp = false;
 
         void Draw_Flat_Tracks(int w, bool chg_itrp)
         {
+            string ext = "";
             var d = 0;
             if (!chg_itrp)
             {
@@ -36,6 +38,8 @@ namespace V_Max_Tool
                             d = Get_Density(NDG.Track_Data[i].Length);
                             Draw_Track(NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i]);
                             Disk_Image.Image = Resize_Image(Disk_Image_Large.Image, panPic.Width, panPic.Height - 16, false);
+                            ext = "(flat_tracks).g64";
+                            //Add_Text(Disk_Image_Large.Image, $"{fname}{fnappend}.g64");
                         }
                     }
                     if (w == 1)
@@ -47,12 +51,21 @@ namespace V_Max_Tool
                         {
                             Draw_Track(NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i]);
                             Disk_Image.Image = Resize_Image(Disk_Image_Large.Image, panPic.Width, panPic.Height - 16, false);
+                            ext = $"(flat_tracks){fext}";
+
                         }
                     }
                     if (halftracks) ht += .5; else ht += 1;
                 }
+                Add_Text(Disk_Image_Large.Image, $"{fname}{fnappend}{ext}", Color.FromArgb(40, 40, 40));
+                Add_Text(Disk_Image.Image, $"{fname}{fnappend}{ext}", Color.FromArgb(40, 40, 40));
+                def_text = $"{fname}{fnappend}{ext}";
             }
-            else Disk_Image.Image = Resize_Image(Disk_Image_Large.Image, panPic.Width, panPic.Height - 16, false);
+            else
+            {
+                Disk_Image.Image = Resize_Image(Disk_Image_Large.Image, panPic.Width, panPic.Height - 16, false);
+                Add_Text(Disk_Image.Image, def_text, Color.FromArgb(40, 40, 40));
+            }
 
             void Draw_Track(byte[] data, int trk, int s, int e, int tf, byte[] v2i)
             {
@@ -92,10 +105,10 @@ namespace V_Max_Tool
                     int y1 = 0 + (trk * ((panPic.Height - 16) / 42));
                     int x2 = j;
                     int y2 = t_height + (trk * ((panPic.Height - 16) / 42));
-                        using (var graphics = Graphics.FromImage(Disk_Image_Large.Image))
-                        {
-                            graphics.DrawLine(pen, x1, y1, x2, y2);
-                        }
+                    using (var graphics = Graphics.FromImage(Disk_Image_Large.Image))
+                    {
+                        graphics.DrawLine(pen, x1, y1, x2, y2);
+                    }
                 }
             }
         }
@@ -148,14 +161,9 @@ namespace V_Max_Tool
             int r = 725;
             int len;
             Color col;
-            //new Bitmap(ThreadSafe.Snapshot, new Size(width, height));
             Bitmap disk = new Bitmap(width, height);
             if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
             Draw_Disk(disk);
-            //DrawCurvedText(Graphics.FromImage(disk), $"{fi_nam}{fi_ext}", new Point(750, 750), 192.5f, 0f, fnt, bsh);
-            //bsh = new SolidBrush(Color.Black);
-            //fnt = new Font("Arial", 24f, FontStyle.Regular);
-            //DrawCurvedText(Graphics.FromImage(disk), "<---- Rotation", new Point(750, 700), 192.5f, 0f, fnt, bsh);
             interp = true;
 
             while (r > 80 && track < tracks)
@@ -264,14 +272,29 @@ namespace V_Max_Tool
                     g.FillEllipse(b, 1008.75f, 731.25f, 25, 25);
                     g.DrawEllipse(p, 1008.75f, 731.25f, 25, 25);
                 }
+                // Print File name on the disk image
                 Brush bsh = new SolidBrush(Color.White);
                 Font fnt = new Font("Arial", 17.5f, FontStyle.Regular);
                 DrawCurvedText(Graphics.FromImage(disk), $"{fi_nam}{fi_ext}", new Point(750, 750), 192.5f, 0f, fnt, bsh, false);
+                // Print rotation indicator on the disk image
                 bsh = new SolidBrush(Color.Yellow);
                 fnt = new Font("Arial", 24f, FontStyle.Regular);
                 DrawCurvedText(Graphics.FromImage(disk), $"\u2192 noitatoR", new Point(770, 755), 272.5f, 1.45f, fnt, bsh, true);
 
             }
+        }
+
+        void Add_Text(Image temp, string text, Color c)
+        {
+            Graphics g = Graphics.FromImage(temp);
+            Brush b = new SolidBrush(c); // (Color.FromArgb(40, 40, 40));
+            RectangleF rectf = new RectangleF(20, temp.Height - 20, 600, temp.Height);
+            RectangleF rectg = new RectangleF(0, temp.Height - 20, 600, temp.Height);
+            g.FillRectangle(b, rectg);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.InterpolationMode = InterpolationMode.Bicubic;
+            g.PixelOffsetMode = PixelOffsetMode.Default;
+            g.DrawString($"{text}", new Font("Ariel", 11), Brushes.White, rectf);
         }
 
         private void DrawCurvedText(Graphics g, string text, Point center, float distFromCenterToBase, float radiansToTextCenter, Font font, Brush brush, bool rev)
@@ -339,6 +362,7 @@ namespace V_Max_Tool
                 else
                 {
                     Image flat = Resize_Image(Disk_Image_Large.Image, 1920, 1080, false);
+                    Add_Text(flat, def_text, Color.FromArgb(0, 0, 0));
                     if (ft == 1) flat.Save(fs, ImageFormat.Bmp);
                     if (ft == 2) flat.Save(fs, ImageFormat.Jpeg);
                 }
@@ -349,10 +373,6 @@ namespace V_Max_Tool
                 if (ft == 1) Disk_Image_Large.Image.Save(fs, ImageFormat.Bmp);
                 if (ft == 2) Disk_Image_Large.Image.Save(fs, ImageFormat.Jpeg);
             }
-        }
-        public static class ThreadSafe
-        {
-            public static volatile Bitmap Snapshot;
         }
     }
 }
