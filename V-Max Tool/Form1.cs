@@ -21,6 +21,7 @@ namespace V_Max_Tool
         private string nib_err_msg;
         private string g64_err_msg;
         private readonly string[] styles = { "Flat Tracks", "Circular Tracks" };
+        private readonly int min_t_len = 6000;
 
         public Form1()
         {
@@ -519,5 +520,18 @@ namespace V_Max_Tool
                 Draw_Flat_Tracks(0, true); ;
             }
         }
+
+        private void Src_view_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb != null)
+            {
+                if (rb.Checked)
+                {
+                    if (!opt) Check_Before_Draw();
+                }
+            }
+        }
+
     }
 }

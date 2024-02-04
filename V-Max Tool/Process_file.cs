@@ -135,7 +135,7 @@ namespace V_Max_Tool
                 }
                 if (halftracks) ht += .5; else ht += 1;
                 color = Color.Black;
-                if (NDS.Track_Length[i] > 0 && NDS.cbm[i] != 6 && NDS.cbm[i] != 0)
+                if (NDS.Track_Length[i] > 6000 && NDS.cbm[i] != 6 && NDS.cbm[i] != 0)
                 {
                     var d = Get_Density(NDS.Track_Length[i] >> 3);
                     string e = "";
@@ -219,11 +219,7 @@ namespace V_Max_Tool
                 }
                 else { NDA.Track_Data[i] = NDS.Track_Data[i]; }
             }
-            if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
-            {
-                this.Update();
-                Check_Before_Draw();
-            }
+            if (!opt && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"]) Check_Before_Draw();
 
             void Process_Ndos(int trk)
             {

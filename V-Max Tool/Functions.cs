@@ -259,20 +259,15 @@ namespace V_Max_Tool
         {
             if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
             {
+                opt = true;
+                this.Update();
                 if (Img_style.SelectedIndex == 0)
                 {
-                    Src_view.Enabled = true;
                     if (Out_view.Checked) Draw_Flat_Tracks(0, false);
                     if (Src_view.Checked) Draw_Flat_Tracks(1, false);
                 }
-                else
-                {
-                    opt = true;
-                    Src_view.Enabled = false;
-                    Out_view.Checked = true;
-                    Draw_Circular_Tracks();
-                    opt = false;
-                }
+                else Draw_Circular_Tracks();
+                opt = false;
             }
         }
 

@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -69,11 +68,11 @@
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
-            this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.Adv_ctrl = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.Save_Image = new System.Windows.Forms.Button();
             this.Img_style = new System.Windows.Forms.ComboBox();
             this.Show_sec = new System.Windows.Forms.CheckBox();
             this.Cap_margins = new System.Windows.Forms.CheckBox();
@@ -84,6 +83,7 @@
             this.panPic2 = new System.Windows.Forms.Panel();
             this.Disk_Image_Large = new System.Windows.Forms.PictureBox();
             this.Disk_Image = new System.Windows.Forms.PictureBox();
+            this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -93,7 +93,6 @@
             this.Adv_V2_Opts.SuspendLayout();
             this.Adv_V3_Opts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             this.Adv_ctrl.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -603,7 +602,7 @@
             this.tabPage1.Location = new System.Drawing.Point(8, 39);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1303, 1268);
+            this.tabPage1.Size = new System.Drawing.Size(1335, 1300);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Source Image Info";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -625,6 +624,7 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.DimGray;
+            this.tabPage2.Controls.Add(this.Save_Image);
             this.tabPage2.Controls.Add(this.Img_style);
             this.tabPage2.Controls.Add(this.Show_sec);
             this.tabPage2.Controls.Add(this.Cap_margins);
@@ -639,11 +639,21 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Visualize Disk Image";
             // 
+            // Save_Image
+            // 
+            this.Save_Image.Location = new System.Drawing.Point(1185, 0);
+            this.Save_Image.Name = "Save_Image";
+            this.Save_Image.Size = new System.Drawing.Size(138, 38);
+            this.Save_Image.TabIndex = 43;
+            this.Save_Image.Text = "Save Image";
+            this.Save_Image.UseVisualStyleBackColor = true;
+            this.Save_Image.Click += new System.EventHandler(this.Save_Image_Click);
+            // 
             // Img_style
             // 
             this.Img_style.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Img_style.FormattingEnabled = true;
-            this.Img_style.Location = new System.Drawing.Point(663, 0);
+            this.Img_style.Location = new System.Drawing.Point(542, 0);
             this.Img_style.Name = "Img_style";
             this.Img_style.Size = new System.Drawing.Size(229, 33);
             this.Img_style.TabIndex = 42;
@@ -653,11 +663,11 @@
             // 
             this.Show_sec.AutoSize = true;
             this.Show_sec.ForeColor = System.Drawing.Color.LightGray;
-            this.Show_sec.Location = new System.Drawing.Point(400, 7);
+            this.Show_sec.Location = new System.Drawing.Point(329, 8);
             this.Show_sec.Name = "Show_sec";
-            this.Show_sec.Size = new System.Drawing.Size(205, 29);
+            this.Show_sec.Size = new System.Drawing.Size(207, 29);
             this.Show_sec.TabIndex = 41;
-            this.Show_sec.Text = "Sector Identifiers";
+            this.Show_sec.Text = "Highlight Sectors";
             this.Show_sec.UseVisualStyleBackColor = true;
             this.Show_sec.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
             // 
@@ -667,9 +677,9 @@
             this.Cap_margins.ForeColor = System.Drawing.Color.LightGray;
             this.Cap_margins.Location = new System.Drawing.Point(124, 8);
             this.Cap_margins.Name = "Cap_margins";
-            this.Cap_margins.Size = new System.Drawing.Size(270, 29);
+            this.Cap_margins.Size = new System.Drawing.Size(199, 29);
             this.Cap_margins.TabIndex = 40;
-            this.Cap_margins.Text = "Show Capacity Margins";
+            this.Cap_margins.Text = "Density Margins";
             this.Cap_margins.UseVisualStyleBackColor = true;
             this.Cap_margins.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
             // 
@@ -677,27 +687,27 @@
             // 
             this.Src_view.AutoSize = true;
             this.Src_view.ForeColor = System.Drawing.Color.Silver;
-            this.Src_view.Location = new System.Drawing.Point(1137, 9);
+            this.Src_view.Location = new System.Drawing.Point(949, 5);
             this.Src_view.Name = "Src_view";
             this.Src_view.Size = new System.Drawing.Size(160, 29);
             this.Src_view.TabIndex = 39;
             this.Src_view.TabStop = true;
             this.Src_view.Text = "Source view";
             this.Src_view.UseVisualStyleBackColor = true;
-            this.Src_view.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
+            this.Src_view.CheckedChanged += new System.EventHandler(this.Src_view_CheckedChanged);
             // 
             // Out_view
             // 
             this.Out_view.AutoSize = true;
             this.Out_view.ForeColor = System.Drawing.Color.Silver;
-            this.Out_view.Location = new System.Drawing.Point(956, 10);
+            this.Out_view.Location = new System.Drawing.Point(787, 4);
             this.Out_view.Name = "Out_view";
             this.Out_view.Size = new System.Drawing.Size(156, 29);
             this.Out_view.TabIndex = 38;
             this.Out_view.TabStop = true;
             this.Out_view.Text = "Output view";
             this.Out_view.UseVisualStyleBackColor = true;
-            this.Out_view.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
+            this.Out_view.CheckedChanged += new System.EventHandler(this.Src_view_CheckedChanged);
             // 
             // Img_zoom
             // 
@@ -753,7 +763,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(935, 1371);
+            this.ClientSize = new System.Drawing.Size(2356, 1371);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
@@ -778,7 +788,6 @@
             this.Adv_V3_Opts.ResumeLayout(false);
             this.Adv_V3_Opts.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
             this.Adv_ctrl.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
@@ -833,7 +842,6 @@
         private System.Windows.Forms.CheckBox Adj_cbm;
         private System.Windows.Forms.CheckBox Re_Align;
         private System.Windows.Forms.ListBox Out_density;
-        private System.Windows.Forms.BindingSource bindingSource1;
         private System.Windows.Forms.TabControl Adv_ctrl;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.ListBox Track_Info;
@@ -848,6 +856,8 @@
         private System.Windows.Forms.CheckBox Cap_margins;
         private System.Windows.Forms.CheckBox Show_sec;
         private System.Windows.Forms.ComboBox Img_style;
+        private System.Windows.Forms.Button Save_Image;
+        private System.Windows.Forms.SaveFileDialog Save_Dialog;
     }
 }
 

@@ -31,7 +31,7 @@ namespace V_Max_Tool
                 {
                     if (w == 0)
                     {
-                        if (NDG.Track_Length[i] > 0)
+                        if (NDG.Track_Length[i] > min_t_len)
                         {
                             d = Get_Density(NDG.Track_Data[i].Length);
                             Draw_Track(NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i]);
@@ -43,7 +43,7 @@ namespace V_Max_Tool
                         var ds = NDS.D_Start[i];
                         var de = NDS.D_End[i];
                         if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; }
-                        if (NDS.Track_Length[i] > 0)
+                        if (NDS.Track_Length[i] > min_t_len)
                         {
                             Draw_Track(NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i]);
                             Disk_Image.Image = Resize_Image(Disk_Image_Large.Image, panPic.Width, panPic.Height - 16, false);
@@ -131,6 +131,9 @@ namespace V_Max_Tool
 
         void Draw_Circular_Tracks()
         {
+            string fi_ext = ".g64";
+            string fi_nam = $"{fname}{fnappend}";
+            byte[] t_data = new byte[0];
             bool v2 = false;
             int width = 1500;
             int height = 1500;
@@ -147,34 +150,62 @@ namespace V_Max_Tool
             Bitmap disk = new Bitmap(width, height);
             Brush bsh = new SolidBrush(Color.White);
             Font fnt = new Font("Arial", 17.5f, FontStyle.Regular);
-            Make_Disk(disk);
-            DrawCurvedText(System.Drawing.Graphics.FromImage(disk), $"{fname}.g64", new System.Drawing.Point(750,750), 192.5f, 0f, fnt, bsh);
+            Draw_Disk(disk);
+            if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
+            DrawCurvedText(Graphics.FromImage(disk), $"{fi_nam}{fi_ext}", new Point(750,750), 192.5f, 0f, fnt, bsh);
             interp = true;
 
             while (r > 80 && track < tracks)
             {
-                if (NDG.Track_Length[track] > 0)
+                if (NDG.Track_Length[track] > min_t_len)
                 {
-                    len = NDG.Track_Length[track];
-                    de = Get_Density(len);
-                    for (i = 0; i < NDG.Track_Data[track].Length; i++)
+                    v2 = false;
+                    if (Out_view.Checked)
                     {
-                        col = Color.FromArgb(30, NDG.Track_Data[track][i], 30);
-                        if (Cap_margins.Checked)
-                        {
-                            col = Color.FromArgb(NDG.Track_Data[track][i] / 2, NDG.Track_Data[track][i] / 2, NDG.Track_Data[track][i] / 2);
-                            if (i <= density[de]) col = Color.FromArgb(30, NDG.Track_Data[track][i], 30);
-                            if (i > density[de] && i < density[de] + 5) col = Color.FromArgb(NDG.Track_Data[track][i], NDG.Track_Data[track][i], 30);
-                        }
-                        if (NDS.cbm[track] == 2 && NDG.Track_Data[track][i] == NDS.v2info[track][0]) v2 = true;
-                        if (v2 && NDG.Track_Data[track][i] == NDS.v2info[track][1]) v2 = false;
-                        if (Show_sec.Checked && ((NDS.cbm[track] == 3 && NDG.Track_Data[track][i] == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
-                        Draw_Arc(disk, x, y, r + j, i, col);
+                        t_data = new byte[NDG.Track_Length[track]];
+                        Array.Copy(NDG.Track_Data[track], 0, t_data, 0, t_data.Length);
                     }
-                    Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
-                    Disk_Image_Large.Image = disk;
-                    Disk_Image_Large.Refresh();
-                    Disk_Image.Refresh();
+                    if (Src_view.Checked)
+                    {
+                        if (NDS.cbm[track] == 1 && (NDS.D_End[track] - NDS.D_Start[track]) >> 3 >= min_t_len)
+                        {
+                            t_data = new byte[(NDS.D_End[track] - NDS.D_Start[track]) >> 3];
+                            Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, t_data, 0, (NDS.D_End[track] - NDS.D_Start[track]) >> 3);
+                        }
+                        if ((NDS.cbm[track] > 1 && NDS.cbm[track] < 5) && NDS.D_End[track] - NDS.D_Start[track] > min_t_len)
+                        {
+                            t_data = new byte[NDS.D_End[track] - NDS.D_Start[track]];
+                            Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, t_data, 0, (NDS.D_End[track] - NDS.D_Start[track]));
+                        }
+                        else
+                        {
+                            t_data = new byte[NDS.Track_Data[track].Length];
+                            Array.Copy(NDS.Track_Data[track], 0, t_data, 0, NDS.Track_Data[track].Length);
+                        }
+                    }
+                    len = t_data.Length;
+                    if (len > min_t_len)
+                    {
+                        de = Get_Density(len);
+                        for (i = 0; i < t_data.Length; i++)
+                        {
+                            col = Color.FromArgb(30, t_data[i], 30);
+                            if (Cap_margins.Checked)
+                            {
+                                col = Color.FromArgb(t_data[i] / 2, t_data[i] / 2, t_data[i] / 2);
+                                if (i <= density[de]) col = Color.FromArgb(30, t_data[i], 30);
+                                if (i > density[de] && i < density[de] + 5) col = Color.FromArgb(t_data[i], t_data[i], 30);
+                            }
+                            if (NDS.cbm[track] == 2 && t_data[i] == NDS.v2info[track][0]) v2 = true;
+                            if (v2 && t_data[i] == NDS.v2info[track][1]) v2 = false;
+                            if (Show_sec.Checked && ((NDS.cbm[track] == 3 && t_data[i] == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
+                            Draw_Arc(disk, x, y, r + j, i, col);
+                        }
+                        Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
+                        Disk_Image_Large.Image = disk;
+                        Disk_Image_Large.Refresh();
+                        Disk_Image.Refresh();
+                    }
                 }
                 r -= 5;
                 track += 1;
@@ -200,20 +231,25 @@ namespace V_Max_Tool
                 }
             }
 
-            void Make_Disk(Bitmap d)
+            void Draw_Disk(Bitmap d)
             {
                 Brush b = new SolidBrush(Color.FromArgb(50, 40, 20));
                 Pen p = new Pen(Color.Black, 2);
                 using (var g = Graphics.FromImage(d))
                 {
                     g.SmoothingMode = SmoothingMode.AntiAlias;
+                    // Draw Disk surface
                     g.FillEllipse(b, 2.5f, 8, d.Width - 10, d.Height - 10);
                     g.DrawEllipse(p, 2.5f, 8, d.Width - 10, d.Height - 10);
+                    // Draw inner non-writable surface of disk
                     b = new SolidBrush(Color.FromArgb(60, 44, 24));
                     g.FillEllipse(b, 412.5f, 412.5f, 675f, 675f);
+                    // Draw inner ring of disk (also used for image name text)
                     g.FillEllipse(Brushes.Black, 525f, 525f, 450f, 450f);
+                    // Draw remaing disk surface until center hole
                     g.FillEllipse(b, 551.25f, 551.25f, 397.5f, 397.5f);
                     b = new SolidBrush(Color.FromArgb(30, 30, 30));
+                    // Draw index hole
                     g.FillEllipse(b, 570, 570, 360, 360);
                     g.DrawEllipse(p, 570, 570, 360, 360);
                     g.FillEllipse(b, 1008.75f, 731.25f, 25, 25);
@@ -223,34 +259,32 @@ namespace V_Max_Tool
             }
         }
 
-        private void DrawCurvedText(Graphics graphics, string text, Point centre, float distanceFromCentreToBaseOfText, float radiansToTextCentre, Font font, Brush brush)
+        private void DrawCurvedText(Graphics g, string text, Point center, float distFromCenterToBase, float radiansToTextCenter, Font font, Brush brush)
         {
-            var circleCircumference = (float)(Math.PI * 2 * distanceFromCentreToBaseOfText);
-            var characterWidths = GetCharacterWidths(graphics, text, font).ToArray();
-            var characterHeight = graphics.MeasureString(text, font).Height;
+            var circleCircumference = (float)(Math.PI * 2 * distFromCenterToBase);
+            var characterWidths = GetCharacterWidths(g, text, font).ToArray();
+            var characterHeight = g.MeasureString(text, font).Height;
             var textLength = characterWidths.Sum();
             float fractionOfCircumference = textLength / circleCircumference;
-            float currentCharacterRadians = radiansToTextCentre - (float)(Math.PI * fractionOfCircumference);
+            float currentCharacterRadians = radiansToTextCenter - (float)(Math.PI * fractionOfCircumference);
 
             for (int characterIndex = 0; characterIndex < text.Length; characterIndex++)
             {
                 char @char = text[characterIndex];
-                float x = (float)(distanceFromCentreToBaseOfText * Math.Sin(currentCharacterRadians));
-                float y = -(float)(distanceFromCentreToBaseOfText * Math.Cos(currentCharacterRadians));
+                float x = (float)(distFromCenterToBase * Math.Sin(currentCharacterRadians));
+                float y = -(float)(distFromCenterToBase * Math.Cos(currentCharacterRadians));
 
                 using (GraphicsPath characterPath = new GraphicsPath())
                 {
-                    characterPath.AddString(@char.ToString(), font.FontFamily, (int)font.Style, font.Size, Point.Empty,
-                                            StringFormat.GenericTypographic);
-
+                    characterPath.AddString(@char.ToString(), font.FontFamily, (int)font.Style, font.Size, Point.Empty, StringFormat.GenericTypographic);
                     var pathBounds = characterPath.GetBounds();
                     var transform = new Matrix();
-                    transform.Translate(centre.X + x, centre.Y + y);
+                    transform.Translate(center.X + x, center.Y + y);
                     var rotationAngleDegrees = currentCharacterRadians * 180F / (float)Math.PI; // - 180F;
                     transform.Rotate(rotationAngleDegrees);
                     transform.Translate(-pathBounds.Width / 2F, -characterHeight);
                     characterPath.Transform(transform);
-                    graphics.FillPath(brush, characterPath);
+                    g.FillPath(brush, characterPath);
                 }
 
                 if (characterIndex != text.Length - 1)
@@ -268,5 +302,37 @@ namespace V_Max_Tool
             return text.Select(c => c == ' ' ? spaceLength : graphics.MeasureString(c.ToString(), font, Point.Empty, StringFormat.GenericTypographic).Width);
         }
 
+        private void Save_Image_Click(object sender, EventArgs e)
+        {
+            string Style = $"({styles[Img_style.SelectedIndex].Replace(" ", "_").ToLower()})"; //.ToString();
+            Save_Dialog.Filter = "Bitmap Image|*.bmp|JPeg Image|*.jpg";
+            Save_Dialog.Title = "Save Image File";
+            Save_Dialog.FileName = $"{fname}{fnappend}{Style}.bmp";
+            Save_Dialog.ShowDialog();
+            string fs = Save_Dialog.FileName;
+            if (Img_style.SelectedIndex == 0) Save_Flat(Save_Dialog.FilterIndex);
+            else Save_Circular(Save_Dialog.FilterIndex);
+
+            void Save_Flat(int ft)
+            {
+                if (Img_zoom.Checked)
+                {
+                    if (ft == 1) Disk_Image_Large.Image.Save(fs, ImageFormat.Bmp);
+                    if (ft == 2) Disk_Image_Large.Image.Save(fs, ImageFormat.Jpeg);
+                }
+                else
+                {
+                    Image flat = Resize_Image(Disk_Image_Large.Image, 1920, 1080, false);
+                    if (ft == 1) flat.Save(fs, ImageFormat.Bmp);
+                    if (ft == 2) flat.Save(fs, ImageFormat.Jpeg);
+                }
+            }
+
+            void Save_Circular(int ft)
+            {
+                if (ft == 1) Disk_Image_Large.Image.Save(fs, ImageFormat.Bmp);
+                if (ft == 2) Disk_Image_Large.Image.Save(fs, ImageFormat.Jpeg);
+            }
+        }
     }
 }
