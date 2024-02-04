@@ -74,6 +74,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.Img_style = new System.Windows.Forms.ComboBox();
             this.Show_sec = new System.Windows.Forms.CheckBox();
             this.Cap_margins = new System.Windows.Forms.CheckBox();
             this.Src_view = new System.Windows.Forms.RadioButton();
@@ -83,7 +84,6 @@
             this.panPic2 = new System.Windows.Forms.Panel();
             this.Disk_Image_Large = new System.Windows.Forms.PictureBox();
             this.Disk_Image = new System.Windows.Forms.PictureBox();
-            this.button2 = new System.Windows.Forms.Button();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -594,7 +594,7 @@
             this.Adv_ctrl.Location = new System.Drawing.Point(949, 12);
             this.Adv_ctrl.Name = "Adv_ctrl";
             this.Adv_ctrl.SelectedIndex = 0;
-            this.Adv_ctrl.Size = new System.Drawing.Size(1319, 1315);
+            this.Adv_ctrl.Size = new System.Drawing.Size(1351, 1347);
             this.Adv_ctrl.TabIndex = 36;
             // 
             // tabPage1
@@ -625,6 +625,7 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.DimGray;
+            this.tabPage2.Controls.Add(this.Img_style);
             this.tabPage2.Controls.Add(this.Show_sec);
             this.tabPage2.Controls.Add(this.Cap_margins);
             this.tabPage2.Controls.Add(this.Src_view);
@@ -634,9 +635,19 @@
             this.tabPage2.Location = new System.Drawing.Point(8, 39);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1303, 1268);
+            this.tabPage2.Size = new System.Drawing.Size(1335, 1300);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Visualize Disk Image";
+            // 
+            // Img_style
+            // 
+            this.Img_style.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.Img_style.FormattingEnabled = true;
+            this.Img_style.Location = new System.Drawing.Point(663, 0);
+            this.Img_style.Name = "Img_style";
+            this.Img_style.Size = new System.Drawing.Size(229, 33);
+            this.Img_style.TabIndex = 42;
+            this.Img_style.SelectedIndexChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
             // 
             // Show_sec
             // 
@@ -707,7 +718,7 @@
             this.panPic.Controls.Add(this.Disk_Image);
             this.panPic.Location = new System.Drawing.Point(6, 38);
             this.panPic.Name = "panPic";
-            this.panPic.Size = new System.Drawing.Size(1294, 1227);
+            this.panPic.Size = new System.Drawing.Size(1323, 1256);
             this.panPic.TabIndex = 0;
             // 
             // panPic2
@@ -716,7 +727,7 @@
             this.panPic2.Controls.Add(this.Disk_Image_Large);
             this.panPic2.Location = new System.Drawing.Point(3, 6);
             this.panPic2.Name = "panPic2";
-            this.panPic2.Size = new System.Drawing.Size(1288, 1221);
+            this.panPic2.Size = new System.Drawing.Size(1317, 1247);
             this.panPic2.TabIndex = 37;
             // 
             // Disk_Image_Large
@@ -724,7 +735,7 @@
             this.Disk_Image_Large.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.Disk_Image_Large.Location = new System.Drawing.Point(0, 3);
             this.Disk_Image_Large.Name = "Disk_Image_Large";
-            this.Disk_Image_Large.Size = new System.Drawing.Size(1291, 1218);
+            this.Disk_Image_Large.Size = new System.Drawing.Size(1314, 1241);
             this.Disk_Image_Large.TabIndex = 0;
             this.Disk_Image_Large.TabStop = false;
             // 
@@ -733,27 +744,16 @@
             this.Disk_Image.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
             this.Disk_Image.Location = new System.Drawing.Point(3, 5);
             this.Disk_Image.Name = "Disk_Image";
-            this.Disk_Image.Size = new System.Drawing.Size(1288, 1222);
+            this.Disk_Image.Size = new System.Drawing.Size(1317, 1248);
             this.Disk_Image.TabIndex = 0;
             this.Disk_Image.TabStop = false;
             this.Disk_Image.Click += new System.EventHandler(this.Disk_Image_Click);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(828, 42);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 41);
-            this.button2.TabIndex = 37;
-            this.button2.Text = "No!";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2434, 1371);
-            this.Controls.Add(this.button2);
+            this.ClientSize = new System.Drawing.Size(935, 1371);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
@@ -847,7 +847,7 @@
         private System.Windows.Forms.RadioButton Out_view;
         private System.Windows.Forms.CheckBox Cap_margins;
         private System.Windows.Forms.CheckBox Show_sec;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.ComboBox Img_style;
     }
 }
 

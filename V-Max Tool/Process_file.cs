@@ -219,7 +219,11 @@ namespace V_Max_Tool
                 }
                 else { NDA.Track_Data[i] = NDS.Track_Data[i]; }
             }
-            if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"]) Check_Before_Draw();
+            if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
+            {
+                this.Update();
+                Check_Before_Draw();
+            }
 
             void Process_Ndos(int trk)
             {

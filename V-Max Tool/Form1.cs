@@ -20,6 +20,7 @@ namespace V_Max_Tool
         private bool g64_error = false;
         private string nib_err_msg;
         private string g64_err_msg;
+        private readonly string[] styles = { "Flat Tracks", "Circular Tracks" };
 
         public Form1()
         {
@@ -507,18 +508,16 @@ namespace V_Max_Tool
         }
         private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Check_Before_Draw();
+            if (!opt) Check_Before_Draw();
         }
 
         private void Disk_Image_Click(object sender, EventArgs e)
         {
-            interp = !interp;
-            Draw_Flat_Tracks(0, true); ;
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            Draw_Disk();
+            if (!opt && Img_style.SelectedIndex == 0)
+            {
+                interp = !interp;
+                Draw_Flat_Tracks(0, true); ;
+            }
         }
     }
 }

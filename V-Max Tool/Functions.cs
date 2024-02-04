@@ -8,6 +8,7 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        int p2_def = 0;
         void Out_Density_Color(object sender, DrawItemEventArgs e)
         {
             try
@@ -258,9 +259,20 @@ namespace V_Max_Tool
         {
             if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
             {
-
-                if (Out_view.Checked) Draw_Flat_Tracks(0, false);
-                if (Src_view.Checked) Draw_Flat_Tracks(1, false);
+                if (Img_style.SelectedIndex == 0)
+                {
+                    Src_view.Enabled = true;
+                    if (Out_view.Checked) Draw_Flat_Tracks(0, false);
+                    if (Src_view.Checked) Draw_Flat_Tracks(1, false);
+                }
+                else
+                {
+                    opt = true;
+                    Src_view.Enabled = false;
+                    Out_view.Checked = true;
+                    Draw_Circular_Tracks();
+                    opt = false;
+                }
             }
         }
 
@@ -271,6 +283,7 @@ namespace V_Max_Tool
             panPic.Controls.Add(Disk_Image);
             panPic2.Controls.Add(Disk_Image_Large);
             panPic2.Visible = Img_zoom.Checked;
+            p2_def = panPic2.Height;
             Out_view.Select();
             //Disk_Image.Image = new Bitmap(8192, 42 * 15);
             Disk_Image.Image = new Bitmap(panPic.Width, panPic.Height);
@@ -314,6 +327,7 @@ namespace V_Max_Tool
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
             vm2_ver[1] = new string[] { "A5-A5", "A4-A5", "A5-A7", "A5-A6", "A9-AD", "AC-A9", "A5-A3", "A9-AE", "A5-AD", "AC-A5", "A9-A3", "A5-AE", "A5-A9",
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
+            Img_style.DataSource = styles;
         }
 
         void Set_ListBox_Items(bool r)

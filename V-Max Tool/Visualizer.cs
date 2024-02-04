@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -23,6 +26,7 @@ namespace V_Max_Tool
                 }
                 else ht = 0;
                 Disk_Image_Large.Image = new Bitmap(8192, panPic2.Height - 16);
+                panPic2.Size = new Size(8192, p2_def);
                 for (int i = 0; i < tracks; i++)
                 {
                     if (w == 0)
@@ -125,40 +129,63 @@ namespace V_Max_Tool
             return newImage;
         }
 
-        void Draw_Disk()
+        void Draw_Circular_Tracks()
         {
-            int width = 1000;
-            int height = 1000;
+            bool v2 = false;
+            int width = 1500;
+            int height = 1500;
             int track = 0;
-            int i = 0;
+            int i;
+            int de;
             int j = 0;
-            int k = 0;
+            int k;
             int x = width / 2;
             int y = height / 2;
-            int r = 490;
+            int r = 725;
             int len;
             Color col;
             Bitmap disk = new Bitmap(width, height);
+            Brush bsh = new SolidBrush(Color.White);
+            Font fnt = new Font("Arial", 17.5f, FontStyle.Regular);
             Make_Disk(disk);
+            DrawCurvedText(System.Drawing.Graphics.FromImage(disk), $"{fname}.g64", new System.Drawing.Point(750,750), 192.5f, 0f, fnt, bsh);
+            interp = true;
 
             while (r > 80 && track < tracks)
             {
                 if (NDG.Track_Length[track] > 0)
                 {
                     len = NDG.Track_Length[track];
+                    de = Get_Density(len);
                     for (i = 0; i < NDG.Track_Data[track].Length; i++)
                     {
-                        col = Color.FromArgb(0, NDG.Track_Data[track][i], 0);
-                        Draw_Arc(disk, track, x, y, r + j, i, col);
+                        col = Color.FromArgb(30, NDG.Track_Data[track][i], 30);
+                        if (Cap_margins.Checked)
+                        {
+                            col = Color.FromArgb(NDG.Track_Data[track][i] / 2, NDG.Track_Data[track][i] / 2, NDG.Track_Data[track][i] / 2);
+                            if (i <= density[de]) col = Color.FromArgb(30, NDG.Track_Data[track][i], 30);
+                            if (i > density[de] && i < density[de] + 5) col = Color.FromArgb(NDG.Track_Data[track][i], NDG.Track_Data[track][i], 30);
+                        }
+                        if (NDS.cbm[track] == 2 && NDG.Track_Data[track][i] == NDS.v2info[track][0]) v2 = true;
+                        if (v2 && NDG.Track_Data[track][i] == NDS.v2info[track][1]) v2 = false;
+                        if (Show_sec.Checked && ((NDS.cbm[track] == 3 && NDG.Track_Data[track][i] == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
+                        Draw_Arc(disk, x, y, r + j, i, col);
                     }
-
+                    Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
+                    Disk_Image_Large.Image = disk;
+                    Disk_Image_Large.Refresh();
+                    Disk_Image.Refresh();
                 }
                 r -= 5;
                 track += 1;
             }
+            panPic2.Size = new Size(width, height);
+            Disk_Image_Large.Image = disk;
             Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
-
-            void Draw_Arc(Bitmap d, int trk, int cx, int cy, int radius, int startAngle, Color color)
+            disk.Save($@"c:\test.bmp", ImageFormat.Bmp);
+            interp = false;
+            
+            void Draw_Arc(Bitmap d, int cx, int cy, int radius, int startAngle, Color color)
             {
                 int segments = 22 - track / 4;
                 float tempang = (float)(len) / 359.1f;
@@ -169,12 +196,8 @@ namespace V_Max_Tool
                 {
                     c = (float)Math.Cos(angle);
                     s = (float)Math.Sin(angle);
-
                     for (j = 0; j < 5; j++) d.SetPixel((int)(cx + (radius + j) * c), (int)(cy + (radius + j) * s), color);
                 }
-
-
-
             }
 
             void Make_Disk(Bitmap d)
@@ -187,18 +210,63 @@ namespace V_Max_Tool
                     g.FillEllipse(b, 2.5f, 8, d.Width - 10, d.Height - 10);
                     g.DrawEllipse(p, 2.5f, 8, d.Width - 10, d.Height - 10);
                     b = new SolidBrush(Color.FromArgb(60, 44, 24));
-                    g.FillEllipse(b, 275, 275, 450, 450);
-                    g.FillEllipse(Brushes.Black, 350, 350, 300, 300);
-                    g.FillEllipse(b, 367.5f, 367.5f, 265, 265);
+                    g.FillEllipse(b, 412.5f, 412.5f, 675f, 675f);
+                    g.FillEllipse(Brushes.Black, 525f, 525f, 450f, 450f);
+                    g.FillEllipse(b, 551.25f, 551.25f, 397.5f, 397.5f);
                     b = new SolidBrush(Color.FromArgb(30, 30, 30));
-                    g.FillEllipse(b, 380, 380, 240, 240);
-                    g.DrawEllipse(p, 380, 380, 240, 240);
-                    g.FillEllipse(b, 487.5f, 302.5f, 25, 25);
-                    g.DrawEllipse(p, 487.5f, 302.5f, 25, 25);
-                    g.DrawLine(p, 499.5f, 10, 499.5f, 275);
+                    g.FillEllipse(b, 570, 570, 360, 360);
+                    g.DrawEllipse(p, 570, 570, 360, 360);
+                    g.FillEllipse(b, 1008.75f, 731.25f, 25, 25);
+                    g.DrawEllipse(p, 1008.75f, 731.25f, 25, 25);
                 }
 
             }
         }
+
+        private void DrawCurvedText(Graphics graphics, string text, Point centre, float distanceFromCentreToBaseOfText, float radiansToTextCentre, Font font, Brush brush)
+        {
+            var circleCircumference = (float)(Math.PI * 2 * distanceFromCentreToBaseOfText);
+            var characterWidths = GetCharacterWidths(graphics, text, font).ToArray();
+            var characterHeight = graphics.MeasureString(text, font).Height;
+            var textLength = characterWidths.Sum();
+            float fractionOfCircumference = textLength / circleCircumference;
+            float currentCharacterRadians = radiansToTextCentre - (float)(Math.PI * fractionOfCircumference);
+
+            for (int characterIndex = 0; characterIndex < text.Length; characterIndex++)
+            {
+                char @char = text[characterIndex];
+                float x = (float)(distanceFromCentreToBaseOfText * Math.Sin(currentCharacterRadians));
+                float y = -(float)(distanceFromCentreToBaseOfText * Math.Cos(currentCharacterRadians));
+
+                using (GraphicsPath characterPath = new GraphicsPath())
+                {
+                    characterPath.AddString(@char.ToString(), font.FontFamily, (int)font.Style, font.Size, Point.Empty,
+                                            StringFormat.GenericTypographic);
+
+                    var pathBounds = characterPath.GetBounds();
+                    var transform = new Matrix();
+                    transform.Translate(centre.X + x, centre.Y + y);
+                    var rotationAngleDegrees = currentCharacterRadians * 180F / (float)Math.PI; // - 180F;
+                    transform.Rotate(rotationAngleDegrees);
+                    transform.Translate(-pathBounds.Width / 2F, -characterHeight);
+                    characterPath.Transform(transform);
+                    graphics.FillPath(brush, characterPath);
+                }
+
+                if (characterIndex != text.Length - 1)
+                {
+                    var distanceToNextChar = (characterWidths[characterIndex] + characterWidths[characterIndex + 1]) / 2F;
+                    float charFractionOfCircumference = distanceToNextChar / circleCircumference;
+                    currentCharacterRadians += charFractionOfCircumference * (float)(2F * Math.PI);
+                }
+            }
+        }
+
+        private IEnumerable<float> GetCharacterWidths(Graphics graphics, string text, Font font)
+        {
+            var spaceLength = graphics.MeasureString(" ", font, Point.Empty, StringFormat.GenericDefault).Width;
+            return text.Select(c => c == ' ' ? spaceLength : graphics.MeasureString(c.ToString(), font, Point.Empty, StringFormat.GenericTypographic).Width);
+        }
+
     }
 }
