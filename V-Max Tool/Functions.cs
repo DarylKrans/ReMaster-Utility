@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        Thread thread;
         int p2_def = 0;
         void Out_Density_Color(object sender, DrawItemEventArgs e)
         {
@@ -261,12 +263,17 @@ namespace V_Max_Tool
             {
                 opt = true;
                 this.Update();
+                thread?.Abort();
                 if (Img_style.SelectedIndex == 0)
                 {
                     if (Out_view.Checked) Draw_Flat_Tracks(0, false);
                     if (Src_view.Checked) Draw_Flat_Tracks(1, false);
                 }
-                else Draw_Circular_Tracks();
+                else
+                {
+                    thread = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
+                    thread.Start();
+                }
                 opt = false;
             }
         }

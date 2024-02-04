@@ -169,8 +169,6 @@ namespace V_Max_Tool
             // Start rebuilding the track
             var buff = new MemoryStream();
             var wrt = new BinaryWriter(buff);
-            if (track_ID.Length > 0) wrt.Write(track_ID);
-            for (int q = 0; q < gap_len; q++) wrt.Write((byte)gap);
             for (int i = 0; i < sectors; i++)
             {
                 wrt.Write(v3_sync_marker);
@@ -183,6 +181,9 @@ namespace V_Max_Tool
             {
                 for (int i = 0; i < fill; i++) wrt.Write((byte)filler);
             }
+            if (track_ID.Length > 0) wrt.Write(track_ID);
+            for (int q = 0; q < gap_len; q++) wrt.Write((byte)gap);
+
             return buff.ToArray();
         }
 

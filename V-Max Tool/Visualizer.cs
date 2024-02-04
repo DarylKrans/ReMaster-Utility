@@ -92,10 +92,10 @@ namespace V_Max_Tool
                     int y1 = 0 + (trk * ((panPic.Height - 16) / 42));
                     int x2 = j;
                     int y2 = t_height + (trk * ((panPic.Height - 16) / 42));
-                    using (var graphics = Graphics.FromImage(Disk_Image_Large.Image))
-                    {
-                        graphics.DrawLine(pen, x1, y1, x2, y2);
-                    }
+                        using (var graphics = Graphics.FromImage(Disk_Image_Large.Image))
+                        {
+                            graphics.DrawLine(pen, x1, y1, x2, y2);
+                        }
                 }
             }
         }
@@ -131,6 +131,7 @@ namespace V_Max_Tool
 
         void Draw_Circular_Tracks()
         {
+            Invoke(new Action(() => Save_Image.Visible = Img_zoom.Enabled = false));
             string fi_ext = ".g64";
             string fi_nam = $"{fname}{fnappend}";
             byte[] t_data = new byte[0];
@@ -152,7 +153,7 @@ namespace V_Max_Tool
             Font fnt = new Font("Arial", 17.5f, FontStyle.Regular);
             Draw_Disk(disk);
             if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
-            DrawCurvedText(Graphics.FromImage(disk), $"{fi_nam}{fi_ext}", new Point(750,750), 192.5f, 0f, fnt, bsh);
+            DrawCurvedText(Graphics.FromImage(disk), $"{fi_nam}{fi_ext}", new Point(750, 750), 192.5f, 0f, fnt, bsh);
             interp = true;
 
             while (r > 80 && track < tracks)
@@ -172,15 +173,15 @@ namespace V_Max_Tool
                             t_data = new byte[(NDS.D_End[track] - NDS.D_Start[track]) >> 3];
                             Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, t_data, 0, (NDS.D_End[track] - NDS.D_Start[track]) >> 3);
                         }
-                        if ((NDS.cbm[track] > 1 && NDS.cbm[track] < 5) && NDS.D_End[track] - NDS.D_Start[track] > min_t_len)
-                        {
-                            t_data = new byte[NDS.D_End[track] - NDS.D_Start[track]];
-                            Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, t_data, 0, (NDS.D_End[track] - NDS.D_Start[track]));
-                        }
                         else
                         {
                             t_data = new byte[NDS.Track_Data[track].Length];
                             Array.Copy(NDS.Track_Data[track], 0, t_data, 0, NDS.Track_Data[track].Length);
+                        }
+                        if ((NDS.cbm[track] > 1 && NDS.cbm[track] < 5) && NDS.D_End[track] - NDS.D_Start[track] > min_t_len)
+                        {
+                            t_data = new byte[NDS.D_End[track] - NDS.D_Start[track]];
+                            Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, t_data, 0, (NDS.D_End[track] - NDS.D_Start[track]));
                         }
                     }
                     len = t_data.Length;
@@ -201,21 +202,27 @@ namespace V_Max_Tool
                             if (Show_sec.Checked && ((NDS.cbm[track] == 3 && t_data[i] == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
                             Draw_Arc(disk, x, y, r + j, i, col);
                         }
-                        Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
-                        Disk_Image_Large.Image = disk;
-                        Disk_Image_Large.Refresh();
-                        Disk_Image.Refresh();
+                        this.Invoke(new Action(() =>
+                        {
+                            Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
+                            Disk_Image_Large.Image = disk;
+                            Disk_Image_Large.Refresh();
+                            Disk_Image.Refresh();
+                        }));
                     }
                 }
                 r -= 5;
                 track += 1;
             }
-            panPic2.Size = new Size(width, height);
-            Disk_Image_Large.Image = disk;
-            Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
-            disk.Save($@"c:\test.bmp", ImageFormat.Bmp);
-            interp = false;
-            
+            Invoke(new Action(() =>
+            {
+                panPic2.Size = new Size(width, height);
+                Disk_Image_Large.Image = disk;
+                Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
+                interp = false;
+                Save_Image.Visible = Img_zoom.Enabled = true;
+            }));
+
             void Draw_Arc(Bitmap d, int cx, int cy, int radius, int startAngle, Color color)
             {
                 int segments = 22 - track / 4;
@@ -333,6 +340,10 @@ namespace V_Max_Tool
                 if (ft == 1) Disk_Image_Large.Image.Save(fs, ImageFormat.Bmp);
                 if (ft == 2) Disk_Image_Large.Image.Save(fs, ImageFormat.Jpeg);
             }
+        }
+        public static class ThreadSafe
+        {
+            public static volatile Bitmap Snapshot;
         }
     }
 }

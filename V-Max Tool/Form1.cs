@@ -523,8 +523,7 @@ namespace V_Max_Tool
 
         private void Src_view_CheckedChanged(object sender, EventArgs e)
         {
-            RadioButton rb = sender as RadioButton;
-            if (rb != null)
+            if (sender is RadioButton rb)
             {
                 if (rb.Checked)
                 {

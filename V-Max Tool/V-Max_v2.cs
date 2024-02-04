@@ -121,21 +121,20 @@ namespace V_Max_Tool
             gap_len = trk_density - ((hlen * sectors) + trk_len) - t_gap.Length;
             var buffer = new MemoryStream();
             var write = new BinaryWriter(buffer);
+            var st_sec = g_sec;
             for (int i = 0; i < sectors; i++)
             {
-                if (sec_dat[i].Length > 0)
+                if (sec_dat[st_sec].Length > 0)
                 {
-                    if (i == g_sec)
-                    {
-                        if (t_gap.Length > 0) write.Write(t_gap);
-                        for (int j = 0; j < gap_len; j++) write.Write((byte)gab_byte);
-                    }
                     write.Write(v2_sync_marker);
-                    write.Write(Build_Header(header[i], hlen));
-                    write.Write(sec_dat[i]);
+                    write.Write(Build_Header(header[st_sec], hlen));
+                    write.Write(sec_dat[st_sec]);
                     write.Write((byte)se_byte);
+                    st_sec++; if (st_sec == sectors) st_sec = 0;
                 }
             }
+            if (t_gap.Length > 0) write.Write(t_gap);
+            for (int j = 0; j < gap_len; j++) write.Write((byte)gab_byte);
             //File.WriteAllBytes($@"c:\track{trk}.bin", buffer.ToArray()); // <- for debugging
             if (error)
             {
