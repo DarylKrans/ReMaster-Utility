@@ -148,12 +148,14 @@ namespace V_Max_Tool
             int r = 725;
             int len;
             Color col;
+            //new Bitmap(ThreadSafe.Snapshot, new Size(width, height));
             Bitmap disk = new Bitmap(width, height);
-            Brush bsh = new SolidBrush(Color.White);
-            Font fnt = new Font("Arial", 17.5f, FontStyle.Regular);
-            Draw_Disk(disk);
             if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
-            DrawCurvedText(Graphics.FromImage(disk), $"{fi_nam}{fi_ext}", new Point(750, 750), 192.5f, 0f, fnt, bsh);
+            Draw_Disk(disk);
+            //DrawCurvedText(Graphics.FromImage(disk), $"{fi_nam}{fi_ext}", new Point(750, 750), 192.5f, 0f, fnt, bsh);
+            //bsh = new SolidBrush(Color.Black);
+            //fnt = new Font("Arial", 24f, FontStyle.Regular);
+            //DrawCurvedText(Graphics.FromImage(disk), "<---- Rotation", new Point(750, 700), 192.5f, 0f, fnt, bsh);
             interp = true;
 
             while (r > 80 && track < tracks)
@@ -262,25 +264,31 @@ namespace V_Max_Tool
                     g.FillEllipse(b, 1008.75f, 731.25f, 25, 25);
                     g.DrawEllipse(p, 1008.75f, 731.25f, 25, 25);
                 }
+                Brush bsh = new SolidBrush(Color.White);
+                Font fnt = new Font("Arial", 17.5f, FontStyle.Regular);
+                DrawCurvedText(Graphics.FromImage(disk), $"{fi_nam}{fi_ext}", new Point(750, 750), 192.5f, 0f, fnt, bsh, false);
+                bsh = new SolidBrush(Color.Yellow);
+                fnt = new Font("Arial", 24f, FontStyle.Regular);
+                DrawCurvedText(Graphics.FromImage(disk), $"\u2192 noitatoR", new Point(770, 755), 272.5f, 1.45f, fnt, bsh, true);
 
             }
         }
 
-        private void DrawCurvedText(Graphics g, string text, Point center, float distFromCenterToBase, float radiansToTextCenter, Font font, Brush brush)
+        private void DrawCurvedText(Graphics g, string text, Point center, float distFromCenterToBase, float radiansToTextCenter, Font font, Brush brush, bool rev)
         {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
             var circleCircumference = (float)(Math.PI * 2 * distFromCenterToBase);
             var characterWidths = GetCharacterWidths(g, text, font).ToArray();
             var characterHeight = g.MeasureString(text, font).Height;
             var textLength = characterWidths.Sum();
             float fractionOfCircumference = textLength / circleCircumference;
             float currentCharacterRadians = radiansToTextCenter - (float)(Math.PI * fractionOfCircumference);
-
+            if (rev) currentCharacterRadians = radiansToTextCenter + (float)(Math.PI * fractionOfCircumference);
             for (int characterIndex = 0; characterIndex < text.Length; characterIndex++)
             {
                 char @char = text[characterIndex];
                 float x = (float)(distFromCenterToBase * Math.Sin(currentCharacterRadians));
                 float y = -(float)(distFromCenterToBase * Math.Cos(currentCharacterRadians));
-
                 using (GraphicsPath characterPath = new GraphicsPath())
                 {
                     characterPath.AddString(@char.ToString(), font.FontFamily, (int)font.Style, font.Size, Point.Empty, StringFormat.GenericTypographic);
@@ -288,6 +296,7 @@ namespace V_Max_Tool
                     var transform = new Matrix();
                     transform.Translate(center.X + x, center.Y + y);
                     var rotationAngleDegrees = currentCharacterRadians * 180F / (float)Math.PI; // - 180F;
+                    if (rev) rotationAngleDegrees = currentCharacterRadians * 180F / (float)Math.PI - 180F;
                     transform.Rotate(rotationAngleDegrees);
                     transform.Translate(-pathBounds.Width / 2F, -characterHeight);
                     characterPath.Transform(transform);
