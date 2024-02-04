@@ -9,7 +9,7 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
 
-        private readonly string ver = " v0.9.0 (beta)";
+        private readonly string ver = " v0.9.1 (beta)";
         private readonly string fix = "(sync_fixed)";
         private readonly string mod = "(modified)";
         //private readonly int[] density = { 7692, 7142, 6666, 6250 }; // <- Actual capacity as defined by the manual

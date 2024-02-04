@@ -39,7 +39,6 @@ namespace V_Max_Tool
                             Draw_Track(NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i]);
                             Disk_Image.Image = Resize_Image(Disk_Image_Large.Image, panPic.Width, panPic.Height - 16, false);
                             ext = "(flat_tracks).g64";
-                            //Add_Text(Disk_Image_Large.Image, $"{fname}{fnappend}.g64");
                         }
                     }
                     if (w == 1)
@@ -52,7 +51,6 @@ namespace V_Max_Tool
                             Draw_Track(NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i]);
                             Disk_Image.Image = Resize_Image(Disk_Image_Large.Image, panPic.Width, panPic.Height - 16, false);
                             ext = $"(flat_tracks){fext}";
-
                         }
                     }
                     if (halftracks) ht += .5; else ht += 1;
@@ -280,7 +278,6 @@ namespace V_Max_Tool
                 bsh = new SolidBrush(Color.Yellow);
                 fnt = new Font("Arial", 24f, FontStyle.Regular);
                 DrawCurvedText(Graphics.FromImage(disk), $"\u2192 noitatoR", new Point(770, 755), 272.5f, 1.45f, fnt, bsh, true);
-
             }
         }
 
