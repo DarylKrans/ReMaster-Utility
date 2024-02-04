@@ -83,6 +83,7 @@
             this.panPic2 = new System.Windows.Forms.Panel();
             this.Disk_Image_Large = new System.Windows.Forms.PictureBox();
             this.Disk_Image = new System.Windows.Forms.PictureBox();
+            this.button2 = new System.Windows.Forms.Button();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -737,11 +738,22 @@
             this.Disk_Image.TabStop = false;
             this.Disk_Image.Click += new System.EventHandler(this.Disk_Image_Click);
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(828, 42);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 41);
+            this.button2.TabIndex = 37;
+            this.button2.Text = "No!";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(933, 1371);
+            this.ClientSize = new System.Drawing.Size(2434, 1371);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
@@ -835,6 +847,7 @@
         private System.Windows.Forms.RadioButton Out_view;
         private System.Windows.Forms.CheckBox Cap_margins;
         private System.Windows.Forms.CheckBox Show_sec;
+        private System.Windows.Forms.Button button2;
     }
 }
 

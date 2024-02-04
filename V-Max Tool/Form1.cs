@@ -513,7 +513,12 @@ namespace V_Max_Tool
         private void Disk_Image_Click(object sender, EventArgs e)
         {
             interp = !interp;
-            Visualize_Flat(0, true); ;
+            Draw_Flat_Tracks(0, true); ;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Draw_Disk();
         }
     }
 }
