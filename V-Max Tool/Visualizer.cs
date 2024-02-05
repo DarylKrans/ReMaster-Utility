@@ -12,6 +12,9 @@ namespace V_Max_Tool
     {
         string def_text = "";
         bool interp = false;
+        bool Dragging = false;
+        int xPos;
+        int yPos;
 
         void Draw_Flat_Tracks(int w, bool chg_itrp)
         {
@@ -142,7 +145,7 @@ namespace V_Max_Tool
 
         void Draw_Circular_Tracks()
         {
-            Invoke(new Action(() => Save_Image.Visible = Img_zoom.Enabled = false));
+            Invoke(new Action(() => Save_Image.Visible = Img_zoom.Enabled = Disk_Image_Large.Enabled = Reset_img_pos.Visible = false));
             string fi_ext = ".g64";
             string fi_nam = $"{fname}{fnappend}";
             byte[] t_data = new byte[0];
@@ -228,7 +231,7 @@ namespace V_Max_Tool
                 Disk_Image_Large.Image = disk;
                 Disk_Image.Image = Resize_Image(disk, panPic.Width, panPic.Height - 16, false);
                 interp = false;
-                Save_Image.Visible = Img_zoom.Enabled = true;
+                Save_Image.Visible = Img_zoom.Enabled = Disk_Image_Large.Enabled = Reset_img_pos.Visible = true;
             }));
 
             void Draw_Arc(Bitmap d, int cx, int cy, int radius, int startAngle, Color color)
@@ -370,6 +373,43 @@ namespace V_Max_Tool
                 if (ft == 1) Disk_Image_Large.Image.Save(fs, ImageFormat.Bmp);
                 if (ft == 2) Disk_Image_Large.Image.Save(fs, ImageFormat.Jpeg);
             }
+        }
+
+        private void Disk_Image_Large_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                Dragging = label3.Visible = true;
+                xPos = e.X;
+                yPos = e.Y;
+            }
+        }
+
+        private void Disk_Image_Large_MouseMove(object sender, MouseEventArgs e)
+        {
+            Control c = sender as Control;
+            if (Dragging && c != null)
+            {
+                c.Top = e.Y + c.Top - yPos;
+                c.Left = e.X + c.Left - xPos;
+                var x = c.Left;
+                var y = c.Top;
+                x = -x;
+                y = -y;
+                label3.Text = $"x:({x}) y:({y})";
+            }
+        }
+
+        private void Disk_Image_Large_MouseUp(object sender, MouseEventArgs e)
+        {
+            Dragging = label3.Visible = false;
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            Disk_Image_Large.Top = 1;
+            Disk_Image_Large.Left = 1;
+            Reset_img_pos.Checked = false;
         }
     }
 }

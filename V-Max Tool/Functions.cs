@@ -281,17 +281,20 @@ namespace V_Max_Tool
         void Init()
         {
             panPic.AutoSize = false;
-            panPic.AutoScroll = true;
+            panPic.AutoScroll = false;
             panPic.Controls.Add(Disk_Image);
             panPic2.Controls.Add(Disk_Image_Large);
             panPic2.Visible = Img_zoom.Checked;
             p2_def = panPic2.Height;
             Out_view.Select();
+            label3.Text = "";
             //Disk_Image.Image = new Bitmap(8192, 42 * 15);
             Disk_Image.Image = new Bitmap(panPic.Width, panPic.Height);
             Disk_Image_Large.Image = new Bitmap(8192, 42 * 15);
+            Disk_Image_Large.Cursor = Cursors.Hand;
             panPic2.Width = 8192;
-            panPic2.AutoScroll = true;
+            panPic2.AutoScroll = false;
+            panPic2.SetBounds(0, 0, Disk_Image_Large.Width, Disk_Image_Large.Height);
             Disk_Image.SizeMode = PictureBoxSizeMode.Normal;
             Disk_Image_Large.SizeMode = PictureBoxSizeMode.AutoSize;
             Adv_ctrl.SelectedIndexChanged += new System.EventHandler(Adv_Ctrl_SelectedIndexChanged);
@@ -311,7 +314,7 @@ namespace V_Max_Tool
             string[] o = { "G64", "NIB", "NIB & G64" };
             fnappend = fix;
             Out_Type.DataSource = o;
-            label1.Text = label2.Text = "";
+            label1.Text = label2.Text = label3.Text = "";
             Track_Info.Visible = false;
             Source.Visible = Output.Visible = false;
             button1.Enabled = false;
