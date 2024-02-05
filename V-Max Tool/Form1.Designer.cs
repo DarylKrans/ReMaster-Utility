@@ -620,7 +620,7 @@
             this.Track_Info.Location = new System.Drawing.Point(6, 6);
             this.Track_Info.Name = "Track_Info";
             this.Track_Info.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.Track_Info.Size = new System.Drawing.Size(1291, 1251);
+            this.Track_Info.Size = new System.Drawing.Size(1323, 1251);
             this.Track_Info.TabIndex = 11;
             // 
             // tabPage2
@@ -728,9 +728,9 @@
             this.panPic.BackColor = System.Drawing.Color.DimGray;
             this.panPic.Controls.Add(this.panPic2);
             this.panPic.Controls.Add(this.Disk_Image);
-            this.panPic.Location = new System.Drawing.Point(6, 38);
+            this.panPic.Location = new System.Drawing.Point(0, 38);
             this.panPic.Name = "panPic";
-            this.panPic.Size = new System.Drawing.Size(1323, 1256);
+            this.panPic.Size = new System.Drawing.Size(1335, 1262);
             this.panPic.TabIndex = 0;
             // 
             // panPic2
@@ -739,9 +739,9 @@
             this.panPic2.Controls.Add(this.Reset_img_pos);
             this.panPic2.Controls.Add(this.label3);
             this.panPic2.Controls.Add(this.Disk_Image_Large);
-            this.panPic2.Location = new System.Drawing.Point(3, 6);
+            this.panPic2.Location = new System.Drawing.Point(0, 6);
             this.panPic2.Name = "panPic2";
-            this.panPic2.Size = new System.Drawing.Size(1317, 1247);
+            this.panPic2.Size = new System.Drawing.Size(1335, 1256);
             this.panPic2.TabIndex = 37;
             // 
             // Reset_img_pos
@@ -757,7 +757,7 @@
             this.Reset_img_pos.TabStop = true;
             this.Reset_img_pos.Text = "Reset Position";
             this.Reset_img_pos.UseVisualStyleBackColor = false;
-            this.Reset_img_pos.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
+            this.Reset_img_pos.CheckedChanged += new System.EventHandler(this.Reposition_ImageButton);
             // 
             // label3
             // 
@@ -775,7 +775,7 @@
             this.Disk_Image_Large.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.Disk_Image_Large.Location = new System.Drawing.Point(0, 3);
             this.Disk_Image_Large.Name = "Disk_Image_Large";
-            this.Disk_Image_Large.Size = new System.Drawing.Size(1314, 1241);
+            this.Disk_Image_Large.Size = new System.Drawing.Size(1335, 1253);
             this.Disk_Image_Large.TabIndex = 0;
             this.Disk_Image_Large.TabStop = false;
             this.Disk_Image_Large.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_Large_MouseDown);
@@ -785,9 +785,9 @@
             // Disk_Image
             // 
             this.Disk_Image.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.Disk_Image.Location = new System.Drawing.Point(3, 5);
+            this.Disk_Image.Location = new System.Drawing.Point(0, 5);
             this.Disk_Image.Name = "Disk_Image";
-            this.Disk_Image.Size = new System.Drawing.Size(1317, 1248);
+            this.Disk_Image.Size = new System.Drawing.Size(1335, 1257);
             this.Disk_Image.TabIndex = 0;
             this.Disk_Image.TabStop = false;
             this.Disk_Image.Click += new System.EventHandler(this.Disk_Image_Click);
@@ -796,7 +796,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(935, 1371);
+            this.ClientSize = new System.Drawing.Size(2457, 1499);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
