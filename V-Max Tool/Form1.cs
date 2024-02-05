@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -518,6 +519,11 @@ namespace V_Max_Tool
             {
                 interp = !interp;
                 Draw_Flat_Tracks(0, true); ;
+            }
+            if (!opt && Img_style.SelectedIndex == 1)
+            {
+                vm_reverse = !vm_reverse;
+                Check_Before_Draw();
             }
         }
 

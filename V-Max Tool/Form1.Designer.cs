@@ -657,7 +657,7 @@
             this.Img_style.FormattingEnabled = true;
             this.Img_style.Location = new System.Drawing.Point(542, 0);
             this.Img_style.Name = "Img_style";
-            this.Img_style.Size = new System.Drawing.Size(229, 33);
+            this.Img_style.Size = new System.Drawing.Size(192, 33);
             this.Img_style.TabIndex = 42;
             this.Img_style.SelectedIndexChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
             // 
@@ -796,7 +796,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2379, 1371);
+            this.ClientSize = new System.Drawing.Size(935, 1371);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);

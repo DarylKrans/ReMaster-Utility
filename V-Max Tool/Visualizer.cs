@@ -13,6 +13,7 @@ namespace V_Max_Tool
         string def_text = "";
         bool interp = false;
         bool Dragging = false;
+        bool vm_reverse = false;
         int xPos;
         int yPos;
 
@@ -159,7 +160,7 @@ namespace V_Max_Tool
             int k;
             int x = width / 2;
             int y = height / 2;
-            int r = 725;
+            int r = 727;
             int len;
             Color col;
             Bitmap disk = new Bitmap(width, height);
@@ -201,7 +202,14 @@ namespace V_Max_Tool
                         de = Get_Density(len);
                         for (i = 0; i < t_data.Length; i++)
                         {
-                            col = Color.FromArgb(30, t_data[i], 30);
+                            if (vm_reverse && NDS.cbm[track] > 1)
+                            {
+                                var sub = 255;
+                                if (t_data[i] == 0) sub = 0; if (t_data[i] == 255) sub = 255 + 255;
+                                col = Color.FromArgb(30, sub - t_data[i], 30);
+                                if (NDS.cbm[track] == 4) col = Color.FromArgb(30, 30, t_data[i]);
+                            }
+                            else col = Color.FromArgb(30, t_data[i], 30);
                             if (Cap_margins.Checked)
                             {
                                 col = Color.FromArgb(t_data[i] / 2, t_data[i] / 2, t_data[i] / 2);
@@ -245,7 +253,7 @@ namespace V_Max_Tool
                 {
                     c = (float)Math.Cos(angle);
                     s = (float)Math.Sin(angle);
-                    for (j = 0; j < 5; j++) d.SetPixel((int)(cx + (radius + j) * c), (int)(cy + (radius + j) * s), color);
+                    for (j = 0; j < 7; j++) d.SetPixel((int)(cx + (radius + j) * c), (int)(cy + (radius + j) * s), color);
                 }
             }
 
@@ -257,8 +265,8 @@ namespace V_Max_Tool
                 {
                     g.SmoothingMode = SmoothingMode.AntiAlias;
                     // Draw Disk surface
-                    g.FillEllipse(b, 2.5f, 8, d.Width - 10, d.Height - 10);
-                    g.DrawEllipse(p, 2.5f, 8, d.Width - 10, d.Height - 10);
+                    g.FillEllipse(b, 3.5f, 6, d.Width - 10, d.Height - 10);
+                    g.DrawEllipse(p, 3.5f, 6, d.Width - 10, d.Height - 10);
                     // Draw inner non-writable surface of disk
                     b = new SolidBrush(Color.FromArgb(60, 44, 24));
                     g.FillEllipse(b, 412.5f, 412.5f, 675f, 675f);
