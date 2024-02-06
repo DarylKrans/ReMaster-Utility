@@ -17,12 +17,14 @@ namespace V_Max_Tool
         int xPos;
         int yPos;
         private readonly string[] styles = { "Flat Tracks", "Circular Tracks" };
-        private readonly string[] Img_Quality = { "Low", "Medium", "High", "Ultra" };
+        private readonly string[] Img_Quality = { "Low", "Medium", "High", "Ultra", "Insane!", "Atomic" };
         FastBitmap flat;
         FastBitmap disk;
-        Brush cbm_brush = new SolidBrush(Color.FromArgb(200, 67, 200));
-        Brush ldr_brush = new SolidBrush(Color.FromArgb(133, 133, 200));
-        Brush vmx_brush = new SolidBrush(Color.FromArgb(30, 200, 30));
+        private readonly Brush cbm_brush = new SolidBrush(Color.FromArgb(200, 67, 200));
+        private readonly Brush ldr_brush = new SolidBrush(Color.FromArgb(133, 133, 200));
+        private readonly Brush vmx_brush = new SolidBrush(Color.FromArgb(30, 200, 30));
+        private readonly Color Write_face = Color.FromArgb(41, 40, 36);
+        private readonly Color Inner_face = Color.FromArgb(50, 49, 44);
 
 
         void Draw_Flat_Tracks(int w, bool chg_itrp)
@@ -62,7 +64,7 @@ namespace V_Max_Tool
                         if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; }
                         if (NDS.Track_Length[i] > min_t_len)
                         {
-                            t = Draw_Track(flat, NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i]);
+                            t = Draw_Track(flat, NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i]);
                             ext = $"(flat_tracks){fext}";
                         }
                     }
@@ -319,24 +321,24 @@ namespace V_Max_Tool
 
             void Draw_Disk(FastBitmap d)
             {
-                Brush b = new SolidBrush(Color.FromArgb(50, 40, 20));
+                Brush b = new SolidBrush(Write_face);
                 Pen p = new Pen(Color.Black, 2);
                 using (var g = Graphics.FromImage(d.Bitmap))
                 {
                     RectangleF rect = new RectangleF(0, 0, width, height);
-                    g.FillRectangle(new SolidBrush(Color.FromArgb(30, 30, 30)), rect);
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(0, 0, 0)), rect);
                     g.SmoothingMode = SmoothingMode.AntiAlias;
                     // Draw Disk surface
                     g.FillEllipse(b, 3.5f, 6, d.Width - 10, d.Height - 10);
                     g.DrawEllipse(p, 3.5f, 6, d.Width - 10, d.Height - 10);
                     // Draw inner non-writable surface of disk
-                    b = new SolidBrush(Color.FromArgb(60, 44, 24));
+                    b = new SolidBrush(Inner_face);
                     g.FillEllipse(b, (float)(275 * m), (float)(275 * m), (float)(450 * m), (float)(450 * m));
                     // Draw inner ring of disk (also used for image name text)
-                    g.FillEllipse(Brushes.Black, (float)(350 * m), (float)(350 * m), (float)(300 * m), (float)(300 * m));
+                    g.FillEllipse(new SolidBrush(Color.FromArgb(7,7,7)), (float)(350 * m), (float)(350 * m), (float)(300 * m), (float)(300 * m));
                     // Draw remaing disk surface until center hole
                     g.FillEllipse(b, (float)(367.5 * m), (float)(367.5 * m), (float)(265 * m), (float)(265 * m));
-                    b = new SolidBrush(Color.FromArgb(30, 30, 30));
+                    b = new SolidBrush(Color.FromArgb(0, 0, 0));
                     // Draw index hole
                     g.FillEllipse(b, (float)(380 * m), (float)(380 * m), (float)(240 * m), (float)(240 * m));
                     g.DrawEllipse(p, (float)(380 * m), (float)(380 * m), (float)(240 * m), (float)(240 * m));

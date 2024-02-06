@@ -796,7 +796,7 @@
             // 
             // Disk_Image_Large
             // 
-            this.Disk_Image_Large.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.Disk_Image_Large.BackColor = System.Drawing.Color.Transparent;
             this.Disk_Image_Large.Location = new System.Drawing.Point(0, 3);
             this.Disk_Image_Large.Name = "Disk_Image_Large";
             this.Disk_Image_Large.Size = new System.Drawing.Size(1335, 1253);
