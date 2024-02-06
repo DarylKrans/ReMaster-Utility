@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,7 +9,7 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
 
-        private readonly string ver = " v0.9.1 (beta)";
+        private readonly string ver = " v0.9.2 (beta)";
         private readonly string fix = "(sync_fixed)";
         private readonly string mod = "(modified)";
         //private readonly int[] density = { 7692, 7142, 6666, 6250 }; // <- Actual capacity as defined by the manual
@@ -21,7 +20,6 @@ namespace V_Max_Tool
         private bool g64_error = false;
         private string nib_err_msg;
         private string g64_err_msg;
-        private readonly string[] styles = { "Flat Tracks", "Circular Tracks" };
         private readonly int min_t_len = 6000;
 
         public Form1()

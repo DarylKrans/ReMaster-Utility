@@ -264,22 +264,36 @@ namespace V_Max_Tool
                 opt = true;
                 this.Update();
                 thread?.Abort();
+                disk?.Dispose();
+                flat?.Dispose();
                 if (Img_style.SelectedIndex == 0)
                 {
-                    if (Out_view.Checked) Draw_Flat_Tracks(0, false);
-                    if (Src_view.Checked) Draw_Flat_Tracks(1, false);
+                    Img_Q.Visible = label4.Visible = false;
+                    try
+                    {
+                        if (Out_view.Checked) Draw_Flat_Tracks(0, false);
+                        if (Src_view.Checked) Draw_Flat_Tracks(1, false);
+                    }
+                    catch { }
                 }
                 else
                 {
-                    thread = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
-                    thread.Start();
+                    Img_Q.Visible = label4.Visible = true;
+                    try
+                    {
+                        thread = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
+                        thread.Start();
+                    }
+                    catch { }
                 }
+                GC.Collect();
                 opt = false;
             }
         }
 
         void Init()
         {
+            Height = PreferredSize.Height;
             panPic.AutoSize = false;
             panPic.AutoScroll = false;
             panPic.Controls.Add(Disk_Image);
@@ -287,8 +301,6 @@ namespace V_Max_Tool
             panPic2.Visible = Img_zoom.Checked;
             p2_def = panPic2.Height;
             Out_view.Select();
-            label3.Text = "";
-            //Disk_Image.Image = new Bitmap(8192, 42 * 15);
             Disk_Image.Image = new Bitmap(panPic.Width, panPic.Height);
             Disk_Image_Large.Image = new Bitmap(8192, 42 * 15);
             Disk_Image_Large.Cursor = Cursors.Hand;
@@ -297,11 +309,12 @@ namespace V_Max_Tool
             panPic2.SetBounds(0, 0, Disk_Image_Large.Width, Disk_Image_Large.Height);
             Disk_Image.SizeMode = PictureBoxSizeMode.Normal;
             Disk_Image_Large.SizeMode = PictureBoxSizeMode.AutoSize;
+            flat = new FastBitmap(8192, panPic2.Height - 16);
             Adv_ctrl.SelectedIndexChanged += new System.EventHandler(Adv_Ctrl_SelectedIndexChanged);
-            this.Out_density.DrawItem += new DrawItemEventHandler(Out_Density_Color);
-            this.Track_Info.DrawItem += new DrawItemEventHandler(Source_Info_Color);
-            this.sf.DrawItem += new DrawItemEventHandler(Track_Format_Color);
-            this.out_rpm.DrawItem += new DrawItemEventHandler(RPM_Color);
+            Out_density.DrawItem += new DrawItemEventHandler(Out_Density_Color);
+            Track_Info.DrawItem += new DrawItemEventHandler(Source_Info_Color);
+            sf.DrawItem += new DrawItemEventHandler(Track_Format_Color);
+            out_rpm.DrawItem += new DrawItemEventHandler(RPM_Color);
             Out_density.DrawMode = DrawMode.OwnerDrawFixed;
             Track_Info.DrawMode = DrawMode.OwnerDrawFixed;
             out_rpm.DrawMode = DrawMode.OwnerDrawFixed;
@@ -316,11 +329,11 @@ namespace V_Max_Tool
             Out_Type.DataSource = o;
             label1.Text = label2.Text = label3.Text = "";
             Track_Info.Visible = false;
-            Source.Visible = Output.Visible = false;
+            Source.Visible = Output.Visible = label4.Visible = Img_Q.Visible = false;
             button1.Enabled = false;
-            this.AllowDrop = true;
-            this.DragEnter += new DragEventHandler(Drag_Enter);
-            this.DragDrop += new DragEventHandler(Drag_Drop);
+            AllowDrop = true;
+            DragEnter += new DragEventHandler(Drag_Enter);
+            DragDrop += new DragEventHandler(Drag_Drop);
             f_load.Visible = false;
             Tabs.Controls.Remove(Adv_V2_Opts);
             Tabs.Controls.Remove(Adv_V3_Opts);
@@ -333,6 +346,8 @@ namespace V_Max_Tool
             vm2_ver[1] = new string[] { "A5-A5", "A4-A5", "A5-A7", "A5-A6", "A9-AD", "AC-A9", "A5-A3", "A9-AE", "A5-AD", "AC-A5", "A9-A3", "A5-AE", "A5-A9",
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
             Img_style.DataSource = styles;
+            Img_Q.DataSource = Img_Quality;
+            Width = PreferredSize.Width;
         }
 
         void Set_ListBox_Items(bool r)

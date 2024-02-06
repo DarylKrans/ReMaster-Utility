@@ -72,6 +72,8 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label4 = new System.Windows.Forms.Label();
+            this.Img_Q = new System.Windows.Forms.ComboBox();
             this.Save_Image = new System.Windows.Forms.Button();
             this.Img_style = new System.Windows.Forms.ComboBox();
             this.Show_sec = new System.Windows.Forms.CheckBox();
@@ -620,12 +622,14 @@
             this.Track_Info.Location = new System.Drawing.Point(6, 6);
             this.Track_Info.Name = "Track_Info";
             this.Track_Info.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.Track_Info.Size = new System.Drawing.Size(1323, 1251);
+            this.Track_Info.Size = new System.Drawing.Size(1323, 1280);
             this.Track_Info.TabIndex = 11;
             // 
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.DimGray;
+            this.tabPage2.Controls.Add(this.label4);
+            this.tabPage2.Controls.Add(this.Img_Q);
             this.tabPage2.Controls.Add(this.Save_Image);
             this.tabPage2.Controls.Add(this.Img_style);
             this.tabPage2.Controls.Add(this.Show_sec);
@@ -641,13 +645,33 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Visualize Disk Image";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.ForeColor = System.Drawing.Color.Silver;
+            this.label4.Location = new System.Drawing.Point(879, 8);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(155, 25);
+            this.label4.TabIndex = 45;
+            this.label4.Text = "Render Quality";
+            // 
+            // Img_Q
+            // 
+            this.Img_Q.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.Img_Q.FormattingEnabled = true;
+            this.Img_Q.Location = new System.Drawing.Point(1040, 2);
+            this.Img_Q.Name = "Img_Q";
+            this.Img_Q.Size = new System.Drawing.Size(149, 33);
+            this.Img_Q.TabIndex = 44;
+            this.Img_Q.SelectedIndexChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
+            // 
             // Save_Image
             // 
-            this.Save_Image.Location = new System.Drawing.Point(1154, 0);
+            this.Save_Image.Location = new System.Drawing.Point(1242, 3);
             this.Save_Image.Name = "Save_Image";
-            this.Save_Image.Size = new System.Drawing.Size(169, 38);
+            this.Save_Image.Size = new System.Drawing.Size(87, 38);
             this.Save_Image.TabIndex = 43;
-            this.Save_Image.Text = "Save Image";
+            this.Save_Image.Text = "Save";
             this.Save_Image.UseVisualStyleBackColor = true;
             this.Save_Image.Click += new System.EventHandler(this.Save_Image_Click);
             // 
@@ -655,7 +679,7 @@
             // 
             this.Img_style.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Img_style.FormattingEnabled = true;
-            this.Img_style.Location = new System.Drawing.Point(542, 0);
+            this.Img_style.Location = new System.Drawing.Point(369, 2);
             this.Img_style.Name = "Img_style";
             this.Img_style.Size = new System.Drawing.Size(192, 33);
             this.Img_style.TabIndex = 42;
@@ -665,11 +689,11 @@
             // 
             this.Show_sec.AutoSize = true;
             this.Show_sec.ForeColor = System.Drawing.Color.LightGray;
-            this.Show_sec.Location = new System.Drawing.Point(329, 8);
+            this.Show_sec.Location = new System.Drawing.Point(246, 7);
             this.Show_sec.Name = "Show_sec";
-            this.Show_sec.Size = new System.Drawing.Size(207, 29);
+            this.Show_sec.Size = new System.Drawing.Size(117, 29);
             this.Show_sec.TabIndex = 41;
-            this.Show_sec.Text = "Highlight Sectors";
+            this.Show_sec.Text = "Sectors";
             this.Show_sec.UseVisualStyleBackColor = true;
             this.Show_sec.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
             // 
@@ -679,9 +703,9 @@
             this.Cap_margins.ForeColor = System.Drawing.Color.LightGray;
             this.Cap_margins.Location = new System.Drawing.Point(124, 8);
             this.Cap_margins.Name = "Cap_margins";
-            this.Cap_margins.Size = new System.Drawing.Size(199, 29);
+            this.Cap_margins.Size = new System.Drawing.Size(116, 29);
             this.Cap_margins.TabIndex = 40;
-            this.Cap_margins.Text = "Density Margins";
+            this.Cap_margins.Text = "Density";
             this.Cap_margins.UseVisualStyleBackColor = true;
             this.Cap_margins.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
             // 
@@ -689,12 +713,12 @@
             // 
             this.Src_view.AutoSize = true;
             this.Src_view.ForeColor = System.Drawing.Color.Silver;
-            this.Src_view.Location = new System.Drawing.Point(949, 5);
+            this.Src_view.Location = new System.Drawing.Point(693, 7);
             this.Src_view.Name = "Src_view";
-            this.Src_view.Size = new System.Drawing.Size(160, 29);
+            this.Src_view.Size = new System.Drawing.Size(111, 29);
             this.Src_view.TabIndex = 39;
             this.Src_view.TabStop = true;
-            this.Src_view.Text = "Source view";
+            this.Src_view.Text = "Source";
             this.Src_view.UseVisualStyleBackColor = true;
             this.Src_view.CheckedChanged += new System.EventHandler(this.Src_view_CheckedChanged);
             // 
@@ -702,12 +726,12 @@
             // 
             this.Out_view.AutoSize = true;
             this.Out_view.ForeColor = System.Drawing.Color.Silver;
-            this.Out_view.Location = new System.Drawing.Point(787, 4);
+            this.Out_view.Location = new System.Drawing.Point(580, 6);
             this.Out_view.Name = "Out_view";
-            this.Out_view.Size = new System.Drawing.Size(156, 29);
+            this.Out_view.Size = new System.Drawing.Size(107, 29);
             this.Out_view.TabIndex = 38;
             this.Out_view.TabStop = true;
-            this.Out_view.Text = "Output view";
+            this.Out_view.Text = "Output";
             this.Out_view.UseVisualStyleBackColor = true;
             this.Out_view.CheckedChanged += new System.EventHandler(this.Src_view_CheckedChanged);
             // 
@@ -796,7 +820,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2457, 1499);
+            this.ClientSize = new System.Drawing.Size(2333, 1362);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
@@ -894,6 +918,8 @@
         private System.Windows.Forms.SaveFileDialog Save_Dialog;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.RadioButton Reset_img_pos;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ComboBox Img_Q;
     }
 }
 

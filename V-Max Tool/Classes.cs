@@ -248,7 +248,7 @@ namespace V_Max_Tool
         SWP_SHOWWINDOW = 0x0040,
     }
 
-    public class DirectBitmap : IDisposable
+    public class FastBitmap : IDisposable
     {
         public Bitmap Bitmap { get; private set; }
         public Int32[] Bits { get; private set; }
@@ -258,7 +258,7 @@ namespace V_Max_Tool
 
         protected GCHandle BitsHandle { get; private set; }
 
-        public DirectBitmap(int width, int height)
+        public FastBitmap(int width, int height)
         {
             Width = width;
             Height = height;
@@ -267,10 +267,10 @@ namespace V_Max_Tool
             Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppPArgb, BitsHandle.AddrOfPinnedObject());
         }
 
-        public void SetPixel(int x, int y, Color colour)
+        public void SetPixel(int x, int y, Color color)
         {
             int index = x + (y * Width);
-            int col = colour.ToArgb();
+            int col = color.ToArgb();
 
             Bits[index] = col;
         }
