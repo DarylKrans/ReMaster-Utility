@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -10,6 +11,7 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+
         string def_text = "";
         bool interp = false;
         bool Dragging = false;
@@ -17,7 +19,7 @@ namespace V_Max_Tool
         int xPos;
         int yPos;
         private readonly string[] styles = { "Flat Tracks", "Circular Tracks" };
-        private readonly string[] Img_Quality = { "Low", "Medium", "High", "Ultra", "Insane!", "Atomic" };
+        private readonly string[] Img_Quality = { "Very Low", "Low", "Normal", "High", "Ultra", "Atomic", "Insanity!" };
         FastBitmap flat;
         FastBitmap disk;
         private readonly Brush cbm_brush = new SolidBrush(Color.FromArgb(200, 67, 200));
@@ -26,8 +28,7 @@ namespace V_Max_Tool
         private readonly Color Write_face = Color.FromArgb(41, 40, 36);
         private readonly Color Inner_face = Color.FromArgb(50, 49, 44);
 
-
-        void Draw_Flat_Tracks(int w, bool chg_itrp)
+        private void Draw_Flat_Tracks(int w, bool chg_itrp)
         {
             string ext = "";
             var d = 0;
@@ -53,7 +54,7 @@ namespace V_Max_Tool
                         if (NDG.Track_Length[i] > min_t_len)
                         {
                             d = Get_Density(NDG.Track_Data[i].Length);
-                            t = Draw_Track(flat, NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i]);
+                            t = Draw_Track(flat, NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i], d, w);
                             ext = "(flat_tracks).g64";
                         }
                     }
@@ -64,15 +65,15 @@ namespace V_Max_Tool
                         if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; }
                         if (NDS.Track_Length[i] > min_t_len)
                         {
-                            t = Draw_Track(flat, NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i]);
+                            t = Draw_Track(flat, NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i], d, w);
                             ext = $"(flat_tracks){fext}";
                         }
                     }
                     if (halftracks) ht += .5; else ht += 1;
                 }
+
                 Disk_Image_Large.Image = Resize_Image(t.Bitmap, flat.Width, flat.Height, false);
                 Disk_Image.Image = Resize_Image(Disk_Image_Large.Image, panPic.Width, panPic.Height - 16, false);
-
                 Add_Text(Disk_Image_Large.Image, $"{fname}{fnappend}{ext}", Color.FromArgb(40, 40, 40),
                     Brushes.White, font, 20, Disk_Image_Large.Height - 20, 600, Disk_Image_Large.Height);
                 Add_Text(Disk_Image.Image, $"{fname}{fnappend}{ext}", Color.FromArgb(40, 40, 40),
@@ -88,55 +89,283 @@ namespace V_Max_Tool
             }
             GC.Collect();
             flat.Dispose();
+        }
 
-            FastBitmap Draw_Track(FastBitmap bmp, byte[] data, int trk, int s, int e, int tf, byte[] v2i)
+        private void Draw_Circular_Tracks()
+        {
+            int m = 0;
+            bool z = Img_zoom.Checked;
+            Invoke(new Action(() =>
             {
-                byte[] tdata = new byte[data.Length];
-                Array.Copy(data, 0, tdata, 0, data.Length);
-                Pen pen; // = new Pen (Color.Green);
-                bool v2 = false;
-                int t_height = (panPic2.Height / 42) - 4;
-                for (int j = 0; j < tdata.Length; j++)
+                m = Img_Q.SelectedIndex + 1;
+                Set_Circular_Draw_Options(false, 0, z);
+            }));
+            int skp = 1;
+            if (tracks <= 42) skp = 2;
+            string fi_ext = ".g64";
+            string fi_nam = $"{fname}{fnappend}";
+            bool v2 = false;
+            int width = m * 1000;
+            int height = m * 1000;
+            int track = 0;
+            int i;
+            int de;
+            int j = 0;
+            int k;
+            int x = width / 2;
+            int y = height / 2;
+            int r = (int)((width / 2) / 1.0316368638f);
+            r = (width / 2) - (20 * m);
+            int len;
+            int t_width = (int)(3f * m);
+            Color col;
+            BitArray t_bit = new BitArray(0);
+            disk = new FastBitmap(width, height);
+            if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
+            Draw_Disk(disk, m, width, $"{fi_nam}{fi_ext}");
+
+            while (r > 80 && track < tracks)
+            {
+                if (NDG.Track_Length[track] > min_t_len)
                 {
-                    if (w == 0)
+                    v2 = false;
+                    byte[] t_data = Get_Track_Data(track);
+                    len = t_data.Length;
+                    de = Get_Density(len);
+                    if (len > min_t_len)
                     {
-                        if (Cap_margins.Checked)
+                        for (i = 0; i < t_data.Length; i++)
                         {
-                            pen = new Pen(Color.FromArgb(tdata[j] / 2, tdata[j] / 2, tdata[j] / 2), 1);
-                            if (j <= density[d]) pen = new Pen(Color.FromArgb(30, tdata[j], 30));
-                            if (j > density[d] && j < density[d] + 5) pen = new Pen(Color.FromArgb(tdata[j], tdata[j], 30));
+                            (col, v2) = Get_Color(t_data[i], NDS.v2info[track], track, i, de, NDS.cbm[track], v2);
+                            Draw_Arc(disk, x, y, r + j, i, col);
                         }
-                        else pen = new Pen(Color.FromArgb(30, tdata[j], 30));
-                        if (tf == 2 && tdata[j] == v2i[0]) v2 = true;
-                        if (v2 && tdata[j] == v2i[1]) v2 = false;
-                        if (Show_sec.Checked && ((tf == 3 && tdata[j] == 0x49) || v2)) pen = new Pen(Color.FromArgb(30, 30, 255));
                     }
-                    else
-                    {
-                        if (Cap_margins.Checked)
-                        {
-                            if (j < s || j > e) pen = new Pen(Color.FromArgb(tdata[j], tdata[j], 50));
-                            else pen = new Pen(Color.FromArgb(30, tdata[j], 30));
-                        }
-                        else pen = new Pen(Color.FromArgb(30, tdata[j], 30));
-                        if (tf == 2 && tdata[j] == v2i[0]) v2 = true;
-                        if (v2 && tdata[j] == v2i[1]) v2 = false;
-                        if (Show_sec.Checked && ((tf == 3 && tdata[j] == 0x49) || v2)) pen = new Pen(Color.FromArgb(30, 30, 255));
-                    }
-                    int x1 = j;
-                    int y1 = 0 + (trk * ((panPic.Height - 16) / 42));
-                    int x2 = j;
-                    int y2 = t_height + (trk * ((panPic.Height - 16) / 42));
-                    using (var graphics = Graphics.FromImage(bmp.Bitmap))
-                    {
-                        graphics.DrawLine(pen, x1, y1, x2, y2);
-                    }
+                    this.Invoke(new Action(() => Update_Image()));
                 }
-                return bmp;
+                r -= (t_width * skp); // 5;
+                track += 1;
+            }
+            Invoke(new Action(() => Set_Circular_Draw_Options(true, width, z)));
+
+            void Draw_Arc(FastBitmap d, int cx, int cy, int radius, int startAngle, Color color)
+            {
+                int segments = 22 - track / 4;
+                float tempang = (float)(len) / 359.1f;
+                float angle = (startAngle / tempang) * 3.14159265f / 180; // initial angle in radians
+                float angleInc = 3.14159265f / (180 * segments); // angle increment
+                float c, s;
+                for (k = 1; k < segments; k++, angle += angleInc)
+                {
+                    c = (float)Math.Cos(angle);
+                    s = (float)Math.Sin(angle);
+                    for (j = 0; j < (int)(t_width + m); j++) d.SetPixel((int)(cx + (radius + j) * c), (int)(cy + (radius + j) * s), color);
+                }
             }
         }
 
-        Image Resize_Image(Image temp, int width, int height, bool preserveAspectRatio)
+        private FastBitmap Draw_Track(FastBitmap bmp, byte[] data, int trk, int s, int e, int tf, byte[] v2i, int d, int w)
+        {
+            byte[] tdata = new byte[data.Length];
+            Array.Copy(data, 0, tdata, 0, data.Length);
+            Pen pen; // = new Pen (Color.Green);
+            bool v2 = false;
+            int t_height = (panPic2.Height / 42) - 4;
+            for (int j = 0; j < tdata.Length; j++)
+            {
+                if (w == 0)
+                {
+                    if (Cap_margins.Checked)
+                    {
+                        pen = new Pen(Color.FromArgb(tdata[j] / 2, tdata[j] / 2, tdata[j] / 2), 1);
+                        if (j <= density[d]) pen = new Pen(Color.FromArgb(30, tdata[j], 30));
+                        if (j > density[d] && j < density[d] + 5) pen = new Pen(Color.FromArgb(tdata[j], tdata[j], 30));
+                    }
+                    else pen = new Pen(Color.FromArgb(30, tdata[j], 30));
+                    if (tf == 2 && tdata[j] == v2i[0]) v2 = true;
+                    if (v2 && tdata[j] == v2i[1]) v2 = false;
+                    if (Show_sec.Checked && ((tf == 3 && tdata[j] == 0x49) || v2)) pen = new Pen(Color.FromArgb(30, 30, 255));
+                }
+                else
+                {
+                    if (Cap_margins.Checked)
+                    {
+                        if (j < s || j > e) pen = new Pen(Color.FromArgb(tdata[j], tdata[j], 50));
+                        else pen = new Pen(Color.FromArgb(30, tdata[j], 30));
+                    }
+                    else pen = new Pen(Color.FromArgb(30, tdata[j], 30));
+                    if (tf == 2 && tdata[j] == v2i[0]) v2 = true;
+                    if (v2 && tdata[j] == v2i[1]) v2 = false;
+                    if (Show_sec.Checked && ((tf == 3 && tdata[j] == 0x49) || v2)) pen = new Pen(Color.FromArgb(30, 30, 255));
+                }
+                int x1 = j;
+                int y1 = 0 + (trk * ((panPic.Height - 16) / 42));
+                int x2 = j;
+                int y2 = t_height + (trk * ((panPic.Height - 16) / 42));
+                using (var graphics = Graphics.FromImage(bmp.Bitmap))
+                {
+                    graphics.DrawLine(pen, x1, y1, x2, y2);
+                }
+            }
+            return bmp;
+        }
+
+        private (Color, bool) Get_Color(byte d, byte[] v2info, int track, int position, int density, int track_fmt, bool v2)
+        {
+            Color col;
+            if (vm_reverse) // && NDS.cbm[track] > 1)
+            {
+                var sub = 255;
+                if (track_fmt == 1) col = Color.FromArgb(d, (int)(d / 3), d);
+                else
+                {
+                    if (d == 0) sub = 0; if (d == 255) sub = 255 + 255;
+                    col = Color.FromArgb(30, sub - d, 30);
+                    if (track_fmt == 4) col = Color.FromArgb((int)(d / 1.5f), (int)(d / 1.5f), d);
+                }
+            }
+            else col = Color.FromArgb(30, d, 30);
+            if (Cap_margins.Checked)
+            {
+                Color bak = col;
+                col = Color.FromArgb(d / 2, d / 2, d / 2);
+                if (!vm_reverse)
+                {
+                    if (position <= this.density[density]) col = Color.FromArgb(30, d, 30);
+                    if (position > this.density[density] && position < this.density[density] + 5) col = Color.FromArgb(d, d, 30);
+                }
+                else
+                {
+                    if (position <= this.density[density]) col = bak;
+                    if (position > this.density[density] && position < this.density[density] + 5) col = Color.FromArgb(d, d, 30);
+                }
+            }
+            if (track_fmt == 2 && d == NDS.v2info[track][0]) v2 = true;
+            if (v2 && d == v2info[1]) v2 = false;
+            if (Show_sec.Checked && ((track_fmt == 3 && d == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
+
+            return (col, v2);
+        }
+
+        private byte[] Get_Track_Data(int track)
+        {
+            byte[] temp = new byte[0];
+            if (Out_view.Checked)
+            {
+                temp = new byte[NDG.Track_Length[track]];
+                Array.Copy(NDG.Track_Data[track], 0, temp, 0, temp.Length);
+            }
+            if (Src_view.Checked)
+            {
+                if (NDS.cbm[track] == 1 && (NDS.D_End[track] - NDS.D_Start[track]) >> 3 >= min_t_len)
+                {
+                    temp = new byte[(NDS.D_End[track] - NDS.D_Start[track]) >> 3];
+                    Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, temp, 0, (NDS.D_End[track] - NDS.D_Start[track]) >> 3);
+                }
+                else
+                {
+                    temp = new byte[NDS.Track_Data[track].Length];
+                    Array.Copy(NDS.Track_Data[track], 0, temp, 0, NDS.Track_Data[track].Length);
+                }
+                if ((NDS.cbm[track] > 1 && NDS.cbm[track] < 5) && NDS.D_End[track] - NDS.D_Start[track] > min_t_len)
+                {
+                    temp = new byte[NDS.D_End[track] - NDS.D_Start[track]];
+                    Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, temp, 0, (NDS.D_End[track] - NDS.D_Start[track]));
+                }
+            }
+            return temp;
+        }
+
+        private void Set_Circular_Draw_Options(bool t, int size, bool z)
+        {
+            Save_Image.Visible = t;
+            Img_zoom.Enabled = t;
+            Img_style.Enabled = t;
+            Disk_Image_Large.Enabled = t;
+            Reset_img_pos.Visible = t;
+            if (z) panPic2.Visible = t;
+
+            if (t)
+            {
+                interp = t;
+                panPic2.Size = new Size(size, size);
+                Disk_Image_Large.Image = Resize_Image(disk.Bitmap, disk.Width, disk.Height, false);
+                Disk_Image.Image = Resize_Image(disk.Bitmap, panPic.Width, panPic.Height - 16, false);
+                disk.Dispose();
+                if (z) panPic2.Visible = t;
+                GC.Collect();
+            }
+            interp = t;
+        }
+
+        private void Update_Image()
+        {
+            try
+            {
+                Disk_Image.Image = Resize_Image(disk.Bitmap, panPic.Width, panPic.Height - 16, false);
+                //Disk_Image_Large.Image = disk.Bitmap;
+                //Disk_Image_Large.Refresh();
+                Disk_Image.Refresh();
+            }
+            catch { }
+        }
+
+        private void Draw_Disk(FastBitmap d, int m, int size, string file_name)
+        {
+            Brush b = new SolidBrush(Write_face);
+            Pen p = new Pen(Color.Black, 2);
+            using (var g = Graphics.FromImage(d.Bitmap))
+            {
+                RectangleF rect = new RectangleF(0, 0, size, size);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(0, 0, 0)), rect);
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                // Draw Disk writeable surface area
+                g.FillEllipse(b, 3.5f, 3.5f, d.Width - 10, d.Height - 10);
+                g.DrawEllipse(p, 3.5f, 3.5f, d.Width - 10, d.Height - 10);
+                // Draw inner non-writable surface of disk
+                b = new SolidBrush(Inner_face);
+                g.FillEllipse(b, (float)(275 * m), (float)(275 * m), (float)(450 * m), (float)(450 * m));
+                // Draw inner ring of disk (also used for image name text)
+                g.FillEllipse(new SolidBrush(Color.FromArgb(7, 7, 7)), (float)(350 * m), (float)(350 * m), (float)(300 * m), (float)(300 * m));
+                // Draw remaing disk surface until center hole
+                g.FillEllipse(b, (float)(367.5 * m), (float)(367.5 * m), (float)(265 * m), (float)(265 * m));
+                b = new SolidBrush(Color.FromArgb(0, 0, 0));
+                // Draw index hole
+                g.FillEllipse(b, (float)(380 * m), (float)(380 * m), (float)(240 * m), (float)(240 * m));
+                g.DrawEllipse(p, (float)(380 * m), (float)(380 * m), (float)(240 * m), (float)(240 * m));
+                g.FillEllipse(b, (float)(672.5 * m), (float)(487.5 * m), (float)(20 * m), (float)(20 * m));
+                g.DrawEllipse(p, (float)(672.5 * m), (float)(487.5 * m), (float)(20 * m), (float)(20 * m));
+            }
+            // Print File name on the disk image
+            Brush bsh = new SolidBrush(Color.White);
+            Font fnt = new Font("Arial", (float)(11.6 * m), FontStyle.Regular);
+            DrawCurvedText(Graphics.FromImage(disk.Bitmap), $"{file_name}", new Point((int)(500 * m), (int)(500 * m)), (float)(128.34 * m), 0f, fnt, bsh, false);
+            // Print rotation indicator on the disk image
+            bsh = new SolidBrush(Color.Yellow);
+            fnt = new Font("Arial", (float)(16 * m), FontStyle.Regular);
+            DrawCurvedText(Graphics.FromImage(disk.Bitmap), $"\u2192 noitatoR", new Point((int)(513 * m), (int)(503 * m)), (float)(181.67 * m), 1.45f, fnt, bsh, true);
+
+            if (vm_reverse)
+            {
+                Add_Text(disk.Bitmap, "CBM", Color.FromArgb(0, 40, 40, 40), cbm_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(1 * m), (int)(60 * m), (int)(17 * m));
+                Add_Text(disk.Bitmap, "Loader", Color.FromArgb(0, 40, 40, 40), ldr_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(18 * m), (int)(60 * m), (int)(17 * m));
+                Add_Text(disk.Bitmap, "V-Max!", Color.FromArgb(0, 40, 40, 40), vmx_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(35 * m), (int)(60 * m), (int)(17 * m));
+            }
+        }
+
+        private void Add_Text(Image temp, string text, Color c, Brush brsh, Font fnt, int x1, int y1, int x2, int y2)
+        {
+            Graphics g = Graphics.FromImage(temp);
+            Brush b = new SolidBrush(c); // (Color.FromArgb(40, 40, 40));
+            RectangleF rectf = new RectangleF(x1, y1, x2, y2);
+            RectangleF rectg = new RectangleF(x1, y1, x2, y2);
+            g.FillRectangle(b, rectg);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.InterpolationMode = InterpolationMode.Bicubic;
+            g.PixelOffsetMode = PixelOffsetMode.Default;
+            g.DrawString($"{text}", fnt, brsh, rectf);
+        }
+
+        private Image Resize_Image(Image temp, int width, int height, bool preserveAspectRatio)
         {
             int newWidth;
             int newHeight;
@@ -167,213 +396,6 @@ namespace V_Max_Tool
             }
             catch { }
             return newImage;
-        }
-
-        void Draw_Circular_Tracks()
-        {
-            int q = 1000;
-            Invoke(new Action(() =>
-            {
-                Save_Image.Visible = false;
-                Img_zoom.Enabled = false;
-                Img_style.Enabled = false;
-                Disk_Image_Large.Enabled = false;
-                Reset_img_pos.Visible = false;
-                q = (Img_Q.SelectedIndex + 1) * 1000;
-            }));
-            interp = true;
-            int skp = 1;
-            if (tracks < 43) skp = 2;
-            string fi_ext = ".g64";
-            string fi_nam = $"{fname}{fnappend}";
-            byte[] t_data = new byte[0];
-            bool v2 = false;
-            int width = q;
-            int height = q;
-            int track = 0;
-            int i;
-            int de;
-            int j = 0;
-            int k;
-            int x = width / 2;
-            int y = height / 2;
-            float m = (width / 1000);
-            int r = (int)((width / 2) / 1.0316368638f);
-            r = (width / 2) - (int)(20 * m);
-            int len;
-            int t_width = (int)(3f * m);
-            Color col;
-            disk = new FastBitmap(width, height);
-            if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
-            Draw_Disk(disk);
-
-            while (r > 80 && track < tracks)
-            {
-                if (NDG.Track_Length[track] > min_t_len)
-                {
-                    v2 = false;
-                    if (Out_view.Checked)
-                    {
-                        t_data = new byte[NDG.Track_Length[track]];
-                        Array.Copy(NDG.Track_Data[track], 0, t_data, 0, t_data.Length);
-                    }
-                    if (Src_view.Checked)
-                    {
-                        if (NDS.cbm[track] == 1 && (NDS.D_End[track] - NDS.D_Start[track]) >> 3 >= min_t_len)
-                        {
-                            t_data = new byte[(NDS.D_End[track] - NDS.D_Start[track]) >> 3];
-                            Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, t_data, 0, (NDS.D_End[track] - NDS.D_Start[track]) >> 3);
-                        }
-                        else
-                        {
-                            t_data = new byte[NDS.Track_Data[track].Length];
-                            Array.Copy(NDS.Track_Data[track], 0, t_data, 0, NDS.Track_Data[track].Length);
-                        }
-                        if ((NDS.cbm[track] > 1 && NDS.cbm[track] < 5) && NDS.D_End[track] - NDS.D_Start[track] > min_t_len)
-                        {
-                            t_data = new byte[NDS.D_End[track] - NDS.D_Start[track]];
-                            Array.Copy(NDS.Track_Data[track], NDS.D_Start[track] >> 3, t_data, 0, (NDS.D_End[track] - NDS.D_Start[track]));
-                        }
-                    }
-                    len = t_data.Length;
-                    if (len > min_t_len)
-                    {
-                        de = Get_Density(len);
-                        for (i = 0; i < t_data.Length; i++)
-                        {
-                            if (vm_reverse) // && NDS.cbm[track] > 1)
-                            {
-                                var sub = 255;
-                                if (NDS.cbm[track] == 1) col = Color.FromArgb(t_data[i], (int)(t_data[i] / 3), t_data[i]);
-                                else
-                                {
-                                    if (t_data[i] == 0) sub = 0; if (t_data[i] == 255) sub = 255 + 255;
-                                    col = Color.FromArgb(30, sub - t_data[i], 30);
-                                    if (NDS.cbm[track] == 4) col = Color.FromArgb((int)(t_data[i] / 1.5f), (int)(t_data[i] / 1.5f), t_data[i]);
-                                }
-                            }
-                            else col = Color.FromArgb(30, t_data[i], 30);
-                            if (Cap_margins.Checked)
-                            {
-                                Color bak = col;
-                                col = Color.FromArgb(t_data[i] / 2, t_data[i] / 2, t_data[i] / 2);
-                                if (!vm_reverse)
-                                {
-                                    if (i <= density[de]) col = Color.FromArgb(30, t_data[i], 30);
-                                    if (i > density[de] && i < density[de] + 5) col = Color.FromArgb(t_data[i], t_data[i], 30);
-                                }
-                                else
-                                {
-                                    if (i <= density[de]) col = bak;
-                                    if (i > density[de] && i < density[de] + 5) col = Color.FromArgb(t_data[i], t_data[i], 30);
-                                }
-                            }
-                            if (NDS.cbm[track] == 2 && t_data[i] == NDS.v2info[track][0]) v2 = true;
-                            if (v2 && t_data[i] == NDS.v2info[track][1]) v2 = false;
-                            if (Show_sec.Checked && ((NDS.cbm[track] == 3 && t_data[i] == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
-                            Draw_Arc(disk, x, y, r + j, i, col);
-                        }
-                        this.Invoke(new Action(() =>
-                        {
-                            try
-                            {
-                                Disk_Image.Image = Resize_Image(disk.Bitmap, panPic.Width, panPic.Height - 16, false);
-                                Disk_Image_Large.Image = disk.Bitmap;
-                                Disk_Image_Large.Refresh();
-                                Disk_Image.Refresh();
-                            }
-                            catch { }
-                        }));
-                    }
-                }
-                r -= (t_width * skp); // 5;
-                track += 1;
-            }
-            Invoke(new Action(() =>
-            {
-                panPic2.Size = new Size(width, height);
-                Disk_Image_Large.Image = Resize_Image(disk.Bitmap, disk.Width, disk.Height, false);
-                Disk_Image.Image = Resize_Image(disk.Bitmap, panPic.Width, panPic.Height - 16, false);
-                interp = false;
-                Save_Image.Visible = true;
-                Img_zoom.Enabled = true;
-                Disk_Image_Large.Enabled = true;
-                Img_style.Enabled = true;
-                Reset_img_pos.Visible = true;
-                disk.Dispose();
-            }));
-            GC.Collect();
-
-            void Draw_Arc(FastBitmap d, int cx, int cy, int radius, int startAngle, Color color)
-            {
-                int segments = 22 - track / 4;
-                float tempang = (float)(len) / 359.1f;
-                float angle = (startAngle / tempang) * 3.14159265f / 180; // initial angle in radians
-                float angleInc = 3.14159265f / (180 * segments); // angle increment
-                float c, s;
-                for (k = 1; k < segments; k++, angle += angleInc)
-                {
-                    c = (float)Math.Cos(angle);
-                    s = (float)Math.Sin(angle);
-                    for (j = 0; j < (int)(t_width + m); j++) d.SetPixel((int)(cx + (radius + j) * c), (int)(cy + (radius + j) * s), color);
-                }
-            }
-
-            void Draw_Disk(FastBitmap d)
-            {
-                Brush b = new SolidBrush(Write_face);
-                Pen p = new Pen(Color.Black, 2);
-                using (var g = Graphics.FromImage(d.Bitmap))
-                {
-                    RectangleF rect = new RectangleF(0, 0, width, height);
-                    g.FillRectangle(new SolidBrush(Color.FromArgb(0, 0, 0)), rect);
-                    g.SmoothingMode = SmoothingMode.AntiAlias;
-                    // Draw Disk surface
-                    g.FillEllipse(b, 3.5f, 6, d.Width - 10, d.Height - 10);
-                    g.DrawEllipse(p, 3.5f, 6, d.Width - 10, d.Height - 10);
-                    // Draw inner non-writable surface of disk
-                    b = new SolidBrush(Inner_face);
-                    g.FillEllipse(b, (float)(275 * m), (float)(275 * m), (float)(450 * m), (float)(450 * m));
-                    // Draw inner ring of disk (also used for image name text)
-                    g.FillEllipse(new SolidBrush(Color.FromArgb(7,7,7)), (float)(350 * m), (float)(350 * m), (float)(300 * m), (float)(300 * m));
-                    // Draw remaing disk surface until center hole
-                    g.FillEllipse(b, (float)(367.5 * m), (float)(367.5 * m), (float)(265 * m), (float)(265 * m));
-                    b = new SolidBrush(Color.FromArgb(0, 0, 0));
-                    // Draw index hole
-                    g.FillEllipse(b, (float)(380 * m), (float)(380 * m), (float)(240 * m), (float)(240 * m));
-                    g.DrawEllipse(p, (float)(380 * m), (float)(380 * m), (float)(240 * m), (float)(240 * m));
-                    g.FillEllipse(b, (float)(672.5 * m), (float)(487.5 * m), (float)(20 * m), (float)(20 * m));
-                    g.DrawEllipse(p, (float)(672.5 * m), (float)(487.5 * m), (float)(20 * m), (float)(20 * m));
-                }
-                // Print File name on the disk image
-                Brush bsh = new SolidBrush(Color.White);
-                Font fnt = new Font("Arial", (float)(11.6 * m), FontStyle.Regular);
-                DrawCurvedText(Graphics.FromImage(disk.Bitmap), $"{fi_nam}{fi_ext}", new Point((int)(500 * m), (int)(500 * m)), (float)(128.34 * m), 0f, fnt, bsh, false);
-                // Print rotation indicator on the disk image
-                bsh = new SolidBrush(Color.Yellow);
-                fnt = new Font("Arial", (float)(16 * m), FontStyle.Regular);
-                DrawCurvedText(Graphics.FromImage(disk.Bitmap), $"\u2192 noitatoR", new Point((int)(513 * m), (int)(503 * m)), (float)(181.67 * m), 1.45f, fnt, bsh, true);
-
-                if (vm_reverse)
-                {
-                    Add_Text(disk.Bitmap, "CBM", Color.FromArgb(0, 40, 40, 40), cbm_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(1 * m), (int)(60 * m), (int)(17 * m));
-                    Add_Text(disk.Bitmap, "Loader", Color.FromArgb(0, 40, 40, 40), ldr_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(18 * m), (int)(60 * m), (int)(17 * m));
-                    Add_Text(disk.Bitmap, "V-Max!", Color.FromArgb(0, 40, 40, 40), vmx_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(35 * m), (int)(60 * m), (int)(17 * m));
-                }
-            }
-        }
-
-        void Add_Text(Image temp, string text, Color c,Brush brsh, Font fnt, int x1, int y1, int x2, int y2)
-        {
-            Graphics g = Graphics.FromImage(temp);
-            Brush b = new SolidBrush(c); // (Color.FromArgb(40, 40, 40));
-            RectangleF rectf = new RectangleF(x1, y1, x2, y2);
-            RectangleF rectg = new RectangleF(x1, y1, x2, y2);
-            g.FillRectangle(b, rectg);
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.InterpolationMode = InterpolationMode.Bicubic;
-            g.PixelOffsetMode = PixelOffsetMode.Default;
-            g.DrawString($"{text}", fnt, brsh, rectf);
         }
 
         private void DrawCurvedText(Graphics g, string text, Point center, float distFromCenterToBase, float radiansToTextCenter, Font font, Brush brush, bool rev)

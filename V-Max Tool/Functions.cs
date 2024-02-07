@@ -347,6 +347,7 @@ namespace V_Max_Tool
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
             Img_style.DataSource = styles;
             Img_Q.DataSource = Img_Quality;
+            Img_Q.SelectedIndex = 2;
             Width = PreferredSize.Width;
         }
 
