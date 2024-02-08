@@ -167,9 +167,6 @@ namespace V_Max_Tool
 
         void Process_Nib_Data(bool cbm, bool short_sector, bool rb_vm)
         {
-            //var it = tracks;
-            //if (it > 42) it = tracks / 2;
-
             double ht;
             bool halftracks = false;
             string[] f;

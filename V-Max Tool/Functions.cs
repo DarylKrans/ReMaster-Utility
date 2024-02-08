@@ -9,8 +9,11 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        Thread thread;
-        int p2_def = 0;
+        Thread c;  // Thread for drawing circle disk image
+        Thread f;  // Thread for drawing flat tracks image
+        int pan_defw;
+        int pan_defh;
+
         void Out_Density_Color(object sender, DrawItemEventArgs e)
         {
             try
@@ -263,26 +266,32 @@ namespace V_Max_Tool
             {
                 opt = true;
                 this.Update();
-                thread?.Abort();
-                disk?.Dispose();
-                flat?.Dispose();
-                if (Img_style.SelectedIndex == 0)
+                c?.Abort();
+                f?.Abort();
+                f?.Join();
+                circle?.Dispose();
+                flat_large?.Dispose();
+                Img_Q.Visible = label4.Visible = false;
+                try
                 {
-                    Img_Q.Visible = label4.Visible = false;
-                    try
+                    if (Out_view.Checked)
                     {
-                        if (Out_view.Checked) Draw_Flat_Tracks(0, false);
-                        if (Src_view.Checked) Draw_Flat_Tracks(1, false);
+                        f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(0, false)));
+                        f.Start();
                     }
-                    catch { }
+                    if (Src_view.Checked)
+                    {
+                        f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(1, false)));
+                        f.Start();
+                    }
                 }
-                else
+                catch { }
                 {
                     Img_Q.Visible = label4.Visible = true;
                     try
                     {
-                        thread = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
-                        thread.Start();
+                        c = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
+                        c.Start();
                     }
                     catch { }
                 }
@@ -293,23 +302,24 @@ namespace V_Max_Tool
 
         void Init()
         {
+            opt = true;
             Height = PreferredSize.Height;
-            panPic.AutoSize = false;
+            panPic.AutoSize = true;
             panPic.AutoScroll = false;
-            panPic.Controls.Add(Disk_Image);
-            panPic2.Controls.Add(Disk_Image_Large);
-            panPic2.Visible = Img_zoom.Checked;
-            p2_def = panPic2.Height;
+            pan_defw = panPic.Width;
+            pan_defh = panPic.Height;
+            panPic.Controls.Add(Disk_Image_Flat);
+            panPic2.Controls.Add(Disk_Image_Circle);
             Out_view.Select();
-            Disk_Image.Image = new Bitmap(panPic.Width, panPic.Height);
-            Disk_Image_Large.Image = new Bitmap(8192, 42 * 15);
-            Disk_Image_Large.Cursor = Cursors.Hand;
-            panPic2.Width = 8192;
+            //Disk_Image_Flat.Image = new Bitmap(panPic.Width, panPic.Height);
+            Disk_Image_Flat.Image = new Bitmap(8192, 42 * 15);
+            Disk_Image_Circle.Image = new Bitmap(8192, 42 * 15);
+            Disk_Image_Circle.Cursor = Cursors.Hand;
             panPic2.AutoScroll = false;
-            panPic2.SetBounds(0, 0, Disk_Image_Large.Width, Disk_Image_Large.Height);
-            Disk_Image.SizeMode = PictureBoxSizeMode.Normal;
-            Disk_Image_Large.SizeMode = PictureBoxSizeMode.AutoSize;
-            flat = new FastBitmap(8192, panPic2.Height - 16);
+            panPic2.SetBounds(0, 0, Disk_Image_Circle.Width, Disk_Image_Circle.Height);
+            Disk_Image_Flat.SizeMode = PictureBoxSizeMode.AutoSize;
+            Disk_Image_Circle.SizeMode = PictureBoxSizeMode.AutoSize;
+            flat_large = new Bitmap(8192, panPic2.Height - 16);
             Adv_ctrl.SelectedIndexChanged += new System.EventHandler(Adv_Ctrl_SelectedIndexChanged);
             Out_density.DrawItem += new DrawItemEventHandler(Out_Density_Color);
             Track_Info.DrawItem += new DrawItemEventHandler(Source_Info_Color);
@@ -322,14 +332,15 @@ namespace V_Max_Tool
             Out_density.ItemHeight = out_rpm.ItemHeight = sf.ItemHeight = 13;
             Track_Info.ItemHeight = 15;
             Track_Info.HorizontalScrollbar = true;
-            Adj_cbm.Visible = Adv_ctrl.Visible = false;
+            //Adj_cbm.Visible = Adv_ctrl.Visible = false;
+            Adj_cbm.Visible = false;
             Tabs.Visible = true;
             string[] o = { "G64", "NIB", "NIB & G64" };
             fnappend = fix;
             Out_Type.DataSource = o;
             label1.Text = label2.Text = label3.Text = "";
-            Track_Info.Visible = false;
-            Source.Visible = Output.Visible = label4.Visible = Img_Q.Visible = false;
+            //Track_Info.Visible = false;
+            Source.Visible = Output.Visible = label4.Visible = Img_Q.Visible = Save_Circle_btn.Visible = false;
             button1.Enabled = false;
             AllowDrop = true;
             DragEnter += new DragEventHandler(Drag_Enter);
@@ -345,10 +356,13 @@ namespace V_Max_Tool
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
             vm2_ver[1] = new string[] { "A5-A5", "A4-A5", "A5-A7", "A5-A6", "A9-AD", "AC-A9", "A5-A3", "A9-AE", "A5-AD", "AC-A5", "A9-A3", "A5-AE", "A5-A9",
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
-            Img_style.DataSource = styles;
+            //Img_style.DataSource = styles;
             Img_Q.DataSource = Img_Quality;
             Img_Q.SelectedIndex = 2;
             Width = PreferredSize.Width;
+            Draw_Init_Img();
+            Reset_img_pos.Visible = Img_zoom.Checked;
+            opt = false;
         }
 
         void Set_ListBox_Items(bool r)

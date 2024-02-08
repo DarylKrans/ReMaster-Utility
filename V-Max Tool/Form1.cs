@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -164,7 +166,7 @@ namespace V_Max_Tool
         {
             Source.Visible = Output.Visible = false;
             f_load.Text = "Fix Loader Sync";
-            button1.Enabled = false;
+            button1.Enabled = Flat_Large_View.Checked = false;
             sl.DataSource = null;
             out_size.DataSource = null;
             string[] File_List = (string[])e.Data.GetData(DataFormats.FileDrop);
@@ -504,25 +506,18 @@ namespace V_Max_Tool
 
         private void ImageZoom_CheckedChanged(object sender, EventArgs e)
         {
-            panPic2.Visible = Img_zoom.Checked;
+            if (!Img_zoom.Checked)
+            {
+                Disk_Image_Circle.Image = circle_small;
+                Disk_Image_Circle.Top = 0;
+                Disk_Image_Circle.Left = 0;
+            }
+            else Disk_Image_Circle.Image = circle_full;
+            Reset_img_pos.Visible = Img_zoom.Checked;
         }
         private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (!opt) Check_Before_Draw();
-        }
-
-        private void Disk_Image_Click(object sender, EventArgs e)
-        {
-            if (!opt && Img_style.SelectedIndex == 0)
-            {
-                interp = !interp;
-                Draw_Flat_Tracks(0, true); ;
-            }
-            if (!opt && Img_style.SelectedIndex == 1)
-            {
-                vm_reverse = !vm_reverse;
-                Check_Before_Draw();
-            }
         }
 
         private void Src_view_CheckedChanged(object sender, EventArgs e)
@@ -533,6 +528,35 @@ namespace V_Max_Tool
                 {
                     if (!opt) Check_Before_Draw();
                 }
+            }
+        }
+
+        private void Rev_View_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!opt)
+            {
+                interp = !interp;
+                f?.Abort();
+                f?.Join();
+                f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(0, false)));
+                f.Start();
+                //Draw_Flat_Tracks(0, true); ;
+                vm_reverse = !vm_reverse;
+                Check_Before_Draw();
+            }
+        }
+
+        private void Flat_Large_View_CheckedChanged_1(object sender, EventArgs e)
+        {
+            if (Flat_Large_View.Checked)
+            {
+                Disk_Image_Flat.Image = flat_large;
+            }
+            else
+            {
+                Disk_Image_Flat.Image = flat_small;
+                Disk_Image_Flat.Top = 0;
+                Disk_Image_Flat.Left = 0;
             }
         }
     }
