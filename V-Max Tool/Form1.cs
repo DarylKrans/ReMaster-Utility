@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -166,7 +165,7 @@ namespace V_Max_Tool
         {
             Source.Visible = Output.Visible = false;
             f_load.Text = "Fix Loader Sync";
-            button1.Enabled = Flat_Large_View.Checked = false;
+            button1.Enabled = false;
             sl.DataSource = null;
             out_size.DataSource = null;
             string[] File_List = (string[])e.Data.GetData(DataFormats.FileDrop);
@@ -506,14 +505,42 @@ namespace V_Max_Tool
 
         private void ImageZoom_CheckedChanged(object sender, EventArgs e)
         {
-            if (!Img_zoom.Checked)
+            if (circle_full != null)
             {
-                Disk_Image_Circle.Image = circle_small;
-                Disk_Image_Circle.Top = 0;
-                Disk_Image_Circle.Left = 0;
+                if (Circle_View.Checked)
+                {
+                    if (!Img_zoom.Checked)
+                    {
+                        Disk_Image.Cursor = Cursors.Arrow;
+                        Disk_Image.Image = circle_small;
+                        Disk_Image.Top = 0;
+                        Disk_Image.Left = 0;
+                    }
+                    else
+                    {
+                        Disk_Image.Cursor = Cursors.Hand;
+                        Disk_Image.Image = circle_full;
+                        Disk_Image.Top = 0 - ((circle_full.Height / 2) - (panPic.Height / 2)); Disk_Image.Left = 0 - ((circle_full.Width) - panPic.Width);
+                    }
+                }
+                else
+                {
+                    if (!Img_zoom.Checked)
+                    {
+                        Disk_Image.Cursor = Cursors.Arrow;
+                        Disk_Image.Image = flat_small;
+                        Disk_Image.Top = 0;
+                        Disk_Image.Left = 0;
+                    }
+                    else
+                    {
+                        Disk_Image.Cursor = Cursors.Hand;
+                        Disk_Image.Image = flat_large;
+                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+                    }
+                    Flat_Interp.Enabled = !Img_zoom.Checked;
+                }
             }
-            else Disk_Image_Circle.Image = circle_full;
-            Reset_img_pos.Visible = Img_zoom.Checked;
         }
         private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -540,24 +567,59 @@ namespace V_Max_Tool
                 f?.Join();
                 f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(0, false)));
                 f.Start();
-                //Draw_Flat_Tracks(0, true); ;
                 vm_reverse = !vm_reverse;
                 Check_Before_Draw();
             }
         }
 
-        private void Flat_Large_View_CheckedChanged_1(object sender, EventArgs e)
+        private void Circle_View_CheckedChanged(object sender, EventArgs e)
         {
-            if (Flat_Large_View.Checked)
+            if (!opt)
             {
-                Disk_Image_Flat.Image = flat_large;
+                if (Flat_View.Checked)
+                {
+                    Img_Q.Enabled = false;
+                    if (Img_zoom.Checked)
+                    {
+                        Disk_Image.Cursor = Cursors.Hand;
+                        Disk_Image.Image = flat_large;
+                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+
+                    }
+                    else
+                    {
+                        Disk_Image.Cursor = Cursors.Arrow;
+                        Disk_Image.Image = flat_small;
+                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+                    }
+                }
+                //else
+                if (Circle_View.Checked)
+                {
+                    Img_Q.Enabled = true;
+                    if (Img_zoom.Checked)
+                    {
+                        Disk_Image.Cursor = Cursors.Hand;
+                        Disk_Image.Image = circle_full;
+                        Disk_Image.Top = 0 - ((circle_full.Height / 2) - (panPic.Height / 2)); Disk_Image.Left = 0 - ((circle_full.Width) - panPic.Width);
+                    }
+                    else
+                    {
+                        Disk_Image.Cursor = Cursors.Arrow;
+                        Disk_Image.Image = circle_small;
+                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+                    }
+                }
             }
-            else
-            {
-                Disk_Image_Flat.Image = flat_small;
-                Disk_Image_Flat.Top = 0;
-                Disk_Image_Flat.Left = 0;
-            }
+            Flat_Interp.Visible = Flat_View.Checked;
+            Flat_Interp.Enabled = !Img_zoom.Checked;
+            label4.Visible = Img_Q.Visible = Circle_View.Checked;
+        }
+
+        private void Flat_Interp_CheckedChanged(object sender, EventArgs e)
+        {
+            Draw_Flat_Tracks(0, true);
+
         }
     }
 }

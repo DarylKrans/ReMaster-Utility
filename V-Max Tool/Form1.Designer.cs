@@ -70,25 +70,27 @@
             this.V3_Custom = new System.Windows.Forms.CheckBox();
             this.Adv_ctrl = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.Flat_Large_View = new System.Windows.Forms.CheckBox();
+            this.Img_opts = new System.Windows.Forms.GroupBox();
+            this.Cap_margins = new System.Windows.Forms.CheckBox();
+            this.Show_sec = new System.Windows.Forms.CheckBox();
             this.Rev_View = new System.Windows.Forms.CheckBox();
-            this.panPic2 = new System.Windows.Forms.Panel();
-            this.Save_Circle_btn = new System.Windows.Forms.Button();
-            this.Reset_img_pos = new System.Windows.Forms.RadioButton();
-            this.label3 = new System.Windows.Forms.Label();
-            this.Disk_Image_Circle = new System.Windows.Forms.PictureBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.Img_Q = new System.Windows.Forms.ComboBox();
             this.Img_zoom = new System.Windows.Forms.CheckBox();
             this.panPic = new System.Windows.Forms.Panel();
-            this.Disk_Image_Flat = new System.Windows.Forms.PictureBox();
-            this.Show_sec = new System.Windows.Forms.CheckBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.Disk_Image = new System.Windows.Forms.PictureBox();
+            this.Img_style = new System.Windows.Forms.GroupBox();
+            this.Flat_View = new System.Windows.Forms.RadioButton();
+            this.Circle_View = new System.Windows.Forms.RadioButton();
+            this.Save_Circle_btn = new System.Windows.Forms.Button();
+            this.Img_View = new System.Windows.Forms.GroupBox();
             this.Out_view = new System.Windows.Forms.RadioButton();
-            this.Cap_margins = new System.Windows.Forms.CheckBox();
             this.Src_view = new System.Windows.Forms.RadioButton();
-            this.Img_Q = new System.Windows.Forms.ComboBox();
-            this.label4 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
+            this.Flat_Interp = new System.Windows.Forms.CheckBox();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -100,10 +102,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).BeginInit();
             this.Adv_ctrl.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            this.panPic2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Disk_Image_Circle)).BeginInit();
+            this.Img_opts.SuspendLayout();
             this.panPic.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Disk_Image_Flat)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Disk_Image)).BeginInit();
+            this.Img_style.SuspendLayout();
+            this.Img_View.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -598,47 +601,70 @@
             this.Adv_ctrl.Location = new System.Drawing.Point(949, 12);
             this.Adv_ctrl.Name = "Adv_ctrl";
             this.Adv_ctrl.SelectedIndex = 0;
-            this.Adv_ctrl.Size = new System.Drawing.Size(1076, 1339);
+            this.Adv_ctrl.Size = new System.Drawing.Size(1167, 1339);
             this.Adv_ctrl.TabIndex = 36;
             // 
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.DimGray;
-            this.tabPage2.Controls.Add(this.Flat_Large_View);
-            this.tabPage2.Controls.Add(this.Rev_View);
-            this.tabPage2.Controls.Add(this.panPic2);
-            this.tabPage2.Controls.Add(this.Img_zoom);
+            this.tabPage2.Controls.Add(this.Img_opts);
             this.tabPage2.Controls.Add(this.panPic);
-            this.tabPage2.Controls.Add(this.Show_sec);
-            this.tabPage2.Controls.Add(this.Out_view);
-            this.tabPage2.Controls.Add(this.Cap_margins);
-            this.tabPage2.Controls.Add(this.Src_view);
-            this.tabPage2.Controls.Add(this.Img_Q);
-            this.tabPage2.Controls.Add(this.label4);
+            this.tabPage2.Controls.Add(this.Img_style);
+            this.tabPage2.Controls.Add(this.Save_Circle_btn);
+            this.tabPage2.Controls.Add(this.Img_View);
             this.tabPage2.Location = new System.Drawing.Point(8, 39);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1060, 1292);
+            this.tabPage2.Size = new System.Drawing.Size(1151, 1292);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Visualizer";
             // 
-            // Flat_Large_View
+            // Img_opts
             // 
-            this.Flat_Large_View.AutoSize = true;
-            this.Flat_Large_View.ForeColor = System.Drawing.Color.Silver;
-            this.Flat_Large_View.Location = new System.Drawing.Point(882, 812);
-            this.Flat_Large_View.Name = "Flat_Large_View";
-            this.Flat_Large_View.Size = new System.Drawing.Size(151, 29);
-            this.Flat_Large_View.TabIndex = 47;
-            this.Flat_Large_View.Text = "Large View";
-            this.Flat_Large_View.UseVisualStyleBackColor = true;
-            this.Flat_Large_View.CheckedChanged += new System.EventHandler(this.Flat_Large_View_CheckedChanged_1);
+            this.Img_opts.Controls.Add(this.Flat_Interp);
+            this.Img_opts.Controls.Add(this.Cap_margins);
+            this.Img_opts.Controls.Add(this.Show_sec);
+            this.Img_opts.Controls.Add(this.Rev_View);
+            this.Img_opts.Controls.Add(this.label4);
+            this.Img_opts.Controls.Add(this.Img_Q);
+            this.Img_opts.Controls.Add(this.Img_zoom);
+            this.Img_opts.ForeColor = System.Drawing.Color.Gainsboro;
+            this.Img_opts.Location = new System.Drawing.Point(349, 1149);
+            this.Img_opts.Name = "Img_opts";
+            this.Img_opts.Size = new System.Drawing.Size(454, 136);
+            this.Img_opts.TabIndex = 50;
+            this.Img_opts.TabStop = false;
+            this.Img_opts.Text = "View Options";
+            // 
+            // Cap_margins
+            // 
+            this.Cap_margins.AutoSize = true;
+            this.Cap_margins.ForeColor = System.Drawing.Color.Silver;
+            this.Cap_margins.Location = new System.Drawing.Point(6, 97);
+            this.Cap_margins.Name = "Cap_margins";
+            this.Cap_margins.Size = new System.Drawing.Size(199, 29);
+            this.Cap_margins.TabIndex = 40;
+            this.Cap_margins.Text = "Density Margins";
+            this.Cap_margins.UseVisualStyleBackColor = true;
+            this.Cap_margins.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
+            // 
+            // Show_sec
+            // 
+            this.Show_sec.AutoSize = true;
+            this.Show_sec.ForeColor = System.Drawing.Color.Silver;
+            this.Show_sec.Location = new System.Drawing.Point(6, 62);
+            this.Show_sec.Name = "Show_sec";
+            this.Show_sec.Size = new System.Drawing.Size(207, 29);
+            this.Show_sec.TabIndex = 41;
+            this.Show_sec.Text = "Highlight Sectors";
+            this.Show_sec.UseVisualStyleBackColor = true;
+            this.Show_sec.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
             // 
             // Rev_View
             // 
             this.Rev_View.AutoSize = true;
             this.Rev_View.ForeColor = System.Drawing.Color.Silver;
-            this.Rev_View.Location = new System.Drawing.Point(816, 207);
+            this.Rev_View.Location = new System.Drawing.Point(239, 62);
             this.Rev_View.Name = "Rev_View";
             this.Rev_View.Size = new System.Drawing.Size(182, 29);
             this.Rev_View.TabIndex = 46;
@@ -646,71 +672,31 @@
             this.Rev_View.UseVisualStyleBackColor = true;
             this.Rev_View.CheckedChanged += new System.EventHandler(this.Rev_View_CheckedChanged);
             // 
-            // panPic2
+            // label4
             // 
-            this.panPic2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.panPic2.Controls.Add(this.Save_Circle_btn);
-            this.panPic2.Controls.Add(this.Reset_img_pos);
-            this.panPic2.Controls.Add(this.label3);
-            this.panPic2.Controls.Add(this.Disk_Image_Circle);
-            this.panPic2.Location = new System.Drawing.Point(3, 7);
-            this.panPic2.Name = "panPic2";
-            this.panPic2.Size = new System.Drawing.Size(802, 802);
-            this.panPic2.TabIndex = 37;
+            this.label4.AutoSize = true;
+            this.label4.ForeColor = System.Drawing.Color.Silver;
+            this.label4.Location = new System.Drawing.Point(78, 27);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(155, 25);
+            this.label4.TabIndex = 45;
+            this.label4.Text = "Render Quality";
             // 
-            // Save_Circle_btn
+            // Img_Q
             // 
-            this.Save_Circle_btn.Location = new System.Drawing.Point(645, 3);
-            this.Save_Circle_btn.Name = "Save_Circle_btn";
-            this.Save_Circle_btn.Size = new System.Drawing.Size(154, 38);
-            this.Save_Circle_btn.TabIndex = 47;
-            this.Save_Circle_btn.Text = "Save Image";
-            this.Save_Circle_btn.UseVisualStyleBackColor = true;
-            this.Save_Circle_btn.Click += new System.EventHandler(this.Save_Image_Click);
-            // 
-            // Reset_img_pos
-            // 
-            this.Reset_img_pos.AutoSize = true;
-            this.Reset_img_pos.BackColor = System.Drawing.Color.Transparent;
-            this.Reset_img_pos.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.Reset_img_pos.ForeColor = System.Drawing.Color.Silver;
-            this.Reset_img_pos.Location = new System.Drawing.Point(606, 764);
-            this.Reset_img_pos.Name = "Reset_img_pos";
-            this.Reset_img_pos.Size = new System.Drawing.Size(182, 29);
-            this.Reset_img_pos.TabIndex = 46;
-            this.Reset_img_pos.TabStop = true;
-            this.Reset_img_pos.Text = "Reset Position";
-            this.Reset_img_pos.UseVisualStyleBackColor = false;
-            this.Reset_img_pos.CheckedChanged += new System.EventHandler(this.Reposition_ImageButton);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.BackColor = System.Drawing.Color.Transparent;
-            this.label3.ForeColor = System.Drawing.Color.Silver;
-            this.label3.Location = new System.Drawing.Point(13, 768);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(70, 25);
-            this.label3.TabIndex = 44;
-            this.label3.Text = "label3";
-            // 
-            // Disk_Image_Circle
-            // 
-            this.Disk_Image_Circle.BackColor = System.Drawing.Color.Transparent;
-            this.Disk_Image_Circle.Location = new System.Drawing.Point(0, -1);
-            this.Disk_Image_Circle.Name = "Disk_Image_Circle";
-            this.Disk_Image_Circle.Size = new System.Drawing.Size(802, 802);
-            this.Disk_Image_Circle.TabIndex = 0;
-            this.Disk_Image_Circle.TabStop = false;
-            this.Disk_Image_Circle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_Large_MouseDown);
-            this.Disk_Image_Circle.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_Large_MouseMove);
-            this.Disk_Image_Circle.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_Large_MouseUp);
+            this.Img_Q.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.Img_Q.FormattingEnabled = true;
+            this.Img_Q.Location = new System.Drawing.Point(239, 23);
+            this.Img_Q.Name = "Img_Q";
+            this.Img_Q.Size = new System.Drawing.Size(149, 33);
+            this.Img_Q.TabIndex = 44;
+            this.Img_Q.SelectedIndexChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
             // 
             // Img_zoom
             // 
             this.Img_zoom.AutoSize = true;
-            this.Img_zoom.ForeColor = System.Drawing.Color.Gainsboro;
-            this.Img_zoom.Location = new System.Drawing.Point(816, 87);
+            this.Img_zoom.ForeColor = System.Drawing.Color.Silver;
+            this.Img_zoom.Location = new System.Drawing.Point(239, 97);
             this.Img_zoom.Name = "Img_zoom";
             this.Img_zoom.Size = new System.Drawing.Size(162, 29);
             this.Img_zoom.TabIndex = 37;
@@ -720,94 +706,122 @@
             // 
             // panPic
             // 
-            this.panPic.BackColor = System.Drawing.Color.DimGray;
-            this.panPic.Controls.Add(this.Disk_Image_Flat);
-            this.panPic.Location = new System.Drawing.Point(0, 847);
+            this.panPic.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.panPic.Controls.Add(this.label3);
+            this.panPic.Controls.Add(this.Disk_Image);
+            this.panPic.Location = new System.Drawing.Point(2, 3);
             this.panPic.Name = "panPic";
-            this.panPic.Size = new System.Drawing.Size(1053, 442);
-            this.panPic.TabIndex = 0;
+            this.panPic.Size = new System.Drawing.Size(1143, 1143);
+            this.panPic.TabIndex = 37;
             // 
-            // Disk_Image_Flat
+            // label3
             // 
-            this.Disk_Image_Flat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.Disk_Image_Flat.Location = new System.Drawing.Point(6, 12);
-            this.Disk_Image_Flat.Name = "Disk_Image_Flat";
-            this.Disk_Image_Flat.Size = new System.Drawing.Size(1043, 416);
-            this.Disk_Image_Flat.TabIndex = 0;
-            this.Disk_Image_Flat.TabStop = false;
-            this.Disk_Image_Flat.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_Flat_MouseDown);
-            this.Disk_Image_Flat.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_Flat_MouseMove);
-            this.Disk_Image_Flat.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_Flat_MouseUp);
+            this.label3.AutoSize = true;
+            this.label3.BackColor = System.Drawing.Color.Transparent;
+            this.label3.ForeColor = System.Drawing.Color.Silver;
+            this.label3.Location = new System.Drawing.Point(891, 8);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(70, 25);
+            this.label3.TabIndex = 44;
+            this.label3.Text = "label3";
             // 
-            // Show_sec
+            // Disk_Image
             // 
-            this.Show_sec.AutoSize = true;
-            this.Show_sec.ForeColor = System.Drawing.Color.LightGray;
-            this.Show_sec.Location = new System.Drawing.Point(816, 172);
-            this.Show_sec.Name = "Show_sec";
-            this.Show_sec.Size = new System.Drawing.Size(117, 29);
-            this.Show_sec.TabIndex = 41;
-            this.Show_sec.Text = "Sectors";
-            this.Show_sec.UseVisualStyleBackColor = true;
-            this.Show_sec.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
+            this.Disk_Image.BackColor = System.Drawing.Color.Transparent;
+            this.Disk_Image.Location = new System.Drawing.Point(0, 3);
+            this.Disk_Image.Name = "Disk_Image";
+            this.Disk_Image.Size = new System.Drawing.Size(1140, 1140);
+            this.Disk_Image.TabIndex = 0;
+            this.Disk_Image.TabStop = false;
+            this.Disk_Image.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_MouseDown);
+            this.Disk_Image.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_MouseMove);
+            this.Disk_Image.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_MouseUp);
+            // 
+            // Img_style
+            // 
+            this.Img_style.Controls.Add(this.Flat_View);
+            this.Img_style.Controls.Add(this.Circle_View);
+            this.Img_style.ForeColor = System.Drawing.Color.Gainsboro;
+            this.Img_style.Location = new System.Drawing.Point(6, 1149);
+            this.Img_style.Name = "Img_style";
+            this.Img_style.Size = new System.Drawing.Size(177, 137);
+            this.Img_style.TabIndex = 49;
+            this.Img_style.TabStop = false;
+            this.Img_style.Text = "Style";
+            // 
+            // Flat_View
+            // 
+            this.Flat_View.AutoSize = true;
+            this.Flat_View.ForeColor = System.Drawing.Color.Silver;
+            this.Flat_View.Location = new System.Drawing.Point(6, 73);
+            this.Flat_View.Name = "Flat_View";
+            this.Flat_View.Size = new System.Drawing.Size(150, 29);
+            this.Flat_View.TabIndex = 1;
+            this.Flat_View.TabStop = true;
+            this.Flat_View.Text = "Flat Tracks";
+            this.Flat_View.UseVisualStyleBackColor = true;
+            this.Flat_View.CheckedChanged += new System.EventHandler(this.Circle_View_CheckedChanged);
+            // 
+            // Circle_View
+            // 
+            this.Circle_View.AutoSize = true;
+            this.Circle_View.ForeColor = System.Drawing.Color.Silver;
+            this.Circle_View.Location = new System.Drawing.Point(6, 38);
+            this.Circle_View.Name = "Circle_View";
+            this.Circle_View.Size = new System.Drawing.Size(156, 29);
+            this.Circle_View.TabIndex = 0;
+            this.Circle_View.TabStop = true;
+            this.Circle_View.Text = "Disk Tracks";
+            this.Circle_View.UseVisualStyleBackColor = true;
+            this.Circle_View.CheckedChanged += new System.EventHandler(this.Circle_View_CheckedChanged);
+            // 
+            // Save_Circle_btn
+            // 
+            this.Save_Circle_btn.Location = new System.Drawing.Point(988, 1163);
+            this.Save_Circle_btn.Name = "Save_Circle_btn";
+            this.Save_Circle_btn.Size = new System.Drawing.Size(154, 38);
+            this.Save_Circle_btn.TabIndex = 47;
+            this.Save_Circle_btn.Text = "Save Image";
+            this.Save_Circle_btn.UseVisualStyleBackColor = true;
+            this.Save_Circle_btn.Click += new System.EventHandler(this.Save_Image_Click);
+            // 
+            // Img_View
+            // 
+            this.Img_View.Controls.Add(this.Out_view);
+            this.Img_View.Controls.Add(this.Src_view);
+            this.Img_View.ForeColor = System.Drawing.Color.Gainsboro;
+            this.Img_View.Location = new System.Drawing.Point(189, 1149);
+            this.Img_View.Name = "Img_View";
+            this.Img_View.Size = new System.Drawing.Size(154, 136);
+            this.Img_View.TabIndex = 48;
+            this.Img_View.TabStop = false;
+            this.Img_View.Text = "Image";
             // 
             // Out_view
             // 
             this.Out_view.AutoSize = true;
             this.Out_view.ForeColor = System.Drawing.Color.Silver;
-            this.Out_view.Location = new System.Drawing.Point(179, 812);
+            this.Out_view.Location = new System.Drawing.Point(23, 37);
             this.Out_view.Name = "Out_view";
             this.Out_view.Size = new System.Drawing.Size(107, 29);
-            this.Out_view.TabIndex = 38;
+            this.Out_view.TabIndex = 40;
             this.Out_view.TabStop = true;
             this.Out_view.Text = "Output";
             this.Out_view.UseVisualStyleBackColor = true;
             this.Out_view.CheckedChanged += new System.EventHandler(this.Src_view_CheckedChanged);
             // 
-            // Cap_margins
-            // 
-            this.Cap_margins.AutoSize = true;
-            this.Cap_margins.ForeColor = System.Drawing.Color.LightGray;
-            this.Cap_margins.Location = new System.Drawing.Point(816, 137);
-            this.Cap_margins.Name = "Cap_margins";
-            this.Cap_margins.Size = new System.Drawing.Size(116, 29);
-            this.Cap_margins.TabIndex = 40;
-            this.Cap_margins.Text = "Density";
-            this.Cap_margins.UseVisualStyleBackColor = true;
-            this.Cap_margins.CheckedChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
-            // 
             // Src_view
             // 
             this.Src_view.AutoSize = true;
             this.Src_view.ForeColor = System.Drawing.Color.Silver;
-            this.Src_view.Location = new System.Drawing.Point(292, 812);
+            this.Src_view.Location = new System.Drawing.Point(23, 72);
             this.Src_view.Name = "Src_view";
             this.Src_view.Size = new System.Drawing.Size(111, 29);
-            this.Src_view.TabIndex = 39;
+            this.Src_view.TabIndex = 41;
             this.Src_view.TabStop = true;
             this.Src_view.Text = "Source";
             this.Src_view.UseVisualStyleBackColor = true;
             this.Src_view.CheckedChanged += new System.EventHandler(this.Src_view_CheckedChanged);
-            // 
-            // Img_Q
-            // 
-            this.Img_Q.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.Img_Q.FormattingEnabled = true;
-            this.Img_Q.Location = new System.Drawing.Point(816, 36);
-            this.Img_Q.Name = "Img_Q";
-            this.Img_Q.Size = new System.Drawing.Size(149, 33);
-            this.Img_Q.TabIndex = 44;
-            this.Img_Q.SelectedIndexChanged += new System.EventHandler(this.Adv_Ctrl_SelectedIndexChanged);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.ForeColor = System.Drawing.Color.Silver;
-            this.label4.Location = new System.Drawing.Point(811, 8);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(155, 25);
-            this.label4.TabIndex = 45;
-            this.label4.Text = "Render Quality";
             // 
             // tabPage1
             // 
@@ -815,7 +829,7 @@
             this.tabPage1.Location = new System.Drawing.Point(8, 39);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1060, 1292);
+            this.tabPage1.Size = new System.Drawing.Size(1151, 1292);
             this.tabPage1.TabIndex = 2;
             this.tabPage1.Text = "Track Info";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -831,14 +845,26 @@
             this.Track_Info.Location = new System.Drawing.Point(6, 3);
             this.Track_Info.Name = "Track_Info";
             this.Track_Info.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.Track_Info.Size = new System.Drawing.Size(1048, 1280);
+            this.Track_Info.Size = new System.Drawing.Size(1139, 1280);
             this.Track_Info.TabIndex = 11;
+            // 
+            // Flat_Interp
+            // 
+            this.Flat_Interp.AutoSize = true;
+            this.Flat_Interp.ForeColor = System.Drawing.Color.Silver;
+            this.Flat_Interp.Location = new System.Drawing.Point(6, 27);
+            this.Flat_Interp.Name = "Flat_Interp";
+            this.Flat_Interp.Size = new System.Drawing.Size(145, 29);
+            this.Flat_Interp.TabIndex = 47;
+            this.Flat_Interp.Text = "Interpolate";
+            this.Flat_Interp.UseVisualStyleBackColor = true;
+            this.Flat_Interp.CheckedChanged += new System.EventHandler(this.Flat_Interp_CheckedChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2407, 1362);
+            this.ClientSize = new System.Drawing.Size(2122, 1362);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
@@ -865,12 +891,15 @@
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).EndInit();
             this.Adv_ctrl.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
-            this.panPic2.ResumeLayout(false);
-            this.panPic2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Disk_Image_Circle)).EndInit();
+            this.Img_opts.ResumeLayout(false);
+            this.Img_opts.PerformLayout();
             this.panPic.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.Disk_Image_Flat)).EndInit();
+            this.panPic.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Disk_Image)).EndInit();
+            this.Img_style.ResumeLayout(false);
+            this.Img_style.PerformLayout();
+            this.Img_View.ResumeLayout(false);
+            this.Img_View.PerformLayout();
             this.tabPage1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -921,24 +950,26 @@
         private System.Windows.Forms.TabControl Adv_ctrl;
         private System.Windows.Forms.ListBox Track_Info;
         private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.PictureBox Disk_Image_Flat;
         private System.Windows.Forms.Panel panPic;
-        private System.Windows.Forms.CheckBox Img_zoom;
-        private System.Windows.Forms.Panel panPic2;
-        private System.Windows.Forms.PictureBox Disk_Image_Circle;
-        private System.Windows.Forms.RadioButton Src_view;
-        private System.Windows.Forms.RadioButton Out_view;
-        private System.Windows.Forms.CheckBox Cap_margins;
-        private System.Windows.Forms.CheckBox Show_sec;
+        private System.Windows.Forms.PictureBox Disk_Image;
         private System.Windows.Forms.SaveFileDialog Save_Dialog;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.Button Save_Circle_btn;
+        private System.Windows.Forms.GroupBox Img_opts;
+        private System.Windows.Forms.CheckBox Cap_margins;
+        private System.Windows.Forms.CheckBox Show_sec;
+        private System.Windows.Forms.CheckBox Rev_View;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox Img_Q;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.RadioButton Reset_img_pos;
-        private System.Windows.Forms.CheckBox Rev_View;
-        private System.Windows.Forms.CheckBox Flat_Large_View;
-        private System.Windows.Forms.Button Save_Circle_btn;
+        private System.Windows.Forms.CheckBox Img_zoom;
+        private System.Windows.Forms.GroupBox Img_style;
+        private System.Windows.Forms.RadioButton Flat_View;
+        private System.Windows.Forms.RadioButton Circle_View;
+        private System.Windows.Forms.GroupBox Img_View;
+        private System.Windows.Forms.RadioButton Out_view;
+        private System.Windows.Forms.RadioButton Src_view;
+        private System.Windows.Forms.CheckBox Flat_Interp;
     }
 }
 

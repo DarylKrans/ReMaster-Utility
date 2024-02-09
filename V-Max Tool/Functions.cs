@@ -13,6 +13,7 @@ namespace V_Max_Tool
         Thread f;  // Thread for drawing flat tracks image
         int pan_defw;
         int pan_defh;
+        //int cx, cy, fx, fy = 0;
 
         void Out_Density_Color(object sender, DrawItemEventArgs e)
         {
@@ -271,7 +272,7 @@ namespace V_Max_Tool
                 f?.Join();
                 circle?.Dispose();
                 flat_large?.Dispose();
-                Img_Q.Visible = label4.Visible = false;
+                //Img_Q.Visible = label4.Visible = false;
                 try
                 {
                     if (Out_view.Checked)
@@ -287,7 +288,7 @@ namespace V_Max_Tool
                 }
                 catch { }
                 {
-                    Img_Q.Visible = label4.Visible = true;
+                    //Img_Q.Visible = label4.Visible = true;
                     try
                     {
                         c = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
@@ -304,22 +305,17 @@ namespace V_Max_Tool
         {
             opt = true;
             Height = PreferredSize.Height;
-            panPic.AutoSize = true;
-            panPic.AutoScroll = false;
             pan_defw = panPic.Width;
             pan_defh = panPic.Height;
-            panPic.Controls.Add(Disk_Image_Flat);
-            panPic2.Controls.Add(Disk_Image_Circle);
+            panPic.Controls.Add(Disk_Image);
             Out_view.Select();
-            //Disk_Image_Flat.Image = new Bitmap(panPic.Width, panPic.Height);
-            Disk_Image_Flat.Image = new Bitmap(8192, 42 * 15);
-            Disk_Image_Circle.Image = new Bitmap(8192, 42 * 15);
-            Disk_Image_Circle.Cursor = Cursors.Hand;
-            panPic2.AutoScroll = false;
-            panPic2.SetBounds(0, 0, Disk_Image_Circle.Width, Disk_Image_Circle.Height);
-            Disk_Image_Flat.SizeMode = PictureBoxSizeMode.AutoSize;
-            Disk_Image_Circle.SizeMode = PictureBoxSizeMode.AutoSize;
-            flat_large = new Bitmap(8192, panPic2.Height - 16);
+            Circle_View.Select();
+            Disk_Image.Image = new Bitmap(8192, 42 * 15);
+            //Disk_Image.Cursor = Cursors.Hand;
+            panPic.AutoScroll = false;
+            panPic.SetBounds(0, 0, Disk_Image.Width, Disk_Image.Height);
+            Disk_Image.SizeMode = PictureBoxSizeMode.AutoSize;
+            flat_large = new Bitmap(8192, panPic.Height - 16);
             Adv_ctrl.SelectedIndexChanged += new System.EventHandler(Adv_Ctrl_SelectedIndexChanged);
             Out_density.DrawItem += new DrawItemEventHandler(Out_Density_Color);
             Track_Info.DrawItem += new DrawItemEventHandler(Source_Info_Color);
@@ -339,7 +335,6 @@ namespace V_Max_Tool
             fnappend = fix;
             Out_Type.DataSource = o;
             label1.Text = label2.Text = label3.Text = "";
-            //Track_Info.Visible = false;
             Source.Visible = Output.Visible = label4.Visible = Img_Q.Visible = Save_Circle_btn.Visible = false;
             button1.Enabled = false;
             AllowDrop = true;
@@ -356,12 +351,12 @@ namespace V_Max_Tool
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
             vm2_ver[1] = new string[] { "A5-A5", "A4-A5", "A5-A7", "A5-A6", "A9-AD", "AC-A9", "A5-A3", "A9-AE", "A5-AD", "AC-A5", "A9-A3", "A5-AE", "A5-A9",
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
-            //Img_style.DataSource = styles;
             Img_Q.DataSource = Img_Quality;
             Img_Q.SelectedIndex = 2;
             Width = PreferredSize.Width;
+            Flat_Interp.Visible = Flat_View.Checked;
+            label4.Visible = Img_Q.Visible = Circle_View.Checked;
             Draw_Init_Img();
-            Reset_img_pos.Visible = Img_zoom.Checked;
             opt = false;
         }
 
