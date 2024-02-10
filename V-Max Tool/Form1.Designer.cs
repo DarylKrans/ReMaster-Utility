@@ -79,6 +79,7 @@
             this.Img_Q = new System.Windows.Forms.ComboBox();
             this.Img_zoom = new System.Windows.Forms.CheckBox();
             this.panPic = new System.Windows.Forms.Panel();
+            this.Circle_Render = new System.Windows.Forms.ProgressBar();
             this.coords = new System.Windows.Forms.Label();
             this.Disk_Image = new System.Windows.Forms.PictureBox();
             this.Img_style = new System.Windows.Forms.GroupBox();
@@ -91,7 +92,6 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
-            this.Circle_Render = new System.Windows.Forms.ProgressBar();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -728,6 +728,13 @@
             this.panPic.Size = new System.Drawing.Size(1143, 1143);
             this.panPic.TabIndex = 37;
             // 
+            // Circle_Render
+            // 
+            this.Circle_Render.Location = new System.Drawing.Point(4, 1124);
+            this.Circle_Render.Name = "Circle_Render";
+            this.Circle_Render.Size = new System.Drawing.Size(1131, 16);
+            this.Circle_Render.TabIndex = 51;
+            // 
             // coords
             // 
             this.coords.AutoSize = true;
@@ -861,13 +868,6 @@
             this.Track_Info.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.Track_Info.Size = new System.Drawing.Size(1139, 1280);
             this.Track_Info.TabIndex = 11;
-            // 
-            // Circle_Render
-            // 
-            this.Circle_Render.Location = new System.Drawing.Point(447, 560);
-            this.Circle_Render.Name = "Circle_Render";
-            this.Circle_Render.Size = new System.Drawing.Size(251, 26);
-            this.Circle_Render.TabIndex = 51;
             // 
             // Form1
             // 

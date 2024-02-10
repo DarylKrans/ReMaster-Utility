@@ -319,11 +319,14 @@ namespace V_Max_Tool
             Disk_Image.MouseDown -= Disk_Image_MouseDown;
             Disk_Image.Cursor = Cursors.No;
             Img_zoom.Enabled = t;
-            Circle_Render.Value = 0;
-            Circle_Render.Maximum = 100;
-            Circle_Render.Maximum *= 100;
-            Circle_Render.Value = Circle_Render.Maximum / 100;
-            Circle_Render.Visible = !t;
+            if (!t)
+            {
+                Circle_Render.Value = 0;
+                Circle_Render.Maximum = 100;
+                Circle_Render.Maximum *= 100;
+                Circle_Render.Value = Circle_Render.Maximum / 100;
+                Circle_Render.Visible = !t;
+            }
             if (!t && Circle_View.Checked)
             {
                 
