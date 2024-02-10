@@ -71,6 +71,7 @@
             this.Adv_ctrl = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.Img_opts = new System.Windows.Forms.GroupBox();
+            this.Flat_Interp = new System.Windows.Forms.CheckBox();
             this.Cap_margins = new System.Windows.Forms.CheckBox();
             this.Show_sec = new System.Windows.Forms.CheckBox();
             this.Rev_View = new System.Windows.Forms.CheckBox();
@@ -90,7 +91,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
-            this.Flat_Interp = new System.Windows.Forms.CheckBox();
+            this.Circle_Render = new System.Windows.Forms.ProgressBar();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -636,6 +637,18 @@
             this.Img_opts.TabStop = false;
             this.Img_opts.Text = "View Options";
             // 
+            // Flat_Interp
+            // 
+            this.Flat_Interp.AutoSize = true;
+            this.Flat_Interp.ForeColor = System.Drawing.Color.Silver;
+            this.Flat_Interp.Location = new System.Drawing.Point(6, 27);
+            this.Flat_Interp.Name = "Flat_Interp";
+            this.Flat_Interp.Size = new System.Drawing.Size(145, 29);
+            this.Flat_Interp.TabIndex = 47;
+            this.Flat_Interp.Text = "Interpolate";
+            this.Flat_Interp.UseVisualStyleBackColor = true;
+            this.Flat_Interp.CheckedChanged += new System.EventHandler(this.Flat_Interp_CheckedChanged);
+            // 
             // Cap_margins
             // 
             this.Cap_margins.AutoSize = true;
@@ -707,6 +720,7 @@
             // panPic
             // 
             this.panPic.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.panPic.Controls.Add(this.Circle_Render);
             this.panPic.Controls.Add(this.coords);
             this.panPic.Controls.Add(this.Disk_Image);
             this.panPic.Location = new System.Drawing.Point(2, 3);
@@ -714,13 +728,13 @@
             this.panPic.Size = new System.Drawing.Size(1143, 1143);
             this.panPic.TabIndex = 37;
             // 
-            // label3
+            // coords
             // 
             this.coords.AutoSize = true;
             this.coords.BackColor = System.Drawing.Color.Transparent;
             this.coords.ForeColor = System.Drawing.Color.Silver;
             this.coords.Location = new System.Drawing.Point(891, 8);
-            this.coords.Name = "label3";
+            this.coords.Name = "coords";
             this.coords.Size = new System.Drawing.Size(70, 25);
             this.coords.TabIndex = 44;
             this.coords.Text = "label3";
@@ -848,17 +862,12 @@
             this.Track_Info.Size = new System.Drawing.Size(1139, 1280);
             this.Track_Info.TabIndex = 11;
             // 
-            // Flat_Interp
+            // Circle_Render
             // 
-            this.Flat_Interp.AutoSize = true;
-            this.Flat_Interp.ForeColor = System.Drawing.Color.Silver;
-            this.Flat_Interp.Location = new System.Drawing.Point(6, 27);
-            this.Flat_Interp.Name = "Flat_Interp";
-            this.Flat_Interp.Size = new System.Drawing.Size(145, 29);
-            this.Flat_Interp.TabIndex = 47;
-            this.Flat_Interp.Text = "Interpolate";
-            this.Flat_Interp.UseVisualStyleBackColor = true;
-            this.Flat_Interp.CheckedChanged += new System.EventHandler(this.Flat_Interp_CheckedChanged);
+            this.Circle_Render.Location = new System.Drawing.Point(447, 560);
+            this.Circle_Render.Name = "Circle_Render";
+            this.Circle_Render.Size = new System.Drawing.Size(251, 26);
+            this.Circle_Render.TabIndex = 51;
             // 
             // Form1
             // 
@@ -970,6 +979,7 @@
         private System.Windows.Forms.RadioButton Out_view;
         private System.Windows.Forms.RadioButton Src_view;
         private System.Windows.Forms.CheckBox Flat_Interp;
+        private System.Windows.Forms.ProgressBar Circle_Render;
     }
 }
 

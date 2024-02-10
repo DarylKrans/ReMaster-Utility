@@ -272,23 +272,13 @@ namespace V_Max_Tool
                 f?.Join();
                 circle?.Dispose();
                 flat_large?.Dispose();
-                //Img_Q.Visible = label4.Visible = false;
                 try
                 {
-                    //if (Out_view.Checked)
-                    //{
                     f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
                     f.Start();
-                    //}
-                    //if (Src_view.Checked)
-                    //{
-                    //    f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(1, false)));
-                    //    f.Start();
-                    //}
                 }
                 catch { }
                 {
-                    //Img_Q.Visible = label4.Visible = true;
                     try
                     {
                         c = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
@@ -356,6 +346,8 @@ namespace V_Max_Tool
             Width = PreferredSize.Width;
             Flat_Interp.Visible = Flat_View.Checked;
             label4.Visible = Img_Q.Visible = Circle_View.Checked;
+            Circle_Render.Visible = false;
+            
             Draw_Init_Img();
             opt = false;
         }

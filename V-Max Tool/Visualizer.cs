@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace V_Max_Tool
 {
@@ -36,6 +37,10 @@ namespace V_Max_Tool
             var m = (Img_Q.SelectedIndex + 1) * 1000;
             circle = new FastBitmap(m, m);
             Draw_Disk(circle, 3, m, "V-MAX! Sync Tool");
+            circle_full = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
+            circle_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
+            flat_large = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
+            flat_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true); 
             Disk_Image.Image = Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
         }
 
@@ -120,6 +125,9 @@ namespace V_Max_Tool
 
         private void Draw_Circular_Tracks()
         {
+            int at = 0;
+            int pt = 0;
+            for (int h = 0; h < tracks;  h++) if (NDG.Track_Length[h] > min_t_len) at++;
             int m = 0;
             Invoke(new Action(() =>
             {
@@ -154,6 +162,7 @@ namespace V_Max_Tool
             {
                 if (NDG.Track_Length[track] > min_t_len)
                 {
+                    pt++;
                     v2 = false;
                     byte[] t_data = Get_Track_Data(track);
                     len = t_data.Length;
@@ -170,6 +179,7 @@ namespace V_Max_Tool
                     {
                         this.Invoke(new Action(() => Update_Image()));
                     }
+                    this.Invoke(new Action(() => Update_Progress_Bar(pt, at)));
                 }
                 r -= (t_width * skp); // 5;
                 track += 1;
@@ -309,8 +319,14 @@ namespace V_Max_Tool
             Disk_Image.MouseDown -= Disk_Image_MouseDown;
             Disk_Image.Cursor = Cursors.No;
             Img_zoom.Enabled = t;
+            Circle_Render.Value = 0;
+            Circle_Render.Maximum = 100;
+            Circle_Render.Maximum *= 100;
+            Circle_Render.Value = Circle_Render.Maximum / 100;
+            Circle_Render.Visible = !t;
             if (!t && Circle_View.Checked)
             {
+                
                 Save_Circle_btn.Visible = t;
                 Disk_Image.Top = 0; Disk_Image.Left = 0;
             }
@@ -334,6 +350,7 @@ namespace V_Max_Tool
                 }
                 if (Img_zoom.Checked) Disk_Image.Cursor = Cursors.Hand; else Disk_Image.Cursor = Cursors.Arrow;
                 Save_Circle_btn.Visible = true;
+                Circle_Render.Visible = !t;
                 Disk_Image.MouseDown += Disk_Image_MouseDown;
                 circle.Dispose();
                 GC.Collect();
@@ -341,14 +358,23 @@ namespace V_Max_Tool
             interp = t;
         }
 
+        private void Update_Progress_Bar(int t, int at)
+        {
+            if (t - 1 > 0)
+            {
+                Circle_Render.Maximum = (int)((double)Circle_Render.Value / (double)(t + 1) * at);
+            }
+        }
+
         private void Update_Image()
         {
-            try
-            {
-                Disk_Image.Image = Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, false);
-                Disk_Image.Refresh();
-            }
-            catch { }
+            /// Uncomment to show Image updates (per track processed)
+            //try
+            //{
+            //    Disk_Image.Image = Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, false);
+            //    Disk_Image.Refresh();
+            //}
+            //catch { }
         }
 
         private void Draw_Disk(FastBitmap d, int m, int size, string file_name)
@@ -537,8 +563,8 @@ namespace V_Max_Tool
             {
                 var j =- (c.Width - panPic.Width);
                 var g =- (c.Height - panPic.Height);
-                if (c.Top <= 0 && (e.Y + c.Top - yPos) <= 0 && (c.Top >= g && (e.Y + c.Top - yPos) >= g)) c.Top = e.Y + c.Top - yPos;
-                if (c.Left <= 0 && (e.X + c.Left - xPos) <= 0 && (c.Left >= j && (e.X + c.Left - xPos) >= j)) c.Left = e.X + c.Left - xPos;
+                if ((c.Top <= 0 && (e.Y + c.Top - yPos) <= 0) && (c.Top >= g && (e.Y + c.Top - yPos) >= g)) c.Top = e.Y + c.Top - yPos;
+                if ((c.Left <= 0 && (e.X + c.Left - xPos) <= 0) && (c.Left >= j && (e.X + c.Left - xPos) >= j)) c.Left = e.X + c.Left - xPos;
                 var x =- c.Left; var y =- c.Top;
                 coords.Text = $"x:({x}) y:({y})";
             }
