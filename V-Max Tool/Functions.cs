@@ -275,16 +275,16 @@ namespace V_Max_Tool
                 //Img_Q.Visible = label4.Visible = false;
                 try
                 {
-                    if (Out_view.Checked)
-                    {
-                        f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(0, false)));
-                        f.Start();
-                    }
-                    if (Src_view.Checked)
-                    {
-                        f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(1, false)));
-                        f.Start();
-                    }
+                    //if (Out_view.Checked)
+                    //{
+                    f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
+                    f.Start();
+                    //}
+                    //if (Src_view.Checked)
+                    //{
+                    //    f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(1, false)));
+                    //    f.Start();
+                    //}
                 }
                 catch { }
                 {
@@ -334,7 +334,7 @@ namespace V_Max_Tool
             string[] o = { "G64", "NIB", "NIB & G64" };
             fnappend = fix;
             Out_Type.DataSource = o;
-            label1.Text = label2.Text = label3.Text = "";
+            label1.Text = label2.Text = coords.Text = "";
             Source.Visible = Output.Visible = label4.Visible = Img_Q.Visible = Save_Circle_btn.Visible = false;
             button1.Enabled = false;
             AllowDrop = true;

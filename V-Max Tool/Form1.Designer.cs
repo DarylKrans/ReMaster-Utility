@@ -78,7 +78,7 @@
             this.Img_Q = new System.Windows.Forms.ComboBox();
             this.Img_zoom = new System.Windows.Forms.CheckBox();
             this.panPic = new System.Windows.Forms.Panel();
-            this.label3 = new System.Windows.Forms.Label();
+            this.coords = new System.Windows.Forms.Label();
             this.Disk_Image = new System.Windows.Forms.PictureBox();
             this.Img_style = new System.Windows.Forms.GroupBox();
             this.Flat_View = new System.Windows.Forms.RadioButton();
@@ -707,7 +707,7 @@
             // panPic
             // 
             this.panPic.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.panPic.Controls.Add(this.label3);
+            this.panPic.Controls.Add(this.coords);
             this.panPic.Controls.Add(this.Disk_Image);
             this.panPic.Location = new System.Drawing.Point(2, 3);
             this.panPic.Name = "panPic";
@@ -716,14 +716,14 @@
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.BackColor = System.Drawing.Color.Transparent;
-            this.label3.ForeColor = System.Drawing.Color.Silver;
-            this.label3.Location = new System.Drawing.Point(891, 8);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(70, 25);
-            this.label3.TabIndex = 44;
-            this.label3.Text = "label3";
+            this.coords.AutoSize = true;
+            this.coords.BackColor = System.Drawing.Color.Transparent;
+            this.coords.ForeColor = System.Drawing.Color.Silver;
+            this.coords.Location = new System.Drawing.Point(891, 8);
+            this.coords.Name = "label3";
+            this.coords.Size = new System.Drawing.Size(70, 25);
+            this.coords.TabIndex = 44;
+            this.coords.Text = "label3";
             // 
             // Disk_Image
             // 
@@ -953,7 +953,7 @@
         private System.Windows.Forms.Panel panPic;
         private System.Windows.Forms.PictureBox Disk_Image;
         private System.Windows.Forms.SaveFileDialog Save_Dialog;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label coords;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.Button Save_Circle_btn;
         private System.Windows.Forms.GroupBox Img_opts;

@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -35,12 +36,10 @@ namespace V_Max_Tool
             var m = (Img_Q.SelectedIndex + 1) * 1000;
             circle = new FastBitmap(m, m);
             Draw_Disk(circle, 3, m, "V-MAX! Sync Tool");
-            interp = true;
-            Disk_Image.Image = Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false);
-            interp = false;
+            Disk_Image.Image = Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
         }
 
-        private void Draw_Flat_Tracks(int w, bool interpolate)
+        private void Draw_Flat_Tracks(bool interpolate)
         {
             string ext = "";
             var d = 0;
@@ -59,30 +58,30 @@ namespace V_Max_Tool
                 Bitmap t = new Bitmap(flat_large.Width, flat_large.Height);
                 for (int i = 0; i < tracks; i++)
                 {
-                    if (w == 0)
+                    if (Out_view.Checked)
                     {
                         if (NDG.Track_Length[i] > min_t_len)
                         {
                             d = Get_Density(NDG.Track_Data[i].Length);
-                            t = Draw_Track(flat_large, (42 * 14), NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i], d, w);
+                            t = Draw_Track(flat_large, (42 * 14), NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked);
                             ext = "(flat_tracks).g64";
                         }
                     }
-                    if (w == 1)
+                    if (Src_view.Checked)
                     {
                         var ds = NDS.D_Start[i];
                         var de = NDS.D_End[i];
                         if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; }
                         if (NDS.Track_Length[i] > min_t_len)
                         {
-                            t = Draw_Track(flat_large, (42 * 14), NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i], d, w);
+                            t = Draw_Track(flat_large, (42 * 14), NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked);
                             ext = $"(flat_tracks){fext}";
                         }
                     }
                     if (halftracks) ht += .5; else ht += 1;
                 }
-                flat_large = (Bitmap)Resize_Image(t, t.Width, t.Height, false);
-                flat_small = (Bitmap)Resize_Image(t, pan_defw, pan_defh - 16, false);
+                flat_large = (Bitmap)Resize_Image(t, t.Width, t.Height, false, false);
+                flat_small = (Bitmap)Resize_Image(t, pan_defw, pan_defh - 16, false, Flat_Interp.Checked);
                 Add_Text(flat_small, $"{fname}{fnappend}{ext}", Color.FromArgb(40, 40, 40),
                     Brushes.White, font, 20, flat_small.Height - 20, 600, flat_small.Height);
                 Add_Text(flat_large, $"{fname}{fnappend}{ext}", Color.FromArgb(40, 40, 40),
@@ -111,8 +110,7 @@ namespace V_Max_Tool
             }
             else
             {
-                interp = Flat_Interp.Checked;
-                flat_small = (Bitmap)Resize_Image(flat_large, pan_defw, pan_defh - 16, false);
+                flat_small = (Bitmap)Resize_Image(flat_large, pan_defw, pan_defh - 16, false, Flat_Interp.Checked);
                 Add_Text(flat_small, $"{fname}{fnappend}{ext}", Color.FromArgb(40, 40, 40),
                         Brushes.White, font, 20, flat_small.Height - 20, 600, flat_small.Height);
                 Disk_Image.Image = flat_small;
@@ -194,17 +192,16 @@ namespace V_Max_Tool
             }
         }
 
-        private Bitmap Draw_Track(Bitmap bmp, int max_Height, byte[] data, int trk, int s, int e, int tf, byte[] v2i, int d, int w)
+        private Bitmap Draw_Track(Bitmap bmp, int max_Height, byte[] data, int trk, int s, int e, int tf, byte[] v2i, int d, bool w) //, int w)
         {
             byte[] tdata = new byte[data.Length];
             Array.Copy(data, 0, tdata, 0, data.Length);
             Pen pen; // = new Pen (Color.Green);
             bool v2 = false;
-            //int t_height = (panPic.Height / 42) - 4;
             int t_height = (max_Height / 42) - 4;
             for (int j = 0; j < tdata.Length; j++)
             {
-                if (w == 0)
+                if (w)
                 {
                     if (Cap_margins.Checked)
                     {
@@ -319,10 +316,8 @@ namespace V_Max_Tool
             }
             if (t)
             {
-                interp = false;
-                circle_full = (Bitmap)Resize_Image(circle.Bitmap, size, size, false);
-                interp = true;
-                circle_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false);
+                circle_full = (Bitmap)Resize_Image(circle.Bitmap, size, size, false, false);
+                circle_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
                 if (Circle_View.Checked)
                 {
                     if (Img_zoom.Checked)
@@ -348,12 +343,12 @@ namespace V_Max_Tool
 
         private void Update_Image()
         {
-                try
-                {
-                    Disk_Image.Image = Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false);
-                    Disk_Image.Refresh();
-                }
-                catch { }
+            try
+            {
+                Disk_Image.Image = Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, false);
+                Disk_Image.Refresh();
+            }
+            catch { }
         }
 
         private void Draw_Disk(FastBitmap d, int m, int size, string file_name)
@@ -412,7 +407,7 @@ namespace V_Max_Tool
             g.DrawString($"{text}", fnt, brsh, rectf);
         }
 
-        private Image Resize_Image(Image temp, int width, int height, bool preserveAspectRatio)
+        private Image Resize_Image(Image temp, int width, int height, bool preserveAspectRatio, bool interpolate)
         {
             int newWidth;
             int newHeight;
@@ -436,7 +431,7 @@ namespace V_Max_Tool
             {
                 using (Graphics graphicsHandle = Graphics.FromImage(newImage))
                 {
-                    if (!interp) graphicsHandle.InterpolationMode = InterpolationMode.NearestNeighbor;
+                    if (!interpolate) graphicsHandle.InterpolationMode = InterpolationMode.NearestNeighbor;
                     else graphicsHandle.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphicsHandle.DrawImage(temp, 0, 0, newWidth, newHeight);
                 }
@@ -511,8 +506,7 @@ namespace V_Max_Tool
                 }
                 else
                 {
-                    interp = Flat_Interp.Checked;
-                    Image flat = Resize_Image(flat_large, 1920, 1080, false);
+                    Image flat = Resize_Image(flat_large, 1920, 1080, false, Flat_Interp.Checked);
                     Add_Text(flat, def_text, Color.FromArgb(0, 0, 0), Brushes.White, new Font("Ariel", 11),
                         20, flat.Height - 20, 600, flat.Height);
                     if (ft == 1) flat.Save(fs, ImageFormat.Jpeg);
@@ -531,7 +525,7 @@ namespace V_Max_Tool
         {
             if (Img_zoom.Checked && e.Button == MouseButtons.Left)
             {
-                Dragging = label3.Visible = true;
+                Dragging = coords.Visible = true;
                 xPos = e.X;
                 yPos = e.Y;
             }
@@ -541,17 +535,136 @@ namespace V_Max_Tool
         {
             if (Img_zoom.Checked && Disk_Image.Enabled && (Dragging && sender is Control c))
             {
-                c.Top = e.Y + c.Top - yPos;
-                c.Left = e.X + c.Left - xPos;
-                var x = c.Left; var y = c.Top;
-                x = -x; y = -y;
-                label3.Text = $"x:({x}) y:({y})";
+                var j =- (c.Width - panPic.Width);
+                var g =- (c.Height - panPic.Height);
+                if (c.Top <= 0 && (e.Y + c.Top - yPos) <= 0 && (c.Top >= g && (e.Y + c.Top - yPos) >= g)) c.Top = e.Y + c.Top - yPos;
+                if (c.Left <= 0 && (e.X + c.Left - xPos) <= 0 && (c.Left >= j && (e.X + c.Left - xPos) >= j)) c.Left = e.X + c.Left - xPos;
+                var x =- c.Left; var y =- c.Top;
+                coords.Text = $"x:({x}) y:({y})";
             }
         }
 
         private void Disk_Image_MouseUp(object sender, MouseEventArgs e)
         {
-            Dragging = label3.Visible = false;
+            Dragging = coords.Visible = false;
+        }
+
+        private void ImageZoom_CheckedChanged(object sender, EventArgs e)
+        {
+            if (circle_full != null)
+            {
+                if (Circle_View.Checked)
+                {
+                    if (!Img_zoom.Checked)
+                    {
+                        Disk_Image.Cursor = Cursors.Arrow;
+                        Disk_Image.Image = circle_small;
+                        Disk_Image.Top = 0;
+                        Disk_Image.Left = 0;
+                    }
+                    else
+                    {
+                        Disk_Image.Cursor = Cursors.Hand;
+                        Disk_Image.Image = circle_full;
+                        Disk_Image.Top = 0 - ((circle_full.Height / 2) - (panPic.Height / 2)); Disk_Image.Left = 0 - ((circle_full.Width) - panPic.Width);
+                    }
+                }
+                else
+                {
+                    if (!Img_zoom.Checked)
+                    {
+                        Disk_Image.Cursor = Cursors.Arrow;
+                        Disk_Image.Image = flat_small;
+                        Disk_Image.Top = 0;
+                        Disk_Image.Left = 0;
+                    }
+                    else
+                    {
+                        Disk_Image.Cursor = Cursors.Hand;
+                        Disk_Image.Image = flat_large;
+                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+                    }
+                    Flat_Interp.Enabled = !Img_zoom.Checked;
+                }
+            }
+        }
+        private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!opt) Check_Before_Draw();
+        }
+
+        private void Src_view_CheckedChanged(object sender, EventArgs e)
+        {
+            if (sender is RadioButton rb)
+            {
+                if (rb.Checked)
+                {
+                    if (!opt) Check_Before_Draw();
+                }
+            }
+        }
+
+        private void Rev_View_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!opt)
+            {
+                interp = !interp;
+                f?.Abort();
+                f?.Join();
+                f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
+                f.Start();
+                vm_reverse = !vm_reverse;
+                Check_Before_Draw();
+            }
+        }
+
+        private void Circle_View_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!opt)
+            {
+                if (Flat_View.Checked)
+                {
+                    Img_Q.Enabled = false;
+                    if (Img_zoom.Checked)
+                    {
+                        Disk_Image.Cursor = Cursors.Hand;
+                        Disk_Image.Image = flat_large;
+                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+
+                    }
+                    else
+                    {
+                        Disk_Image.Cursor = Cursors.Arrow;
+                        Disk_Image.Image = flat_small;
+                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+                    }
+                }
+                //else
+                if (Circle_View.Checked)
+                {
+                    Img_Q.Enabled = true;
+                    if (Img_zoom.Checked)
+                    {
+                        Disk_Image.Cursor = Cursors.Hand;
+                        Disk_Image.Image = circle_full;
+                        Disk_Image.Top = 0 - ((circle_full.Height / 2) - (panPic.Height / 2)); Disk_Image.Left = 0 - ((circle_full.Width) - panPic.Width);
+                    }
+                    else
+                    {
+                        Disk_Image.Cursor = Cursors.Arrow;
+                        Disk_Image.Image = circle_small;
+                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+                    }
+                }
+            }
+            Flat_Interp.Visible = Flat_View.Checked;
+            Flat_Interp.Enabled = !Img_zoom.Checked;
+            label4.Visible = Img_Q.Visible = Circle_View.Checked;
+        }
+
+        private void Flat_Interp_CheckedChanged(object sender, EventArgs e)
+        {
+            Draw_Flat_Tracks(true);
         }
     }
 }

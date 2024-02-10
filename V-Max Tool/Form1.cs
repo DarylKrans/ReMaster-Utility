@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -503,123 +502,6 @@ namespace V_Max_Tool
             V3_Auto_Adjust();
         }
 
-        private void ImageZoom_CheckedChanged(object sender, EventArgs e)
-        {
-            if (circle_full != null)
-            {
-                if (Circle_View.Checked)
-                {
-                    if (!Img_zoom.Checked)
-                    {
-                        Disk_Image.Cursor = Cursors.Arrow;
-                        Disk_Image.Image = circle_small;
-                        Disk_Image.Top = 0;
-                        Disk_Image.Left = 0;
-                    }
-                    else
-                    {
-                        Disk_Image.Cursor = Cursors.Hand;
-                        Disk_Image.Image = circle_full;
-                        Disk_Image.Top = 0 - ((circle_full.Height / 2) - (panPic.Height / 2)); Disk_Image.Left = 0 - ((circle_full.Width) - panPic.Width);
-                    }
-                }
-                else
-                {
-                    if (!Img_zoom.Checked)
-                    {
-                        Disk_Image.Cursor = Cursors.Arrow;
-                        Disk_Image.Image = flat_small;
-                        Disk_Image.Top = 0;
-                        Disk_Image.Left = 0;
-                    }
-                    else
-                    {
-                        Disk_Image.Cursor = Cursors.Hand;
-                        Disk_Image.Image = flat_large;
-                        Disk_Image.Top = 0; Disk_Image.Left = 0;
-                    }
-                    Flat_Interp.Enabled = !Img_zoom.Checked;
-                }
-            }
-        }
-        private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (!opt) Check_Before_Draw();
-        }
 
-        private void Src_view_CheckedChanged(object sender, EventArgs e)
-        {
-            if (sender is RadioButton rb)
-            {
-                if (rb.Checked)
-                {
-                    if (!opt) Check_Before_Draw();
-                }
-            }
-        }
-
-        private void Rev_View_CheckedChanged(object sender, EventArgs e)
-        {
-            if (!opt)
-            {
-                interp = !interp;
-                f?.Abort();
-                f?.Join();
-                f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(0, false)));
-                f.Start();
-                vm_reverse = !vm_reverse;
-                Check_Before_Draw();
-            }
-        }
-
-        private void Circle_View_CheckedChanged(object sender, EventArgs e)
-        {
-            if (!opt)
-            {
-                if (Flat_View.Checked)
-                {
-                    Img_Q.Enabled = false;
-                    if (Img_zoom.Checked)
-                    {
-                        Disk_Image.Cursor = Cursors.Hand;
-                        Disk_Image.Image = flat_large;
-                        Disk_Image.Top = 0; Disk_Image.Left = 0;
-
-                    }
-                    else
-                    {
-                        Disk_Image.Cursor = Cursors.Arrow;
-                        Disk_Image.Image = flat_small;
-                        Disk_Image.Top = 0; Disk_Image.Left = 0;
-                    }
-                }
-                //else
-                if (Circle_View.Checked)
-                {
-                    Img_Q.Enabled = true;
-                    if (Img_zoom.Checked)
-                    {
-                        Disk_Image.Cursor = Cursors.Hand;
-                        Disk_Image.Image = circle_full;
-                        Disk_Image.Top = 0 - ((circle_full.Height / 2) - (panPic.Height / 2)); Disk_Image.Left = 0 - ((circle_full.Width) - panPic.Width);
-                    }
-                    else
-                    {
-                        Disk_Image.Cursor = Cursors.Arrow;
-                        Disk_Image.Image = circle_small;
-                        Disk_Image.Top = 0; Disk_Image.Left = 0;
-                    }
-                }
-            }
-            Flat_Interp.Visible = Flat_View.Checked;
-            Flat_Interp.Enabled = !Img_zoom.Checked;
-            label4.Visible = Img_Q.Visible = Circle_View.Checked;
-        }
-
-        private void Flat_Interp_CheckedChanged(object sender, EventArgs e)
-        {
-            Draw_Flat_Tracks(0, true);
-
-        }
     }
 }
