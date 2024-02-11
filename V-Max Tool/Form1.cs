@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -174,6 +175,8 @@ namespace V_Max_Tool
                 dirname = Path.GetDirectoryName(File_List[0]);
                 fname = Path.GetFileNameWithoutExtension(File_List[0]);
                 fext = Path.GetExtension(File_List[0]);
+                Import_File.Visible = true;
+                Update();
             }
             try
             {
@@ -266,6 +269,7 @@ namespace V_Max_Tool
                     error = true;
                 }
             }
+            Import_File.Visible = false;
 
             if (!error && !supported.Any(s => s == fext.ToLower()))
             {
@@ -501,7 +505,5 @@ namespace V_Max_Tool
         {
             V3_Auto_Adjust();
         }
-
-
     }
 }

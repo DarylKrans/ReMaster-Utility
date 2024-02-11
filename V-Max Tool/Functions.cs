@@ -3,14 +3,16 @@ using System.Collections;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        Thread c;  // Thread for drawing circle disk image
-        Thread f;  // Thread for drawing flat tracks image
+        Thread circ;  // Thread for drawing circle disk image
+        Thread flat;  // Thread for drawing flat tracks image
+        Thread check_alive;
         int pan_defw;
         int pan_defh;
         //int cx, cy, fx, fy = 0;
@@ -267,27 +269,30 @@ namespace V_Max_Tool
             {
                 opt = true;
                 this.Update();
-                c?.Abort();
-                f?.Abort();
-                f?.Join();
+                circ?.Abort();
+                flat?.Abort();
+                check_alive?.Abort();
+                flat?.Join();
                 circle?.Dispose();
                 flat_large?.Dispose();
                 try
                 {
-                    f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
-                    f.Start();
+                    flat = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
+                    flat.Start();
                 }
                 catch { }
                 {
                     try
                     {
-                        c = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
-                        c.Start();
+                        circ = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
+                        circ.Start();
                     }
                     catch { }
                 }
+                
                 GC.Collect();
                 opt = false;
+                Progress_Thread_Check();
             }
         }
 
@@ -301,7 +306,6 @@ namespace V_Max_Tool
             Out_view.Select();
             Circle_View.Select();
             Disk_Image.Image = new Bitmap(8192, 42 * 15);
-            //Disk_Image.Cursor = Cursors.Hand;
             panPic.AutoScroll = false;
             panPic.SetBounds(0, 0, Disk_Image.Width, Disk_Image.Height);
             Disk_Image.SizeMode = PictureBoxSizeMode.AutoSize;
@@ -346,10 +350,23 @@ namespace V_Max_Tool
             Width = PreferredSize.Width;
             Flat_Interp.Visible = Flat_View.Checked;
             label4.Visible = Img_Q.Visible = Circle_View.Checked;
-            Circle_Render.Visible = false;
-            
+            Circle_Render.Visible = Flat_Render.Visible = label3.Visible = false;
+            Img_opts.Enabled = Img_style.Enabled = Img_View.Enabled = false;
+            Import_File.Visible = false;
             Draw_Init_Img();
+            int cpu = 0;
+            Thread perf = new Thread(new ThreadStart(()=> Perf()));
+            perf.Start();
+            Thread.Sleep(100);
+            perf.Abort();
+            if (cpu < 300000000) Img_Q.SelectedIndex = 1;
+            if (cpu < 200000000) Img_Q.SelectedIndex = 0;
             opt = false;
+
+            void Perf()
+            {
+                while (true) cpu++;
+            }
         }
 
         void Set_ListBox_Items(bool r)

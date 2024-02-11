@@ -22,9 +22,15 @@ namespace V_Max_Tool
             "52-40-05-AC", "52-40-05-C8", "52-40-05-CC", "52-40-05-B8" };
         // vmax = the block header values of V-Max v2 sectors (non-CBM sectors)
         private readonly string[] secF = { "NDOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "tbd", "Unformatted" };
+        //double ht;
 
         void Parse_Nib_Data()
         {
+            //Import_progress.Value = 0;
+            //Import_progress.Maximum = 100;
+            //Import_progress.Maximum *= 100;
+            //Import_progress.Value = Circle_Render.Maximum / 100;
+            //Import_File.Visible = true;
             double ht;
             bool halftracks = false;
             string[] f;
@@ -40,6 +46,7 @@ namespace V_Max_Tool
                 ht = 0.5;
             }
             else ht = 0;
+           
             int t;
             var color = Color.Black;
             for (int i = 0; i < tracks; i++)

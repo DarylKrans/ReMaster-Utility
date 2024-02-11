@@ -40,7 +40,7 @@ namespace V_Max_Tool
             circle_full = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             circle_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             flat_large = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
-            flat_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true); 
+            flat_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             Disk_Image.Image = Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
         }
 
@@ -61,6 +61,17 @@ namespace V_Max_Tool
                 else ht = 0;
                 flat_large = new Bitmap(8192, (42 * 14) - 16);
                 Bitmap t = new Bitmap(flat_large.Width, flat_large.Height);
+                int at = 0;
+                int pt = 0;
+                for (int h = 0; h < tracks; h++) if (NDG.Track_Length[h] > min_t_len) at++;
+                if (at > 0) Invoke(new Action(() =>
+                {
+                    Flat_Render.Value = 0;
+                    Flat_Render.Maximum = 100;
+                    Flat_Render.Maximum *= 100;
+                    Flat_Render.Value = Circle_Render.Maximum / 100;
+                    Flat_Render.Visible = true;
+                }));
                 for (int i = 0; i < tracks; i++)
                 {
                     if (Out_view.Checked)
@@ -84,6 +95,8 @@ namespace V_Max_Tool
                         }
                     }
                     if (halftracks) ht += .5; else ht += 1;
+                    pt++;
+                    if (pt - 1 > 0) Invoke(new Action(() => Flat_Render.Maximum = (int)((double)Flat_Render.Value / (double)(pt + 1) * at)));
                 }
                 flat_large = (Bitmap)Resize_Image(t, t.Width, t.Height, false, false);
                 flat_small = (Bitmap)Resize_Image(t, pan_defw, pan_defh - 16, false, Flat_Interp.Checked);
@@ -109,6 +122,7 @@ namespace V_Max_Tool
                         Disk_Image.Top = 0;
                         Disk_Image.Left = 0;
                     }
+                    Flat_Render.Visible = false;
                 }));
                 def_text = $"{fname}{fnappend}{ext}";
                 t.Dispose();
@@ -127,7 +141,7 @@ namespace V_Max_Tool
         {
             int at = 0;
             int pt = 0;
-            for (int h = 0; h < tracks;  h++) if (NDG.Track_Length[h] > min_t_len) at++;
+            for (int h = 0; h < tracks; h++) if (NDG.Track_Length[h] > min_t_len) at++;
             int m = 0;
             Invoke(new Action(() =>
             {
@@ -329,7 +343,7 @@ namespace V_Max_Tool
             }
             if (!t && Circle_View.Checked)
             {
-                
+
                 Save_Circle_btn.Visible = t;
                 Disk_Image.Top = 0; Disk_Image.Left = 0;
             }
@@ -363,10 +377,7 @@ namespace V_Max_Tool
 
         private void Update_Progress_Bar(int t, int at)
         {
-            if (t - 1 > 0)
-            {
-                Circle_Render.Maximum = (int)((double)Circle_Render.Value / (double)(t + 1) * at);
-            }
+            if (t - 1 > 0) Circle_Render.Maximum = (int)((double)Circle_Render.Value / (double)(t + 1) * at);
         }
 
         private void Update_Image()
@@ -564,11 +575,11 @@ namespace V_Max_Tool
         {
             if (Img_zoom.Checked && Disk_Image.Enabled && (Dragging && sender is Control c))
             {
-                var j =- (c.Width - panPic.Width);
-                var g =- (c.Height - panPic.Height);
+                var j = -(c.Width - panPic.Width);
+                var g = -(c.Height - panPic.Height);
                 if ((c.Top <= 0 && (e.Y + c.Top - yPos) <= 0) && (c.Top >= g && (e.Y + c.Top - yPos) >= g)) c.Top = e.Y + c.Top - yPos;
                 if ((c.Left <= 0 && (e.X + c.Left - xPos) <= 0) && (c.Left >= j && (e.X + c.Left - xPos) >= j)) c.Left = e.X + c.Left - xPos;
-                var x =- c.Left; var y =- c.Top;
+                var x = -c.Left; var y = -c.Top;
                 coords.Text = $"x:({x}) y:({y})";
             }
         }
@@ -638,10 +649,10 @@ namespace V_Max_Tool
             if (!opt)
             {
                 interp = !interp;
-                f?.Abort();
-                f?.Join();
-                f = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
-                f.Start();
+                flat?.Abort();
+                flat?.Join();
+                flat = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
+                flat.Start();
                 vm_reverse = !vm_reverse;
                 Check_Before_Draw();
             }
@@ -689,6 +700,25 @@ namespace V_Max_Tool
             Flat_Interp.Visible = Flat_View.Checked;
             Flat_Interp.Enabled = !Img_zoom.Checked;
             label4.Visible = Img_Q.Visible = Circle_View.Checked;
+        }
+
+        private void Progress_Thread_Check()
+        {
+            if (flat.IsAlive || circ.IsAlive)
+            {
+                check_alive = new Thread(new ThreadStart(monitor_threads));
+                check_alive.Start();
+            }
+
+            void monitor_threads()
+            {
+                while (flat.IsAlive || circ.IsAlive) { Invoke(new Action(() => label3.Visible = true)); Thread.Sleep(10); }
+                Invoke(new Action(() => 
+                {
+                    label3.Visible = Circle_Render.Visible = Flat_Render.Visible = false;
+                    Img_opts.Enabled = Img_style.Enabled = Img_View.Enabled = true;
+                }));
+            }
         }
 
         private void Flat_Interp_CheckedChanged(object sender, EventArgs e)

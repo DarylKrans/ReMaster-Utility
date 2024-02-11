@@ -70,6 +70,9 @@
             this.V3_Custom = new System.Windows.Forms.CheckBox();
             this.Adv_ctrl = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label3 = new System.Windows.Forms.Label();
+            this.Flat_Render = new System.Windows.Forms.ProgressBar();
+            this.Circle_Render = new System.Windows.Forms.ProgressBar();
             this.Img_opts = new System.Windows.Forms.GroupBox();
             this.Flat_Interp = new System.Windows.Forms.CheckBox();
             this.Cap_margins = new System.Windows.Forms.CheckBox();
@@ -79,7 +82,6 @@
             this.Img_Q = new System.Windows.Forms.ComboBox();
             this.Img_zoom = new System.Windows.Forms.CheckBox();
             this.panPic = new System.Windows.Forms.Panel();
-            this.Circle_Render = new System.Windows.Forms.ProgressBar();
             this.coords = new System.Windows.Forms.Label();
             this.Disk_Image = new System.Windows.Forms.PictureBox();
             this.Img_style = new System.Windows.Forms.GroupBox();
@@ -92,6 +94,8 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
+            this.Import_File = new System.Windows.Forms.GroupBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
@@ -109,6 +113,7 @@
             this.Img_style.SuspendLayout();
             this.Img_View.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.Import_File.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -608,6 +613,9 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.DimGray;
+            this.tabPage2.Controls.Add(this.label3);
+            this.tabPage2.Controls.Add(this.Flat_Render);
+            this.tabPage2.Controls.Add(this.Circle_Render);
             this.tabPage2.Controls.Add(this.Img_opts);
             this.tabPage2.Controls.Add(this.panPic);
             this.tabPage2.Controls.Add(this.Img_style);
@@ -619,6 +627,30 @@
             this.tabPage2.Size = new System.Drawing.Size(1151, 1292);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Visualizer";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.ForeColor = System.Drawing.Color.Yellow;
+            this.label3.Location = new System.Drawing.Point(880, 1212);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(186, 25);
+            this.label3.TabIndex = 53;
+            this.label3.Text = "Rendering Images";
+            // 
+            // Flat_Render
+            // 
+            this.Flat_Render.Location = new System.Drawing.Point(811, 1267);
+            this.Flat_Render.Name = "Flat_Render";
+            this.Flat_Render.Size = new System.Drawing.Size(336, 15);
+            this.Flat_Render.TabIndex = 52;
+            // 
+            // Circle_Render
+            // 
+            this.Circle_Render.Location = new System.Drawing.Point(811, 1246);
+            this.Circle_Render.Name = "Circle_Render";
+            this.Circle_Render.Size = new System.Drawing.Size(336, 15);
+            this.Circle_Render.TabIndex = 51;
             // 
             // Img_opts
             // 
@@ -720,20 +752,12 @@
             // panPic
             // 
             this.panPic.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.panPic.Controls.Add(this.Circle_Render);
             this.panPic.Controls.Add(this.coords);
             this.panPic.Controls.Add(this.Disk_Image);
             this.panPic.Location = new System.Drawing.Point(2, 3);
             this.panPic.Name = "panPic";
             this.panPic.Size = new System.Drawing.Size(1143, 1143);
             this.panPic.TabIndex = 37;
-            // 
-            // Circle_Render
-            // 
-            this.Circle_Render.Location = new System.Drawing.Point(4, 1124);
-            this.Circle_Render.Name = "Circle_Render";
-            this.Circle_Render.Size = new System.Drawing.Size(1131, 16);
-            this.Circle_Render.TabIndex = 51;
             // 
             // coords
             // 
@@ -869,11 +893,33 @@
             this.Track_Info.Size = new System.Drawing.Size(1139, 1280);
             this.Track_Info.TabIndex = 11;
             // 
+            // Import_File
+            // 
+            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
+            this.Import_File.Controls.Add(this.label5);
+            this.Import_File.ForeColor = System.Drawing.Color.Black;
+            this.Import_File.Location = new System.Drawing.Point(126, 660);
+            this.Import_File.Name = "Import_File";
+            this.Import_File.Size = new System.Drawing.Size(660, 87);
+            this.Import_File.TabIndex = 38;
+            this.Import_File.TabStop = false;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(211, 27);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(234, 42);
+            this.label5.TabIndex = 38;
+            this.label5.Text = "Processing...";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(2122, 1362);
+            this.Controls.Add(this.Import_File);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.button1);
@@ -900,6 +946,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).EndInit();
             this.Adv_ctrl.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.Img_opts.ResumeLayout(false);
             this.Img_opts.PerformLayout();
             this.panPic.ResumeLayout(false);
@@ -910,6 +957,8 @@
             this.Img_View.ResumeLayout(false);
             this.Img_View.PerformLayout();
             this.tabPage1.ResumeLayout(false);
+            this.Import_File.ResumeLayout(false);
+            this.Import_File.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -980,6 +1029,10 @@
         private System.Windows.Forms.RadioButton Src_view;
         private System.Windows.Forms.CheckBox Flat_Interp;
         private System.Windows.Forms.ProgressBar Circle_Render;
+        private System.Windows.Forms.ProgressBar Flat_Render;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.GroupBox Import_File;
+        private System.Windows.Forms.Label label5;
     }
 }
 
