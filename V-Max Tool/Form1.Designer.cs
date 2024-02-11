@@ -70,6 +70,7 @@
             this.V3_Custom = new System.Windows.Forms.CheckBox();
             this.Adv_ctrl = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.M_render = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.Flat_Render = new System.Windows.Forms.ProgressBar();
             this.Circle_Render = new System.Windows.Forms.ProgressBar();
@@ -95,6 +96,7 @@
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.Import_File = new System.Windows.Forms.GroupBox();
+            this.pb1 = new System.Windows.Forms.ProgressBar();
             this.label5 = new System.Windows.Forms.Label();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
@@ -613,6 +615,7 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.DimGray;
+            this.tabPage2.Controls.Add(this.M_render);
             this.tabPage2.Controls.Add(this.label3);
             this.tabPage2.Controls.Add(this.Flat_Render);
             this.tabPage2.Controls.Add(this.Circle_Render);
@@ -627,6 +630,16 @@
             this.tabPage2.Size = new System.Drawing.Size(1151, 1292);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Visualizer";
+            // 
+            // M_render
+            // 
+            this.M_render.Location = new System.Drawing.Point(811, 1163);
+            this.M_render.Name = "M_render";
+            this.M_render.Size = new System.Drawing.Size(118, 38);
+            this.M_render.TabIndex = 54;
+            this.M_render.Text = "Render";
+            this.M_render.UseVisualStyleBackColor = true;
+            this.M_render.Click += new System.EventHandler(this.M_render_Click);
             // 
             // label3
             // 
@@ -896,6 +909,7 @@
             // Import_File
             // 
             this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
+            this.Import_File.Controls.Add(this.pb1);
             this.Import_File.Controls.Add(this.label5);
             this.Import_File.ForeColor = System.Drawing.Color.Black;
             this.Import_File.Location = new System.Drawing.Point(126, 660);
@@ -903,14 +917,22 @@
             this.Import_File.Size = new System.Drawing.Size(660, 87);
             this.Import_File.TabIndex = 38;
             this.Import_File.TabStop = false;
+            this.Import_File.Text = "Analyzing Tracks";
+            // 
+            // pb1
+            // 
+            this.pb1.Location = new System.Drawing.Point(6, 30);
+            this.pb1.Name = "pb1";
+            this.pb1.Size = new System.Drawing.Size(648, 29);
+            this.pb1.TabIndex = 39;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(211, 27);
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(6, 59);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(234, 42);
+            this.label5.Size = new System.Drawing.Size(137, 25);
             this.label5.TabIndex = 38;
             this.label5.Text = "Processing...";
             // 
@@ -1033,6 +1055,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox Import_File;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ProgressBar pb1;
+        private System.Windows.Forms.Button M_render;
     }
 }
 

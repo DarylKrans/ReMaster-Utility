@@ -3,7 +3,6 @@ using System.Collections;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -15,6 +14,7 @@ namespace V_Max_Tool
         Thread check_alive;
         int pan_defw;
         int pan_defh;
+        bool manualRender;
         //int cx, cy, fx, fy = 0;
 
         void Out_Density_Color(object sender, DrawItemEventArgs e)
@@ -289,7 +289,7 @@ namespace V_Max_Tool
                     }
                     catch { }
                 }
-                
+
                 GC.Collect();
                 opt = false;
                 Progress_Thread_Check();
@@ -355,24 +355,44 @@ namespace V_Max_Tool
             Import_File.Visible = false;
             Draw_Init_Img();
             int cpu = 0;
-            Thread perf = new Thread(new ThreadStart(()=> Perf()));
+            Thread perf = new Thread(new ThreadStart(() => Perf()));
             perf.Start();
             Thread.Sleep(100);
             perf.Abort();
             if (cpu < 300000000) Img_Q.SelectedIndex = 1;
             if (cpu < 200000000) Img_Q.SelectedIndex = 0;
+            if (cpu < 200000000) 
+            { 
+                M_render.Visible = true;
+                manualRender = true;
+            }
+            else
+            {
+                M_render.Visible = false;
+                manualRender = false;
+            }
+            M_render.Enabled = false;
+            this.Text = cpu.ToString("N0");
             opt = false;
 
-            void Perf()
-            {
-                while (true) cpu++;
-            }
+            void Perf() { while (true) cpu++; }
         }
 
         void Set_ListBox_Items(bool r)
         {
+            strack.BeginUpdate();
+            ss.BeginUpdate();
+            sf.BeginUpdate();
+            sl.BeginUpdate();
+            sd.BeginUpdate();
+            out_size.BeginUpdate();
+            out_dif.BeginUpdate();
+            out_rpm.BeginUpdate();
+            out_track.BeginUpdate();
+            Out_density.BeginUpdate();
             if (r)
             {
+                Vis();
                 out_size.Items.Clear();
                 out_dif.Items.Clear();
                 ss.Items.Clear();
@@ -383,19 +403,18 @@ namespace V_Max_Tool
                 out_rpm.Items.Clear();
                 out_track.Items.Clear();
                 Out_density.Items.Clear();
+
                 out_track.Height = Out_density.Height = out_size.Height = out_dif.Height = ss.Height = sf.Height = out_rpm.Height = out_size.PreferredHeight;
                 sl.Height = strack.Height = sl.Height = sd.Height = sl.PreferredHeight; // (items * 12);
-                strack.BeginUpdate();
-                ss.BeginUpdate();
-                sf.BeginUpdate();
-                sl.BeginUpdate();
-                sd.BeginUpdate();
-                out_size.BeginUpdate();
-                out_dif.BeginUpdate();
-                out_rpm.BeginUpdate();
-                out_track.BeginUpdate();
-                Out_density.BeginUpdate();
             }
+            Vis();
+            outbox.Visible = inbox.Visible = !r;
+            out_track.Height = Out_density.Height = out_size.Height = out_dif.Height = ss.Height = sf.Height = out_rpm.Height = out_size.PreferredHeight;
+            sl.Height = strack.Height = sl.Height = sd.Height = sl.PreferredHeight; // (items * 12);
+            outbox.Height = outbox.PreferredSize.Height;
+            inbox.Height = inbox.PreferredSize.Height;
+            Drag_pic.Visible = r;
+            T_Info.Visible = !r;
             out_size.EndUpdate();
             out_dif.EndUpdate();
             Out_density.EndUpdate();
@@ -406,13 +425,19 @@ namespace V_Max_Tool
             strack.EndUpdate();
             sl.EndUpdate();
             sd.EndUpdate();
-            outbox.Visible = inbox.Visible = !r;
-            out_track.Height = Out_density.Height = out_size.Height = out_dif.Height = ss.Height = sf.Height = out_rpm.Height = out_size.PreferredHeight;
-            sl.Height = strack.Height = sl.Height = sd.Height = sl.PreferredHeight; // (items * 12);
-            outbox.Height = outbox.PreferredSize.Height;
-            inbox.Height = inbox.PreferredSize.Height;
-            Drag_pic.Visible = r;
-            T_Info.Visible = !r;
+            void Vis()
+            {
+                out_size.Visible = !r;
+                out_dif.Visible = !r;
+                ss.Visible = !r;
+                sf.Visible = !r;
+                sl.Visible = !r;
+                sd.Visible = !r;
+                strack.Visible = !r;
+                out_rpm.Visible = !r;
+                out_track.Visible = !r;
+                Out_density.Visible = !r;
+            }
         }
     }
 }

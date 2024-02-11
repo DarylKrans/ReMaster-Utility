@@ -7,7 +7,6 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace V_Max_Tool
 {
@@ -69,7 +68,7 @@ namespace V_Max_Tool
                     Flat_Render.Value = 0;
                     Flat_Render.Maximum = 100;
                     Flat_Render.Maximum *= 100;
-                    Flat_Render.Value = Circle_Render.Maximum / 100;
+                    Flat_Render.Value = Flat_Render.Maximum / 100;
                     Flat_Render.Visible = true;
                 }));
                 for (int i = 0; i < tracks; i++)
@@ -713,7 +712,7 @@ namespace V_Max_Tool
             void monitor_threads()
             {
                 while (flat.IsAlive || circ.IsAlive) { Invoke(new Action(() => label3.Visible = true)); Thread.Sleep(10); }
-                Invoke(new Action(() => 
+                Invoke(new Action(() =>
                 {
                     label3.Visible = Circle_Render.Visible = Flat_Render.Visible = false;
                     Img_opts.Enabled = Img_style.Enabled = Img_View.Enabled = true;

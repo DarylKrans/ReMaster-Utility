@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -299,6 +298,7 @@ namespace V_Max_Tool
                     label2.Text = l2;
                     label1.Update();
                     label2.Update();
+                    M_render.Enabled = true;
                 }
             }
 
@@ -504,6 +504,11 @@ namespace V_Max_Tool
         private void V3_hlen_ValueChanged(object sender, EventArgs e)
         {
             V3_Auto_Adjust();
+        }
+
+        private void M_render_Click(object sender, EventArgs e)
+        {
+            Check_Before_Draw();
         }
     }
 }

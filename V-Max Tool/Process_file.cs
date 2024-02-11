@@ -8,6 +8,7 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        //Thread Analyze;
         private string fname = "";
         private string fext = "";
         private string dirname = "";
@@ -26,11 +27,11 @@ namespace V_Max_Tool
 
         void Parse_Nib_Data()
         {
-            //Import_progress.Value = 0;
-            //Import_progress.Maximum = 100;
-            //Import_progress.Maximum *= 100;
-            //Import_progress.Value = Circle_Render.Maximum / 100;
-            //Import_File.Visible = true;
+            pb1.Value = 0;
+            pb1.Maximum = 100;
+            pb1.Maximum *= 100;
+            pb1.Value = pb1.Maximum / 100;
+            Import_File.Visible = true;
             double ht;
             bool halftracks = false;
             string[] f;
@@ -46,7 +47,7 @@ namespace V_Max_Tool
                 ht = 0.5;
             }
             else ht = 0;
-           
+
             int t;
             var color = Color.Black;
             for (int i = 0; i < tracks; i++)
@@ -67,6 +68,10 @@ namespace V_Max_Tool
                         Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = $"Track Length {l}" });
                     }
                 }
+                pb1.Maximum = (int)((double)pb1.Value / (double)(i + 1) * tracks);
+                if (tracks <= 42) label5.Text = $"Processing Track {(int)ht + 1} : {secF[NDS.cbm[i]]}";
+                else if (i %2 == 0) label5.Text = $"Processing Track {(int)ht + 1} : {secF[NDS.cbm[i]]}";
+                Update();
                 if (NDS.cbm[i] == 1)
                 {
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
@@ -141,7 +146,6 @@ namespace V_Max_Tool
                     }
                     else { NDS.Track_Length[i] = 0; }
                 }
-
                 if (halftracks) ht += .5; else ht += 1;
                 color = Color.Black;
                 if (NDS.Track_Length[i] > 6000 && NDS.cbm[i] != 6 && NDS.cbm[i] != 0)
@@ -225,7 +229,7 @@ namespace V_Max_Tool
                 }
                 else { NDA.Track_Data[i] = NDS.Track_Data[i]; }
             }
-            if (!opt && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"]) Check_Before_Draw();
+            if (!opt && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"] && !manualRender) Check_Before_Draw();
 
             void Process_Ndos(int trk)
             {
@@ -397,15 +401,17 @@ namespace V_Max_Tool
                     Array.Copy(NDA.Track_Data[trk], 0, Original.SA, 0, NDA.Track_Data[trk].Length);
                 }
                 if (NDG.Track_Length[trk] > 7600) Shrink_Loader(trk);
-                if (V2_Auto_Adj.Checked || V3_Auto_Adj.Checked) Shrink_Loader(trk);
                 if (f_load.Checked) (NDG.Track_Data[trk]) = Fix_Loader(NDG.Track_Data[trk]);
-                NDA.Track_Data[trk] = new byte[8192];
-                if (Re_Align.Checked || V3_Auto_Adj.Checked || V2_Auto_Adj.Checked)
+                if ((NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
                 {
-                    if (!NDG.L_Rot) NDG.Track_Data[trk] = Rotate_Loader(NDG.Track_Data[trk]);
-                    NDG.L_Rot = true;
+                    if (V2_Auto_Adj.Checked || V3_Auto_Adj.Checked) Shrink_Loader(trk);
+                    if (Re_Align.Checked || V3_Auto_Adj.Checked || V2_Auto_Adj.Checked)
+                    {
+                        if (!NDG.L_Rot) NDG.Track_Data[trk] = Rotate_Loader(NDG.Track_Data[trk]);
+                        NDG.L_Rot = true;
+                    }
                 }
-
+                NDA.Track_Data[trk] = new byte[8192];
                 if (NDG.Track_Data[trk].Length < 8192)
                 {
                     try
