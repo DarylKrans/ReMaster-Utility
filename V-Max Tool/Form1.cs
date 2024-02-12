@@ -358,60 +358,13 @@ namespace V_Max_Tool
                 dirname = Path.GetDirectoryName(File_List[0]);
                 fname = Path.GetFileNameWithoutExtension(File_List[0]);
                 fext = Path.GetExtension(File_List[0]);
-                //Import_Progress_Bar.Value = 0;
-                //Import_File.Visible = true;
-                //Update();
             }
             Process_New_Image(File_List[0]);
         }
 
         private void Make(object sender, EventArgs e)
         {
-            switch (Out_Type.SelectedIndex)
-            {
-                case 0: Make_G64(); break;
-                case 1: Make_NIB(); break;
-                case 2: { Make_G64(); Make_NIB(); } break;
-            }
-            if (nib_error || g64_error)
-            {
-                string s = "";
-                using (Message_Center center = new Message_Center(this)) // center message box
-                {
-                    string t = "File Access Error!";
-                    if (nib_error) s = $"{nib_err_msg}";
-                    if (g64_error) s = $"{g64_err_msg}";
-                    if (nib_error && g64_error) s = $"{nib_err_msg}\n\n{g64_err_msg}";
-                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    error = true;
-                }
-                nib_error = g64_error = false;
-            }
-            else
-            {
-                using (Message_Center center = new Message_Center(this)) // center message box
-                {
-                    string m = "";
-                    string s = "";
-                    if (Out_Type.SelectedIndex > 1)
-                    {
-                        m = "s";
-                        s = $@"{dirname}\Output\{fname}{fnappend}{fext}" + "\n\n" + $@"{dirname}\Output\{fname}{fnappend}.g64";
-                    }
-                    if (Out_Type.SelectedIndex == 0) s = $@"{dirname}\Output\{fname}{fnappend}.g64";
-                    if (Out_Type.SelectedIndex == 1) s = $@"{dirname}\Output\{fname}{fnappend}{fext}";
-                    string t = $"File{m} saved successfully!";
-                    AutoClosingMessageBox.Show(s, t, 5000);
-                }
-            }
-        }
-
-        private void CheckBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            Adv_ctrl.Visible = Track_Info.Visible = !Adv_ctrl.Visible;
-            if (!T_Info.Checked) Adv_ctrl.SelectedTab = Adv_ctrl.TabPages["tabPage1"];
-            Track_Info.Width = Adv_ctrl.Width - 15;
-            Width = PreferredSize.Width;
+            Export_File();
         }
 
         private void F_load_CheckedChanged(object sender, EventArgs e)

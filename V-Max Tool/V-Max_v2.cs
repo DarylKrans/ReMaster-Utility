@@ -9,7 +9,7 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
         private readonly byte[] vm2_pos_sync = { 0x57, 0x5b, 0x5f, 0x7f, 0xff };
-        private readonly byte[] v2_sync_marker = { 0x57, 0xff };
+        private readonly byte[] v2_sync_marker = { 0x5b, 0xff }; // 0x57, 0xff (known working)
         private readonly string[][] vm2_ver = new string[2][];
         private readonly string[] v_check = { "A5-A3", "A9-A3", "AD-AB", "AD-A7" };
         private readonly byte[] VM2_Valid = { 0xa5, 0xa4, 0xa9, 0xaC, 0xad, 0xb4, 0xbc };

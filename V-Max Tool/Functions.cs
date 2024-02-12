@@ -15,6 +15,8 @@ namespace V_Max_Tool
         int pan_defw;
         int pan_defh;
         bool manualRender;
+        readonly MyGroupBox outbox = new MyGroupBox();
+        readonly MyGroupBox inbox = new MyGroupBox();
 
         void Reset_to_Defaults()
         {
@@ -196,6 +198,47 @@ namespace V_Max_Tool
             NDG.Track_Length[trk] = data.Length;
         }
 
+        void Export_File()
+        {
+            switch (Out_Type.SelectedIndex)
+            {
+                case 0: Make_G64(); break;
+                case 1: Make_NIB(); break;
+                case 2: { Make_G64(); Make_NIB(); } break;
+            }
+            if (nib_error || g64_error)
+            {
+                string s = "";
+                using (Message_Center center = new Message_Center(this)) // center message box
+                {
+                    string t = "File Access Error!";
+                    if (nib_error) s = $"{nib_err_msg}";
+                    if (g64_error) s = $"{g64_err_msg}";
+                    if (nib_error && g64_error) s = $"{nib_err_msg}\n\n{g64_err_msg}";
+                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    error = true;
+                }
+                nib_error = g64_error = false;
+            }
+            else
+            {
+                using (Message_Center center = new Message_Center(this)) // center message box
+                {
+                    string m = "";
+                    string s = "";
+                    if (Out_Type.SelectedIndex > 1)
+                    {
+                        m = "s";
+                        s = $@"{dirname}\Output\{fname}{fnappend}{fext}" + "\n\n" + $@"{dirname}\Output\{fname}{fnappend}.g64";
+                    }
+                    if (Out_Type.SelectedIndex == 0) s = $@"{dirname}\Output\{fname}{fnappend}.g64";
+                    if (Out_Type.SelectedIndex == 1) s = $@"{dirname}\Output\{fname}{fnappend}{fext}";
+                    string t = $"File{m} saved successfully!";
+                    AutoClosingMessageBox.Show(s, t, 5000);
+                }
+            }
+        }
+
         void Shrink_Short_Sector(int trk)
         {
             if (Original.OT[trk].Length == 0)
@@ -309,6 +352,9 @@ namespace V_Max_Tool
         void Init()
         {
             opt = true;
+            panel1.Controls.Add(outbox);
+            panel1.Controls.Add(inbox);
+            Set_Boxes();
             Height = PreferredSize.Height;
             pan_defw = panPic.Width;
             pan_defh = panPic.Height;
@@ -374,9 +420,66 @@ namespace V_Max_Tool
             else M_render.Visible = manualRender = false;
             M_render.Enabled = false;
             Adv_ctrl.Enabled = false;
+            //inbox.Controls.Add(MyGroupBox)
             opt = false;
 
             void Perf() { while (true) cpu++; }
+            
+            void Set_Boxes()
+            {
+                
+                outbox.BackColor = System.Drawing.Color.Lavender;
+                panel1.Controls.Remove(this.Out_density);
+                panel1.Controls.Remove(this.out_rpm);
+                panel1.Controls.Remove(this.out_track);
+                panel1.Controls.Remove(this.out_dif);
+                panel1.Controls.Remove(this.out_size);
+                outbox.Controls.Add(this.Out_density);
+                outbox.Controls.Add(this.out_rpm);
+                outbox.Controls.Add(this.out_track);
+                outbox.Controls.Add(this.out_dif);
+                outbox.Controls.Add(this.out_size);
+                var w = 5;
+                out_track.Location = new System.Drawing.Point(w, 15); w += out_track.Width - 1;
+                out_rpm.Location = new System.Drawing.Point(w, 15); w += out_rpm.Width - 1;
+                out_size.Location = new System.Drawing.Point(w, 15); w += out_size.Width - 1;
+                out_dif.Location = new System.Drawing.Point(w, 15); w += out_dif.Width - 1;
+                Out_density.Location = new System.Drawing.Point(w, 15);
+                outbox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+                outbox.ForeColor = System.Drawing.Color.Indigo;
+                //outbox.Location = new System.Drawing.Point(0, 52);
+                outbox.Name = "outbox";
+                outbox.Width = outbox.PreferredSize.Width;
+                outbox.Height = outbox.PreferredSize.Height;
+                //outbox.Location = new System.Drawing.Point(237, 16);
+                outbox.Location = new System.Drawing.Point(210, 16);
+                outbox.TabIndex = 52;
+                outbox.TabStop = false;
+                outbox.Text = "Track/ RPM /    Size    /  Diff  / Density";
+                inbox.BackColor = System.Drawing.Color.Lavender;
+                inbox.Controls.Add(this.sd);
+                inbox.Controls.Add(this.strack);
+                inbox.Controls.Add(this.sf);
+                inbox.Controls.Add(this.ss);
+                inbox.Controls.Add(this.sl);
+                w = 5;
+                strack.Location = new System.Drawing.Point(w, 15); w += strack.Width - 1;
+                sl.Location = new System.Drawing.Point(w, 15); w += sl.Width - 1;
+                sf.Location = new System.Drawing.Point(w, 15); w += sf.Width - 1;
+                ss.Location = new System.Drawing.Point(w, 15); w += ss.Width - 1;
+                sd.Location = new System.Drawing.Point(w, 15);
+                inbox.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+                inbox.ForeColor = System.Drawing.Color.Indigo;
+                inbox.Location = new System.Drawing.Point(8, 16);
+                inbox.Name = "inbox";
+                //inbox.Size = new System.Drawing.Size(396, 147);
+                inbox.Width = inbox.PreferredSize.Width;
+                inbox.Height = inbox.PreferredSize.Height;
+                inbox.TabIndex = 55;
+                inbox.TabStop = false;
+                inbox.Text = "Trk / Size / Format / Sectors / Dens";
+                
+            }
         }
 
         void Set_ListBox_Items(bool r, bool nofile)
@@ -415,7 +518,7 @@ namespace V_Max_Tool
             outbox.Height = outbox.PreferredSize.Height;
             inbox.Height = inbox.PreferredSize.Height;
             Drag_pic.Visible = (r && nofile);
-            T_Info.Visible = !r;
+            //T_Info.Visible = !r;
             out_size.EndUpdate();
             out_dif.EndUpdate();
             Out_density.EndUpdate();

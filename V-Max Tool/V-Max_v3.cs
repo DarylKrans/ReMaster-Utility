@@ -9,7 +9,7 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
         // V-Max v3 sync and header variables for "Rebuild tracks" options
-        private readonly byte[] v3_sync_marker = { 0x57, 0xff };  // change the sync marker placed before sector headers
+        private readonly byte[] v3_sync_marker = { 0x5b, 0xff };  // change the sync marker placed before sector headers (0x57, 0xff known working)
         private readonly int v3_min_header = 3;             // adjust the minimum length of the sector header (0x49) bytes
         private readonly int v3_max_header = 12;            // adjust the maximum length of the sector header (0x49) bytes
         private readonly byte[] vm3_pos_sync = { 0x57, 0x5b, 0x5f, 0xff };
@@ -27,6 +27,7 @@ namespace V_Max_Tool
             int fill = 0;
             byte[] sec_0_ID = { 0xf6, 0xf3 };
             byte[] header = { 0x49, 0x49, 0x49 };
+            byte[] sec_tail = { 0xf7, 0xf7, 0xf7, 0xf7 };
             byte[][] sec_data;
             byte[] sb = { 0x49 }; // <- start byte of V-Max v3/4 header
             byte[] eb = { 0xee };
