@@ -256,7 +256,7 @@ namespace V_Max_Tool
                             m[2] = (byte)hd.Count;
                             string sz = "";
                             if (a == 0) { sz = "*"; sec_zero = i; }
-                            all_headers.Add($"Sector ({a}){sz} pos ({i}) {Hex(start_byte, 0, 1)}-{Hex_Val(hd.ToArray())}-{Hex(end_byte, 0, 1)}");
+                            all_headers.Add($"Sector ({hd[0] ^ hd[1]}){sz} pos ({i}) {Hex(start_byte, 0, 1)}-{Hex_Val(hd.ToArray())}-{Hex(end_byte, 0, 1)}");
                             if (!start_found) { data_start = i; start_found = true; }
                             sectors++;
                             dif = pos;

@@ -96,7 +96,7 @@
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.Import_File = new System.Windows.Forms.GroupBox();
-            this.pb1 = new System.Windows.Forms.ProgressBar();
+            this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
             this.label5 = new System.Windows.Forms.Label();
             this.outbox.SuspendLayout();
             this.inbox.SuspendLayout();
@@ -639,7 +639,7 @@
             this.M_render.TabIndex = 54;
             this.M_render.Text = "Render";
             this.M_render.UseVisualStyleBackColor = true;
-            this.M_render.Click += new System.EventHandler(this.M_render_Click);
+            this.M_render.Click += new System.EventHandler(this.Manual_render_Click);
             // 
             // label3
             // 
@@ -686,7 +686,7 @@
             // 
             this.Flat_Interp.AutoSize = true;
             this.Flat_Interp.ForeColor = System.Drawing.Color.Silver;
-            this.Flat_Interp.Location = new System.Drawing.Point(6, 27);
+            this.Flat_Interp.Location = new System.Drawing.Point(239, 63);
             this.Flat_Interp.Name = "Flat_Interp";
             this.Flat_Interp.Size = new System.Drawing.Size(145, 29);
             this.Flat_Interp.TabIndex = 47;
@@ -777,7 +777,7 @@
             this.coords.AutoSize = true;
             this.coords.BackColor = System.Drawing.Color.Transparent;
             this.coords.ForeColor = System.Drawing.Color.Silver;
-            this.coords.Location = new System.Drawing.Point(891, 8);
+            this.coords.Location = new System.Drawing.Point(18, 1109);
             this.coords.Name = "coords";
             this.coords.Size = new System.Drawing.Size(70, 25);
             this.coords.TabIndex = 44;
@@ -909,7 +909,7 @@
             // Import_File
             // 
             this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
-            this.Import_File.Controls.Add(this.pb1);
+            this.Import_File.Controls.Add(this.Import_Progress_Bar);
             this.Import_File.Controls.Add(this.label5);
             this.Import_File.ForeColor = System.Drawing.Color.Black;
             this.Import_File.Location = new System.Drawing.Point(126, 660);
@@ -919,12 +919,12 @@
             this.Import_File.TabStop = false;
             this.Import_File.Text = "Analyzing Tracks";
             // 
-            // pb1
+            // Import_Progress_Bar
             // 
-            this.pb1.Location = new System.Drawing.Point(6, 30);
-            this.pb1.Name = "pb1";
-            this.pb1.Size = new System.Drawing.Size(648, 29);
-            this.pb1.TabIndex = 39;
+            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 30);
+            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
+            this.Import_Progress_Bar.Size = new System.Drawing.Size(648, 29);
+            this.Import_Progress_Bar.TabIndex = 39;
             // 
             // label5
             // 
@@ -1055,7 +1055,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox Import_File;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.ProgressBar pb1;
+        private System.Windows.Forms.ProgressBar Import_Progress_Bar;
         private System.Windows.Forms.Button M_render;
     }
 }

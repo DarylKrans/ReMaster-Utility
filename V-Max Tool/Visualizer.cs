@@ -629,7 +629,7 @@ namespace V_Max_Tool
         }
         private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!opt) Check_Before_Draw();
+            if (!opt) Check_Before_Draw(false);
         }
 
         private void Src_view_CheckedChanged(object sender, EventArgs e)
@@ -638,7 +638,8 @@ namespace V_Max_Tool
             {
                 if (rb.Checked)
                 {
-                    if (!opt) Check_Before_Draw();
+                    Update();
+                    if (!opt) Check_Before_Draw(false);
                 }
             }
         }
@@ -653,12 +654,14 @@ namespace V_Max_Tool
                 flat = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
                 flat.Start();
                 vm_reverse = !vm_reverse;
-                Check_Before_Draw();
+                Check_Before_Draw(true);
             }
         }
 
         private void Circle_View_CheckedChanged(object sender, EventArgs e)
         {
+            Flat_Interp.Visible = Flat_View.Checked;
+            Rev_View.Visible = Circle_View.Checked;
             if (!opt)
             {
                 if (Flat_View.Checked)
@@ -666,37 +669,36 @@ namespace V_Max_Tool
                     Img_Q.Enabled = false;
                     if (Img_zoom.Checked)
                     {
-                        Disk_Image.Cursor = Cursors.Hand;
                         Disk_Image.Image = flat_large;
-                        Disk_Image.Top = 0; Disk_Image.Left = 0;
-
+                        Cursor(false, 0, 0);
                     }
                     else
                     {
-                        Disk_Image.Cursor = Cursors.Arrow;
                         Disk_Image.Image = flat_small;
-                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+                        Cursor(true, 0, 0);
                     }
                 }
-                //else
                 if (Circle_View.Checked)
                 {
                     Img_Q.Enabled = true;
                     if (Img_zoom.Checked)
                     {
-                        Disk_Image.Cursor = Cursors.Hand;
                         Disk_Image.Image = circle_full;
-                        Disk_Image.Top = 0 - ((circle_full.Height / 2) - (panPic.Height / 2)); Disk_Image.Left = 0 - ((circle_full.Width) - panPic.Width);
+                        Cursor(false, 0 - ((circle_full.Height / 2) - (panPic.Height / 2)), 0 - ((circle_full.Width) - panPic.Width));
                     }
                     else
                     {
-                        Disk_Image.Cursor = Cursors.Arrow;
                         Disk_Image.Image = circle_small;
-                        Disk_Image.Top = 0; Disk_Image.Left = 0;
+                        Cursor(true, 0, 0);
                     }
                 }
+
+                void Cursor(bool cursor, int x, int y)
+                {
+                    if (cursor) Disk_Image.Cursor = Cursors.Arrow; else Disk_Image.Cursor = Cursors.Hand;
+                    Disk_Image.Top = y; Disk_Image.Left = x;
+                }
             }
-            Flat_Interp.Visible = Flat_View.Checked;
             Flat_Interp.Enabled = !Img_zoom.Checked;
             label4.Visible = Img_Q.Visible = Circle_View.Checked;
         }

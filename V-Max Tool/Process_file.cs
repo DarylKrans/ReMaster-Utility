@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using System.Threading;
 
 namespace V_Max_Tool
 {
@@ -23,20 +22,23 @@ namespace V_Max_Tool
             "52-40-05-AC", "52-40-05-C8", "52-40-05-CC", "52-40-05-B8" };
         // vmax = the block header values of V-Max v2 sectors (non-CBM sectors)
         private readonly string[] secF = { "NDOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "tbd", "Unformatted" };
-        //double ht;
+
 
         void Parse_Nib_Data()
         {
-            pb1.Value = 0;
-            pb1.Maximum = 100;
-            pb1.Maximum *= 100;
-            pb1.Value = pb1.Maximum / 100;
-            Import_File.Visible = true;
+            Invoke(new Action(() =>
+            {
+                Import_Progress_Bar.Value = 0;
+                Import_Progress_Bar.Maximum = 100;
+                Import_Progress_Bar.Maximum *= 100;
+                Import_Progress_Bar.Value = Import_Progress_Bar.Maximum / 100;
+                Import_File.Visible = true;
+                Track_Info.BeginUpdate();
+            }));
             double ht;
             bool halftracks = false;
             string[] f;
             string[] headers;
-            Track_Info.BeginUpdate();
             string tr = "Track";
             string le = "Length";
             string fm = "Format";
@@ -56,34 +58,46 @@ namespace V_Max_Tool
                 if (NDS.cbm[i] == 0)
                 {
                     int l = Get_Track_Len(NDS.Track_Data[i]);
-                    if (l > 6000 && l < 8192)
+                    Invoke(new Action(() =>
                     {
-                        if (tracks > 42) t = i / 2 + 1; else t = i + 1;
-                        NDS.Track_Length[i] = l << 3;
-                        NDS.D_Start[i] = 0;
-                        NDS.D_End[i] = l;
-                        NDS.sectors[i] = 0;
-                        NDS.Sector_Zero[i] = 0;
-                        Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
-                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = $"Track Length {l}" });
-                    }
+                        if (l > 6000 && l < 8192)
+                        {
+                            if (tracks > 42) t = i / 2 + 1; else t = i + 1;
+                            NDS.Track_Length[i] = l << 3;
+                            NDS.D_Start[i] = 0;
+                            NDS.D_End[i] = l;
+                            NDS.sectors[i] = 0;
+                            NDS.Sector_Zero[i] = 0;
+                            Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
+                            Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = $"Track Length {l}" });
+                        }
+                    }));
                 }
-                pb1.Maximum = (int)((double)pb1.Value / (double)(i + 1) * tracks);
-                if (tracks <= 42) label5.Text = $"Processing Track {(int)ht + 1} : {secF[NDS.cbm[i]]}";
-                else if (i %2 == 0) label5.Text = $"Processing Track {(int)ht + 1} : {secF[NDS.cbm[i]]}";
-                Update();
+                Invoke(new Action(() =>
+                {
+                    Import_Progress_Bar.Maximum = (int)((double)Import_Progress_Bar.Value / (double)(i + 1) * tracks);
+                    if (tracks <= 42) label5.Text = $"Processing Track {(int)ht + 1} : {secF[NDS.cbm[i]]}";
+                    else if (i % 2 == 0) label5.Text = $"Processing Track {(int)ht + 1} : {secF[NDS.cbm[i]]}";
+                    Update();
+                }));
                 if (NDS.cbm[i] == 1)
                 {
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
-                    Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
-                    (NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], NDS.Track_Length[i], f, NDS.sectors[i], NDS.cbm_sector[i], NDS.Total_Sync[i]) = Find_Sector_Zero(NDS.Track_Data[i]);
-                    for (int j = 0; j < f.Length; j++)
+                    Invoke(new Action(() =>
                     {
-                        if (j >= f.Length - 3) color = Color.Black; else color = Color.FromArgb(40, 40, 40);
-                        if (f[j].ToLower().Contains("(0)*")) color = Color.FromArgb(255, 255, 255);
-                        Track_Info.Items.Add(new LineColor { Color = color, Text = $"{f[j]}" });
-                    }
-                    Track_Info.Items.Add(" ");
+                        Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
+                    }));
+                    (NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], NDS.Track_Length[i], f, NDS.sectors[i], NDS.cbm_sector[i], NDS.Total_Sync[i]) = Find_Sector_Zero(NDS.Track_Data[i]);
+                    Invoke(new Action(() =>
+                    {
+                        for (int j = 0; j < f.Length; j++)
+                        {
+                            if (j >= f.Length - 3) color = Color.Black; else color = Color.FromArgb(40, 40, 40);
+                            if (f[j].ToLower().Contains("(0)*")) color = Color.FromArgb(255, 255, 255);
+                            Track_Info.Items.Add(new LineColor { Color = color, Text = $"{f[j]}" });
+                        }
+                        Track_Info.Items.Add(" ");
+                    }));
                     NDA.sectors[i] = NDS.sectors[i];
                 }
                 if (NDS.cbm[i] == 2)
@@ -95,26 +109,28 @@ namespace V_Max_Tool
                         if (j > 0) color = Color.FromArgb(110, 0, 110);
                         if (j >= headers.Length - 3 || headers[j].ToLower().Contains("gap")) color = Color.Black;
                         if (headers[j].ToLower().Contains("(0)*")) color = Color.FromArgb(230, 0, 230);
-                        Track_Info.Items.Add(new LineColor { Color = color, Text = headers[j] });
-                        Track_Info.Update();
+                        Invoke(new Action(() => Track_Info.Items.Add(new LineColor { Color = color, Text = headers[j] })));
                     }
                 }
                 if (NDS.cbm[i] == 3)
                 {
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
-                    Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
+                    Invoke(new Action(() => Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" })));
                     int len;
                     (f, NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], len, NDS.sectors[i], NDS.Header_Len[i]) = Get_vmv3_track_length(NDS.Track_Data[i], i);
                     NDS.Track_Length[i] = len * 8;
                     NDS.Sector_Zero[i] *= 8;
                     NDA.sectors[i] = NDS.sectors[i];
-                    for (int j = 0; j < f.Length; j++)
+                    Invoke(new Action(() =>
                     {
-                        if (j >= f.Length - 2) color = Color.Black; else color = Color.DarkGreen;
-                        if (f[j].ToLower().Contains("(0)*")) color = Color.LightGreen;
-                        Track_Info.Items.Add(new LineColor { Color = color, Text = $"{f[j]}" });
-                    }
-                    Track_Info.Items.Add(" ");
+                        for (int j = 0; j < f.Length; j++)
+                        {
+                            if (j >= f.Length - 2) color = Color.Black; else color = Color.DarkGreen;
+                            if (f[j].ToLower().Contains("(0)*")) color = Color.LightGreen;
+                            Track_Info.Items.Add(new LineColor { Color = color, Text = $"{f[j]}" });
+                        }
+                        Track_Info.Items.Add(" ");
+                    }));
                 }
                 if (NDS.cbm[i] == 4)
                 {
@@ -128,9 +144,12 @@ namespace V_Max_Tool
                     NDG.Track_Length[i] = NDG.Track_Data[i].Length;
                     NDA.Track_Length[i] = NDG.Track_Data[i].Length * 8;
                     NDA.Track_Data[i] = NDS.Track_Data[i];
-                    Track_Info.Items.Add(new LineColor { Color = Color.DarkBlue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]} {tr} {le} ({NDG.Track_Data[i].Length})" });
-                    if (NDG.Track_Data[i].Length > 7400) Track_Info.Items.Add(bl);
-                    Track_Info.Items.Add(" ");
+                    Invoke(new Action(() =>
+                    {
+                        Track_Info.Items.Add(new LineColor { Color = Color.DarkBlue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]} {tr} {le} ({NDG.Track_Data[i].Length})" });
+                        if (NDG.Track_Data[i].Length > 7400) Track_Info.Items.Add(bl);
+                        Track_Info.Items.Add(" ");
+                    }));
                 }
                 if (NDS.D_Start[i] == 0 && NDS.D_End[i] == 0 && NDS.Track_Length[i] == 0)
                 {
@@ -148,34 +167,41 @@ namespace V_Max_Tool
                 }
                 if (halftracks) ht += .5; else ht += 1;
                 color = Color.Black;
-                if (NDS.Track_Length[i] > 6000 && NDS.cbm[i] != 6 && NDS.cbm[i] != 0)
+                Invoke(new Action(() =>
                 {
-                    var d = Get_Density(NDS.Track_Length[i] >> 3);
-                    string e = "";
-                    if ((ht >= 31 && d != 3) || (ht >= 25 && ht < 31 && d != 2) || (ht >= 18 && ht < 25 && d != 1) || (ht >= 0 && ht < 18 && d != 0)) e = " [!]";
-                    if (NDS.cbm[i] == 1) color = Color.Black;
-                    if (NDS.cbm[i] == 2) color = Color.DarkMagenta;
-                    if (NDS.cbm[i] == 3) color = Color.Green;
-                    if (NDS.cbm[i] == 4) color = Color.Blue;
-                    sf.Items.Add(new LineColor { Color = color, Text = $"{secF[NDS.cbm[i]]}" });
-                    sl.Items.Add((NDS.Track_Length[i] >> 3).ToString("N0"));
-                    ss.Items.Add(NDS.sectors[i]);
-                    strack.Items.Add(ht);
-                    sd.Items.Add($"{3 - d}{e}");
+                    if (NDS.Track_Length[i] > 6000 && NDS.cbm[i] != 6 && NDS.cbm[i] != 0)
+                    {
+                        var d = Get_Density(NDS.Track_Length[i] >> 3);
+                        string e = "";
+                        if ((ht >= 31 && d != 3) || (ht >= 25 && ht < 31 && d != 2) || (ht >= 18 && ht < 25 && d != 1) || (ht >= 0 && ht < 18 && d != 0)) e = " [!]";
+                        if (NDS.cbm[i] == 1) color = Color.Black;
+                        if (NDS.cbm[i] == 2) color = Color.DarkMagenta;
+                        if (NDS.cbm[i] == 3) color = Color.Green;
+                        if (NDS.cbm[i] == 4) color = Color.Blue;
+                        sf.Items.Add(new LineColor { Color = color, Text = $"{secF[NDS.cbm[i]]}" });
+                        sl.Items.Add((NDS.Track_Length[i] >> 3).ToString("N0"));
+                        ss.Items.Add(NDS.sectors[i]);
+                        strack.Items.Add(ht);
+                        sd.Items.Add($"{3 - d}{e}");
+                    }
+                }));
+            }
+            Invoke(new Action(() =>
+            {
+                Track_Info.EndUpdate();
+                if (NDS.cbm.Any(s => s == 4)) f_load.Visible = true; else f_load.Visible = false;
+                if (NDS.cbm.Any(s => s == 2))
+                {
+                    if (!Tabs.TabPages.Contains(Adv_V2_Opts)) Tabs.Controls.Add(Adv_V2_Opts);
                 }
-            }
-            Track_Info.EndUpdate();
-            if (NDS.cbm.Any(s => s == 4)) f_load.Visible = true; else f_load.Visible = false;
-            if (NDS.cbm.Any(s => s == 2))
-            {
-                if (!Tabs.TabPages.Contains(Adv_V2_Opts)) Tabs.Controls.Add(Adv_V2_Opts);
-            }
-            else Tabs.Controls.Remove(Adv_V2_Opts);
-            if (NDS.cbm.Any(s => s == 3))
-            {
-                if (!Tabs.TabPages.Contains(Adv_V3_Opts)) Tabs.Controls.Add(Adv_V3_Opts);
-            }
-            else Tabs.Controls.Remove(Adv_V3_Opts);
+                else Tabs.Controls.Remove(Adv_V2_Opts);
+                if (NDS.cbm.Any(s => s == 3))
+                {
+                    if (!Tabs.TabPages.Contains(Adv_V3_Opts)) Tabs.Controls.Add(Adv_V3_Opts);
+                }
+                else Tabs.Controls.Remove(Adv_V3_Opts);
+                //f
+            }));
         }
 
         void Process_Nib_Data(bool cbm, bool short_sector, bool rb_vm)
@@ -229,7 +255,7 @@ namespace V_Max_Tool
                 }
                 else { NDA.Track_Data[i] = NDS.Track_Data[i]; }
             }
-            if (!opt && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"] && !manualRender) Check_Before_Draw();
+            if (!opt && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"] && !manualRender) Check_Before_Draw(false);
 
             void Process_Ndos(int trk)
             {

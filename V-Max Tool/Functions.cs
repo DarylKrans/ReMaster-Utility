@@ -15,7 +15,20 @@ namespace V_Max_Tool
         int pan_defw;
         int pan_defh;
         bool manualRender;
-        //int cx, cy, fx, fy = 0;
+
+        void Reset_to_Defaults()
+        {
+            opt = true;
+            Img_Q.SelectedIndex = 2;
+            Set_ListBox_Items(true, true);
+            Import_File.Visible = f_load.Visible = false;
+            Tabs.Controls.Remove(Adv_V3_Opts);
+            Tabs.Controls.Remove(Adv_V2_Opts);
+            Img_style.Enabled = Img_View.Enabled = Img_opts.Enabled = Save_Circle_btn.Visible = M_render.Visible = Adv_ctrl.Enabled = false;
+            Adv_ctrl.SelectedIndex = 0;
+            Draw_Init_Img();
+            opt = false;
+        }
 
         void Out_Density_Color(object sender, DrawItemEventArgs e)
         {
@@ -263,7 +276,7 @@ namespace V_Max_Tool
             return temp;
         }
 
-        void Check_Before_Draw()
+        void Check_Before_Draw(bool dontDrawFlat)
         {
             if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
             {
@@ -273,22 +286,19 @@ namespace V_Max_Tool
                 flat?.Abort();
                 check_alive?.Abort();
                 flat?.Join();
-                circle?.Dispose();
-                flat_large?.Dispose();
                 try
                 {
-                    flat = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
-                    flat.Start();
+                    if (!dontDrawFlat)
+                    {
+                        flat_large?.Dispose();
+                        flat = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false)));
+                        flat.Start();
+                    }
+                    circle?.Dispose();
+                    circ = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
+                    circ.Start();
                 }
                 catch { }
-                {
-                    try
-                    {
-                        circ = new Thread(new ThreadStart(() => Draw_Circular_Tracks()));
-                        circ.Start();
-                    }
-                    catch { }
-                }
 
                 GC.Collect();
                 opt = false;
@@ -322,7 +332,6 @@ namespace V_Max_Tool
             Out_density.ItemHeight = out_rpm.ItemHeight = sf.ItemHeight = 13;
             Track_Info.ItemHeight = 15;
             Track_Info.HorizontalScrollbar = true;
-            //Adj_cbm.Visible = Adv_ctrl.Visible = false;
             Adj_cbm.Visible = false;
             Tabs.Visible = true;
             string[] o = { "G64", "NIB", "NIB & G64" };
@@ -361,24 +370,16 @@ namespace V_Max_Tool
             perf.Abort();
             if (cpu < 300000000) Img_Q.SelectedIndex = 1;
             if (cpu < 200000000) Img_Q.SelectedIndex = 0;
-            if (cpu < 200000000) 
-            { 
-                M_render.Visible = true;
-                manualRender = true;
-            }
-            else
-            {
-                M_render.Visible = false;
-                manualRender = false;
-            }
+            if (cpu < 150000000) M_render.Visible = manualRender = true;
+            else M_render.Visible = manualRender = false;
             M_render.Enabled = false;
-            this.Text = cpu.ToString("N0");
+            Adv_ctrl.Enabled = false;
             opt = false;
 
             void Perf() { while (true) cpu++; }
         }
 
-        void Set_ListBox_Items(bool r)
+        void Set_ListBox_Items(bool r, bool nofile)
         {
             strack.BeginUpdate();
             ss.BeginUpdate();
@@ -392,7 +393,7 @@ namespace V_Max_Tool
             Out_density.BeginUpdate();
             if (r)
             {
-                Vis();
+                Make_Visible();
                 out_size.Items.Clear();
                 out_dif.Items.Clear();
                 ss.Items.Clear();
@@ -407,13 +408,13 @@ namespace V_Max_Tool
                 out_track.Height = Out_density.Height = out_size.Height = out_dif.Height = ss.Height = sf.Height = out_rpm.Height = out_size.PreferredHeight;
                 sl.Height = strack.Height = sl.Height = sd.Height = sl.PreferredHeight; // (items * 12);
             }
-            Vis();
+            Make_Visible();
             outbox.Visible = inbox.Visible = !r;
             out_track.Height = Out_density.Height = out_size.Height = out_dif.Height = ss.Height = sf.Height = out_rpm.Height = out_size.PreferredHeight;
             sl.Height = strack.Height = sl.Height = sd.Height = sl.PreferredHeight; // (items * 12);
             outbox.Height = outbox.PreferredSize.Height;
             inbox.Height = inbox.PreferredSize.Height;
-            Drag_pic.Visible = r;
+            Drag_pic.Visible = (r && nofile);
             T_Info.Visible = !r;
             out_size.EndUpdate();
             out_dif.EndUpdate();
@@ -425,7 +426,8 @@ namespace V_Max_Tool
             strack.EndUpdate();
             sl.EndUpdate();
             sd.EndUpdate();
-            void Vis()
+
+            void Make_Visible()
             {
                 out_size.Visible = !r;
                 out_dif.Visible = !r;

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -27,7 +28,7 @@ namespace V_Max_Tool
             InitializeComponent();
             this.Text += ver;
             Init();
-            Set_ListBox_Items(true);
+            Set_ListBox_Items(true, true);
         }
 
         void V2_Adv_Opts()
@@ -155,38 +156,20 @@ namespace V_Max_Tool
             Process_Nib_Data(true, p, v); // false flag instructs the routine NOT to process CBM tracks again -- p (true/false) process v-max v3 short tracks
         }
 
-        private void Drag_Enter(object sender, DragEventArgs e)
+        void Process_New_Image(string file)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
-        }
-
-        private void Drag_Drop(object sender, DragEventArgs e)
-        {
-            Source.Visible = Output.Visible = false;
-            f_load.Text = "Fix Loader Sync";
-            button1.Enabled = false;
-            sl.DataSource = null;
-            out_size.DataSource = null;
-            string[] File_List = (string[])e.Data.GetData(DataFormats.FileDrop);
             string l = "Not ok";
-            if (File.Exists(File_List[0]))
-            {
-                dirname = Path.GetDirectoryName(File_List[0]);
-                fname = Path.GetFileNameWithoutExtension(File_List[0]);
-                fext = Path.GetExtension(File_List[0]);
-                Import_File.Visible = true;
-                Update();
-            }
             try
             {
-                FileStream Stream = new FileStream(File_List[0], FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                FileStream Stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 if (fext.ToLower() == supported[0])
                 {
-                    long length = new System.IO.FileInfo(File_List[0]).Length;
+                    Show_Progress_Bar();
+                    long length = new System.IO.FileInfo(file).Length;
                     tracks = (int)(length - 256) / 8192;
                     if ((tracks * 8192) + 256 == length) l = "File Size OK!";
                     Track_Info.Items.Clear();
-                    Set_ListBox_Items(true);
+                    Set_ListBox_Items(true, false);
                     nib_header = new byte[256];
                     Stream.Seek(0, SeekOrigin.Begin);
                     Stream.Read(nib_header, 0, 256);
@@ -207,8 +190,9 @@ namespace V_Max_Tool
                 }
                 if (fext.ToLower() == supported[1])
                 {
+                    Show_Progress_Bar();
                     Track_Info.Items.Clear();
-                    Set_ListBox_Items(true);
+                    Set_ListBox_Items(true, false);
                     Stream.Seek(0, SeekOrigin.Begin);
                     Stream.Read(g64_header, 0, 684);
                     var head = Encoding.ASCII.GetString(g64_header, 0, 8);
@@ -268,17 +252,16 @@ namespace V_Max_Tool
                     error = true;
                 }
             }
-            Import_File.Visible = false;
 
             if (!error && !supported.Any(s => s == fext.ToLower()))
             {
-                Set_ListBox_Items(true);
+                Reset_to_Defaults();
                 label1.Text = "File not Valid!";
                 label2.Text = string.Empty;
             }
             if (error)
             {
-                Set_ListBox_Items(true);
+                Reset_to_Defaults();
                 label1.Text = "";
                 label2.Text = string.Empty;
                 error = false;
@@ -286,20 +269,35 @@ namespace V_Max_Tool
 
             void Process(bool get, string l2)
             {
-                Parse_Nib_Data();
-                if (!error)
+                Task.Run(delegate
                 {
-                    Process_Nib_Data(true, false, true);
-                    Set_ListBox_Items(false);
-                    Out_Type.Enabled = get;
-                    button1.Enabled = true;
-                    Source.Visible = Output.Visible = true;
-                    label1.Text = $"{fname}{fext}";
-                    label2.Text = l2;
-                    label1.Update();
-                    label2.Update();
-                    M_render.Enabled = true;
-                }
+                    Parse_Nib_Data();
+                    if (!error)
+                    {
+                        Invoke(new Action(() =>
+                        {
+                            Process_Nib_Data(true, false, true);
+                            Set_ListBox_Items(false, false);
+                            Out_Type.Enabled = get;
+                            button1.Enabled = true;
+                            Source.Visible = Output.Visible = true;
+                            label1.Text = $"{fname}{fext}";
+                            label2.Text = l2;
+                            label1.Update();
+                            label2.Update();
+                            M_render.Enabled = true;
+                            Import_File.Visible = false;
+                            Adv_ctrl.Enabled = true;
+                        }));
+                    }
+                });
+            }
+
+            void Show_Progress_Bar()
+            {
+                Import_Progress_Bar.Value = 0;
+                Import_File.Visible = true;
+                Update();
             }
 
             void Set_Arrays(int len)
@@ -339,6 +337,32 @@ namespace V_Max_Tool
                 Original.SG = new byte[0];
                 Original.OT = new byte[len][];
             }
+        }
+
+
+        private void Drag_Enter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
+        }
+
+        private void Drag_Drop(object sender, DragEventArgs e)
+        {
+            Source.Visible = Output.Visible = false;
+            f_load.Text = "Fix Loader Sync";
+            button1.Enabled = false;
+            sl.DataSource = null;
+            out_size.DataSource = null;
+            string[] File_List = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (File.Exists(File_List[0]))
+            {
+                dirname = Path.GetDirectoryName(File_List[0]);
+                fname = Path.GetFileNameWithoutExtension(File_List[0]);
+                fext = Path.GetExtension(File_List[0]);
+                //Import_Progress_Bar.Value = 0;
+                //Import_File.Visible = true;
+                //Update();
+            }
+            Process_New_Image(File_List[0]);
         }
 
         private void Make(object sender, EventArgs e)
@@ -506,9 +530,9 @@ namespace V_Max_Tool
             V3_Auto_Adjust();
         }
 
-        private void M_render_Click(object sender, EventArgs e)
+        private void Manual_render_Click(object sender, EventArgs e)
         {
-            Check_Before_Draw();
+            Check_Before_Draw(false);
         }
     }
 }
