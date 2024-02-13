@@ -15,8 +15,9 @@ namespace V_Max_Tool
         int pan_defw;
         int pan_defh;
         bool manualRender;
-        readonly MyGroupBox outbox = new MyGroupBox();
-        readonly MyGroupBox inbox = new MyGroupBox();
+        readonly Gbox outbox = new Gbox();
+        readonly Gbox inbox = new Gbox();
+        string def_bg_text;
 
         void Reset_to_Defaults()
         {
@@ -28,7 +29,7 @@ namespace V_Max_Tool
             Tabs.Controls.Remove(Adv_V2_Opts);
             Img_style.Enabled = Img_View.Enabled = Img_opts.Enabled = Save_Circle_btn.Visible = M_render.Visible = Adv_ctrl.Enabled = false;
             Adv_ctrl.SelectedIndex = 0;
-            Draw_Init_Img();
+            Draw_Init_Img(def_bg_text);
             opt = false;
         }
 
@@ -120,6 +121,11 @@ namespace V_Max_Tool
             return BitConverter.ToString(data, a, b);
         }
 
+        static String ToBinary(Byte[] data)
+        {
+            return string.Join("", data.Select(byt => Convert.ToString(byt, 2).PadLeft(8, '0')));
+        }
+
         void Pad_Bits(int position, int count, BitArray bitarray)
         {
             bool flip = !bitarray[position];
@@ -200,12 +206,15 @@ namespace V_Max_Tool
 
         void Export_File()
         {
-            switch (Out_Type.SelectedIndex)
-            {
-                case 0: Make_G64(); break;
-                case 1: Make_NIB(); break;
-                case 2: { Make_G64(); Make_NIB(); } break;
-            }
+            Save_Dialog.FileName = $"{fname}{fnappend}";
+            if (Out_Type.Enabled) Save_Dialog.Filter = "G64|*.g64|NIB|*.nib";
+            else Save_Dialog.Filter = "G64|*.g64";
+            Save_Dialog.Title = "Save File";
+            Save_Dialog.ShowDialog();
+            string fs = Save_Dialog.FileName;
+            int ft = Save_Dialog.FilterIndex;
+            if (ft == 1) Make_G64(fs);
+            if (ft == 2) Make_NIB(fs);
             if (nib_error || g64_error)
             {
                 string s = "";
@@ -352,9 +361,9 @@ namespace V_Max_Tool
         void Init()
         {
             opt = true;
+            Set_Boxes();
             panel1.Controls.Add(outbox);
             panel1.Controls.Add(inbox);
-            Set_Boxes();
             Height = PreferredSize.Height;
             pan_defw = panPic.Width;
             pan_defh = panPic.Height;
@@ -385,6 +394,7 @@ namespace V_Max_Tool
             Out_Type.DataSource = o;
             label1.Text = label2.Text = coords.Text = "";
             Source.Visible = Output.Visible = label4.Visible = Img_Q.Visible = Save_Circle_btn.Visible = false;
+            label8.Visible = Out_Type.Visible = false;
             button1.Enabled = false;
             AllowDrop = true;
             DragEnter += new DragEventHandler(Drag_Enter);
@@ -408,7 +418,8 @@ namespace V_Max_Tool
             Circle_Render.Visible = Flat_Render.Visible = label3.Visible = false;
             Img_opts.Enabled = Img_style.Enabled = Img_View.Enabled = false;
             Import_File.Visible = false;
-            Draw_Init_Img();
+            for (int i = 0; i < 8000; i++) { def_bg_text += "10"; }
+            Draw_Init_Img(def_bg_text);
             int cpu = 0;
             Thread perf = new Thread(new ThreadStart(() => Perf()));
             perf.Start();
@@ -420,15 +431,14 @@ namespace V_Max_Tool
             else M_render.Visible = manualRender = false;
             M_render.Enabled = false;
             Adv_ctrl.Enabled = false;
-            //inbox.Controls.Add(MyGroupBox)
+            //inbox.Controls.Add(Gbox)
             opt = false;
 
             void Perf() { while (true) cpu++; }
-            
+
             void Set_Boxes()
             {
-                
-                outbox.BackColor = System.Drawing.Color.Lavender;
+                outbox.BackColor = Color.Lavender;
                 panel1.Controls.Remove(this.Out_density);
                 panel1.Controls.Remove(this.out_rpm);
                 panel1.Controls.Remove(this.out_track);
@@ -440,45 +450,46 @@ namespace V_Max_Tool
                 outbox.Controls.Add(this.out_dif);
                 outbox.Controls.Add(this.out_size);
                 var w = 5;
-                out_track.Location = new System.Drawing.Point(w, 15); w += out_track.Width - 1;
-                out_rpm.Location = new System.Drawing.Point(w, 15); w += out_rpm.Width - 1;
-                out_size.Location = new System.Drawing.Point(w, 15); w += out_size.Width - 1;
-                out_dif.Location = new System.Drawing.Point(w, 15); w += out_dif.Width - 1;
-                Out_density.Location = new System.Drawing.Point(w, 15);
-                outbox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-                outbox.ForeColor = System.Drawing.Color.Indigo;
-                //outbox.Location = new System.Drawing.Point(0, 52);
+                out_track.Location = new Point(w, 15); w += out_track.Width - 1;
+                out_rpm.Location = new Point(w, 15); w += out_rpm.Width - 1;
+                out_size.Location = new Point(w, 15); w += out_size.Width - 1;
+                out_dif.Location = new Point(w, 15); w += out_dif.Width - 1;
+                Out_density.Location = new Point(w, 15);
+                outbox.FlatStyle = FlatStyle.Flat;
+                outbox.ForeColor = Color.Indigo;
                 outbox.Name = "outbox";
                 outbox.Width = outbox.PreferredSize.Width;
                 outbox.Height = outbox.PreferredSize.Height;
-                //outbox.Location = new System.Drawing.Point(237, 16);
-                outbox.Location = new System.Drawing.Point(210, 16);
+                outbox.Location = new Point(210, 24);
                 outbox.TabIndex = 52;
                 outbox.TabStop = false;
                 outbox.Text = "Track/ RPM /    Size    /  Diff  / Density";
-                inbox.BackColor = System.Drawing.Color.Lavender;
+                inbox.BackColor = Color.Lavender;
+                panel1.Controls.Remove(this.sd);
+                panel1.Controls.Remove(this.strack);
+                panel1.Controls.Remove(this.sf);
+                panel1.Controls.Remove(this.ss);
+                panel1.Controls.Remove(this.sl);
                 inbox.Controls.Add(this.sd);
                 inbox.Controls.Add(this.strack);
                 inbox.Controls.Add(this.sf);
                 inbox.Controls.Add(this.ss);
                 inbox.Controls.Add(this.sl);
                 w = 5;
-                strack.Location = new System.Drawing.Point(w, 15); w += strack.Width - 1;
-                sl.Location = new System.Drawing.Point(w, 15); w += sl.Width - 1;
-                sf.Location = new System.Drawing.Point(w, 15); w += sf.Width - 1;
-                ss.Location = new System.Drawing.Point(w, 15); w += ss.Width - 1;
-                sd.Location = new System.Drawing.Point(w, 15);
-                inbox.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-                inbox.ForeColor = System.Drawing.Color.Indigo;
-                inbox.Location = new System.Drawing.Point(8, 16);
+                strack.Location = new Point(w, 15); w += strack.Width - 1;
+                sl.Location = new Point(w, 15); w += sl.Width - 1;
+                sf.Location = new Point(w, 15); w += sf.Width - 1;
+                ss.Location = new Point(w, 15); w += ss.Width - 1;
+                sd.Location = new Point(w, 15);
+                inbox.FlatStyle = FlatStyle.Popup;
+                inbox.ForeColor = Color.Indigo;
+                inbox.Location = new Point(8, 24);
                 inbox.Name = "inbox";
-                //inbox.Size = new System.Drawing.Size(396, 147);
                 inbox.Width = inbox.PreferredSize.Width;
                 inbox.Height = inbox.PreferredSize.Height;
                 inbox.TabIndex = 55;
                 inbox.TabStop = false;
                 inbox.Text = "Trk / Size / Format / Sectors / Dens";
-                
             }
         }
 
@@ -518,7 +529,7 @@ namespace V_Max_Tool
             outbox.Height = outbox.PreferredSize.Height;
             inbox.Height = inbox.PreferredSize.Height;
             Drag_pic.Visible = (r && nofile);
-            //T_Info.Visible = !r;
+            //T_Info.Visible = !def_bg_text;
             out_size.EndUpdate();
             out_dif.EndUpdate();
             Out_density.EndUpdate();

@@ -8,16 +8,16 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        void Make_NIB()
+        void Make_NIB(string fname)
         {
-            if (!Directory.Exists($@"{dirname}\Output")) Directory.CreateDirectory($@"{dirname}\Output");
+            //if (!Directory.Exists($@"{dirname}\Output")) Directory.CreateDirectory($@"{dirname}\Output");
             var buffer = new MemoryStream();
             var write = new BinaryWriter(buffer);
             write.Write(nib_header);
             for (int i = 0; i < tracks; i++) write.Write(NDA.Track_Data[i]);
             try
             {
-                File.WriteAllBytes($@"{dirname}\Output\{fname}{fnappend}{fext}", buffer.ToArray());
+                File.WriteAllBytes(fname, buffer.ToArray());
             }
             catch (Exception ex)
             {
@@ -28,9 +28,9 @@ namespace V_Max_Tool
             write.Close();
         }
 
-        void Make_G64()
+        void Make_G64(string fname)
         {
-            if (!Directory.Exists($@"{dirname}\Output")) Directory.CreateDirectory($@"{dirname}\Output");
+            //if (!Directory.Exists($@"{dirname}\Output")) Directory.CreateDirectory($@"{dirname}\Output");
             var buffer = new MemoryStream();
             var write = new BinaryWriter(buffer);
             byte[] head = Encoding.ASCII.GetBytes("GCR-1541");
@@ -64,7 +64,7 @@ namespace V_Max_Tool
             }
             try
             {
-                File.WriteAllBytes($@"{dirname}\Output\{fname}{fnappend}.g64", buffer.ToArray());
+                File.WriteAllBytes(fname, buffer.ToArray());
             }
             catch (Exception ex)
             {

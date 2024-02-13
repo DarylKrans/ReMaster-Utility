@@ -339,7 +339,6 @@ namespace V_Max_Tool
             }
         }
 
-
         private void Drag_Enter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;

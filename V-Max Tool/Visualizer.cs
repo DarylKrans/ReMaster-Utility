@@ -31,11 +31,16 @@ namespace V_Max_Tool
         private readonly Color Write_face = Color.FromArgb(41, 40, 36);
         private readonly Color Inner_face = Color.FromArgb(50, 49, 44);
 
-        private void Draw_Init_Img()
+        private void Draw_Init_Img(string bg_text)
         {
             var m = (Img_Q.SelectedIndex + 1) * 1000;
             circle = new FastBitmap(m, m);
-            Draw_Disk(circle, 3, m, "V-MAX! Sync Tool");
+            Draw_Disk(circle, 3, m, "V-MAX! Sync Tool", bg_text);
+            //Brush tx = new SolidBrush(Color.FromArgb(0, 255, 255, 255));
+            //Font font = new Font("Ariel", 11);
+            //
+            //Add_Text(circle.Bitmap, "Fuck!", Color.FromArgb(0, 100, 100, 100), tx, font, 0, 0, m, m);
+
             circle_full = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             circle_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             flat_large = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
@@ -169,7 +174,9 @@ namespace V_Max_Tool
             BitArray t_bit = new BitArray(0);
             circle = new FastBitmap(width, height);
             if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
-            Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}");
+            byte[] bgtxt = new byte[2000];
+            Array.Copy(NDS.Track_Data[20], 0, bgtxt, 0, 2000);
+            Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}" , ToBinary(bgtxt));
 
             while (r > 80 && track < tracks)
             {
@@ -390,14 +397,18 @@ namespace V_Max_Tool
             //catch { }
         }
 
-        private void Draw_Disk(FastBitmap d, int m, int size, string file_name)
+        private void Draw_Disk(FastBitmap d, int m, int size, string file_name, string bg_text)
         {
+            Brush tx = new SolidBrush(Color.FromArgb(20, 155, 155, 155));
+            Font font = new Font("Ariel", 7.4f * m);
             Brush b = new SolidBrush(Write_face);
             Pen p = new Pen(Color.Black, 2);
             using (var g = Graphics.FromImage(d.Bitmap))
             {
                 RectangleF rect = new RectangleF(0, 0, size, size);
                 g.FillRectangle(new SolidBrush(Color.FromArgb(0, 0, 0)), rect);
+                // Draw binary background text
+                Add_Text(d.Bitmap, bg_text, Color.FromArgb(0, 0, 0, 0), tx, font, 0, 0, size, size);
                 g.SmoothingMode = SmoothingMode.AntiAlias;
                 // Draw Disk writeable surface area
                 g.FillEllipse(b, 3.5f, 3.5f, d.Width - 10, d.Height - 10);
@@ -438,8 +449,8 @@ namespace V_Max_Tool
             Graphics g = Graphics.FromImage(temp);
             Brush b = new SolidBrush(c); // (Color.FromArgb(40, 40, 40));
             RectangleF rectf = new RectangleF(x1, y1, x2, y2);
-            RectangleF rectg = new RectangleF(x1, y1, x2, y2);
-            g.FillRectangle(b, rectg);
+            //RectangleF rectg = new RectangleF(x1, y1, x2, y2);
+            g.FillRectangle(b, rectf);
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.InterpolationMode = InterpolationMode.Bicubic;
             g.PixelOffsetMode = PixelOffsetMode.Default;

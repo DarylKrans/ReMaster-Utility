@@ -13,7 +13,7 @@ namespace V_Max_Tool
         private string dirname = "";
         private string fnappend = "";
         private int tracks = 0;
-        private byte[] nib_header = new byte[256];
+        private byte[] nib_header = new byte[0];
         private readonly byte[] g64_header = new byte[684];
         private readonly string[] supported = { ".nib", ".g64" }; // Supported file extensions list
         // vsec = the CBM sector header values & against byte[] sz

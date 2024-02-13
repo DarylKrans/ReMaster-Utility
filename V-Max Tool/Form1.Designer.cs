@@ -82,22 +82,22 @@
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.sd = new System.Windows.Forms.ListBox();
-            this.strack = new System.Windows.Forms.ListBox();
-            this.sf = new System.Windows.Forms.ListBox();
-            this.ss = new System.Windows.Forms.ListBox();
-            this.sl = new System.Windows.Forms.ListBox();
-            this.Output = new System.Windows.Forms.Label();
-            this.Source = new System.Windows.Forms.Label();
-            this.Out_density = new System.Windows.Forms.ListBox();
-            this.out_rpm = new System.Windows.Forms.ListBox();
-            this.out_track = new System.Windows.Forms.ListBox();
-            this.out_dif = new System.Windows.Forms.ListBox();
-            this.out_size = new System.Windows.Forms.ListBox();
-            this.Drag_pic = new System.Windows.Forms.PictureBox();
             this.Import_File = new System.Windows.Forms.GroupBox();
             this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
             this.label5 = new System.Windows.Forms.Label();
+            this.Drag_pic = new System.Windows.Forms.PictureBox();
+            this.Out_density = new System.Windows.Forms.ListBox();
+            this.out_rpm = new System.Windows.Forms.ListBox();
+            this.sd = new System.Windows.Forms.ListBox();
+            this.out_track = new System.Windows.Forms.ListBox();
+            this.out_dif = new System.Windows.Forms.ListBox();
+            this.Output = new System.Windows.Forms.Label();
+            this.out_size = new System.Windows.Forms.ListBox();
+            this.Source = new System.Windows.Forms.Label();
+            this.strack = new System.Windows.Forms.ListBox();
+            this.sl = new System.Windows.Forms.ListBox();
+            this.ss = new System.Windows.Forms.ListBox();
+            this.sf = new System.Windows.Forms.ListBox();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -113,14 +113,14 @@
             this.Img_View.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
             this.Import_File.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 77);
+            this.label1.Location = new System.Drawing.Point(18, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(70, 25);
             this.label1.TabIndex = 1;
@@ -129,7 +129,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 101);
+            this.label2.Location = new System.Drawing.Point(18, 33);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(70, 25);
             this.label2.TabIndex = 2;
@@ -138,7 +138,7 @@
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(11, 45);
+            this.f_load.Location = new System.Drawing.Point(23, 114);
             this.f_load.Name = "f_load";
             this.f_load.Size = new System.Drawing.Size(206, 29);
             this.f_load.TabIndex = 12;
@@ -151,7 +151,7 @@
             this.Out_Type.AllowDrop = true;
             this.Out_Type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Out_Type.FormattingEnabled = true;
-            this.Out_Type.Location = new System.Drawing.Point(183, 6);
+            this.Out_Type.Location = new System.Drawing.Point(497, 111);
             this.Out_Type.Name = "Out_Type";
             this.Out_Type.Size = new System.Drawing.Size(174, 33);
             this.Out_Type.TabIndex = 14;
@@ -159,7 +159,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 9);
+            this.label8.Location = new System.Drawing.Point(320, 114);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(171, 25);
             this.label8.TabIndex = 15;
@@ -243,6 +243,7 @@
             // 
             this.Main.BackColor = System.Drawing.Color.Gainsboro;
             this.Main.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Main.Controls.Add(this.Import_File);
             this.Main.Controls.Add(this.button1);
             this.Main.Controls.Add(this.Adj_cbm);
             this.Main.Controls.Add(this.label1);
@@ -259,17 +260,18 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(781, 6);
+            this.button1.Location = new System.Drawing.Point(782, 107);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(104, 43);
             this.button1.TabIndex = 17;
             this.button1.Text = "Export";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.Make);
             // 
             // Adj_cbm
             // 
             this.Adj_cbm.AutoSize = true;
-            this.Adj_cbm.Location = new System.Drawing.Point(542, 45);
+            this.Adj_cbm.Location = new System.Drawing.Point(325, 82);
             this.Adj_cbm.Name = "Adj_cbm";
             this.Adj_cbm.Size = new System.Drawing.Size(343, 29);
             this.Adj_cbm.TabIndex = 16;
@@ -298,7 +300,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(781, 6);
+            this.button2.Location = new System.Drawing.Point(782, 107);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(104, 43);
             this.button2.TabIndex = 39;
@@ -354,7 +356,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(781, 6);
+            this.button3.Location = new System.Drawing.Point(782, 107);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(104, 43);
             this.button3.TabIndex = 40;
@@ -713,7 +715,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 37);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1145, 1298);
+            this.tabPage1.Size = new System.Drawing.Size(1145, 1307);
             this.tabPage1.TabIndex = 2;
             this.tabPage1.Text = "Track Info";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -736,7 +738,6 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.Import_File);
             this.panel1.Controls.Add(this.Drag_pic);
             this.panel1.Controls.Add(this.Out_density);
             this.panel1.Controls.Add(this.out_rpm);
@@ -755,84 +756,47 @@
             this.panel1.Size = new System.Drawing.Size(900, 1123);
             this.panel1.TabIndex = 37;
             // 
-            // sd
+            // Import_File
             // 
-            this.sd.BackColor = System.Drawing.Color.Lavender;
-            this.sd.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sd.FormattingEnabled = true;
-            this.sd.ItemHeight = 25;
-            this.sd.Location = new System.Drawing.Point(320, 28);
-            this.sd.Name = "sd";
-            this.sd.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.sd.Size = new System.Drawing.Size(48, 1002);
-            this.sd.TabIndex = 32;
+            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
+            this.Import_File.Controls.Add(this.Import_Progress_Bar);
+            this.Import_File.Controls.Add(this.label5);
+            this.Import_File.ForeColor = System.Drawing.Color.Black;
+            this.Import_File.Location = new System.Drawing.Point(16, 9);
+            this.Import_File.Name = "Import_File";
+            this.Import_File.Size = new System.Drawing.Size(870, 92);
+            this.Import_File.TabIndex = 59;
+            this.Import_File.TabStop = false;
+            this.Import_File.Text = "Analyzing Tracks";
             // 
-            // strack
+            // Import_Progress_Bar
             // 
-            this.strack.BackColor = System.Drawing.Color.Lavender;
-            this.strack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.strack.ForeColor = System.Drawing.Color.Blue;
-            this.strack.FormattingEnabled = true;
-            this.strack.ItemHeight = 25;
-            this.strack.Location = new System.Drawing.Point(11, 28);
-            this.strack.Name = "strack";
-            this.strack.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.strack.Size = new System.Drawing.Size(53, 1002);
-            this.strack.TabIndex = 31;
+            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 30);
+            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
+            this.Import_Progress_Bar.Size = new System.Drawing.Size(858, 26);
+            this.Import_Progress_Bar.TabIndex = 39;
             // 
-            // sf
+            // label5
             // 
-            this.sf.BackColor = System.Drawing.Color.Lavender;
-            this.sf.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sf.FormattingEnabled = true;
-            this.sf.ItemHeight = 25;
-            this.sf.Location = new System.Drawing.Point(150, 28);
-            this.sf.Name = "sf";
-            this.sf.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.sf.Size = new System.Drawing.Size(115, 1002);
-            this.sf.TabIndex = 26;
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(6, 59);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(137, 25);
+            this.label5.TabIndex = 38;
+            this.label5.Text = "Processing...";
             // 
-            // ss
+            // Drag_pic
             // 
-            this.ss.BackColor = System.Drawing.Color.Lavender;
-            this.ss.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ss.FormattingEnabled = true;
-            this.ss.ItemHeight = 25;
-            this.ss.Location = new System.Drawing.Point(263, 28);
-            this.ss.Name = "ss";
-            this.ss.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.ss.Size = new System.Drawing.Size(62, 1002);
-            this.ss.TabIndex = 25;
-            // 
-            // sl
-            // 
-            this.sl.BackColor = System.Drawing.Color.Lavender;
-            this.sl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sl.FormattingEnabled = true;
-            this.sl.ItemHeight = 25;
-            this.sl.Location = new System.Drawing.Point(64, 28);
-            this.sl.Name = "sl";
-            this.sl.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.sl.Size = new System.Drawing.Size(90, 1002);
-            this.sl.TabIndex = 29;
-            // 
-            // Output
-            // 
-            this.Output.AutoSize = true;
-            this.Output.Location = new System.Drawing.Point(446, 0);
-            this.Output.Name = "Output";
-            this.Output.Size = new System.Drawing.Size(76, 25);
-            this.Output.TabIndex = 54;
-            this.Output.Text = "Output";
-            // 
-            // Source
-            // 
-            this.Source.AutoSize = true;
-            this.Source.Location = new System.Drawing.Point(13, 0);
-            this.Source.Name = "Source";
-            this.Source.Size = new System.Drawing.Size(121, 25);
-            this.Source.TabIndex = 53;
-            this.Source.Text = "Source File";
+            this.Drag_pic.BackColor = System.Drawing.Color.Transparent;
+            this.Drag_pic.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("Drag_pic.BackgroundImage")));
+            this.Drag_pic.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.Drag_pic.InitialImage = null;
+            this.Drag_pic.Location = new System.Drawing.Point(18, 28);
+            this.Drag_pic.Name = "Drag_pic";
+            this.Drag_pic.Size = new System.Drawing.Size(863, 1009);
+            this.Drag_pic.TabIndex = 58;
+            this.Drag_pic.TabStop = false;
             // 
             // Out_density
             // 
@@ -858,6 +822,18 @@
             this.out_rpm.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.out_rpm.Size = new System.Drawing.Size(86, 1002);
             this.out_rpm.TabIndex = 30;
+            // 
+            // sd
+            // 
+            this.sd.BackColor = System.Drawing.Color.Lavender;
+            this.sd.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sd.FormattingEnabled = true;
+            this.sd.ItemHeight = 25;
+            this.sd.Location = new System.Drawing.Point(320, 28);
+            this.sd.Name = "sd";
+            this.sd.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.sd.Size = new System.Drawing.Size(48, 1002);
+            this.sd.TabIndex = 32;
             // 
             // out_track
             // 
@@ -885,6 +861,15 @@
             this.out_dif.Size = new System.Drawing.Size(73, 1002);
             this.out_dif.TabIndex = 24;
             // 
+            // Output
+            // 
+            this.Output.AutoSize = true;
+            this.Output.Location = new System.Drawing.Point(446, 0);
+            this.Output.Name = "Output";
+            this.Output.Size = new System.Drawing.Size(76, 25);
+            this.Output.TabIndex = 54;
+            this.Output.Text = "Output";
+            // 
             // out_size
             // 
             this.out_size.BackColor = System.Drawing.Color.Lavender;
@@ -897,47 +882,63 @@
             this.out_size.Size = new System.Drawing.Size(100, 1002);
             this.out_size.TabIndex = 23;
             // 
-            // Drag_pic
+            // Source
             // 
-            this.Drag_pic.BackColor = System.Drawing.Color.Transparent;
-            this.Drag_pic.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("Drag_pic.BackgroundImage")));
-            this.Drag_pic.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.Drag_pic.InitialImage = null;
-            this.Drag_pic.Location = new System.Drawing.Point(18, 28);
-            this.Drag_pic.Name = "Drag_pic";
-            this.Drag_pic.Size = new System.Drawing.Size(863, 1009);
-            this.Drag_pic.TabIndex = 58;
-            this.Drag_pic.TabStop = false;
+            this.Source.AutoSize = true;
+            this.Source.Location = new System.Drawing.Point(13, 0);
+            this.Source.Name = "Source";
+            this.Source.Size = new System.Drawing.Size(121, 25);
+            this.Source.TabIndex = 53;
+            this.Source.Text = "Source File";
             // 
-            // Import_File
+            // strack
             // 
-            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
-            this.Import_File.Controls.Add(this.Import_Progress_Bar);
-            this.Import_File.Controls.Add(this.label5);
-            this.Import_File.ForeColor = System.Drawing.Color.Black;
-            this.Import_File.Location = new System.Drawing.Point(70, 513);
-            this.Import_File.Name = "Import_File";
-            this.Import_File.Size = new System.Drawing.Size(758, 92);
-            this.Import_File.TabIndex = 59;
-            this.Import_File.TabStop = false;
-            this.Import_File.Text = "Analyzing Tracks";
+            this.strack.BackColor = System.Drawing.Color.Lavender;
+            this.strack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.strack.ForeColor = System.Drawing.Color.Blue;
+            this.strack.FormattingEnabled = true;
+            this.strack.ItemHeight = 25;
+            this.strack.Location = new System.Drawing.Point(11, 28);
+            this.strack.Name = "strack";
+            this.strack.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.strack.Size = new System.Drawing.Size(53, 1002);
+            this.strack.TabIndex = 31;
             // 
-            // Import_Progress_Bar
+            // sl
             // 
-            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 30);
-            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
-            this.Import_Progress_Bar.Size = new System.Drawing.Size(746, 26);
-            this.Import_Progress_Bar.TabIndex = 39;
+            this.sl.BackColor = System.Drawing.Color.Lavender;
+            this.sl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sl.FormattingEnabled = true;
+            this.sl.ItemHeight = 25;
+            this.sl.Location = new System.Drawing.Point(64, 28);
+            this.sl.Name = "sl";
+            this.sl.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.sl.Size = new System.Drawing.Size(90, 1002);
+            this.sl.TabIndex = 29;
             // 
-            // label5
+            // ss
             // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(6, 59);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(137, 25);
-            this.label5.TabIndex = 38;
-            this.label5.Text = "Processing...";
+            this.ss.BackColor = System.Drawing.Color.Lavender;
+            this.ss.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ss.FormattingEnabled = true;
+            this.ss.ItemHeight = 25;
+            this.ss.Location = new System.Drawing.Point(263, 28);
+            this.ss.Name = "ss";
+            this.ss.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.ss.Size = new System.Drawing.Size(62, 1002);
+            this.ss.TabIndex = 25;
+            // 
+            // sf
+            // 
+            this.sf.BackColor = System.Drawing.Color.Lavender;
+            this.sf.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sf.FormattingEnabled = true;
+            this.sf.ItemHeight = 25;
+            this.sf.Location = new System.Drawing.Point(150, 28);
+            this.sf.Name = "sf";
+            this.sf.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.sf.Size = new System.Drawing.Size(115, 1002);
+            this.sf.TabIndex = 26;
             // 
             // Form1
             // 
@@ -974,9 +975,9 @@
             this.tabPage1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).EndInit();
             this.Import_File.ResumeLayout(false);
             this.Import_File.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).EndInit();
             this.ResumeLayout(false);
 
         }
