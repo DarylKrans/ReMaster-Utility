@@ -32,23 +32,28 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.f_load = new System.Windows.Forms.CheckBox();
-            this.Out_Type = new System.Windows.Forms.ComboBox();
-            this.label8 = new System.Windows.Forms.Label();
             this.V2_Custom = new System.Windows.Forms.CheckBox();
             this.V2_hlen = new System.Windows.Forms.NumericUpDown();
             this.V2_Add_Sync = new System.Windows.Forms.CheckBox();
             this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.Main = new System.Windows.Forms.TabPage();
-            this.button1 = new System.Windows.Forms.Button();
+            this.Import_File = new System.Windows.Forms.GroupBox();
+            this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
+            this.label5 = new System.Windows.Forms.Label();
+            this.VBS_info = new System.Windows.Forms.Panel();
+            this.Cust_Density = new System.Windows.Forms.Label();
+            this.VM_Ver = new System.Windows.Forms.Label();
+            this.Reg_info = new System.Windows.Forms.Panel();
+            this.VMax_Tracks = new System.Windows.Forms.Label();
+            this.CBM_Tracks = new System.Windows.Forms.Label();
+            this.Loader_Track = new System.Windows.Forms.Label();
             this.Adj_cbm = new System.Windows.Forms.CheckBox();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
-            this.button2 = new System.Windows.Forms.Button();
             this.Re_Align = new System.Windows.Forms.CheckBox();
             this.v2exp = new System.Windows.Forms.Label();
             this.v2adv = new System.Windows.Forms.Label();
             this.Adv_V3_Opts = new System.Windows.Forms.TabPage();
-            this.button3 = new System.Windows.Forms.Button();
             this.v3exp = new System.Windows.Forms.Label();
             this.v3adv = new System.Windows.Forms.Label();
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
@@ -82,9 +87,7 @@
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.Import_File = new System.Windows.Forms.GroupBox();
-            this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
-            this.label5 = new System.Windows.Forms.Label();
+            this.Save_Disk = new System.Windows.Forms.Button();
             this.Drag_pic = new System.Windows.Forms.PictureBox();
             this.Out_density = new System.Windows.Forms.ListBox();
             this.out_rpm = new System.Windows.Forms.ListBox();
@@ -101,6 +104,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
+            this.Import_File.SuspendLayout();
+            this.VBS_info.SuspendLayout();
+            this.Reg_info.SuspendLayout();
             this.Adv_V2_Opts.SuspendLayout();
             this.Adv_V3_Opts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).BeginInit();
@@ -113,7 +119,6 @@
             this.Img_View.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.panel1.SuspendLayout();
-            this.Import_File.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
             this.SuspendLayout();
             // 
@@ -122,48 +127,29 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(18, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(70, 25);
+            this.label1.Size = new System.Drawing.Size(106, 25);
             this.label1.TabIndex = 1;
-            this.label1.Text = "label1";
+            this.label1.Text = "File name";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(18, 33);
+            this.label2.Location = new System.Drawing.Point(17, 33);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(70, 25);
+            this.label2.Size = new System.Drawing.Size(192, 25);
             this.label2.TabIndex = 2;
-            this.label2.Text = "label2";
+            this.label2.Text = "Track / header info";
             // 
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(23, 114);
+            this.f_load.Location = new System.Drawing.Point(8, 49);
             this.f_load.Name = "f_load";
             this.f_load.Size = new System.Drawing.Size(206, 29);
             this.f_load.TabIndex = 12;
             this.f_load.Text = "Fix Loader Track";
             this.f_load.UseVisualStyleBackColor = true;
             this.f_load.CheckedChanged += new System.EventHandler(this.F_load_CheckedChanged);
-            // 
-            // Out_Type
-            // 
-            this.Out_Type.AllowDrop = true;
-            this.Out_Type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.Out_Type.FormattingEnabled = true;
-            this.Out_Type.Location = new System.Drawing.Point(497, 111);
-            this.Out_Type.Name = "Out_Type";
-            this.Out_Type.Size = new System.Drawing.Size(174, 33);
-            this.Out_Type.TabIndex = 14;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(320, 114);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(171, 25);
-            this.label8.TabIndex = 15;
-            this.label8.Text = "Output File Type";
             // 
             // V2_Custom
             // 
@@ -244,34 +230,119 @@
             this.Main.BackColor = System.Drawing.Color.Gainsboro;
             this.Main.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Main.Controls.Add(this.Import_File);
-            this.Main.Controls.Add(this.button1);
+            this.Main.Controls.Add(this.VBS_info);
+            this.Main.Controls.Add(this.Reg_info);
             this.Main.Controls.Add(this.Adj_cbm);
             this.Main.Controls.Add(this.label1);
             this.Main.Controls.Add(this.label2);
-            this.Main.Controls.Add(this.f_load);
-            this.Main.Controls.Add(this.Out_Type);
-            this.Main.Controls.Add(this.label8);
             this.Main.Location = new System.Drawing.Point(4, 37);
             this.Main.Name = "Main";
             this.Main.Padding = new System.Windows.Forms.Padding(3);
             this.Main.Size = new System.Drawing.Size(908, 169);
             this.Main.TabIndex = 0;
-            this.Main.Text = "Main";
+            this.Main.Text = "File Info";
             // 
-            // button1
+            // Import_File
             // 
-            this.button1.Location = new System.Drawing.Point(782, 107);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(104, 43);
-            this.button1.TabIndex = 17;
-            this.button1.Text = "Export";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.Make);
+            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
+            this.Import_File.Controls.Add(this.Import_Progress_Bar);
+            this.Import_File.Controls.Add(this.label5);
+            this.Import_File.ForeColor = System.Drawing.Color.Black;
+            this.Import_File.Location = new System.Drawing.Point(16, 61);
+            this.Import_File.Name = "Import_File";
+            this.Import_File.Size = new System.Drawing.Size(870, 92);
+            this.Import_File.TabIndex = 59;
+            this.Import_File.TabStop = false;
+            this.Import_File.Text = "Analyzing Tracks";
+            // 
+            // Import_Progress_Bar
+            // 
+            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 30);
+            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
+            this.Import_Progress_Bar.Size = new System.Drawing.Size(858, 26);
+            this.Import_Progress_Bar.TabIndex = 39;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(6, 59);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(137, 25);
+            this.label5.TabIndex = 38;
+            this.label5.Text = "Processing...";
+            // 
+            // VBS_info
+            // 
+            this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.VBS_info.Controls.Add(this.Cust_Density);
+            this.VBS_info.Controls.Add(this.VM_Ver);
+            this.VBS_info.Controls.Add(this.f_load);
+            this.VBS_info.Location = new System.Drawing.Point(441, 61);
+            this.VBS_info.Name = "VBS_info";
+            this.VBS_info.Size = new System.Drawing.Size(382, 83);
+            this.VBS_info.TabIndex = 22;
+            // 
+            // Cust_Density
+            // 
+            this.Cust_Density.AutoSize = true;
+            this.Cust_Density.Location = new System.Drawing.Point(3, 25);
+            this.Cust_Density.Name = "Cust_Density";
+            this.Cust_Density.Size = new System.Drawing.Size(173, 25);
+            this.Cust_Density.TabIndex = 1;
+            this.Cust_Density.Text = "Track Densities :";
+            // 
+            // VM_Ver
+            // 
+            this.VM_Ver.AutoSize = true;
+            this.VM_Ver.Location = new System.Drawing.Point(3, 0);
+            this.VM_Ver.Name = "VM_Ver";
+            this.VM_Ver.Size = new System.Drawing.Size(165, 25);
+            this.VM_Ver.TabIndex = 0;
+            this.VM_Ver.Text = "V-Max Version :";
+            // 
+            // Reg_info
+            // 
+            this.Reg_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Reg_info.Controls.Add(this.VMax_Tracks);
+            this.Reg_info.Controls.Add(this.CBM_Tracks);
+            this.Reg_info.Controls.Add(this.Loader_Track);
+            this.Reg_info.Location = new System.Drawing.Point(78, 61);
+            this.Reg_info.Name = "Reg_info";
+            this.Reg_info.Size = new System.Drawing.Size(357, 83);
+            this.Reg_info.TabIndex = 21;
+            // 
+            // VMax_Tracks
+            // 
+            this.VMax_Tracks.AutoSize = true;
+            this.VMax_Tracks.Location = new System.Drawing.Point(7, 53);
+            this.VMax_Tracks.Name = "VMax_Tracks";
+            this.VMax_Tracks.Size = new System.Drawing.Size(138, 25);
+            this.VMax_Tracks.TabIndex = 23;
+            this.VMax_Tracks.Text = "VMax Tracks";
+            // 
+            // CBM_Tracks
+            // 
+            this.CBM_Tracks.AutoSize = true;
+            this.CBM_Tracks.Location = new System.Drawing.Point(6, 0);
+            this.CBM_Tracks.Name = "CBM_Tracks";
+            this.CBM_Tracks.Size = new System.Drawing.Size(130, 25);
+            this.CBM_Tracks.TabIndex = 22;
+            this.CBM_Tracks.Text = "CBM Tracks";
+            // 
+            // Loader_Track
+            // 
+            this.Loader_Track.AutoSize = true;
+            this.Loader_Track.Location = new System.Drawing.Point(6, 25);
+            this.Loader_Track.Name = "Loader_Track";
+            this.Loader_Track.Size = new System.Drawing.Size(139, 25);
+            this.Loader_Track.TabIndex = 21;
+            this.Loader_Track.Text = "Loader Track";
             // 
             // Adj_cbm
             // 
             this.Adj_cbm.AutoSize = true;
-            this.Adj_cbm.Location = new System.Drawing.Point(325, 82);
+            this.Adj_cbm.Location = new System.Drawing.Point(268, 2);
             this.Adj_cbm.Name = "Adj_cbm";
             this.Adj_cbm.Size = new System.Drawing.Size(343, 29);
             this.Adj_cbm.TabIndex = 16;
@@ -283,7 +354,6 @@
             // 
             this.Adv_V2_Opts.BackColor = System.Drawing.Color.Gainsboro;
             this.Adv_V2_Opts.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.Adv_V2_Opts.Controls.Add(this.button2);
             this.Adv_V2_Opts.Controls.Add(this.Re_Align);
             this.Adv_V2_Opts.Controls.Add(this.v2exp);
             this.Adv_V2_Opts.Controls.Add(this.v2adv);
@@ -297,16 +367,6 @@
             this.Adv_V2_Opts.Size = new System.Drawing.Size(908, 169);
             this.Adv_V2_Opts.TabIndex = 1;
             this.Adv_V2_Opts.Text = "V-Max v2 Advanced";
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(782, 107);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(104, 43);
-            this.button2.TabIndex = 39;
-            this.button2.Text = "Export";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.Make);
             // 
             // Re_Align
             // 
@@ -341,7 +401,6 @@
             // 
             this.Adv_V3_Opts.BackColor = System.Drawing.Color.Gainsboro;
             this.Adv_V3_Opts.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.Adv_V3_Opts.Controls.Add(this.button3);
             this.Adv_V3_Opts.Controls.Add(this.v3exp);
             this.Adv_V3_Opts.Controls.Add(this.v3adv);
             this.Adv_V3_Opts.Controls.Add(this.V3_hlen);
@@ -353,16 +412,6 @@
             this.Adv_V3_Opts.Size = new System.Drawing.Size(908, 169);
             this.Adv_V3_Opts.TabIndex = 2;
             this.Adv_V3_Opts.Text = "V-Max v3 Advanced";
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(782, 107);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(104, 43);
-            this.button3.TabIndex = 40;
-            this.button3.Text = "Export";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.Make);
             // 
             // v3exp
             // 
@@ -738,6 +787,7 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.Save_Disk);
             this.panel1.Controls.Add(this.Drag_pic);
             this.panel1.Controls.Add(this.Out_density);
             this.panel1.Controls.Add(this.out_rpm);
@@ -756,35 +806,16 @@
             this.panel1.Size = new System.Drawing.Size(900, 1123);
             this.panel1.TabIndex = 37;
             // 
-            // Import_File
+            // Save_Disk
             // 
-            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
-            this.Import_File.Controls.Add(this.Import_Progress_Bar);
-            this.Import_File.Controls.Add(this.label5);
-            this.Import_File.ForeColor = System.Drawing.Color.Black;
-            this.Import_File.Location = new System.Drawing.Point(16, 9);
-            this.Import_File.Name = "Import_File";
-            this.Import_File.Size = new System.Drawing.Size(870, 92);
-            this.Import_File.TabIndex = 59;
-            this.Import_File.TabStop = false;
-            this.Import_File.Text = "Analyzing Tracks";
-            // 
-            // Import_Progress_Bar
-            // 
-            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 30);
-            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
-            this.Import_Progress_Bar.Size = new System.Drawing.Size(858, 26);
-            this.Import_Progress_Bar.TabIndex = 39;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(6, 59);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(137, 25);
-            this.label5.TabIndex = 38;
-            this.label5.Text = "Processing...";
+            this.Save_Disk.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.Save_Disk.Location = new System.Drawing.Point(777, 3);
+            this.Save_Disk.Name = "Save_Disk";
+            this.Save_Disk.Size = new System.Drawing.Size(104, 43);
+            this.Save_Disk.TabIndex = 59;
+            this.Save_Disk.Text = "Export";
+            this.Save_Disk.UseVisualStyleBackColor = true;
+            this.Save_Disk.Click += new System.EventHandler(this.Make);
             // 
             // Drag_pic
             // 
@@ -864,7 +895,7 @@
             // Output
             // 
             this.Output.AutoSize = true;
-            this.Output.Location = new System.Drawing.Point(446, 0);
+            this.Output.Location = new System.Drawing.Point(610, 12);
             this.Output.Name = "Output";
             this.Output.Size = new System.Drawing.Size(76, 25);
             this.Output.TabIndex = 54;
@@ -885,7 +916,7 @@
             // Source
             // 
             this.Source.AutoSize = true;
-            this.Source.Location = new System.Drawing.Point(13, 0);
+            this.Source.Location = new System.Drawing.Point(124, 12);
             this.Source.Name = "Source";
             this.Source.Size = new System.Drawing.Size(121, 25);
             this.Source.TabIndex = 53;
@@ -955,6 +986,12 @@
             this.Tabs.ResumeLayout(false);
             this.Main.ResumeLayout(false);
             this.Main.PerformLayout();
+            this.Import_File.ResumeLayout(false);
+            this.Import_File.PerformLayout();
+            this.VBS_info.ResumeLayout(false);
+            this.VBS_info.PerformLayout();
+            this.Reg_info.ResumeLayout(false);
+            this.Reg_info.PerformLayout();
             this.Adv_V2_Opts.ResumeLayout(false);
             this.Adv_V2_Opts.PerformLayout();
             this.Adv_V3_Opts.ResumeLayout(false);
@@ -975,8 +1012,6 @@
             this.tabPage1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            this.Import_File.ResumeLayout(false);
-            this.Import_File.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).EndInit();
             this.ResumeLayout(false);
 
@@ -986,8 +1021,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox f_load;
-        private System.Windows.Forms.ComboBox Out_Type;
-        private System.Windows.Forms.Label label8;
         private System.Windows.Forms.CheckBox V2_Custom;
         private System.Windows.Forms.NumericUpDown V2_hlen;
         private System.Windows.Forms.CheckBox V2_Add_Sync;
@@ -1045,13 +1078,18 @@
         private System.Windows.Forms.ListBox out_track;
         private System.Windows.Forms.ListBox out_dif;
         private System.Windows.Forms.ListBox out_size;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
         private System.Windows.Forms.GroupBox Import_File;
         private System.Windows.Forms.ProgressBar Import_Progress_Bar;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.PictureBox Drag_pic;
+        private System.Windows.Forms.Panel Reg_info;
+        private System.Windows.Forms.Label VMax_Tracks;
+        private System.Windows.Forms.Label CBM_Tracks;
+        private System.Windows.Forms.Label Loader_Track;
+        private System.Windows.Forms.Panel VBS_info;
+        private System.Windows.Forms.Label Cust_Density;
+        private System.Windows.Forms.Label VM_Ver;
+        private System.Windows.Forms.Button Save_Disk;
     }
 }
 

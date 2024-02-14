@@ -145,7 +145,7 @@ namespace V_Max_Tool
                 if (Hex_Val(comp) == Hex_Val(v4)) { Patch_V2(i - 3); f = true; }
                 if (f) break;
             }
-            if (f) f_load.Text = "Fix Loader Sync (Sync added to header)";
+            if (f) f_load.Text = "Fix Loader Sync ( Fixed )";
             return tdata;
 
             void Patch_V2(int pos)

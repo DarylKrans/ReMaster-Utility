@@ -232,25 +232,25 @@ namespace V_Max_Tool
                         }
                         Stream.Close();
                         var lab = $"Total Track ({tracks}), G64 Track Size ({tr_size:N0})";
-                        Out_Type.SelectedIndex = 0;
+                        Out_Type = false;
                         Process(false, lab);
                     }
                     else
                     {
-                        label1.Text = $"{hm}"; //Invalid Header!";
+                        label1.Text = $"{hm}";
                         label2.Text = "";
                     }
                 }
             }
             catch (Exception ex)
             {
-                using (Message_Center center = new Message_Center(this)) // center message box
-                {
-                    string t = "Something went wrong!";
-                    string s = ex.Message;
-                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    error = true;
-                }
+                    using (Message_Center center = new Message_Center(this)) // center message box
+                    {
+                        string t = "Something went wrong!";
+                        string s = ex.Message;
+                        MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        error = true;
+                    }
             }
 
             if (!error && !supported.Any(s => s == fext.ToLower()))
@@ -278,8 +278,8 @@ namespace V_Max_Tool
                         {
                             Process_Nib_Data(true, false, true);
                             Set_ListBox_Items(false, false);
-                            Out_Type.Enabled = get;
-                            button1.Enabled = true;
+                            Out_Type = get;
+                            Save_Disk.Visible = true;
                             Source.Visible = Output.Visible = true;
                             label1.Text = $"{fname}{fext}";
                             label2.Text = l2;
@@ -348,13 +348,13 @@ namespace V_Max_Tool
         {
             Source.Visible = Output.Visible = false;
             f_load.Text = "Fix Loader Sync";
-            button1.Enabled = false;
+            Save_Disk.Visible = false;
             sl.DataSource = null;
             out_size.DataSource = null;
             string[] File_List = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (File.Exists(File_List[0]))
             {
-                dirname = Path.GetDirectoryName(File_List[0]);
+                //dirname = Path.GetDirectoryName(File_List[0]);
                 fname = Path.GetFileNameWithoutExtension(File_List[0]);
                 fext = Path.GetExtension(File_List[0]);
             }
@@ -401,7 +401,7 @@ namespace V_Max_Tool
                 if (i > -1 && i < 100)
                 {
                     if (Original.A.Length > 0) { NDA.Track_Data[i] = Original.A; }
-                    if (Original.G.Length > 0) { NDG.Track_Data[i] = Original.G; f_load.Text += " (original data restored)"; }
+                    if (Original.G.Length > 0) { NDG.Track_Data[i] = Original.G; f_load.Text += " ( Restored )"; }
                 }
             }
         }

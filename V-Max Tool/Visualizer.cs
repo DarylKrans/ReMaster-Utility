@@ -13,18 +13,18 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
 
-        string def_text = "";
-        bool interp = false;
-        bool Dragging = false;
-        bool vm_reverse = false;
-        int xPos;
-        int yPos;
+        private string def_text = "";
+        private bool interp = false;
+        private bool Dragging = false;
+        private bool vm_reverse = false;
+        private int xPos;
+        private int yPos;
         private readonly string[] Img_Quality = { "Very Low", "Low", "Normal", "High", "Ultra", "Atomic", "Insanity!" };
-        Bitmap flat_large;
-        Bitmap flat_small;
-        FastBitmap circle;
-        Bitmap circle_small;
-        Bitmap circle_full;
+        private Bitmap flat_large;
+        private Bitmap flat_small;
+        private FastBitmap circle;
+        private Bitmap circle_small;
+        private Bitmap circle_full;
         private readonly Brush cbm_brush = new SolidBrush(Color.FromArgb(200, 67, 200));
         private readonly Brush ldr_brush = new SolidBrush(Color.FromArgb(133, 133, 200));
         private readonly Brush vmx_brush = new SolidBrush(Color.FromArgb(30, 200, 30));
@@ -36,11 +36,6 @@ namespace V_Max_Tool
             var m = (Img_Q.SelectedIndex + 1) * 1000;
             circle = new FastBitmap(m, m);
             Draw_Disk(circle, 3, m, "V-MAX! Sync Tool", bg_text);
-            //Brush tx = new SolidBrush(Color.FromArgb(0, 255, 255, 255));
-            //Font font = new Font("Ariel", 11);
-            //
-            //Add_Text(circle.Bitmap, "Fuck!", Color.FromArgb(0, 100, 100, 100), tx, font, 0, 0, m, m);
-
             circle_full = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             circle_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             flat_large = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
@@ -176,7 +171,7 @@ namespace V_Max_Tool
             if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
             byte[] bgtxt = new byte[2000];
             Array.Copy(NDS.Track_Data[20], 0, bgtxt, 0, 2000);
-            Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}" , ToBinary(bgtxt));
+            Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}", ToBinary(bgtxt));
 
             while (r > 80 && track < tracks)
             {
@@ -201,7 +196,7 @@ namespace V_Max_Tool
                     }
                     this.Invoke(new Action(() => Update_Progress_Bar(pt, at)));
                 }
-                r -= (t_width * skp); // 5;
+                r -= (t_width * skp);
                 track += 1;
             }
             Invoke(new Action(() => Set_Circular_Draw_Options(true, width)));
@@ -222,11 +217,11 @@ namespace V_Max_Tool
             }
         }
 
-        private Bitmap Draw_Track(Bitmap bmp, int max_Height, byte[] data, int trk, int s, int e, int tf, byte[] v2i, int d, bool w) //, int w)
+        private Bitmap Draw_Track(Bitmap bmp, int max_Height, byte[] data, int trk, int s, int e, int tf, byte[] v2i, int d, bool w)
         {
             byte[] tdata = new byte[data.Length];
             Array.Copy(data, 0, tdata, 0, data.Length);
-            Pen pen; // = new Pen (Color.Green);
+            Pen pen; 
             bool v2 = false;
             int t_height = (max_Height / 42) - 4;
             for (int j = 0; j < tdata.Length; j++)

@@ -25,12 +25,10 @@ namespace V_Max_Tool
             int oh_len = 0;
             int tlen = 0;
             int fill = 0;
-            byte[] sec_0_ID = { 0xf6, 0xf3 };
             byte[] header = { 0x49, 0x49, 0x49 };
-            byte[] sec_tail = { 0xf7, 0xf7, 0xf7, 0xf7 };
             byte[][] sec_data;
-            byte[] sb = { 0x49 }; // <- start byte of V-Max v3/4 header
-            byte[] eb = { 0xee };
+            byte[] sb = { 0x49 }; // start byte of header
+            byte[] eb = { 0xee }; // end byte of header
             byte filler = 0xff;
             int sync = v3_sync_marker.Length;
             int gap_len = 115;
@@ -200,9 +198,9 @@ namespace V_Max_Tool
             bool start_found = false;
             bool end_found = false;
             bool s_zero = false;
-            byte sec_0_ID = 0xf3; // V-Max v3 sector 0 ID marker (f6 found on tracks > 15 sectors, f3 found on short tracks < 15 sectors)
+            byte sec_0_ID = 0xf3; // V-Max v3 sector 0 ID marker
             byte[] header = new byte[] { 0x49, 0x49 }; // V-Max v3 header pattern
-            byte head_end = 0xee; // V-Max v3 common sector ID start byte located directly following the 49-49-49 pattern
+            byte head_end = 0xee; // V-Max v3 header end byte located directly following the 49-49-49 pattern
             byte[] comp = new byte[2];
             byte[] head = new byte[18];
             List<string> s = new List<string>();
@@ -263,12 +261,15 @@ namespace V_Max_Tool
             }
             catch
             {
-                using (Message_Center centeringService = new Message_Center(this)) // center message box
+                Invoke(new Action(() =>
                 {
-                    string m = "Output image may not work!";
-                    string t = $"Error processing track {(trk / 2) + 1}";
-                    MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
+                    using (Message_Center centeringService = new Message_Center(this)) // center message box
+                    {
+                        string m = "Output image may not work!";
+                        string t = $"Error processing track {(trk / 2) + 1}";
+                        MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }));
             }
             header_avg = header_total / ss.Count;
 

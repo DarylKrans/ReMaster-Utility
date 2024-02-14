@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace V_Max_Tool
 {
@@ -10,7 +11,7 @@ namespace V_Max_Tool
         //Thread Analyze;
         private string fname = "";
         private string fext = "";
-        private string dirname = "";
+        //string dirname = "";
         private string fnappend = "";
         private int tracks = 0;
         private byte[] nib_header = new byte[0];
@@ -35,6 +36,7 @@ namespace V_Max_Tool
                 Import_File.Visible = true;
                 Track_Info.BeginUpdate();
             }));
+            bool ldr = false; int cbm = 0; int vmx = 0;
             double ht;
             bool halftracks = false;
             string[] f;
@@ -82,6 +84,7 @@ namespace V_Max_Tool
                 }));
                 if (NDS.cbm[i] == 1)
                 {
+                    cbm++;
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
                     Invoke(new Action(() =>
                     {
@@ -102,6 +105,7 @@ namespace V_Max_Tool
                 }
                 if (NDS.cbm[i] == 2)
                 {
+                    vmx++;
                     (NDA.Track_Data[i], NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], NDS.Track_Length[i], headers, NDS.sectors[i], NDS.v2info[i]) = Get_V2_Track_Info(NDS.Track_Data[i], i);
                     color = Color.Blue;
                     for (int j = 0; j < headers.Length; j++)
@@ -114,6 +118,7 @@ namespace V_Max_Tool
                 }
                 if (NDS.cbm[i] == 3)
                 {
+                    vmx++;
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
                     Invoke(new Action(() => Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" })));
                     int len;
@@ -134,6 +139,7 @@ namespace V_Max_Tool
                 }
                 if (NDS.cbm[i] == 4)
                 {
+                    ldr = true;
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
                     int q = 0;
                     if (fext.ToLower() == ".g64") q = NDG.s_len[i];
@@ -200,7 +206,34 @@ namespace V_Max_Tool
                     if (!Tabs.TabPages.Contains(Adv_V3_Opts)) Tabs.Controls.Add(Adv_V3_Opts);
                 }
                 else Tabs.Controls.Remove(Adv_V3_Opts);
-                //f
+                VBS_info.Visible = Reg_info.Visible = true;
+                if (ldr) Loader_Track.Text = "Loader Track : Yes"; else Loader_Track.Text = "Loader Track : No";
+                CBM_Tracks.Text = $"Standard CBM tracks : {cbm}";
+                VMax_Tracks.Text = $"V-Max tracks : {vmx}";
+                if (tracks > 42)
+                {
+                    halftracks = true;
+                    ht = 0.5;
+                }
+                else ht = 0;
+                bool cust_dens = false;
+                bool v2 = false;
+                bool v3 = false;
+                for (int i = 0; i < tracks;  i++)
+                {
+                    if (halftracks) ht += .5; else ht += 1;
+                    if (NDS.cbm[i] > 0 && NDS.cbm[i] < 5) 
+                    {
+                        var d = Get_Density(NDS.Track_Length[i] >> 3);
+                        if ((ht >= 0 && ht < 18 && d != 0) || (ht >= 18 && ht < 25 && d != 1) || (ht >= 25 && ht < 31 && d != 2) || (ht >= 31 && ht < 43 && d != 3)) cust_dens = true;
+                        if (NDS.cbm[i] == 2) v2 = true;
+                        if (NDS.cbm[i] == 3) v3 = true;
+                    }
+                }
+                if (!cust_dens) Cust_Density.Text = "Track Densities : Standard"; else Cust_Density.Text = "Track Densities : Custom";
+                if (v2) VM_Ver.Text = "V-Max Version : v2 (Custom Format)";
+                if (v3) VM_Ver.Text = "V-Max Version : v3";
+                if (!v2 && !v3) VM_Ver.Text = "V-Max Version : v0-v2 (CBM Tracks)";
             }));
         }
 

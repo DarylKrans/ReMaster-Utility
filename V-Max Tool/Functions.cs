@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -9,15 +10,16 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        Thread circ;  // Thread for drawing circle disk image
-        Thread flat;  // Thread for drawing flat tracks image
-        Thread check_alive;
-        int pan_defw;
-        int pan_defh;
-        bool manualRender;
-        readonly Gbox outbox = new Gbox();
-        readonly Gbox inbox = new Gbox();
-        string def_bg_text;
+        private Thread circ;  // Thread for drawing circle disk image
+        private Thread flat;  // Thread for drawing flat tracks image
+        private Thread check_alive;
+        private int pan_defw;
+        private int pan_defh;
+        private bool manualRender;
+        private readonly Gbox outbox = new Gbox();
+        private readonly Gbox inbox = new Gbox();
+        private string def_bg_text;
+        private bool Out_Type = true;
 
         void Reset_to_Defaults()
         {
@@ -28,6 +30,8 @@ namespace V_Max_Tool
             Tabs.Controls.Remove(Adv_V3_Opts);
             Tabs.Controls.Remove(Adv_V2_Opts);
             Img_style.Enabled = Img_View.Enabled = Img_opts.Enabled = Save_Circle_btn.Visible = M_render.Visible = Adv_ctrl.Enabled = false;
+            VBS_info.Visible = Reg_info.Visible = false;
+            Save_Disk.Visible = false;
             Adv_ctrl.SelectedIndex = 0;
             Draw_Init_Img(def_bg_text);
             opt = false;
@@ -207,43 +211,27 @@ namespace V_Max_Tool
         void Export_File()
         {
             Save_Dialog.FileName = $"{fname}{fnappend}";
-            if (Out_Type.Enabled) Save_Dialog.Filter = "G64|*.g64|NIB|*.nib";
+            if (Out_Type) Save_Dialog.Filter = "G64|*.g64|NIB|*.nib";
             else Save_Dialog.Filter = "G64|*.g64";
             Save_Dialog.Title = "Save File";
-            Save_Dialog.ShowDialog();
-            string fs = Save_Dialog.FileName;
-            int ft = Save_Dialog.FilterIndex;
-            if (ft == 1) Make_G64(fs);
-            if (ft == 2) Make_NIB(fs);
-            if (nib_error || g64_error)
+            if (Save_Dialog.ShowDialog() == DialogResult.OK)
             {
-                string s = "";
-                using (Message_Center center = new Message_Center(this)) // center message box
+                string fs = Save_Dialog.FileName;
+                if (Save_Dialog.FilterIndex == 1) Make_G64(fs);
+                if (Save_Dialog.FilterIndex == 2) Make_NIB(fs);
+                if (nib_error || g64_error)
                 {
-                    string t = "File Access Error!";
-                    if (nib_error) s = $"{nib_err_msg}";
-                    if (g64_error) s = $"{g64_err_msg}";
-                    if (nib_error && g64_error) s = $"{nib_err_msg}\n\n{g64_err_msg}";
-                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    error = true;
-                }
-                nib_error = g64_error = false;
-            }
-            else
-            {
-                using (Message_Center center = new Message_Center(this)) // center message box
-                {
-                    string m = "";
                     string s = "";
-                    if (Out_Type.SelectedIndex > 1)
+                    using (Message_Center center = new Message_Center(this)) // center message box
                     {
-                        m = "s";
-                        s = $@"{dirname}\Output\{fname}{fnappend}{fext}" + "\n\n" + $@"{dirname}\Output\{fname}{fnappend}.g64";
+                        string t = "File Access Error!";
+                        if (nib_error) s = $"{nib_err_msg}";
+                        if (g64_error) s = $"{g64_err_msg}";
+                        if (nib_error && g64_error) s = $"{nib_err_msg}\n\n{g64_err_msg}";
+                        AutoClosingMessageBox.Show(s, t, 5000);
+                        error = true;
                     }
-                    if (Out_Type.SelectedIndex == 0) s = $@"{dirname}\Output\{fname}{fnappend}.g64";
-                    if (Out_Type.SelectedIndex == 1) s = $@"{dirname}\Output\{fname}{fnappend}{fext}";
-                    string t = $"File{m} saved successfully!";
-                    AutoClosingMessageBox.Show(s, t, 5000);
+                    nib_error = g64_error = false;
                 }
             }
         }
@@ -391,11 +379,9 @@ namespace V_Max_Tool
             Tabs.Visible = true;
             string[] o = { "G64", "NIB", "NIB & G64" };
             fnappend = fix;
-            Out_Type.DataSource = o;
             label1.Text = label2.Text = coords.Text = "";
             Source.Visible = Output.Visible = label4.Visible = Img_Q.Visible = Save_Circle_btn.Visible = false;
-            label8.Visible = Out_Type.Visible = false;
-            button1.Enabled = false;
+            Save_Disk.Visible = false;
             AllowDrop = true;
             DragEnter += new DragEventHandler(Drag_Enter);
             DragDrop += new DragEventHandler(Drag_Drop);
@@ -431,14 +417,14 @@ namespace V_Max_Tool
             else M_render.Visible = manualRender = false;
             M_render.Enabled = false;
             Adv_ctrl.Enabled = false;
-            //inbox.Controls.Add(Gbox)
+            VBS_info.Visible = Reg_info.Visible = false;
             opt = false;
 
             void Perf() { while (true) cpu++; }
 
             void Set_Boxes()
             {
-                outbox.BackColor = Color.Lavender;
+                outbox.BackColor = Color.Gainsboro;
                 panel1.Controls.Remove(this.Out_density);
                 panel1.Controls.Remove(this.out_rpm);
                 panel1.Controls.Remove(this.out_track);
@@ -464,7 +450,7 @@ namespace V_Max_Tool
                 outbox.TabIndex = 52;
                 outbox.TabStop = false;
                 outbox.Text = "Track/ RPM /    Size    /  Diff  / Density";
-                inbox.BackColor = Color.Lavender;
+                inbox.BackColor = Color.Gainsboro;
                 panel1.Controls.Remove(this.sd);
                 panel1.Controls.Remove(this.strack);
                 panel1.Controls.Remove(this.sf);
