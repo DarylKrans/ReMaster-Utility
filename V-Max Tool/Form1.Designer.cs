@@ -87,6 +87,7 @@
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
             this.Save_Disk = new System.Windows.Forms.Button();
             this.Drag_pic = new System.Windows.Forms.PictureBox();
             this.Out_density = new System.Windows.Forms.ListBox();
@@ -101,6 +102,7 @@
             this.sl = new System.Windows.Forms.ListBox();
             this.ss = new System.Windows.Forms.ListBox();
             this.sf = new System.Windows.Forms.ListBox();
+            this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -143,7 +145,7 @@
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(8, 49);
+            this.f_load.Location = new System.Drawing.Point(536, 29);
             this.f_load.Name = "f_load";
             this.f_load.Size = new System.Drawing.Size(206, 29);
             this.f_load.TabIndex = 12;
@@ -232,6 +234,7 @@
             this.Main.Controls.Add(this.Import_File);
             this.Main.Controls.Add(this.VBS_info);
             this.Main.Controls.Add(this.Reg_info);
+            this.Main.Controls.Add(this.f_load);
             this.Main.Controls.Add(this.Adj_cbm);
             this.Main.Controls.Add(this.label1);
             this.Main.Controls.Add(this.label2);
@@ -248,7 +251,7 @@
             this.Import_File.Controls.Add(this.Import_Progress_Bar);
             this.Import_File.Controls.Add(this.label5);
             this.Import_File.ForeColor = System.Drawing.Color.Black;
-            this.Import_File.Location = new System.Drawing.Point(16, 61);
+            this.Import_File.Location = new System.Drawing.Point(22, 61);
             this.Import_File.Name = "Import_File";
             this.Import_File.Size = new System.Drawing.Size(870, 92);
             this.Import_File.TabIndex = 59;
@@ -275,9 +278,9 @@
             // VBS_info
             // 
             this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.VBS_info.Controls.Add(this.label6);
             this.VBS_info.Controls.Add(this.Cust_Density);
             this.VBS_info.Controls.Add(this.VM_Ver);
-            this.VBS_info.Controls.Add(this.f_load);
             this.VBS_info.Location = new System.Drawing.Point(441, 61);
             this.VBS_info.Name = "VBS_info";
             this.VBS_info.Size = new System.Drawing.Size(382, 83);
@@ -286,7 +289,7 @@
             // Cust_Density
             // 
             this.Cust_Density.AutoSize = true;
-            this.Cust_Density.Location = new System.Drawing.Point(3, 25);
+            this.Cust_Density.Location = new System.Drawing.Point(3, 50);
             this.Cust_Density.Name = "Cust_Density";
             this.Cust_Density.Size = new System.Drawing.Size(173, 25);
             this.Cust_Density.TabIndex = 1;
@@ -295,7 +298,7 @@
             // VM_Ver
             // 
             this.VM_Ver.AutoSize = true;
-            this.VM_Ver.Location = new System.Drawing.Point(3, 0);
+            this.VM_Ver.Location = new System.Drawing.Point(3, 25);
             this.VM_Ver.Name = "VM_Ver";
             this.VM_Ver.Size = new System.Drawing.Size(165, 25);
             this.VM_Ver.TabIndex = 0;
@@ -787,6 +790,7 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.Save_Disk);
             this.panel1.Controls.Add(this.Drag_pic);
             this.panel1.Controls.Add(this.Out_density);
@@ -805,6 +809,16 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(900, 1123);
             this.panel1.TabIndex = 37;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(392, 3);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 40);
+            this.button1.TabIndex = 38;
+            this.button1.Text = "No!";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.Button1_Click);
             // 
             // Save_Disk
             // 
@@ -971,11 +985,20 @@
             this.sf.Size = new System.Drawing.Size(115, 1002);
             this.sf.TabIndex = 26;
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(3, 0);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(70, 25);
+            this.label6.TabIndex = 2;
+            this.label6.Text = "label6";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2101, 1386);
+            this.ClientSize = new System.Drawing.Size(2261, 1386);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
@@ -1090,6 +1113,8 @@
         private System.Windows.Forms.Label Cust_Density;
         private System.Windows.Forms.Label VM_Ver;
         private System.Windows.Forms.Button Save_Disk;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label6;
     }
 }
 

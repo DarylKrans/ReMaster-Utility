@@ -3,6 +3,7 @@ using System.Collections;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -195,6 +196,36 @@ namespace V_Max_Tool
                 if (Hex_Val(comp) == find) break;
             }
             return i;
+        }
+
+        string Get_Disk_Directory()
+        {
+            string ret = "Disk Directory ID : n/a";
+            var buff = new MemoryStream();
+            var wrt = new BinaryWriter(buff);
+            var halftrack = 0;
+            int track = 0;
+            if (tracks <= 42) { halftrack = 17; track = halftrack + 1; }
+            if (tracks > 42) { halftrack = 34; track = (halftrack / 2) + 1; }
+            if (NDS.cbm[halftrack] == 1)
+            {
+                byte[] next_sector = new byte[] { (byte)track, 0x00 };
+                byte[] last_sector = new byte[2];
+                while (Convert.ToInt32(next_sector[0]) == track)
+                {
+                    Array.Copy(next_sector, 0, last_sector, 0, 2);
+                    byte[] temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], Convert.ToInt32(next_sector[1]));
+                    Array.Copy(temp, 0, next_sector, 0, next_sector.Length);
+                    if (tracks <= 42) halftrack = Convert.ToInt32(next_sector[0]) - 1; else halftrack = (Convert.ToInt32(next_sector[0]) - 1) * 2;
+                    wrt.Write(temp);
+                    if (Hex_Val(last_sector) == Hex_Val(next_sector)) break;
+                    //this.Text = Hex_Val(next_sector);
+                }
+                byte[] directory = buff.ToArray();
+                //File.WriteAllBytes($@"c:\test.d64", buff.ToArray());
+                ret = $"\"{Encoding.ASCII.GetString(directory, 144, 16).Replace('?', ' ')}\"{Encoding.ASCII.GetString(directory, 161, 6).Replace('?', ' ')}";
+            }
+            return ret;
         }
 
         void Set_Dest_Arrays(byte[] data, int trk)

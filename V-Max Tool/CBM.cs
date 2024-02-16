@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -9,6 +10,21 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
         private readonly byte[] sz = { 0x52, 0xc0, 0x0f, 0xfc };
+        private readonly byte[] GCR_decode_high =
+            {
+                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                0xff, 0x80, 0x00, 0x10, 0xff, 0xc0, 0x40, 0x50,
+                0xff, 0xff, 0x20, 0x30, 0xff, 0xf0, 0x60, 0x70,
+                0xff, 0x90, 0xa0, 0xb0, 0xff, 0xd0, 0xe0, 0xff
+            };
+
+        private readonly byte[] GCR_decode_low =
+            {
+                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                0xff, 0x08, 0x00, 0x01, 0xff, 0x0c, 0x04, 0x05,
+                0xff, 0xff, 0x02, 0x03, 0xff, 0x0f, 0x06, 0x07,
+                0xff, 0x09, 0x0a, 0x0b, 0xff, 0x0d, 0x0e, 0xff
+            };
 
         (int, int, int, int, string[], int, int[], int) Find_Sector_Zero(byte[] data)
         {
@@ -76,6 +92,8 @@ namespace V_Max_Tool
                     {
                         if (!list.Any(s => s == h))
                         {
+                            //sector_marker = true;
+
                             string sz = "";
                             int a = Array.FindIndex(valid_cbm, se => se == h);
                             if (a == 0) sz = "*";
@@ -83,6 +101,7 @@ namespace V_Max_Tool
                             if (!start_found) { data_start = pos; start_found = true; }
                             if (!sec_zero && h == valid_cbm[0])
                             {
+                                //if ((tracks > 42 && ((trk / 2) + 1 == 18)) || (tracks <= 42 && trk + 1 == 18)) sector_marker = true;
                                 sector_zero = pos;
                                 sec_zero = true;
                             }
@@ -105,7 +124,7 @@ namespace V_Max_Tool
                             }
                         }
                         list.Add(h);
-                        string q = $"sector {Array.FindIndex(valid_cbm, s => s == h)} Position {pos}";
+                        string q = $"sector_data {Array.FindIndex(valid_cbm, s => s == h)} Position {pos}";
                         //compare.Add($"{h} {q} {start_found} {end_found} {data_start} {data_end}");  // for testing
                     }
                 }
@@ -203,5 +222,132 @@ namespace V_Max_Tool
             return data;
 
         }
+
+        byte[] Decode_CBM_GCR(byte[] data, int sector)
+        {
+            var buffer = new MemoryStream();
+            var write = new BinaryWriter(buffer);
+            BitArray source = new BitArray(Flip_Endian(data));
+            BitArray sector_data = new BitArray(325 * 8);
+            BitArray comp = new BitArray(5 * 8);
+            byte[] sec = new byte[325];
+            bool sector_marker = false;
+            bool sector_found = false;
+            bool sync = false;
+            int sync_count = 0;
+            int pos = 0;
+            while (pos < source.Length - 32)
+            {
+                if (source[pos])
+                {
+                    sync_count++;
+                    if (sync_count == 15) sync = true;
+                }
+                if (!source[pos])
+                {
+                    if (sync) sector_marker = Compare();
+                    if (pos + sector_data.Count < source.Length)
+                    {
+                        if (sync && sector_found && !sector_marker)
+                        {
+                            Decode_Sector();
+                            return buffer.ToArray();
+                        }
+                    }
+                    sync = false;
+                    sync_count = 0;
+                }
+                pos++;
+            }
+            //File.WriteAllBytes($@"c:\track{(trk / 2) + 1}", buffer.ToArray());
+            return buffer.ToArray();
+
+            void Decode_Sector()
+            {
+                for (int i = 0; i < sector_data.Count; i++) sector_data[i] = source[pos + i];
+                sector_data.CopyTo(sec, 0);
+                sec = Flip_Endian(sec);
+                byte[] gcr = new byte[5];
+                byte[] dec;
+                int a = 0;
+                for (int i = 0; i < (sec.Length / 5); i++)
+                {
+                    Array.Copy(sec, i * 5, gcr, 0, gcr.Length);
+                    dec = Convert_4bytes_from_GCR(gcr);
+                    if (dec.Length > 0)
+                    {
+                        if (a == 0)
+                        {
+                            write.Write((byte)dec[1]);
+                            write.Write((byte)dec[2]);
+                            write.Write((byte)dec[3]);
+                        }
+                        if (a > 0 && a < 64) write.Write(dec);
+                        if (a == 64) { write.Write((byte)dec[0]); }
+                        a++;
+                    }
+                }
+                pos += sector_data.Count;
+                sector_marker = false;
+            }
+
+            bool Compare()
+            {
+                byte[] d = new byte[5];
+                for (int i = 0; i < comp.Length; i++)
+                {
+                    comp[i] = source[pos + i];
+                }
+                comp.CopyTo(d, 0);
+                d = Flip_Endian(d);
+                if (d[0] == 0x52)
+                {
+                    byte[] g = Convert_4bytes_from_GCR(d);
+                    if ((g[2] == sector)) { sector_found = true; return true; }
+                    pos += sector_data.Count;
+                }
+                return false;
+            }
+        }
+
+        byte[] Convert_4bytes_from_GCR(byte[] gcr)
+        {
+            byte hnib;
+            byte lnib;
+            byte[] plain = new byte[4];
+            //bool[] badGCR = new bool[4];
+            bool badGCR = false;
+
+            hnib = GCR_decode_high[gcr[0] >> 3];
+            lnib = GCR_decode_low[((gcr[0] << 2) | (gcr[1] >> 6)) & 0x1f];
+            if ((hnib == 0xff || lnib == 0xff)) badGCR = true;
+            //else data.Add(hnib |= lnib);
+            if (badGCR) { plain[0] = 0x55; badGCR = false; }
+            else plain[0] = hnib |= lnib;
+
+            hnib = GCR_decode_high[(gcr[1] >> 1) & 0x1f];
+            lnib = GCR_decode_low[((gcr[1] << 4) | (gcr[2] >> 4)) & 0x1f];
+            if ((hnib == 0xff || lnib == 0xff)) badGCR = true;
+            //else data.Add(hnib |= lnib);
+            if (badGCR) { plain[0] = 0xaa; badGCR = false; }
+            else plain[1] = hnib |= lnib;
+
+            hnib = GCR_decode_high[((gcr[2] << 1) | (gcr[3] >> 7)) & 0x1f];
+            lnib = GCR_decode_low[(gcr[3] >> 2) & 0x1f];
+            if ((hnib == 0xff || lnib == 0xff)) badGCR = true;
+            //else data.Add(hnib |= lnib);
+            if (badGCR) { plain[0] = 0x55; badGCR = false; }
+            else plain[2] = hnib |= lnib;
+
+            hnib = GCR_decode_high[((gcr[3] << 3) | (gcr[4] >> 5)) & 0x1f];
+            lnib = GCR_decode_low[gcr[4] & 0x1f];
+            if ((hnib == 0xff || lnib == 0xff)) badGCR = true;
+            //else data.Add(hnib |= lnib);
+            if (badGCR) plain[0] = 0xaa;
+            else plain[3] = hnib |= lnib;
+            //if (badGCR.Any(s => s == true)) plain = new byte[0];
+            return plain;
+        }
+
     }
 }

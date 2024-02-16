@@ -221,7 +221,7 @@ namespace V_Max_Tool
         {
             byte[] tdata = new byte[data.Length];
             Array.Copy(data, 0, tdata, 0, data.Length);
-            Pen pen; 
+            Pen pen;
             bool v2 = false;
             int t_height = (max_Height / 42) - 4;
             for (int j = 0; j < tdata.Length; j++)

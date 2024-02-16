@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
-using System.Threading;
 
 namespace V_Max_Tool
 {
@@ -219,10 +220,10 @@ namespace V_Max_Tool
                 bool cust_dens = false;
                 bool v2 = false;
                 bool v3 = false;
-                for (int i = 0; i < tracks;  i++)
+                for (int i = 0; i < tracks; i++)
                 {
                     if (halftracks) ht += .5; else ht += 1;
-                    if (NDS.cbm[i] > 0 && NDS.cbm[i] < 5) 
+                    if (NDS.cbm[i] > 0 && NDS.cbm[i] < 5)
                     {
                         var d = Get_Density(NDS.Track_Length[i] >> 3);
                         if ((ht >= 0 && ht < 18 && d != 0) || (ht >= 18 && ht < 25 && d != 1) || (ht >= 25 && ht < 31 && d != 2) || (ht >= 31 && ht < 43 && d != 3)) cust_dens = true;
@@ -234,6 +235,7 @@ namespace V_Max_Tool
                 if (v2) VM_Ver.Text = "V-Max Version : v2 (Custom Format)";
                 if (v3) VM_Ver.Text = "V-Max Version : v3";
                 if (!v2 && !v3) VM_Ver.Text = "V-Max Version : v0-v2 (CBM Tracks)";
+                label6.Text = Get_Disk_Directory();
             }));
         }
 

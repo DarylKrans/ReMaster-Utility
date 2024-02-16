@@ -244,13 +244,13 @@ namespace V_Max_Tool
             }
             catch (Exception ex)
             {
-                    using (Message_Center center = new Message_Center(this)) // center message box
-                    {
-                        string t = "Something went wrong!";
-                        string s = ex.Message;
-                        MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        error = true;
-                    }
+                using (Message_Center center = new Message_Center(this)) // center message box
+                {
+                    string t = "Something went wrong!";
+                    string s = ex.Message;
+                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    error = true;
+                }
             }
 
             if (!error && !supported.Any(s => s == fext.ToLower()))
@@ -485,6 +485,30 @@ namespace V_Max_Tool
         private void Manual_render_Click(object sender, EventArgs e)
         {
             Check_Before_Draw(false);
+        }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            var buff = new MemoryStream();
+            var wrt = new BinaryWriter(buff);
+            var halftrack = 0;
+            int track = 0;
+            if (tracks <= 42) { halftrack = 17; track = halftrack + 1; }
+            if (tracks > 42) { halftrack = 34; track = (halftrack / 2) + 1; }
+            if (NDS.cbm[halftrack] == 1)
+            {
+                byte[] next_sector = new byte[] { (byte)track, 0x00 };
+                while (Convert.ToInt32(next_sector[0]) == track)
+                {
+                    byte[] temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], Convert.ToInt32(next_sector[1]));
+                    Array.Copy(temp, 0, next_sector, 0, next_sector.Length);
+                    if (tracks <= 42) halftrack = Convert.ToInt32(next_sector[0]) - 1; else halftrack = (Convert.ToInt32(next_sector[0]) - 1) * 2;
+                    wrt.Write(temp);
+                }
+                byte[] directory = buff.ToArray();
+                //File.WriteAllBytes($@"c:\test.d64", buff.ToArray());
+                this.Text = $"\"{Encoding.ASCII.GetString(directory, 144, 16).Replace('?', ' ')}\"{Encoding.ASCII.GetString(directory, 161, 6).Replace('?', ' ')}";
+            }
         }
     }
 }
