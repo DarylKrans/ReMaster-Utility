@@ -235,7 +235,10 @@ namespace V_Max_Tool
                 if (v2) VM_Ver.Text = "V-Max Version : v2 (Custom Format)";
                 if (v3) VM_Ver.Text = "V-Max Version : v3";
                 if (!v2 && !v3) VM_Ver.Text = "V-Max Version : v0-v2 (CBM Tracks)";
-                label6.Text = Get_Disk_Directory();
+                
+                Dir_screen.Text = Get_Disk_Directory();
+                //Dir_screen.Select(2, 24);
+                
             }));
         }
 

@@ -259,7 +259,6 @@ namespace V_Max_Tool
                 }
                 pos++;
             }
-            //File.WriteAllBytes($@"c:\track{(trk / 2) + 1}", buffer.ToArray());
             return buffer.ToArray();
 
             void Decode_Sector()
@@ -287,8 +286,6 @@ namespace V_Max_Tool
                         a++;
                     }
                 }
-                pos += sector_data.Count;
-                sector_marker = false;
             }
 
             bool Compare()
@@ -314,38 +311,24 @@ namespace V_Max_Tool
         {
             byte hnib;
             byte lnib;
-            byte[] plain = new byte[4];
-            //bool[] badGCR = new bool[4];
-            bool badGCR = false;
+            byte[] plain = new byte[] { 0x00, 0x00, 0x00, 0x00 };
 
             hnib = GCR_decode_high[gcr[0] >> 3];
             lnib = GCR_decode_low[((gcr[0] << 2) | (gcr[1] >> 6)) & 0x1f];
-            if ((hnib == 0xff || lnib == 0xff)) badGCR = true;
-            //else data.Add(hnib |= lnib);
-            if (badGCR) { plain[0] = 0x55; badGCR = false; }
-            else plain[0] = hnib |= lnib;
+            if (!(hnib == 0xff || lnib == 0xff)) plain[0] = hnib |= lnib;
 
             hnib = GCR_decode_high[(gcr[1] >> 1) & 0x1f];
             lnib = GCR_decode_low[((gcr[1] << 4) | (gcr[2] >> 4)) & 0x1f];
-            if ((hnib == 0xff || lnib == 0xff)) badGCR = true;
-            //else data.Add(hnib |= lnib);
-            if (badGCR) { plain[0] = 0xaa; badGCR = false; }
-            else plain[1] = hnib |= lnib;
+            if (!(hnib == 0xff || lnib == 0xff)) plain[1] = hnib |= lnib;
 
             hnib = GCR_decode_high[((gcr[2] << 1) | (gcr[3] >> 7)) & 0x1f];
             lnib = GCR_decode_low[(gcr[3] >> 2) & 0x1f];
-            if ((hnib == 0xff || lnib == 0xff)) badGCR = true;
-            //else data.Add(hnib |= lnib);
-            if (badGCR) { plain[0] = 0x55; badGCR = false; }
-            else plain[2] = hnib |= lnib;
+            if (!(hnib == 0xff || lnib == 0xff)) plain[2] = hnib |= lnib;
 
             hnib = GCR_decode_high[((gcr[3] << 3) | (gcr[4] >> 5)) & 0x1f];
             lnib = GCR_decode_low[gcr[4] & 0x1f];
-            if ((hnib == 0xff || lnib == 0xff)) badGCR = true;
-            //else data.Add(hnib |= lnib);
-            if (badGCR) plain[0] = 0xaa;
-            else plain[3] = hnib |= lnib;
-            //if (badGCR.Any(s => s == true)) plain = new byte[0];
+            if (!(hnib == 0xff || lnib == 0xff)) plain[3] = hnib |= lnib;
+
             return plain;
         }
 

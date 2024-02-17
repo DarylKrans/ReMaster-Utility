@@ -487,28 +487,9 @@ namespace V_Max_Tool
             Check_Before_Draw(false);
         }
 
-        private void Button1_Click(object sender, EventArgs e)
+        private void Dir_View_CheckedChanged(object sender, EventArgs e)
         {
-            var buff = new MemoryStream();
-            var wrt = new BinaryWriter(buff);
-            var halftrack = 0;
-            int track = 0;
-            if (tracks <= 42) { halftrack = 17; track = halftrack + 1; }
-            if (tracks > 42) { halftrack = 34; track = (halftrack / 2) + 1; }
-            if (NDS.cbm[halftrack] == 1)
-            {
-                byte[] next_sector = new byte[] { (byte)track, 0x00 };
-                while (Convert.ToInt32(next_sector[0]) == track)
-                {
-                    byte[] temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], Convert.ToInt32(next_sector[1]));
-                    Array.Copy(temp, 0, next_sector, 0, next_sector.Length);
-                    if (tracks <= 42) halftrack = Convert.ToInt32(next_sector[0]) - 1; else halftrack = (Convert.ToInt32(next_sector[0]) - 1) * 2;
-                    wrt.Write(temp);
-                }
-                byte[] directory = buff.ToArray();
-                //File.WriteAllBytes($@"c:\test.d64", buff.ToArray());
-                this.Text = $"\"{Encoding.ASCII.GetString(directory, 144, 16).Replace('?', ' ')}\"{Encoding.ASCII.GetString(directory, 161, 6).Replace('?', ' ')}";
-            }
+            Dir_screen.Visible = Dir_View.Checked;
         }
     }
 }
