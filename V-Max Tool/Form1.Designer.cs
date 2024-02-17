@@ -145,7 +145,7 @@
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(445, 29);
+            this.f_load.Location = new System.Drawing.Point(508, 29);
             this.f_load.Name = "f_load";
             this.f_load.Size = new System.Drawing.Size(206, 29);
             this.f_load.TabIndex = 12;
@@ -252,7 +252,7 @@
             this.Import_File.Controls.Add(this.Import_Progress_Bar);
             this.Import_File.Controls.Add(this.label5);
             this.Import_File.ForeColor = System.Drawing.Color.Black;
-            this.Import_File.Location = new System.Drawing.Point(23, 61);
+            this.Import_File.Location = new System.Drawing.Point(22, 61);
             this.Import_File.Name = "Import_File";
             this.Import_File.Size = new System.Drawing.Size(870, 92);
             this.Import_File.TabIndex = 59;
@@ -279,7 +279,7 @@
             // Save_Disk
             // 
             this.Save_Disk.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.Save_Disk.Location = new System.Drawing.Point(796, 9);
+            this.Save_Disk.Location = new System.Drawing.Point(789, 101);
             this.Save_Disk.Name = "Save_Disk";
             this.Save_Disk.Size = new System.Drawing.Size(104, 43);
             this.Save_Disk.TabIndex = 59;
@@ -293,7 +293,7 @@
             this.VBS_info.Controls.Add(this.Dir_View);
             this.VBS_info.Controls.Add(this.Cust_Density);
             this.VBS_info.Controls.Add(this.VM_Ver);
-            this.VBS_info.Location = new System.Drawing.Point(441, 61);
+            this.VBS_info.Location = new System.Drawing.Point(386, 61);
             this.VBS_info.Name = "VBS_info";
             this.VBS_info.Size = new System.Drawing.Size(382, 83);
             this.VBS_info.TabIndex = 22;
@@ -333,7 +333,7 @@
             this.Reg_info.Controls.Add(this.VMax_Tracks);
             this.Reg_info.Controls.Add(this.CBM_Tracks);
             this.Reg_info.Controls.Add(this.Loader_Track);
-            this.Reg_info.Location = new System.Drawing.Point(78, 61);
+            this.Reg_info.Location = new System.Drawing.Point(23, 61);
             this.Reg_info.Name = "Reg_info";
             this.Reg_info.Size = new System.Drawing.Size(357, 83);
             this.Reg_info.TabIndex = 21;
