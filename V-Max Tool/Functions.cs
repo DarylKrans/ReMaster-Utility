@@ -200,6 +200,23 @@ namespace V_Max_Tool
             return i;
         }
 
+        string Get_DirectoryFileType(byte b)
+        {
+            string fileType = " ";
+            if ((b | 0x3f) == 0x3f || (b | 0x3f) == 0x7f) fileType = "*";
+            switch (b | 0xf0)
+            {
+                case 0xf1: fileType += "SEQ"; break;
+                case 0xf2: fileType += "PRG"; break;
+                case 0xf3: fileType += "USR"; break;
+                case 0xf4: fileType += "REL"; break;
+                case 0xf8: fileType += "DEL"; break;
+                default: fileType += "???"; break;
+            }
+            if ((b | 0x3f) == 0xff || (b | 0x3f) == 0x7f) fileType += "<";
+            return fileType;
+        }
+
         void Set_Dest_Arrays(byte[] data, int trk)
         {
             NDG.Track_Data[trk] = new byte[data.Length];

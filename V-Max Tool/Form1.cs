@@ -269,6 +269,8 @@ namespace V_Max_Tool
 
             void Process(bool get, string l2)
             {
+                Dir_screen.Clear();
+                Dir_screen.Text = "LOAD\"$\",8\nSEARCHING FOR $\nLOADING";
                 Task.Run(delegate
                 {
                     Parse_Nib_Data();
@@ -278,6 +280,7 @@ namespace V_Max_Tool
                         {
                             Process_Nib_Data(true, false, true);
                             Set_ListBox_Items(false, false);
+                            Get_Disk_Directory();
                             Out_Type = get;
                             Save_Disk.Visible = true;
                             Source.Visible = Output.Visible = true;

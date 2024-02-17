@@ -13,7 +13,7 @@ namespace V_Max_Tool
         private readonly string[][] vm2_ver = new string[2][];
         private readonly string[] v_check = { "A5-A3", "A9-A3", "AD-AB", "AD-A7" };
         private readonly byte[] VM2_Valid = { 0xa5, 0xa4, 0xa9, 0xaC, 0xad, 0xb4, 0xbc };
-        private readonly string v2 = "A5-A5-A5-A5"; // V-MAX v2 sector 0 header (cinemaware)
+        private readonly string v2 = "A5-A5-A5"; // V-MAX v2 sector 0 header (cinemaware)
 
         /// --------------------------------  Rebuild V-Max v2 Track  ---------------------------------------
         (byte[], int, int, int) Rebuild_V2(byte[] data, int sectors, byte[] t_info, int trk)

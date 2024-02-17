@@ -834,6 +834,7 @@
             // 
             // Dir_screen
             // 
+            this.Dir_screen.CausesValidation = false;
             this.Dir_screen.Font = new System.Drawing.Font("C64 Pro Mono", 10.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Dir_screen.Location = new System.Drawing.Point(3, 3);
             this.Dir_screen.Name = "Dir_screen";

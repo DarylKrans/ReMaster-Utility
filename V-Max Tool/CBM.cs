@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -308,8 +310,9 @@ namespace V_Max_Tool
             }
         }
 
-        string Get_Disk_Directory()
+        void Get_Disk_Directory()
         {
+            int l = 0;
             string ret = "Disk Directory ID : n/a";
             var buff = new MemoryStream();
             var wrt = new BinaryWriter(buff);
@@ -318,6 +321,7 @@ namespace V_Max_Tool
             int blocksFree = 0;
             if (tracks <= 42) { halftrack = 17; track = halftrack + 1; }
             if (tracks > 42) { halftrack = 34; track = (halftrack / 2) + 1; }
+            byte[] temp;
             if (NDS.cbm[halftrack] == 1)
             {
                 byte[] next_sector = new byte[] { (byte)track, 0x00 };
@@ -325,12 +329,21 @@ namespace V_Max_Tool
                 while (Convert.ToInt32(next_sector[0]) == track)
                 {
                     Array.Copy(next_sector, 0, last_sector, 0, 2);
-                    byte[] temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], Convert.ToInt32(next_sector[1]));
+                    temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], Convert.ToInt32(next_sector[1]));
                     Array.Copy(temp, 0, next_sector, 0, next_sector.Length);
                     if (tracks <= 42) halftrack = Convert.ToInt32(next_sector[0]) - 1; else halftrack = (Convert.ToInt32(next_sector[0]) - 1) * 2;
                     wrt.Write(temp);
-                    if (Hex_Val(last_sector) == Hex_Val(next_sector)) break;
+                    if (Hex_Val(last_sector) == Hex_Val(next_sector))
+                    {
+                        if (buff.Length > 0 && buff.Length < 257)
+                        {
+                            temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], 1);
+                            wrt.Write(temp);
+                        }
+                        break;
+                    }
                 }
+
                 byte[] directory = buff.ToArray();
                 if (directory.Length >= 256)
                 {
@@ -343,6 +356,7 @@ namespace V_Max_Tool
                             if (i != 16) ret += Encoding.ASCII.GetString(directory, 144 + i, 1).Replace('?', ' ');
                             else ret += "\"";
                         }
+                        l = ret.Length - 2;
                     }
                 }
                 if (directory.Length > 256)
@@ -356,49 +370,39 @@ namespace V_Max_Tool
                         for (int j = 0; j < 8; j++)
                         {
                             Array.Copy(directory, 256 * i + (j * 32), file, 0, file.Length);
-                            if (file[3] == 0x00 && file[4] == 0x00 && file[5] == 0x00 && file[6] == 0x00) { end_of_dir = true; break; }
-                            f_type = Get_File_Type(file[2]);
-                            bool eof = false;
-                            string f_name = "\"";
-                            for (int k = 5; k < 21; k++)
+                            if (file[2] != 0x00) // { break; } // && file[4] == 0x00 && file[5] == 0x00 && file[6] == 0x00) { end_of_dir = true; break; }
                             {
-                                if (file[k] != 0xa0)
+                                f_type = Get_DirectoryFileType(file[2]);
+                                bool eof = false;
+                                string f_name = "\"";
+                                for (int k = 5; k < 21; k++)
                                 {
-                                    if (file[k] != 0x00) f_name += Encoding.ASCII.GetString(file, k, 1); else f_name += " ";
+                                    if (file[k] != 0xa0)
+                                    {
+                                        if (file[k] != 0x00) f_name += Encoding.ASCII.GetString(file, k, 1); else f_name += " ";
+                                    }
+                                    else
+                                    {
+                                        if (!eof) f_name += "\""; else f_name += " ";
+                                        eof = true;
+                                    }
                                 }
-                                else
-                                {
-                                    if (!eof) f_name += "\""; else f_name += " ";
-                                    eof = true;
-                                }
+                                if (!eof) f_name += "\""; else f_name += " ";
+                                f_name = f_name.Replace('?', '-');
+                                string sz = $"{BitConverter.ToUInt16(file, 30)}".PadRight(4);
+                                ret += $"\n{sz} {f_name}{f_type}";
                             }
-                            if (!eof) f_name += "\""; else f_name += " ";
-                            f_name = f_name.Replace('?', '-');
-                            string sz = $"{BitConverter.ToUInt16(file, 30)}".PadRight(4);
-                            ret += $"\n{sz} {f_name}{f_type}";
                         }
                         if (end_of_dir) break;
                     }
                     ret += $"\n{blocksFree} BLOCKS FREE.";
                 }
             }
-            return ret;
-
-            string Get_File_Type(byte b)
-            {
-                byte[] f = new byte[1]; f[0] = b; f = Flip_Endian(f);
-                string g = "";
-                BitArray ft = new BitArray(f);
-                if (!ft[0]) g += "*"; else g += " "; // [ 1000 xxxx ] high-bit 0 set = open file (not closed properly)
-                if (ft[4] && !ft[5] && !ft[6] && !ft[7]) g += "DEL"; // low bits [ xxxx 1000 ] 
-                if (!ft[4] && !ft[5] && !ft[6] && ft[7]) g += "SEQ"; // low bits [ xxxx 0001 ]
-                if (!ft[4] && !ft[5] && ft[6] && !ft[7]) g += "PRG"; // low bits [ xxxx 0010 ]
-                if (!ft[4] && !ft[5] && ft[6] && ft[7]) g += "USR";  // low bits [ xxxx 0011 ]
-                if (!ft[4] && ft[5] && !ft[6] && !ft[7]) g += "REL"; // low bits [ xxxx 0100 ]
-                if (!ft[4] && !ft[5] && !ft[6] && !ft[7]) g += "???";// low bits [ xxxx 0000 ] <- file info exists, but no file-type bits set
-                if (ft[1]) g += "<"; //  [ 0100 xxxx ] high-bit 1 set = locked file
-                return g;
-            }
+            Dir_screen.Text = ret;
+            Dir_screen.Select(2, l);
+            Dir_screen.SelectionBackColor = c64_text;
+            Dir_screen.SelectionColor = C64_screen;
+            //return (ret, l);
         }
 
         byte[] Convert_4bytes_from_GCR(byte[] gcr)

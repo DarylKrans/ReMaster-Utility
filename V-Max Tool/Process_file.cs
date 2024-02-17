@@ -235,10 +235,6 @@ namespace V_Max_Tool
                 if (v2) VM_Ver.Text = "V-Max Version : v2 (Custom Format)";
                 if (v3) VM_Ver.Text = "V-Max Version : v3";
                 if (!v2 && !v3) VM_Ver.Text = "V-Max Version : v0-v2 (CBM Tracks)";
-                
-                Dir_screen.Text = Get_Disk_Directory();
-                //Dir_screen.Select(2, 24);
-                
             }));
         }
 
@@ -372,6 +368,7 @@ namespace V_Max_Tool
                                 string m = "This image is not compatible with this program!";
                                 string t = "This is not a CBM or (known) V-Max variant";
                                 MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                error = true;
                             }
                         }
                     }
@@ -530,6 +527,7 @@ namespace V_Max_Tool
                     for (int j = 0; j < 20; j++) if (data[i + j] == 0xee) return 3;
                     t = 0;
                 }
+
                 if (t != 0) break;
             }
             if (t == 0) t = Check_Blank(data);
@@ -537,7 +535,11 @@ namespace V_Max_Tool
 
             int Compare(byte[] d)
             {
-                if (Hex_Val(d) == v2) return 2;
+                if (Hex_Val(d).Contains(v2)) // == v2)
+                {
+                    if ((d[0] == 0x64 || d[0] == 0x4e))
+                    return 2;
+                }
                 if ((Hex_Val(d)).Contains(v3)) return 3; // { vm3s++; if (vm3s > 1) return 3; }  //return 3;
                 if (d[0] == sz[0])
                 {
