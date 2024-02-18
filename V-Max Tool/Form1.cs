@@ -161,6 +161,8 @@ namespace V_Max_Tool
             string l = "Not ok";
             try
             {
+                nib_header = new byte[0];
+                g64_header = new byte[684];
                 FileStream Stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 if (fext.ToLower() == supported[0])
                 {
@@ -240,14 +242,27 @@ namespace V_Max_Tool
                         label1.Text = $"{hm}";
                         label2.Text = "";
                     }
+                    if (hm == "Bad Header")
+                    {
+                        using (Message_Center center = new Message_Center(this)) // center message box
+                        {
+                            string t = "Bad Header!";
+                            string s = "Image is corrupt and cannot be opened";
+                            MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            error = true;
+                        }
+                    }
                 }
+                
             }
             catch (Exception ex)
             {
                 using (Message_Center center = new Message_Center(this)) // center message box
                 {
                     string t = "Something went wrong!";
+                    
                     string s = ex.Message;
+                    if (s.ToLower().Contains("source array")) s = "Image is corrupt and cannot be opened";
                     MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     error = true;
                 }
@@ -281,6 +296,7 @@ namespace V_Max_Tool
                             Process_Nib_Data(true, false, true);
                             Set_ListBox_Items(false, false);
                             Get_Disk_Directory();
+                            if (Disk_Dir.Checked) Disk_Dir.Focus(); 
                             Out_Type = get;
                             Save_Disk.Visible = true;
                             Source.Visible = Output.Visible = true;
@@ -357,7 +373,6 @@ namespace V_Max_Tool
             string[] File_List = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (File.Exists(File_List[0]))
             {
-                //dirname = Path.GetDirectoryName(File_List[0]);
                 fname = Path.GetFileNameWithoutExtension(File_List[0]);
                 fext = Path.GetExtension(File_List[0]);
             }
@@ -492,7 +507,8 @@ namespace V_Max_Tool
 
         private void Dir_View_CheckedChanged(object sender, EventArgs e)
         {
-            Dir_screen.Visible = Dir_View.Checked;
+            Dir_screen.Visible = Disk_Dir.Checked;
         }
+
     }
 }

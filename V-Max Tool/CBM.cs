@@ -330,79 +330,103 @@ namespace V_Max_Tool
                 {
                     Array.Copy(next_sector, 0, last_sector, 0, 2);
                     temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], Convert.ToInt32(next_sector[1]));
-                    Array.Copy(temp, 0, next_sector, 0, next_sector.Length);
-                    if (tracks <= 42) halftrack = Convert.ToInt32(next_sector[0]) - 1; else halftrack = (Convert.ToInt32(next_sector[0]) - 1) * 2;
-                    wrt.Write(temp);
-                    if (Hex_Val(last_sector) == Hex_Val(next_sector))
+                    if (temp.Length > 0)
                     {
-                        if (buff.Length > 0 && buff.Length < 257)
+                        Array.Copy(temp, 0, next_sector, 0, next_sector.Length);
+                        if (tracks <= 42) halftrack = Convert.ToInt32(next_sector[0]) - 1; else halftrack = (Convert.ToInt32(next_sector[0]) - 1) * 2;
+                        wrt.Write(temp);
+                        if (Hex_Val(last_sector) == Hex_Val(next_sector))
                         {
-                            temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], 1);
-                            wrt.Write(temp);
-                        }
-                        break;
-                    }
-                }
-
-                byte[] directory = buff.ToArray();
-                if (directory.Length >= 256)
-                {
-                    for (int i = 0; i < 35; i++) if (i != 17) blocksFree += directory[4 + (i * 4)];
-                    ret = $"0 \"";
-                    for (int i = 0; i < 23; i++)
-                    {
-                        if (directory[144 + i] != 0x00)
-                        {
-                            if (i != 16) ret += Encoding.ASCII.GetString(directory, 144 + i, 1).Replace('?', ' ');
-                            else ret += "\"";
-                        }
-                        l = ret.Length - 2;
-                    }
-                }
-                if (directory.Length > 256)
-                {
-                    string f_type; // = "";
-                    bool end_of_dir = false;
-                    byte[] file = new byte[32];
-                    var blocks = (directory.Length / 256);
-                    for (int i = 1; i < blocks; i++)
-                    {
-                        for (int j = 0; j < 8; j++)
-                        {
-                            Array.Copy(directory, 256 * i + (j * 32), file, 0, file.Length);
-                            if (file[2] != 0x00) // { break; } // && file[4] == 0x00 && file[5] == 0x00 && file[6] == 0x00) { end_of_dir = true; break; }
+                            if (buff.Length > 0 && buff.Length < 257)
                             {
-                                f_type = Get_DirectoryFileType(file[2]);
-                                bool eof = false;
-                                string f_name = "\"";
-                                for (int k = 5; k < 21; k++)
+                                temp = Decode_CBM_GCR(NDS.Track_Data[halftrack], 1);
+                                wrt.Write(temp);
+                            }
+                            break;
+                        }
+                    }
+                    else break;
+                }
+                if (buff.Length != 0)
+                {
+                    byte[] directory = buff.ToArray();
+                    if (directory.Length >= 256)
+                    {
+                        for (int i = 0; i < 35; i++) if (i != 17) blocksFree += directory[4 + (i * 4)];
+                        ret = $"0 \"";
+                        for (int i = 0; i < 23; i++)
+                        {
+                            if (directory[144 + i] != 0x00)
+                            {
+                                if (i != 16) ret += Encoding.ASCII.GetString(directory, 144 + i, 1).Replace('?', ' ');
+                                else ret += "\"";
+                            }
+                            l = ret.Length - 2;
+                        }
+                    }
+                    if (directory.Length > 256)
+                    {
+                        string f_type;
+                        byte[] file = new byte[32];
+                        var blocks = (directory.Length / 256);
+                        for (int i = 1; i < blocks; i++)
+                        {
+                            for (int j = 0; j < 8; j++)
+                            {
+                                Array.Copy(directory, 256 * i + (j * 32), file, 0, file.Length);
+                                if (file[2] != 0x00)
                                 {
-                                    if (file[k] != 0xa0)
+                                    f_type = Get_DirectoryFileType(file[2]);
+                                    bool eof = false;
+                                    string f_name = "\"";
+                                    for (int k = 5; k < 21; k++)
                                     {
-                                        if (file[k] != 0x00) f_name += Encoding.ASCII.GetString(file, k, 1); else f_name += " ";
+                                        if (file[k] != 0xa0)
+                                        {
+                                            if (file[k] != 0x00) f_name += Encoding.ASCII.GetString(file, k, 1); else f_name += " ";
+                                        }
+                                        else
+                                        {
+                                            if (!eof) f_name += "\""; else f_name += " ";
+                                            eof = true;
+                                        }
                                     }
-                                    else
-                                    {
-                                        if (!eof) f_name += "\""; else f_name += " ";
-                                        eof = true;
-                                    }
+                                    if (!eof) f_name += "\""; else f_name += " ";
+                                    f_name = f_name.Replace('?', '-');
+                                    string sz = $"{BitConverter.ToUInt16(file, 30)}".PadRight(4);
+                                    ret += $"\n{sz} {f_name}{f_type}";
                                 }
-                                if (!eof) f_name += "\""; else f_name += " ";
-                                f_name = f_name.Replace('?', '-');
-                                string sz = $"{BitConverter.ToUInt16(file, 30)}".PadRight(4);
-                                ret += $"\n{sz} {f_name}{f_type}";
                             }
                         }
-                        if (end_of_dir) break;
+                        ret += $"\n{blocksFree} BLOCKS FREE.";
                     }
-                    ret += $"\n{blocksFree} BLOCKS FREE.";
                 }
             }
-            Dir_screen.Text = ret;
-            Dir_screen.Select(2, l);
-            Dir_screen.SelectionBackColor = c64_text;
-            Dir_screen.SelectionColor = C64_screen;
-            //return (ret, l);
+            if (ret.Length > 0)
+            {
+                Dir_screen.Text = ret;
+                Dir_screen.Select(2, l);
+                Dir_screen.SelectionBackColor = c64_text;
+                Dir_screen.SelectionColor = C64_screen;
+            }
+
+            string Get_DirectoryFileType(byte b)
+            {
+                string fileType = " ";
+                if ((b | 0x3f) == 0x3f || (b | 0x3f) == 0x7f) fileType = "*";
+                switch (b | 0xf0)
+                {
+                    case 0xf0: fileType += "DEL"; break;
+                    case 0xf1: fileType += "SEQ"; break;
+                    case 0xf2: fileType += "PRG"; break;
+                    case 0xf3: fileType += "USR"; break;
+                    case 0xf4: fileType += "REL"; break;
+                    case 0xf8: fileType += "DEL"; break;
+                    default: fileType += "???"; break;
+                }
+                if ((b | 0x3f) == 0xff || (b | 0x3f) == 0x7f) fileType += "<";
+                return fileType;
+            }
         }
 
         byte[] Convert_4bytes_from_GCR(byte[] gcr)

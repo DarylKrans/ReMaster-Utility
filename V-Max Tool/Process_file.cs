@@ -16,7 +16,7 @@ namespace V_Max_Tool
         private string fnappend = "";
         private int tracks = 0;
         private byte[] nib_header = new byte[0];
-        private readonly byte[] g64_header = new byte[684];
+        private byte[] g64_header = new byte[684];
         private readonly string[] supported = { ".nib", ".g64" }; // Supported file extensions list
         // vsec = the CBM sector header values & against byte[] sz
         private readonly string[] valid_cbm = { "52-40-05-28", "52-40-05-2C", "52-40-05-48", "52-40-05-4C", "52-40-05-38", "52-40-05-3C", "52-40-05-58", "52-40-05-5C",

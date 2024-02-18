@@ -23,6 +23,7 @@ namespace V_Max_Tool
         private readonly Color c64_text = Color.FromArgb(114, 110, 255); 
         private string def_bg_text;
         private bool Out_Type = true;
+        private readonly string dir_def = "0 \"DRAG NIB/G64 TO \"START\n664 BLOCKS FREE.";
         void Reset_to_Defaults()
         {
             opt = true;
@@ -36,8 +37,32 @@ namespace V_Max_Tool
             Save_Disk.Visible = false;
             Adv_ctrl.SelectedIndex = 0;
             Draw_Init_Img(def_bg_text);
-            Dir_screen.Clear();
+            Def_Dir_Screen();
             opt = false;
+        }
+
+        void Def_Dir_Screen()
+        {
+            Dir_screen.Clear();
+            Dir_screen.Text = dir_def;
+            Dir_screen.Select(2, 23);
+            Dir_screen.SelectionBackColor = c64_text;
+            Dir_screen.SelectionColor = C64_screen;
+        }
+
+        void Check_CPU_Speed()
+        {
+            int cpu = 0;
+            Thread perf = new Thread(new ThreadStart(() => Perf()));
+            perf.Start();
+            Thread.Sleep(100);
+            perf.Abort();
+            if (cpu < 300000000) Img_Q.SelectedIndex = 1;
+            if (cpu < 200000000) Img_Q.SelectedIndex = 0;
+            if (cpu < 150000000) M_render.Visible = manualRender = true;
+            else M_render.Visible = manualRender = false;
+
+            void Perf() { while (true) cpu++; }
         }
 
         void Out_Density_Color(object sender, DrawItemEventArgs e)
@@ -198,23 +223,6 @@ namespace V_Max_Tool
                 if (Hex_Val(comp) == find) break;
             }
             return i;
-        }
-
-        string Get_DirectoryFileType(byte b)
-        {
-            string fileType = " ";
-            if ((b | 0x3f) == 0x3f || (b | 0x3f) == 0x7f) fileType = "*";
-            switch (b | 0xf0)
-            {
-                case 0xf1: fileType += "SEQ"; break;
-                case 0xf2: fileType += "PRG"; break;
-                case 0xf3: fileType += "USR"; break;
-                case 0xf4: fileType += "REL"; break;
-                case 0xf8: fileType += "DEL"; break;
-                default: fileType += "???"; break;
-            }
-            if ((b | 0x3f) == 0xff || (b | 0x3f) == 0x7f) fileType += "<";
-            return fileType;
         }
 
         void Set_Dest_Arrays(byte[] data, int trk)
@@ -426,24 +434,17 @@ namespace V_Max_Tool
             Import_File.Visible = false;
             for (int i = 0; i < 8000; i++) { def_bg_text += "10"; }
             Draw_Init_Img(def_bg_text);
-            int cpu = 0;
-            Thread perf = new Thread(new ThreadStart(() => Perf()));
-            perf.Start();
-            Thread.Sleep(100);
-            perf.Abort();
-            if (cpu < 300000000) Img_Q.SelectedIndex = 1;
-            if (cpu < 200000000) Img_Q.SelectedIndex = 0;
-            if (cpu < 150000000) M_render.Visible = manualRender = true;
-            else M_render.Visible = manualRender = false;
             M_render.Enabled = false;
             Adv_ctrl.Enabled = false;
             VBS_info.Visible = Reg_info.Visible = false;
             Dir_screen.BackColor = C64_screen;
             Dir_screen.ForeColor = c64_text;
-            Dir_screen.Visible = Dir_View.Checked;
+            Dir_screen.ReadOnly = true;
+            Def_Dir_Screen();
+            Trk_Analysis.Checked = true;
+            Dir_screen.Visible = Disk_Dir.Checked;
+            Check_CPU_Speed();
             opt = false;
-
-            void Perf() { while (true) cpu++; }
 
             void Set_Boxes()
             {
@@ -538,7 +539,6 @@ namespace V_Max_Tool
             outbox.Height = outbox.PreferredSize.Height;
             inbox.Height = inbox.PreferredSize.Height;
             Drag_pic.Visible = (r && nofile);
-            //T_Info.Visible = !def_bg_text;
             out_size.EndUpdate();
             out_dif.EndUpdate();
             Out_density.EndUpdate();
