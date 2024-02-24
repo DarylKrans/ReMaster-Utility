@@ -233,11 +233,9 @@
             this.Main.BackColor = System.Drawing.Color.Gainsboro;
             this.Main.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Main.Controls.Add(this.Import_File);
-            this.Main.Controls.Add(this.Disk_Dir);
-            this.Main.Controls.Add(this.Trk_Analysis);
-            this.Main.Controls.Add(this.Save_Disk);
             this.Main.Controls.Add(this.VBS_info);
             this.Main.Controls.Add(this.Reg_info);
+            this.Main.Controls.Add(this.Save_Disk);
             this.Main.Controls.Add(this.Adj_cbm);
             this.Main.Controls.Add(this.label1);
             this.Main.Controls.Add(this.label2);
@@ -254,7 +252,7 @@
             this.Import_File.Controls.Add(this.Import_Progress_Bar);
             this.Import_File.Controls.Add(this.label5);
             this.Import_File.ForeColor = System.Drawing.Color.Black;
-            this.Import_File.Location = new System.Drawing.Point(23, 64);
+            this.Import_File.Location = new System.Drawing.Point(16, 56);
             this.Import_File.Name = "Import_File";
             this.Import_File.Size = new System.Drawing.Size(870, 92);
             this.Import_File.TabIndex = 59;
@@ -282,7 +280,7 @@
             // 
             this.Disk_Dir.AutoSize = true;
             this.Disk_Dir.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.Disk_Dir.Location = new System.Drawing.Point(709, 30);
+            this.Disk_Dir.Location = new System.Drawing.Point(343, 51);
             this.Disk_Dir.Name = "Disk_Dir";
             this.Disk_Dir.Size = new System.Drawing.Size(177, 29);
             this.Disk_Dir.TabIndex = 61;
@@ -295,7 +293,7 @@
             // 
             this.Trk_Analysis.AutoSize = true;
             this.Trk_Analysis.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.Trk_Analysis.Location = new System.Drawing.Point(702, 0);
+            this.Trk_Analysis.Location = new System.Drawing.Point(336, 21);
             this.Trk_Analysis.Name = "Trk_Analysis";
             this.Trk_Analysis.Size = new System.Drawing.Size(184, 29);
             this.Trk_Analysis.TabIndex = 60;
@@ -307,7 +305,7 @@
             // Save_Disk
             // 
             this.Save_Disk.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.Save_Disk.Location = new System.Drawing.Point(789, 101);
+            this.Save_Disk.Location = new System.Drawing.Point(782, 3);
             this.Save_Disk.Name = "Save_Disk";
             this.Save_Disk.Size = new System.Drawing.Size(104, 43);
             this.Save_Disk.TabIndex = 59;
@@ -318,12 +316,14 @@
             // VBS_info
             // 
             this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.VBS_info.Controls.Add(this.Disk_Dir);
+            this.VBS_info.Controls.Add(this.Trk_Analysis);
             this.VBS_info.Controls.Add(this.Cust_Density);
             this.VBS_info.Controls.Add(this.VM_Ver);
             this.VBS_info.Controls.Add(this.f_load);
-            this.VBS_info.Location = new System.Drawing.Point(386, 64);
+            this.VBS_info.Location = new System.Drawing.Point(336, 64);
             this.VBS_info.Name = "VBS_info";
-            this.VBS_info.Size = new System.Drawing.Size(382, 83);
+            this.VBS_info.Size = new System.Drawing.Size(535, 83);
             this.VBS_info.TabIndex = 22;
             // 
             // Cust_Density
@@ -352,7 +352,7 @@
             this.Reg_info.Controls.Add(this.Loader_Track);
             this.Reg_info.Location = new System.Drawing.Point(23, 64);
             this.Reg_info.Name = "Reg_info";
-            this.Reg_info.Size = new System.Drawing.Size(357, 83);
+            this.Reg_info.Size = new System.Drawing.Size(307, 83);
             this.Reg_info.TabIndex = 21;
             // 
             // VMax_Tracks
@@ -1023,6 +1023,7 @@
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "V-Max Sync Tool";

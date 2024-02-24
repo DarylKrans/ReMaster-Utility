@@ -146,13 +146,13 @@ namespace V_Max_Tool
             }
             int index = hdr_ID.FindIndex(x => x.StartsWith("F3"));
             // Trying to find if a track contains Track-ID marker (helps the 1541/71 find which track it's on)
-            byte[] track_ID = new byte[8];
+            byte[] track_ID = new byte[10];
             var tin = index - 1;
             if (tin < 0) tin = sectors - 1;
             var tid = Find_Data(h2[tin], data, 3);
             tid += sec_data[tin].Length + oh_len;
             bool tdd = false;
-            while (tid < data.Length - 8)
+            while (tid < data.Length - 10)
             {
                 Array.Copy(data, tid, track_ID, 0, track_ID.Length);
                 if (track_ID[0] == 0xff && track_ID[1] == 0x52)
@@ -271,7 +271,7 @@ namespace V_Max_Tool
                     }
                 }));
             }
-            header_avg = header_total / ss.Count;
+            if (header_avg > 0 && header_total > 0) header_avg = header_total / ss.Count;
 
             void build_list()
             {

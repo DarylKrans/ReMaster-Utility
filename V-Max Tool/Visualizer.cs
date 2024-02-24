@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -86,8 +87,9 @@ namespace V_Max_Tool
                     {
                         var ds = NDS.D_Start[i];
                         var de = NDS.D_End[i];
-                        if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; }
-                        if (NDS.Track_Length[i] > min_t_len)
+                        if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; } else { ds = 0; de = 8192; }
+                        //if (NDS.Track_Length[i] > min_t_len) // <- view only tracks that are recognized formats and able to be processed
+                        if (NDS.Track_Data[i].All(s => s != 0x00)) // <- view all tracks that aren't all 0x00 bytes
                         {
                             t = Draw_Track(flat_large, (42 * 14), NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked);
                             ext = $"(flat_tracks){fext}";
@@ -111,7 +113,6 @@ namespace V_Max_Tool
                         {
                             Disk_Image.Cursor = Cursors.Hand;
                             Disk_Image.Image = flat_large;
-
                         }
                         else
                         {
@@ -169,9 +170,19 @@ namespace V_Max_Tool
             BitArray t_bit = new BitArray(0);
             circle = new FastBitmap(width, height);
             if (Src_view.Checked) { fi_ext = ".nib"; fi_nam = $"{fname}"; }
-            byte[] bgtxt = new byte[2000];
-            Array.Copy(NDS.Track_Data[20], 0, bgtxt, 0, 2000);
-            Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}", ToBinary(bgtxt));
+            int trk = 100;
+            int a = 0;
+            Random rnd = new Random();
+            while (true || a < 1000)
+            {
+                trk = rnd.Next(0, tracks - 1);
+                if (NDS.Track_Length[trk] > 0) break;
+                a++;
+            }
+            //byte[] bgtxt = new byte[2000];
+            //Array.Copy(NDS.Track_Data[20], 0, bgtxt, 0, 2000);
+            //Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}", ToBinary(bgtxt));
+            Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}", ToBinary(Encoding.ASCII.GetString(NDS.Track_Data[trk], 0, 2000)));
 
             while (r > 80 && track < tracks)
             {

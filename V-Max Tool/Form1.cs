@@ -267,7 +267,7 @@ namespace V_Max_Tool
                     error = true;
                 }
             }
-
+            GC.Collect();
             if (!error && !supported.Any(s => s == fext.ToLower()))
             {
                 Reset_to_Defaults();

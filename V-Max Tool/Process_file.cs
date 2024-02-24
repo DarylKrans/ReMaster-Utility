@@ -91,7 +91,7 @@ namespace V_Max_Tool
                     {
                         Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
                     }));
-                    (NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], NDS.Track_Length[i], f, NDS.sectors[i], NDS.cbm_sector[i], NDS.Total_Sync[i]) = Find_Sector_Zero(NDS.Track_Data[i]);
+                    (NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], NDS.Track_Length[i], f, NDS.sectors[i], NDS.cbm_sector[i], NDS.Total_Sync[i]) = Find_Sector_Zero(NDS.Track_Data[i], true);
                     Invoke(new Action(() =>
                     {
                         for (int j = 0; j < f.Length; j++)
@@ -356,7 +356,7 @@ namespace V_Max_Tool
                             if (temp.Length > density[d]) temp = Shrink_Track(temp, d); // this can cause corrupted tracks if sectors contain single byte repeats
                         }
                         Set_Dest_Arrays(temp, trk);
-                        (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk]) = Find_Sector_Zero(NDA.Track_Data[trk]);
+                        (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);
                         f[0] = "";
                     }
                     catch

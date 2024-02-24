@@ -30,7 +30,6 @@ namespace V_Max_Tool
             int trk_density = density[Get_Density(data.Length)]; // - 2;
             byte[] start_byte = new byte[1];
             byte se_byte = 0x7f;
-            byte[] tail = new byte[0];
             byte[][] hdr_dat = new byte[23][];
             byte[][] sec_dat = new byte[23][];
             byte[][] header = new byte[23][];
@@ -64,7 +63,7 @@ namespace V_Max_Tool
                 {
                     if (data[pos - 20] == 0x52)
                     {
-                        t_gap = new byte[8];
+                        t_gap = new byte[10];
                         Array.Copy(data, pos - 20, t_gap, 0, t_gap.Length);
                     }
                     if (i == vm2_ver[vs].Length - 1) gap_pos = 0; else gap_pos += pos;
@@ -92,7 +91,6 @@ namespace V_Max_Tool
             int ssec = sec;
             for (int i = 0; i < sectors; i++)
             {
-                //if (i == 0) slen = trk_sync.Length; else slen = sec_sync.Length;
                 slen = v2_sync_marker.Length;
                 header[sec] = new byte[2];
                 sec_dat[sec] = new byte[Sector_len];
@@ -282,8 +280,11 @@ namespace V_Max_Tool
             }
             if (data_end < data_start) data_end = data.Length;
             byte[] tdata = new byte[8192];
-            Array.Copy(data, data_start, tdata, 0, data_end - data_start);
-            Array.Copy(data, data_start, tdata, (data_end - data_start), 8192 - (data_end - data_start));
+            try
+            {
+                Array.Copy(data, data_start, tdata, 0, data_end - data_start);
+                Array.Copy(data, data_start, tdata, (data_end - data_start), 8192 - (data_end - data_start));
+            } catch { }
             return (tdata, data_start, data_end, sec_zero, (data_end - data_start) << 3, all_headers.ToArray(), sectors, m);
         }
 

@@ -19,8 +19,8 @@ namespace V_Max_Tool
         private bool manualRender;
         private readonly Gbox outbox = new Gbox();
         private readonly Gbox inbox = new Gbox();
-        private readonly Color C64_screen = Color.FromArgb(44, 41, 213);
-        private readonly Color c64_text = Color.FromArgb(114, 110, 255); 
+        private readonly Color C64_screen = Color.FromArgb(69, 55, 176);   //(44, 41, 213);
+        private readonly Color c64_text = Color.FromArgb(135, 122, 237);   //(114, 110, 255); 
         private string def_bg_text;
         private bool Out_Type = true;
         private readonly string dir_def = "0 \"DRAG NIB/G64 TO \"START\n664 BLOCKS FREE.";
@@ -153,9 +153,11 @@ namespace V_Max_Tool
             return BitConverter.ToString(data, a, b);
         }
 
-        static String ToBinary(Byte[] data)
+        public static string ToBinary(string data)
         {
-            return string.Join("", data.Select(byt => Convert.ToString(byt, 2).PadLeft(8, '0')));
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in data.ToCharArray()) sb.Append(Convert.ToString(c, 2).PadLeft(8, '0'));
+            return sb.ToString();
         }
 
         void Pad_Bits(int position, int count, BitArray bitarray)
@@ -227,13 +229,16 @@ namespace V_Max_Tool
 
         void Set_Dest_Arrays(byte[] data, int trk)
         {
-            NDG.Track_Data[trk] = new byte[data.Length];
-            NDA.Track_Data[trk] = new byte[8192];
-            Array.Copy(data, 0, NDG.Track_Data[trk], 0, data.Length);
-            Array.Copy(data, 0, NDA.Track_Data[trk], 0, data.Length);
-            Array.Copy(data, 0, NDA.Track_Data[trk], data.Length, 8192 - data.Length);
-            NDA.Track_Length[trk] = data.Length << 3;
-            NDG.Track_Length[trk] = data.Length;
+            try
+            {
+                NDG.Track_Data[trk] = new byte[data.Length];
+                NDA.Track_Data[trk] = new byte[8192];
+                Array.Copy(data, 0, NDG.Track_Data[trk], 0, data.Length);
+                Array.Copy(data, 0, NDA.Track_Data[trk], 0, data.Length);
+                Array.Copy(data, 0, NDA.Track_Data[trk], data.Length, 8192 - data.Length);
+                NDA.Track_Length[trk] = data.Length << 3;
+                NDG.Track_Length[trk] = data.Length;
+            } catch { }
         }
 
         void Export_File()
