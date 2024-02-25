@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -91,7 +89,7 @@ namespace V_Max_Tool
                     {
                         Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
                     }));
-                    (NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], NDS.Track_Length[i], f, NDS.sectors[i], NDS.cbm_sector[i], NDS.Total_Sync[i]) = Find_Sector_Zero(NDS.Track_Data[i], true);
+                    (NDS.D_Start[i], NDS.D_End[i], NDS.Sector_Zero[i], NDS.Track_Length[i], f, NDS.sectors[i], NDS.cbm_sector[i], NDS.Total_Sync[i], NDS.Disk_ID[i]) = Find_Sector_Zero(NDS.Track_Data[i], true);
                     Invoke(new Action(() =>
                     {
                         for (int j = 0; j < f.Length; j++)
@@ -356,7 +354,7 @@ namespace V_Max_Tool
                             if (temp.Length > density[d]) temp = Shrink_Track(temp, d); // this can cause corrupted tracks if sectors contain single byte repeats
                         }
                         Set_Dest_Arrays(temp, trk);
-                        (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);
+                        (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk], NDS.Disk_ID[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);
                         f[0] = "";
                     }
                     catch
@@ -538,7 +536,7 @@ namespace V_Max_Tool
                 if (Hex_Val(d).Contains(v2)) // == v2)
                 {
                     if ((d[0] == 0x64 || d[0] == 0x4e))
-                    return 2;
+                        return 2;
                 }
                 if ((Hex_Val(d)).Contains(v3)) return 3; // { vm3s++; if (vm3s > 1) return 3; }  //return 3;
                 if (d[0] == sz[0])

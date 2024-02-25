@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -238,7 +237,8 @@ namespace V_Max_Tool
                 Array.Copy(data, 0, NDA.Track_Data[trk], data.Length, 8192 - data.Length);
                 NDA.Track_Length[trk] = data.Length << 3;
                 NDG.Track_Length[trk] = data.Length;
-            } catch { }
+            }
+            catch { }
         }
 
         void Export_File()

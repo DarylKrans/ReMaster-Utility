@@ -284,7 +284,8 @@ namespace V_Max_Tool
             {
                 Array.Copy(data, data_start, tdata, 0, data_end - data_start);
                 Array.Copy(data, data_start, tdata, (data_end - data_start), 8192 - (data_end - data_start));
-            } catch { }
+            }
+            catch { }
             return (tdata, data_start, data_end, sec_zero, (data_end - data_start) << 3, all_headers.ToArray(), sectors, m);
         }
 

@@ -253,14 +253,14 @@ namespace V_Max_Tool
                         }
                     }
                 }
-                
+
             }
             catch (Exception ex)
             {
                 using (Message_Center center = new Message_Center(this)) // center message box
                 {
                     string t = "Something went wrong!";
-                    
+
                     string s = ex.Message;
                     if (s.ToLower().Contains("source array")) s = "Image is corrupt and cannot be opened";
                     MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -296,7 +296,7 @@ namespace V_Max_Tool
                             Process_Nib_Data(true, false, true);
                             Set_ListBox_Items(false, false);
                             Get_Disk_Directory();
-                            if (Disk_Dir.Checked) Disk_Dir.Focus(); 
+                            if (Disk_Dir.Checked) Disk_Dir.Focus();
                             Out_Type = get;
                             Save_Disk.Visible = true;
                             Source.Visible = Output.Visible = true;
@@ -335,6 +335,7 @@ namespace V_Max_Tool
                 NDS.v2info = new byte[len][];
                 NDS.Loader = new byte[0];
                 NDS.Total_Sync = new int[len];
+                NDS.Disk_ID = new byte[len][];
                 // NDA is the destination or output array
                 NDA.Track_Data = new byte[len][];
                 NDA.Sector_Zero = new int[len];
@@ -510,5 +511,17 @@ namespace V_Max_Tool
             Dir_screen.Visible = Disk_Dir.Checked;
         }
 
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < tracks; i++)
+            {
+                if (NDS.cbm[i] == 1)
+                {
+                    int d = Get_Density(NDG.Track_Length[i]);
+                    byte[] temp = Rebuild_CBM(NDS.Track_Data[i], NDS.sectors[i], NDS.Disk_ID[i], d, i);
+                    Set_Dest_Arrays(temp, i);
+                }
+            }
+        }
     }
 }

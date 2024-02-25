@@ -41,16 +41,16 @@
             this.Import_File = new System.Windows.Forms.GroupBox();
             this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
             this.label5 = new System.Windows.Forms.Label();
+            this.VBS_info = new System.Windows.Forms.Panel();
             this.Disk_Dir = new System.Windows.Forms.RadioButton();
             this.Trk_Analysis = new System.Windows.Forms.RadioButton();
-            this.Save_Disk = new System.Windows.Forms.Button();
-            this.VBS_info = new System.Windows.Forms.Panel();
             this.Cust_Density = new System.Windows.Forms.Label();
             this.VM_Ver = new System.Windows.Forms.Label();
             this.Reg_info = new System.Windows.Forms.Panel();
             this.VMax_Tracks = new System.Windows.Forms.Label();
             this.CBM_Tracks = new System.Windows.Forms.Label();
             this.Loader_Track = new System.Windows.Forms.Label();
+            this.Save_Disk = new System.Windows.Forms.Button();
             this.Adj_cbm = new System.Windows.Forms.CheckBox();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
             this.Re_Align = new System.Windows.Forms.CheckBox();
@@ -104,6 +104,7 @@
             this.sl = new System.Windows.Forms.ListBox();
             this.ss = new System.Windows.Forms.ListBox();
             this.sf = new System.Windows.Forms.ListBox();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -276,6 +277,19 @@
             this.label5.TabIndex = 38;
             this.label5.Text = "Processing...";
             // 
+            // VBS_info
+            // 
+            this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.VBS_info.Controls.Add(this.Disk_Dir);
+            this.VBS_info.Controls.Add(this.Trk_Analysis);
+            this.VBS_info.Controls.Add(this.Cust_Density);
+            this.VBS_info.Controls.Add(this.VM_Ver);
+            this.VBS_info.Controls.Add(this.f_load);
+            this.VBS_info.Location = new System.Drawing.Point(336, 64);
+            this.VBS_info.Name = "VBS_info";
+            this.VBS_info.Size = new System.Drawing.Size(535, 83);
+            this.VBS_info.TabIndex = 22;
+            // 
             // Disk_Dir
             // 
             this.Disk_Dir.AutoSize = true;
@@ -301,30 +315,6 @@
             this.Trk_Analysis.Text = "Track Analysis";
             this.Trk_Analysis.UseVisualStyleBackColor = true;
             this.Trk_Analysis.CheckedChanged += new System.EventHandler(this.Dir_View_CheckedChanged);
-            // 
-            // Save_Disk
-            // 
-            this.Save_Disk.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.Save_Disk.Location = new System.Drawing.Point(782, 3);
-            this.Save_Disk.Name = "Save_Disk";
-            this.Save_Disk.Size = new System.Drawing.Size(104, 43);
-            this.Save_Disk.TabIndex = 59;
-            this.Save_Disk.Text = "Export";
-            this.Save_Disk.UseVisualStyleBackColor = true;
-            this.Save_Disk.Click += new System.EventHandler(this.Make);
-            // 
-            // VBS_info
-            // 
-            this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.VBS_info.Controls.Add(this.Disk_Dir);
-            this.VBS_info.Controls.Add(this.Trk_Analysis);
-            this.VBS_info.Controls.Add(this.Cust_Density);
-            this.VBS_info.Controls.Add(this.VM_Ver);
-            this.VBS_info.Controls.Add(this.f_load);
-            this.VBS_info.Location = new System.Drawing.Point(336, 64);
-            this.VBS_info.Name = "VBS_info";
-            this.VBS_info.Size = new System.Drawing.Size(535, 83);
-            this.VBS_info.TabIndex = 22;
             // 
             // Cust_Density
             // 
@@ -381,6 +371,17 @@
             this.Loader_Track.Size = new System.Drawing.Size(139, 25);
             this.Loader_Track.TabIndex = 21;
             this.Loader_Track.Text = "Loader Track";
+            // 
+            // Save_Disk
+            // 
+            this.Save_Disk.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.Save_Disk.Location = new System.Drawing.Point(782, 3);
+            this.Save_Disk.Name = "Save_Disk";
+            this.Save_Disk.Size = new System.Drawing.Size(104, 43);
+            this.Save_Disk.TabIndex = 59;
+            this.Save_Disk.Text = "Export";
+            this.Save_Disk.UseVisualStyleBackColor = true;
+            this.Save_Disk.Click += new System.EventHandler(this.Make);
             // 
             // Adj_cbm
             // 
@@ -1015,11 +1016,22 @@
             this.sf.Size = new System.Drawing.Size(115, 1002);
             this.sf.TabIndex = 26;
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(2089, 48);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 46);
+            this.button1.TabIndex = 38;
+            this.button1.Text = "No!";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.Button1_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(2612, 1386);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
@@ -1138,6 +1150,7 @@
         private System.Windows.Forms.RichTextBox Dir_screen;
         private System.Windows.Forms.RadioButton Disk_Dir;
         private System.Windows.Forms.RadioButton Trk_Analysis;
+        private System.Windows.Forms.Button button1;
     }
 }
 
