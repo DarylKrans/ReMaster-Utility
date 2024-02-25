@@ -23,6 +23,48 @@ namespace V_Max_Tool
         private string def_bg_text;
         private bool Out_Type = true;
         private readonly string dir_def = "0 \"DRAG NIB/G64 TO \"START\n664 BLOCKS FREE.";
+
+        private readonly byte[] sector_gap_length = {
+                10, 10, 10, 10, 10, 10, 10, 10, 10, 10,	/*  1 - 10 */
+            	10, 10, 10, 10, 10, 10, 10, 17, 17, 17,	/* 11 - 20 */
+            	17, 17, 17, 17, 11, 11, 11, 11, 11, 11,	/* 21 - 30 */
+            	8, 8, 8, 8, 8,						/* 31 - 35 */
+            	8, 8, 8, 8, 8, 8, 8				/* 36 - 42 (non-standard) */
+            };
+
+
+        private readonly byte[] density_map = {
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
+            	0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	/* 11 - 20 */
+            	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,	/* 21 - 30 */
+            	3, 3, 3, 3, 3,					/* 31 - 35 */
+            	3, 3, 3, 3, 3, 3, 3				/* 36 - 42 (non-standard) */
+            };
+
+        private readonly byte[] GCR_encode = {
+                0x0a, 0x0b, 0x12, 0x13,
+                0x0e, 0x0f, 0x16, 0x17,
+                0x09, 0x19, 0x1a, 0x1b,
+                0x0d, 0x1d, 0x1e, 0x15
+            };
+
+        private readonly byte[] GCR_decode_high =
+            {
+                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                0xff, 0x80, 0x00, 0x10, 0xff, 0xc0, 0x40, 0x50,
+                0xff, 0xff, 0x20, 0x30, 0xff, 0xf0, 0x60, 0x70,
+                0xff, 0x90, 0xa0, 0xb0, 0xff, 0xd0, 0xe0, 0xff
+            };
+
+        private readonly byte[] GCR_decode_low =
+            {
+                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                0xff, 0x08, 0x00, 0x01, 0xff, 0x0c, 0x04, 0x05,
+                0xff, 0xff, 0x02, 0x03, 0xff, 0x0f, 0x06, 0x07,
+                0xff, 0x09, 0x0a, 0x0b, 0xff, 0x0d, 0x0e, 0xff
+            };
+
+
         void Reset_to_Defaults()
         {
             opt = true;
@@ -33,14 +75,15 @@ namespace V_Max_Tool
             Tabs.Controls.Remove(Adv_V2_Opts);
             Img_style.Enabled = Img_View.Enabled = Img_opts.Enabled = Save_Circle_btn.Visible = M_render.Visible = Adv_ctrl.Enabled = false;
             VBS_info.Visible = Reg_info.Visible = false;
+            Other_opts.Visible = false;
             Save_Disk.Visible = false;
             Adv_ctrl.SelectedIndex = 0;
             Draw_Init_Img(def_bg_text);
-            Def_Dir_Screen();
+            Default_Dir_Screen();
             opt = false;
         }
 
-        void Def_Dir_Screen()
+        void Default_Dir_Screen()
         {
             Dir_screen.Clear();
             Dir_screen.Text = dir_def;
@@ -269,6 +312,100 @@ namespace V_Max_Tool
             }
         }
 
+        byte[] Decode_GCR(byte[] gcr)
+        {
+            byte hnib;
+            byte lnib;
+            byte[] plain = new byte[(gcr.Length / 5) * 4];
+            for (int i = 0; i < gcr.Length / 5; i++)
+            {
+                hnib = GCR_decode_high[gcr[(i * 5) + 0] >> 3];
+                lnib = GCR_decode_low[((gcr[(i * 5) + 0] << 2) | (gcr[(i * 5) + 1] >> 6)) & 0x1f];
+                if (!(hnib == 0xff || lnib == 0xff)) plain[(i * 4) + 0] = hnib |= lnib;
+                else plain[(i * 4) + 0] = 0x00;
+
+                hnib = GCR_decode_high[(gcr[(i * 5) + 1] >> 1) & 0x1f];
+                lnib = GCR_decode_low[((gcr[(i * 5) + 1] << 4) | (gcr[(i * 5) + 2] >> 4)) & 0x1f];
+                if (!(hnib == 0xff || lnib == 0xff)) plain[(i * 4) + 1] = hnib |= lnib;
+                else plain[(i * 4) + 1] = 0x00;
+
+                hnib = GCR_decode_high[((gcr[(i * 5) + 2] << 1) | (gcr[(i * 5) + 3] >> 7)) & 0x1f];
+                lnib = GCR_decode_low[(gcr[(i * 5) + 3] >> 2) & 0x1f];
+                if (!(hnib == 0xff || lnib == 0xff)) plain[(i * 4) + 2] = hnib |= lnib;
+                else plain[(i * 4) + 2] = 0x00;
+
+                hnib = GCR_decode_high[((gcr[(i * 5) + 3] << 3) | (gcr[(i * 5) + 4] >> 5)) & 0x1f];
+                lnib = GCR_decode_low[gcr[(i * 5) + 4] & 0x1f];
+                if (!(hnib == 0xff || lnib == 0xff)) plain[(i * 4) + 3] = hnib |= lnib;
+                else plain[(i * 4) + 3] = 0x00;
+            }
+            return plain;
+        }
+
+        byte[] Encode_GCR(byte[] plain)
+        {
+            int l = plain.Length / 4;
+            byte[] gcr = new byte[l * 5];
+
+            for (int i = 0; i < l; i++)
+            {
+                gcr[0 + (i * 5)] = (byte)(GCR_encode[(plain[0 + (i * 4)]) >> 4] << 3);
+                gcr[0 + (i * 5)] |= (byte)(GCR_encode[(plain[0 + (i * 4)]) & 0x0f] >> 2);
+
+                gcr[1 + (i * 5)] = (byte)(GCR_encode[(plain[0 + (i * 4)]) & 0x0f] << 6);
+                gcr[1 + (i * 5)] |= (byte)(GCR_encode[(plain[1 + (i * 4)]) >> 4] << 1);
+                gcr[1 + (i * 5)] |= (byte)(GCR_encode[(plain[1 + (i * 4)]) & 0x0f] >> 4);
+
+                gcr[2 + (i * 5)] = (byte)(GCR_encode[(plain[1 + (i * 4)]) & 0x0f] << 4);
+                gcr[2 + (i * 5)] |= (byte)(GCR_encode[(plain[2 + (i * 4)]) >> 4] >> 1);
+
+                gcr[3 + (i * 5)] = (byte)(GCR_encode[(plain[2 + (i * 4)]) >> 4] << 7);
+                gcr[3 + (i * 5)] |= (byte)(GCR_encode[(plain[2 + (i * 4)]) & 0x0f] << 2);
+                gcr[3 + (i * 5)] |= (byte)(GCR_encode[(plain[3 + (i * 4)]) >> 4] >> 3);
+
+                gcr[4 + (i * 5)] = (byte)(GCR_encode[(plain[3 + (i * 4)]) >> 4] << 5);
+                gcr[4 + (i * 5)] |= GCR_encode[(plain[3 + (i * 4)]) & 0x0f];
+            }
+            return gcr;
+        }
+
+        (byte, int) Find_Longest_Sync(byte[] data)
+        {
+            int count = 0;
+            int longest = 0;
+            byte comp = 0x00;
+            byte s = 0x00;
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] == comp) count++;
+                else
+                {
+                    if (longest < count)
+                    {
+                        if (comp == 0xff)
+                        {
+                            longest = count;
+                            s = comp;
+                        }
+                    }
+                    comp = data[i];
+                    count = 0;
+                }
+            }
+            return (s, longest);
+        }
+
+        byte[] Build_BlockHeader(int track, int sector, byte[] ID)
+        {
+            byte[] header = new byte[8];
+            header[0] = 0x08;
+            header[2] = (byte)sector;
+            header[3] = (byte)track;
+            Array.Copy(ID, 0, header, 4, 4);
+            for (int i = 2; i < 6; i++) header[1] ^= header[i];
+            return Encode_GCR(header);
+        }
+
         void Shrink_Short_Sector(int trk)
         {
             if (Original.OT[trk].Length == 0)
@@ -381,6 +518,7 @@ namespace V_Max_Tool
 
         void Init()
         {
+            Other_opts.Visible = false;
             opt = true;
             Set_Boxes();
             panel1.Controls.Add(outbox);
@@ -445,7 +583,7 @@ namespace V_Max_Tool
             Dir_screen.BackColor = C64_screen;
             Dir_screen.ForeColor = c64_text;
             Dir_screen.ReadOnly = true;
-            Def_Dir_Screen();
+            Default_Dir_Screen();
             Trk_Analysis.Checked = true;
             Dir_screen.Visible = Disk_Dir.Checked;
             Check_CPU_Speed();

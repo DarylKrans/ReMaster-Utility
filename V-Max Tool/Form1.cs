@@ -513,13 +513,24 @@ namespace V_Max_Tool
 
         private void Button1_Click(object sender, EventArgs e)
         {
+            int[] skip = new int[] { 12, 13, 14, 15, 16, 17, 18 };
+            bool do_track = true;
+            byte[] temp = new byte[0];
+            int ht;
+            if (NDG.Track_Length.Any(ss => ss > density[0] + 150) || NDG.Track_Length.Any(ss => ss < density[0] - 50)) do_track = false;
             for (int i = 0; i < tracks; i++)
             {
                 if (NDS.cbm[i] == 1)
                 {
                     int d = Get_Density(NDG.Track_Length[i]);
-                    byte[] temp = Rebuild_CBM(NDS.Track_Data[i], NDS.sectors[i], NDS.Disk_ID[i], d, i);
-                    Set_Dest_Arrays(temp, i);
+                    {
+                        //if (tracks > 42) ht = (i / 2) + 1; else ht = i + 1;
+                        //if (!do_track && !skip.Any(ss => ss == ht))
+                        {
+                            temp = Rebuild_CBM(NDS.Track_Data[i], NDS.sectors[i], NDS.Disk_ID[i], d, i);
+                            Set_Dest_Arrays(temp, i);
+                        }
+                    }
                 }
             }
         }

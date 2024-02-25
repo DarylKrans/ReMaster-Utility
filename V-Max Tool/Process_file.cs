@@ -205,7 +205,8 @@ namespace V_Max_Tool
                     if (!Tabs.TabPages.Contains(Adv_V3_Opts)) Tabs.Controls.Add(Adv_V3_Opts);
                 }
                 else Tabs.Controls.Remove(Adv_V3_Opts);
-                VBS_info.Visible = Reg_info.Visible = true;
+                if (Tabs.TabPages.Contains(Adv_V3_Opts) || Tabs.TabPages.Contains(Adv_V2_Opts)) Adj_cbm.Visible = false; else Adj_cbm.Visible = true;
+                VBS_info.Visible = Reg_info.Visible = Other_opts.Visible = true;
                 if (ldr) Loader_Track.Text = "Loader Track : Yes"; else Loader_Track.Text = "Loader Track : No";
                 CBM_Tracks.Text = $"Standard CBM tracks : {cbm}";
                 VMax_Tracks.Text = $"V-Max tracks : {vmx}";
@@ -230,9 +231,9 @@ namespace V_Max_Tool
                     }
                 }
                 if (!cust_dens) Cust_Density.Text = "Track Densities : Standard"; else Cust_Density.Text = "Track Densities : Custom";
-                if (v2) VM_Ver.Text = "V-Max Version : v2 (Custom Format)";
+                if (v2) VM_Ver.Text = "V-Max Version : v2 (Custom)";
                 if (v3) VM_Ver.Text = "V-Max Version : v3";
-                if (!v2 && !v3) VM_Ver.Text = "V-Max Version : v0-v2 (CBM Tracks)";
+                if (!v2 && !v3) VM_Ver.Text = "V-Max Version : v0-v2";
             }));
         }
 
@@ -304,28 +305,6 @@ namespace V_Max_Tool
                 int ign_snc = 80;   // ignore sync if it is >= to value
                 bool adj = false;
                 var d = 0;
-                if ((V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
-                {
-                    if (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3))
-                    {
-                        int tot_snc;
-                        adj = true;
-                        d = Get_Density(NDS.Track_Length[trk] >> 3);
-                        if (NDS.Track_Length[trk] >> 3 > density[d])
-                        {
-                            tot_snc = NDS.Total_Sync[trk] / (NDS.sectors[trk] * 2);
-                            var t_len = NDS.Track_Length[trk] - NDS.Total_Sync[trk];
-                            while (t_len + (tot_snc * (NDS.sectors[trk] * 2)) > density[d] << 3)
-                            {
-                                tot_snc -= 1;
-                                //if (tot_snc < 33) break;
-                                if (tot_snc < 25) break; // <-- reduces the sector/data sync to a minimum of 24.  Very short for standard CBM tracks, but it works
-                            }
-                            exp_snc = tot_snc;
-                        }
-                    }
-                }
-
                 if (cbm)
                 {
                     try
@@ -352,6 +331,15 @@ namespace V_Max_Tool
                             }
                             // -------------------------------------------------------------------------------------------
                             if (temp.Length > density[d]) temp = Shrink_Track(temp, d); // this can cause corrupted tracks if sectors contain single byte repeats
+                        }
+                        if ((V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
+                        {
+                            //if (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3))
+                            //{
+                                d = Get_Density(NDS.Track_Length[trk] >> 3);
+                                temp = Rebuild_CBM(NDS.Track_Data[trk], NDS.sectors[trk], NDS.Disk_ID[trk], d, trk);
+                                Set_Dest_Arrays(temp, trk);
+                            //}
                         }
                         Set_Dest_Arrays(temp, trk);
                         (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk], NDS.Disk_ID[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);

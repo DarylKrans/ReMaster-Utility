@@ -38,12 +38,11 @@
             this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.Main = new System.Windows.Forms.TabPage();
-            this.Import_File = new System.Windows.Forms.GroupBox();
-            this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
-            this.label5 = new System.Windows.Forms.Label();
-            this.VBS_info = new System.Windows.Forms.Panel();
+            this.Other_opts = new System.Windows.Forms.Panel();
             this.Disk_Dir = new System.Windows.Forms.RadioButton();
             this.Trk_Analysis = new System.Windows.Forms.RadioButton();
+            this.Adj_cbm = new System.Windows.Forms.CheckBox();
+            this.VBS_info = new System.Windows.Forms.Panel();
             this.Cust_Density = new System.Windows.Forms.Label();
             this.VM_Ver = new System.Windows.Forms.Label();
             this.Reg_info = new System.Windows.Forms.Panel();
@@ -51,17 +50,21 @@
             this.CBM_Tracks = new System.Windows.Forms.Label();
             this.Loader_Track = new System.Windows.Forms.Label();
             this.Save_Disk = new System.Windows.Forms.Button();
-            this.Adj_cbm = new System.Windows.Forms.CheckBox();
             this.Adv_V2_Opts = new System.Windows.Forms.TabPage();
+            this.V2_export = new System.Windows.Forms.Button();
             this.Re_Align = new System.Windows.Forms.CheckBox();
             this.v2exp = new System.Windows.Forms.Label();
             this.v2adv = new System.Windows.Forms.Label();
             this.Adv_V3_Opts = new System.Windows.Forms.TabPage();
+            this.V3_Export = new System.Windows.Forms.Button();
             this.v3exp = new System.Windows.Forms.Label();
             this.v3adv = new System.Windows.Forms.Label();
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
+            this.Import_File = new System.Windows.Forms.GroupBox();
+            this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
+            this.label5 = new System.Windows.Forms.Label();
             this.Adv_ctrl = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.M_render = new System.Windows.Forms.Button();
@@ -108,12 +111,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
-            this.Import_File.SuspendLayout();
+            this.Other_opts.SuspendLayout();
             this.VBS_info.SuspendLayout();
             this.Reg_info.SuspendLayout();
             this.Adv_V2_Opts.SuspendLayout();
             this.Adv_V3_Opts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).BeginInit();
+            this.Import_File.SuspendLayout();
             this.Adv_ctrl.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.Img_opts.SuspendLayout();
@@ -147,7 +151,7 @@
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(8, 49);
+            this.f_load.Location = new System.Drawing.Point(8, 62);
             this.f_load.Name = "f_load";
             this.f_load.Size = new System.Drawing.Size(206, 29);
             this.f_load.TabIndex = 12;
@@ -226,75 +230,41 @@
             this.Tabs.Location = new System.Drawing.Point(12, 10);
             this.Tabs.Name = "Tabs";
             this.Tabs.SelectedIndex = 0;
-            this.Tabs.Size = new System.Drawing.Size(916, 210);
+            this.Tabs.Size = new System.Drawing.Size(916, 224);
             this.Tabs.TabIndex = 35;
             // 
             // Main
             // 
             this.Main.BackColor = System.Drawing.Color.Gainsboro;
             this.Main.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.Main.Controls.Add(this.Import_File);
+            this.Main.Controls.Add(this.Other_opts);
             this.Main.Controls.Add(this.VBS_info);
             this.Main.Controls.Add(this.Reg_info);
             this.Main.Controls.Add(this.Save_Disk);
-            this.Main.Controls.Add(this.Adj_cbm);
             this.Main.Controls.Add(this.label1);
             this.Main.Controls.Add(this.label2);
             this.Main.Location = new System.Drawing.Point(4, 37);
             this.Main.Name = "Main";
             this.Main.Padding = new System.Windows.Forms.Padding(3);
-            this.Main.Size = new System.Drawing.Size(908, 169);
+            this.Main.Size = new System.Drawing.Size(908, 183);
             this.Main.TabIndex = 0;
             this.Main.Text = "File Info";
             // 
-            // Import_File
+            // Other_opts
             // 
-            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
-            this.Import_File.Controls.Add(this.Import_Progress_Bar);
-            this.Import_File.Controls.Add(this.label5);
-            this.Import_File.ForeColor = System.Drawing.Color.Black;
-            this.Import_File.Location = new System.Drawing.Point(16, 56);
-            this.Import_File.Name = "Import_File";
-            this.Import_File.Size = new System.Drawing.Size(870, 92);
-            this.Import_File.TabIndex = 59;
-            this.Import_File.TabStop = false;
-            this.Import_File.Text = "Analyzing Tracks";
-            // 
-            // Import_Progress_Bar
-            // 
-            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 30);
-            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
-            this.Import_Progress_Bar.Size = new System.Drawing.Size(858, 26);
-            this.Import_Progress_Bar.TabIndex = 39;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(6, 59);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(137, 25);
-            this.label5.TabIndex = 38;
-            this.label5.Text = "Processing...";
-            // 
-            // VBS_info
-            // 
-            this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.VBS_info.Controls.Add(this.Disk_Dir);
-            this.VBS_info.Controls.Add(this.Trk_Analysis);
-            this.VBS_info.Controls.Add(this.Cust_Density);
-            this.VBS_info.Controls.Add(this.VM_Ver);
-            this.VBS_info.Controls.Add(this.f_load);
-            this.VBS_info.Location = new System.Drawing.Point(336, 64);
-            this.VBS_info.Name = "VBS_info";
-            this.VBS_info.Size = new System.Drawing.Size(535, 83);
-            this.VBS_info.TabIndex = 22;
+            this.Other_opts.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Other_opts.Controls.Add(this.Disk_Dir);
+            this.Other_opts.Controls.Add(this.Trk_Analysis);
+            this.Other_opts.Controls.Add(this.Adj_cbm);
+            this.Other_opts.Location = new System.Drawing.Point(617, 61);
+            this.Other_opts.Name = "Other_opts";
+            this.Other_opts.Size = new System.Drawing.Size(261, 97);
+            this.Other_opts.TabIndex = 60;
             // 
             // Disk_Dir
             // 
             this.Disk_Dir.AutoSize = true;
-            this.Disk_Dir.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.Disk_Dir.Location = new System.Drawing.Point(343, 51);
+            this.Disk_Dir.Location = new System.Drawing.Point(17, 63);
             this.Disk_Dir.Name = "Disk_Dir";
             this.Disk_Dir.Size = new System.Drawing.Size(177, 29);
             this.Disk_Dir.TabIndex = 61;
@@ -306,8 +276,7 @@
             // Trk_Analysis
             // 
             this.Trk_Analysis.AutoSize = true;
-            this.Trk_Analysis.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.Trk_Analysis.Location = new System.Drawing.Point(336, 21);
+            this.Trk_Analysis.Location = new System.Drawing.Point(17, 35);
             this.Trk_Analysis.Name = "Trk_Analysis";
             this.Trk_Analysis.Size = new System.Drawing.Size(184, 29);
             this.Trk_Analysis.TabIndex = 60;
@@ -316,10 +285,32 @@
             this.Trk_Analysis.UseVisualStyleBackColor = true;
             this.Trk_Analysis.CheckedChanged += new System.EventHandler(this.Dir_View_CheckedChanged);
             // 
+            // Adj_cbm
+            // 
+            this.Adj_cbm.AutoSize = true;
+            this.Adj_cbm.Location = new System.Drawing.Point(17, 3);
+            this.Adj_cbm.Name = "Adj_cbm";
+            this.Adj_cbm.Size = new System.Drawing.Size(221, 29);
+            this.Adj_cbm.TabIndex = 16;
+            this.Adj_cbm.Text = "Adjust CBM tracks";
+            this.Adj_cbm.UseVisualStyleBackColor = true;
+            this.Adj_cbm.CheckedChanged += new System.EventHandler(this.Adj_cbm_CheckedChanged);
+            // 
+            // VBS_info
+            // 
+            this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.VBS_info.Controls.Add(this.Cust_Density);
+            this.VBS_info.Controls.Add(this.VM_Ver);
+            this.VBS_info.Controls.Add(this.f_load);
+            this.VBS_info.Location = new System.Drawing.Point(320, 61);
+            this.VBS_info.Name = "VBS_info";
+            this.VBS_info.Size = new System.Drawing.Size(291, 97);
+            this.VBS_info.TabIndex = 22;
+            // 
             // Cust_Density
             // 
             this.Cust_Density.AutoSize = true;
-            this.Cust_Density.Location = new System.Drawing.Point(3, 25);
+            this.Cust_Density.Location = new System.Drawing.Point(3, 38);
             this.Cust_Density.Name = "Cust_Density";
             this.Cust_Density.Size = new System.Drawing.Size(173, 25);
             this.Cust_Density.TabIndex = 1;
@@ -328,7 +319,7 @@
             // VM_Ver
             // 
             this.VM_Ver.AutoSize = true;
-            this.VM_Ver.Location = new System.Drawing.Point(3, 0);
+            this.VM_Ver.Location = new System.Drawing.Point(3, 13);
             this.VM_Ver.Name = "VM_Ver";
             this.VM_Ver.Size = new System.Drawing.Size(165, 25);
             this.VM_Ver.TabIndex = 0;
@@ -340,15 +331,15 @@
             this.Reg_info.Controls.Add(this.VMax_Tracks);
             this.Reg_info.Controls.Add(this.CBM_Tracks);
             this.Reg_info.Controls.Add(this.Loader_Track);
-            this.Reg_info.Location = new System.Drawing.Point(23, 64);
+            this.Reg_info.Location = new System.Drawing.Point(23, 61);
             this.Reg_info.Name = "Reg_info";
-            this.Reg_info.Size = new System.Drawing.Size(307, 83);
+            this.Reg_info.Size = new System.Drawing.Size(291, 97);
             this.Reg_info.TabIndex = 21;
             // 
             // VMax_Tracks
             // 
             this.VMax_Tracks.AutoSize = true;
-            this.VMax_Tracks.Location = new System.Drawing.Point(7, 53);
+            this.VMax_Tracks.Location = new System.Drawing.Point(5, 66);
             this.VMax_Tracks.Name = "VMax_Tracks";
             this.VMax_Tracks.Size = new System.Drawing.Size(138, 25);
             this.VMax_Tracks.TabIndex = 23;
@@ -357,7 +348,7 @@
             // CBM_Tracks
             // 
             this.CBM_Tracks.AutoSize = true;
-            this.CBM_Tracks.Location = new System.Drawing.Point(6, 0);
+            this.CBM_Tracks.Location = new System.Drawing.Point(4, 13);
             this.CBM_Tracks.Name = "CBM_Tracks";
             this.CBM_Tracks.Size = new System.Drawing.Size(130, 25);
             this.CBM_Tracks.TabIndex = 22;
@@ -366,7 +357,7 @@
             // Loader_Track
             // 
             this.Loader_Track.AutoSize = true;
-            this.Loader_Track.Location = new System.Drawing.Point(6, 25);
+            this.Loader_Track.Location = new System.Drawing.Point(4, 38);
             this.Loader_Track.Name = "Loader_Track";
             this.Loader_Track.Size = new System.Drawing.Size(139, 25);
             this.Loader_Track.TabIndex = 21;
@@ -375,7 +366,7 @@
             // Save_Disk
             // 
             this.Save_Disk.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.Save_Disk.Location = new System.Drawing.Point(782, 3);
+            this.Save_Disk.Location = new System.Drawing.Point(796, 6);
             this.Save_Disk.Name = "Save_Disk";
             this.Save_Disk.Size = new System.Drawing.Size(104, 43);
             this.Save_Disk.TabIndex = 59;
@@ -383,21 +374,11 @@
             this.Save_Disk.UseVisualStyleBackColor = true;
             this.Save_Disk.Click += new System.EventHandler(this.Make);
             // 
-            // Adj_cbm
-            // 
-            this.Adj_cbm.AutoSize = true;
-            this.Adj_cbm.Location = new System.Drawing.Point(268, 2);
-            this.Adj_cbm.Name = "Adj_cbm";
-            this.Adj_cbm.Size = new System.Drawing.Size(343, 29);
-            this.Adj_cbm.TabIndex = 16;
-            this.Adj_cbm.Text = "Adjust CBM tracks to fit density";
-            this.Adj_cbm.UseVisualStyleBackColor = true;
-            this.Adj_cbm.CheckedChanged += new System.EventHandler(this.Adj_cbm_CheckedChanged);
-            // 
             // Adv_V2_Opts
             // 
             this.Adv_V2_Opts.BackColor = System.Drawing.Color.Gainsboro;
             this.Adv_V2_Opts.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Adv_V2_Opts.Controls.Add(this.V2_export);
             this.Adv_V2_Opts.Controls.Add(this.Re_Align);
             this.Adv_V2_Opts.Controls.Add(this.v2exp);
             this.Adv_V2_Opts.Controls.Add(this.v2adv);
@@ -408,9 +389,20 @@
             this.Adv_V2_Opts.Location = new System.Drawing.Point(4, 37);
             this.Adv_V2_Opts.Name = "Adv_V2_Opts";
             this.Adv_V2_Opts.Padding = new System.Windows.Forms.Padding(3);
-            this.Adv_V2_Opts.Size = new System.Drawing.Size(908, 169);
+            this.Adv_V2_Opts.Size = new System.Drawing.Size(908, 183);
             this.Adv_V2_Opts.TabIndex = 1;
             this.Adv_V2_Opts.Text = "V-Max v2 Advanced";
+            // 
+            // V2_export
+            // 
+            this.V2_export.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.V2_export.Location = new System.Drawing.Point(796, 7);
+            this.V2_export.Name = "V2_export";
+            this.V2_export.Size = new System.Drawing.Size(104, 43);
+            this.V2_export.TabIndex = 60;
+            this.V2_export.Text = "Export";
+            this.V2_export.UseVisualStyleBackColor = true;
+            this.V2_export.Click += new System.EventHandler(this.Make);
             // 
             // Re_Align
             // 
@@ -445,6 +437,7 @@
             // 
             this.Adv_V3_Opts.BackColor = System.Drawing.Color.Gainsboro;
             this.Adv_V3_Opts.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Adv_V3_Opts.Controls.Add(this.V3_Export);
             this.Adv_V3_Opts.Controls.Add(this.v3exp);
             this.Adv_V3_Opts.Controls.Add(this.v3adv);
             this.Adv_V3_Opts.Controls.Add(this.V3_hlen);
@@ -453,9 +446,20 @@
             this.Adv_V3_Opts.Location = new System.Drawing.Point(4, 37);
             this.Adv_V3_Opts.Name = "Adv_V3_Opts";
             this.Adv_V3_Opts.Padding = new System.Windows.Forms.Padding(3);
-            this.Adv_V3_Opts.Size = new System.Drawing.Size(908, 169);
+            this.Adv_V3_Opts.Size = new System.Drawing.Size(908, 183);
             this.Adv_V3_Opts.TabIndex = 2;
             this.Adv_V3_Opts.Text = "V-Max v3 Advanced";
+            // 
+            // V3_Export
+            // 
+            this.V3_Export.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.V3_Export.Location = new System.Drawing.Point(796, 7);
+            this.V3_Export.Name = "V3_Export";
+            this.V3_Export.Size = new System.Drawing.Size(104, 43);
+            this.V3_Export.TabIndex = 60;
+            this.V3_Export.Text = "Export";
+            this.V3_Export.UseVisualStyleBackColor = true;
+            this.V3_Export.Click += new System.EventHandler(this.Make);
             // 
             // v3exp
             // 
@@ -521,6 +525,37 @@
             this.V3_Custom.Text = "Use custom header length";
             this.V3_Custom.UseVisualStyleBackColor = true;
             this.V3_Custom.CheckedChanged += new System.EventHandler(this.V3_Custom_CheckedChanged);
+            // 
+            // Import_File
+            // 
+            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
+            this.Import_File.Controls.Add(this.Import_Progress_Bar);
+            this.Import_File.Controls.Add(this.label5);
+            this.Import_File.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.Import_File.ForeColor = System.Drawing.Color.Black;
+            this.Import_File.Location = new System.Drawing.Point(11, 28);
+            this.Import_File.Name = "Import_File";
+            this.Import_File.Size = new System.Drawing.Size(870, 102);
+            this.Import_File.TabIndex = 59;
+            this.Import_File.TabStop = false;
+            this.Import_File.Text = "Analyzing Tracks";
+            // 
+            // Import_Progress_Bar
+            // 
+            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 37);
+            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
+            this.Import_Progress_Bar.Size = new System.Drawing.Size(858, 26);
+            this.Import_Progress_Bar.TabIndex = 39;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(6, 68);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(137, 25);
+            this.label5.TabIndex = 38;
+            this.label5.Text = "Processing...";
             // 
             // Adv_ctrl
             // 
@@ -831,6 +866,7 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.Import_File);
             this.panel1.Controls.Add(this.Dir_screen);
             this.panel1.Controls.Add(this.Drag_pic);
             this.panel1.Controls.Add(this.Out_density);
@@ -1043,8 +1079,8 @@
             this.Tabs.ResumeLayout(false);
             this.Main.ResumeLayout(false);
             this.Main.PerformLayout();
-            this.Import_File.ResumeLayout(false);
-            this.Import_File.PerformLayout();
+            this.Other_opts.ResumeLayout(false);
+            this.Other_opts.PerformLayout();
             this.VBS_info.ResumeLayout(false);
             this.VBS_info.PerformLayout();
             this.Reg_info.ResumeLayout(false);
@@ -1054,6 +1090,8 @@
             this.Adv_V3_Opts.ResumeLayout(false);
             this.Adv_V3_Opts.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).EndInit();
+            this.Import_File.ResumeLayout(false);
+            this.Import_File.PerformLayout();
             this.Adv_ctrl.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
@@ -1151,6 +1189,9 @@
         private System.Windows.Forms.RadioButton Disk_Dir;
         private System.Windows.Forms.RadioButton Trk_Analysis;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Panel Other_opts;
+        private System.Windows.Forms.Button V2_export;
+        private System.Windows.Forms.Button V3_Export;
     }
 }
 

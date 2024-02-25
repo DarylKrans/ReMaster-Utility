@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Threading;
 
 /// CBM Block Header structure
 /// 8 plain bytes converted to 10 GCR bytes
@@ -18,6 +19,18 @@ using System.Windows.Forms;
 /// byte 6          0x0f (filler to make full GCR chunk)
 /// byte 7          0x0f (filler to make full GCR chunk)
 ///
+/// CBM Block Data structure
+/// 
+/// byte 0          0x07 (always 07) Sector marker?
+/// byte 1-256      (sector data) 256 bytes
+/// byte 257        Checksum (0 ^ bytes 1-257)
+/// byte 258-260    0x00 (not used)
+/// 
+/// Standard CBM sector
+/// 
+/// byte 0          (track of next sector in file) 0x00 if end of file
+/// byte 1          (sector # of next sector in fiel) 0xff if end of file
+/// byte 2-256      file data
 
 
 namespace V_Max_Tool
@@ -27,143 +40,6 @@ namespace V_Max_Tool
         readonly bool write_dir = false;
         private readonly byte[] sz = { 0x52, 0xc0, 0x0f, 0xfc };
 
-        private readonly byte[] sector_gap_length = {
-                10, 10, 10, 10, 10, 10, 10, 10, 10, 10,	/*  1 - 10 */
-            	10, 10, 10, 10, 10, 10, 10, 17, 17, 17,	/* 11 - 20 */
-            	17, 17, 17, 17, 11, 11, 11, 11, 11, 11,	/* 21 - 30 */
-            	8, 8, 8, 8, 8,						/* 31 - 35 */
-            	8, 8, 8, 8, 8, 8, 8				/* 36 - 42 (non-standard) */
-            };
-
-
-        private readonly byte[] density_map = {
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
-            	0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	/* 11 - 20 */
-            	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,	/* 21 - 30 */
-            	3, 3, 3, 3, 3,					/* 31 - 35 */
-            	3, 3, 3, 3, 3, 3, 3				/* 36 - 42 (non-standard) */
-            };
-
-        private readonly byte[] GCR_encode = {
-                0x0a, 0x0b, 0x12, 0x13,
-                0x0e, 0x0f, 0x16, 0x17,
-                0x09, 0x19, 0x1a, 0x1b,
-                0x0d, 0x1d, 0x1e, 0x15
-            };
-
-        private readonly byte[] GCR_decode_high =
-            {
-                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                0xff, 0x80, 0x00, 0x10, 0xff, 0xc0, 0x40, 0x50,
-                0xff, 0xff, 0x20, 0x30, 0xff, 0xf0, 0x60, 0x70,
-                0xff, 0x90, 0xa0, 0xb0, 0xff, 0xd0, 0xe0, 0xff
-            };
-
-        private readonly byte[] GCR_decode_low =
-            {
-                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                0xff, 0x08, 0x00, 0x01, 0xff, 0x0c, 0x04, 0x05,
-                0xff, 0xff, 0x02, 0x03, 0xff, 0x0f, 0x06, 0x07,
-                0xff, 0x09, 0x0a, 0x0b, 0xff, 0x0d, 0x0e, 0xff
-            };
-
-        byte[] Decode_GCR(byte[] gcr)
-        {
-            byte hnib;
-            byte lnib;
-            byte[] plain = new byte[(gcr.Length / 5) * 4];
-            for (int i = 0; i < gcr.Length / 5; i++)
-            {
-                hnib = GCR_decode_high[gcr[(i * 5) + 0] >> 3];
-                lnib = GCR_decode_low[((gcr[(i * 5) + 0] << 2) | (gcr[(i * 5) + 1] >> 6)) & 0x1f];
-                if (!(hnib == 0xff || lnib == 0xff)) plain[(i * 4) + 0] = hnib |= lnib;
-                else plain[(i * 4) + 0] = 0x00;
-
-                hnib = GCR_decode_high[(gcr[(i * 5) + 1] >> 1) & 0x1f];
-                lnib = GCR_decode_low[((gcr[(i * 5) + 1] << 4) | (gcr[(i * 5) + 2] >> 4)) & 0x1f];
-                if (!(hnib == 0xff || lnib == 0xff)) plain[(i * 4) + 1] = hnib |= lnib;
-                else plain[(i * 4) + 1] = 0x00;
-
-                hnib = GCR_decode_high[((gcr[(i * 5) + 2] << 1) | (gcr[(i * 5) + 3] >> 7)) & 0x1f];
-                lnib = GCR_decode_low[(gcr[(i * 5) + 3] >> 2) & 0x1f];
-                if (!(hnib == 0xff || lnib == 0xff)) plain[(i * 4) + 2] = hnib |= lnib;
-                else plain[(i * 4) + 2] = 0x00;
-
-                hnib = GCR_decode_high[((gcr[(i * 5) + 3] << 3) | (gcr[(i * 5) + 4] >> 5)) & 0x1f];
-                lnib = GCR_decode_low[gcr[(i * 5) + 4] & 0x1f];
-                if (!(hnib == 0xff || lnib == 0xff)) plain[(i * 4) + 3] = hnib |= lnib;
-                else plain[(i * 4) + 3] = 0x00;
-            }
-            return plain;
-        }
-
-        byte[] Encode_GCR(byte[] plain)
-        {
-            int l = plain.Length / 4;
-            byte[] gcr = new byte[l * 5];
-
-            for (int i = 0; i < l; i++)
-            {
-                gcr[0 + (i * 5)] = (byte)(GCR_encode[(plain[0 + (i * 4)]) >> 4] << 3);
-                gcr[0 + (i * 5)] |= (byte)(GCR_encode[(plain[0 + (i * 4)]) & 0x0f] >> 2);
-
-                gcr[1 + (i * 5)] = (byte)(GCR_encode[(plain[0 + (i * 4)]) & 0x0f] << 6);
-                gcr[1 + (i * 5)] |= (byte)(GCR_encode[(plain[1 + (i * 4)]) >> 4] << 1);
-                gcr[1 + (i * 5)] |= (byte)(GCR_encode[(plain[1 + (i * 4)]) & 0x0f] >> 4);
-
-                gcr[2 + (i * 5)] = (byte)(GCR_encode[(plain[1 + (i * 4)]) & 0x0f] << 4);
-                gcr[2 + (i * 5)] |= (byte)(GCR_encode[(plain[2 + (i * 4)]) >> 4] >> 1);
-
-                gcr[3 + (i * 5)] = (byte)(GCR_encode[(plain[2 + (i * 4)]) >> 4] << 7);
-                gcr[3 + (i * 5)] |= (byte)(GCR_encode[(plain[2 + (i * 4)]) & 0x0f] << 2);
-                gcr[3 + (i * 5)] |= (byte)(GCR_encode[(plain[3 + (i * 4)]) >> 4] >> 3);
-
-                gcr[4 + (i * 5)] = (byte)(GCR_encode[(plain[3 + (i * 4)]) >> 4] << 5);
-                gcr[4 + (i * 5)] |= GCR_encode[(plain[3 + (i * 4)]) & 0x0f];
-            }
-            return gcr;
-        }
-
-        (byte, int) Find_Longest_Run(byte[] data)
-        {
-            int count = 0;
-            int longest = 0;
-            byte comp = 0x00;
-            byte s = 0x00;
-            for (int i = 0; i < data.Length; i++)
-            {
-                if (data[i] == comp) count++;
-                else
-                {
-                    if (longest < count)
-                    {
-                        if (comp == 0xff)
-                        {
-                            longest = count;
-                            s = comp;
-                        }
-                    }
-                    comp = data[i];
-                    count = 0;
-                }
-            }
-            return (s, longest);
-        }
-
-        byte[] Build_BlockHeader(int track, int sector, byte[] ID)
-        {
-            byte[] header = new byte[8];
-            header[0] = 0x08;
-            header[2] = (byte)sector;
-            header[3] = (byte)track;
-            header[4] = ID[0];
-            header[5] = ID[1];
-            header[6] = header[7] = 0x0f;
-            for (int i = 2; i < 6; i++) header[1] ^= header[i];
-
-            return Encode_GCR(header);
-        }
-
         byte[] Rebuild_CBM(byte[] data, int sectors, byte[] Disk_ID, int t_density, int trk)
         {
             if (tracks > 42) trk = (trk / 2) + 1; else trk += 1;
@@ -171,12 +47,20 @@ namespace V_Max_Tool
             int gap_len = 25;
             int gap_sync = 0;
             byte s = 0x00;
-            byte gap = 0x55;
             byte[] sync = new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff };
-            //(s, gap_sync) = Find_Longest_Run(data);  // <- uncomment to add sync to end of track if source has sync at the end
+            //(s, gap_sync) = Find_Longest_Sync(data);  // <- uncomment to add sync to end of track if source has sync at the end
             if (s != 0xff || gap_sync <= 10) gap_sync = 0;
             int sector_gap = (density[t_density] - ((sector_len * sectors) + gap_len + gap_sync)) / (sectors * 2);
             gap_len = density[t_density] - gap_sync - ((sector_len + (sector_gap * 2)) * sectors);
+            byte[] gap = new byte[sector_gap];
+            byte[] tail_gap = new byte[sector_gap + gap_len];
+            byte[] tail_sync = new byte[gap_sync];
+            for (int i = 0; i < tail_gap.Length; i++)
+            {
+                if (i < sector_gap) gap[i] = 0x55;
+                tail_gap[i] = 0x55;
+            }
+            for (int i = 0; i < gap_sync; i++) tail_sync[i] = 0xff;
             var buffer = new MemoryStream();
             var write = new BinaryWriter(buffer);
             bool c;
@@ -185,14 +69,14 @@ namespace V_Max_Tool
             {
                 write.Write(sync);
                 write.Write(Build_BlockHeader(trk, i, Disk_ID));
-                for (int j = 0; j < sector_gap; j++) write.Write((byte)gap);
+                write.Write(gap);
                 write.Write(sync);
                 (current_sector, c) = Decode_CBM_GCR(data, i, false);
                 if (c || !c) write.Write(current_sector);
-                if (i != sectors - 1) for (int j = 0; j < sector_gap; j++) write.Write((byte)gap);
+                if (i != sectors - 1) write.Write(gap);
             }
-            if (gap_sync > 0) for (int i = 0; i < gap_sync; i++) write.Write((byte)0xff);
-            if (gap_len > 0) for (int i = 0; i < gap_len + sector_gap; i++) write.Write((byte)gap);
+            if (gap_sync > 0) write.Write(tail_sync);
+            if (gap_len > 0) write.Write(tail_gap);
             return buffer.ToArray();
         }
 
@@ -215,7 +99,7 @@ namespace V_Max_Tool
             byte[] pdata = new byte[data.Length];
             byte[] dec_hdr;
             byte[] sec_hdr = new byte[10];
-            byte[] Disk_ID = new byte[2];
+            byte[] Disk_ID = new byte[4];
             Array.Copy(data, 0, pdata, 0, data.Length);
             data = Flip_Endian(data);
             BitArray source = new BitArray(data);
@@ -289,7 +173,7 @@ namespace V_Max_Tool
                             if (!sec_zero && h == valid_cbm[0])
                             {
                                 //if ((tracks > 42 && ((trk / 2) + 1 == 18)) || (tracks <= 42 && trk + 1 == 18)) sector_marker = true;
-                                Array.Copy(dec_hdr, 4, Disk_ID, 0, 2);
+                                Array.Copy(dec_hdr, 4, Disk_ID, 0, 4);
                                 sector_zero = pos;
                                 sec_zero = true;
                             }
@@ -439,8 +323,7 @@ namespace V_Max_Tool
 
         (byte[], bool) Decode_CBM_GCR(byte[] data, int sector, bool decode)
         {
-            var buffer = new MemoryStream();
-            //var write = new BinaryWriter(buffer);
+            byte[] tmp = new byte[0];
             BitArray source = new BitArray(Flip_Endian(data));
             BitArray sector_data = new BitArray(325 * 8);
             BitArray comp = new BitArray(5 * 8);
@@ -470,7 +353,7 @@ namespace V_Max_Tool
                             bool chksm;
                             (dec, chksm) = Decode_Sector();
                             if (!decode) return (dec, chksm);
-                            byte[] tmp = new byte[dec.Length - 4];
+                            tmp = new byte[dec.Length - 4];
                             Array.Copy(dec, 1, tmp, 0, tmp.Length);
                             return (tmp, chksm);
                         }
@@ -480,7 +363,7 @@ namespace V_Max_Tool
                 }
                 pos++;
             }
-            return (buffer.ToArray(), false);
+            return (tmp, false);
 
             (byte[], bool) Decode_Sector()
             {
@@ -504,11 +387,14 @@ namespace V_Max_Tool
                 }
                 comp.CopyTo(d, 0);
                 d = Flip_Endian(d);
-                if (d[0] == 0x52)
+                if (d[0] == 0x52 && !(d[1] == 0x55 && d[2] == 0x55 && d[3] == 0x55))
                 {
                     byte[] g = Decode_GCR(d);
-                    if ((g[2] == sector)) { sector_found = true; return true; }
-                    pos += sector_data.Count;
+                    if  (g[3] > 0 && g[3] < 43)
+                    {
+                        if ((g[2] == sector)) { sector_found = true; return true; }
+                        pos += sector_data.Count;
+                    }
                 }
                 return false;
             }
