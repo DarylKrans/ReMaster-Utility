@@ -38,6 +38,9 @@
             this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.Main = new System.Windows.Forms.TabPage();
+            this.Import_File = new System.Windows.Forms.GroupBox();
+            this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
+            this.label5 = new System.Windows.Forms.Label();
             this.Other_opts = new System.Windows.Forms.Panel();
             this.Disk_Dir = new System.Windows.Forms.RadioButton();
             this.Trk_Analysis = new System.Windows.Forms.RadioButton();
@@ -62,9 +65,6 @@
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.V3_Custom = new System.Windows.Forms.CheckBox();
-            this.Import_File = new System.Windows.Forms.GroupBox();
-            this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
-            this.label5 = new System.Windows.Forms.Label();
             this.Adv_ctrl = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.M_render = new System.Windows.Forms.Button();
@@ -107,17 +107,17 @@
             this.sl = new System.Windows.Forms.ListBox();
             this.ss = new System.Windows.Forms.ListBox();
             this.sf = new System.Windows.Forms.ListBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.Debug_Button = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
+            this.Import_File.SuspendLayout();
             this.Other_opts.SuspendLayout();
             this.VBS_info.SuspendLayout();
             this.Reg_info.SuspendLayout();
             this.Adv_V2_Opts.SuspendLayout();
             this.Adv_V3_Opts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).BeginInit();
-            this.Import_File.SuspendLayout();
             this.Adv_ctrl.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.Img_opts.SuspendLayout();
@@ -237,6 +237,7 @@
             // 
             this.Main.BackColor = System.Drawing.Color.Gainsboro;
             this.Main.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Main.Controls.Add(this.Import_File);
             this.Main.Controls.Add(this.Other_opts);
             this.Main.Controls.Add(this.VBS_info);
             this.Main.Controls.Add(this.Reg_info);
@@ -249,6 +250,37 @@
             this.Main.Size = new System.Drawing.Size(908, 183);
             this.Main.TabIndex = 0;
             this.Main.Text = "File Info";
+            // 
+            // Import_File
+            // 
+            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
+            this.Import_File.Controls.Add(this.Import_Progress_Bar);
+            this.Import_File.Controls.Add(this.label5);
+            this.Import_File.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.Import_File.ForeColor = System.Drawing.Color.Black;
+            this.Import_File.Location = new System.Drawing.Point(16, 61);
+            this.Import_File.Name = "Import_File";
+            this.Import_File.Size = new System.Drawing.Size(870, 102);
+            this.Import_File.TabIndex = 59;
+            this.Import_File.TabStop = false;
+            this.Import_File.Text = "Analyzing Tracks";
+            // 
+            // Import_Progress_Bar
+            // 
+            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 37);
+            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
+            this.Import_Progress_Bar.Size = new System.Drawing.Size(858, 26);
+            this.Import_Progress_Bar.TabIndex = 39;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(6, 68);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(137, 25);
+            this.label5.TabIndex = 38;
+            this.label5.Text = "Processing...";
             // 
             // Other_opts
             // 
@@ -328,6 +360,7 @@
             // Reg_info
             // 
             this.Reg_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Reg_info.Controls.Add(this.Debug_Button);
             this.Reg_info.Controls.Add(this.VMax_Tracks);
             this.Reg_info.Controls.Add(this.CBM_Tracks);
             this.Reg_info.Controls.Add(this.Loader_Track);
@@ -526,37 +559,6 @@
             this.V3_Custom.UseVisualStyleBackColor = true;
             this.V3_Custom.CheckedChanged += new System.EventHandler(this.V3_Custom_CheckedChanged);
             // 
-            // Import_File
-            // 
-            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
-            this.Import_File.Controls.Add(this.Import_Progress_Bar);
-            this.Import_File.Controls.Add(this.label5);
-            this.Import_File.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.Import_File.ForeColor = System.Drawing.Color.Black;
-            this.Import_File.Location = new System.Drawing.Point(11, 28);
-            this.Import_File.Name = "Import_File";
-            this.Import_File.Size = new System.Drawing.Size(870, 102);
-            this.Import_File.TabIndex = 59;
-            this.Import_File.TabStop = false;
-            this.Import_File.Text = "Analyzing Tracks";
-            // 
-            // Import_Progress_Bar
-            // 
-            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 37);
-            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
-            this.Import_Progress_Bar.Size = new System.Drawing.Size(858, 26);
-            this.Import_Progress_Bar.TabIndex = 39;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(6, 68);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(137, 25);
-            this.label5.TabIndex = 38;
-            this.label5.Text = "Processing...";
-            // 
             // Adv_ctrl
             // 
             this.Adv_ctrl.Appearance = System.Windows.Forms.TabAppearance.Buttons;
@@ -591,7 +593,7 @@
             // 
             this.M_render.Location = new System.Drawing.Point(811, 1163);
             this.M_render.Name = "M_render";
-            this.M_render.Size = new System.Drawing.Size(118, 38);
+            this.M_render.Size = new System.Drawing.Size(100, 38);
             this.M_render.TabIndex = 54;
             this.M_render.Text = "Render";
             this.M_render.UseVisualStyleBackColor = true;
@@ -866,7 +868,6 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.Import_File);
             this.panel1.Controls.Add(this.Dir_screen);
             this.panel1.Controls.Add(this.Drag_pic);
             this.panel1.Controls.Add(this.Out_density);
@@ -1052,22 +1053,21 @@
             this.sf.Size = new System.Drawing.Size(115, 1002);
             this.sf.TabIndex = 26;
             // 
-            // button1
+            // Debug_Button
             // 
-            this.button1.Location = new System.Drawing.Point(2089, 48);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 46);
-            this.button1.TabIndex = 38;
-            this.button1.Text = "No!";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.Button1_Click);
+            this.Debug_Button.Location = new System.Drawing.Point(213, 4);
+            this.Debug_Button.Name = "Debug_Button";
+            this.Debug_Button.Size = new System.Drawing.Size(73, 42);
+            this.Debug_Button.TabIndex = 38;
+            this.Debug_Button.Text = "No!";
+            this.Debug_Button.UseVisualStyleBackColor = true;
+            this.Debug_Button.Click += new System.EventHandler(this.Button1_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(2612, 1386);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
@@ -1079,6 +1079,8 @@
             this.Tabs.ResumeLayout(false);
             this.Main.ResumeLayout(false);
             this.Main.PerformLayout();
+            this.Import_File.ResumeLayout(false);
+            this.Import_File.PerformLayout();
             this.Other_opts.ResumeLayout(false);
             this.Other_opts.PerformLayout();
             this.VBS_info.ResumeLayout(false);
@@ -1090,8 +1092,6 @@
             this.Adv_V3_Opts.ResumeLayout(false);
             this.Adv_V3_Opts.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.V3_hlen)).EndInit();
-            this.Import_File.ResumeLayout(false);
-            this.Import_File.PerformLayout();
             this.Adv_ctrl.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
@@ -1188,7 +1188,7 @@
         private System.Windows.Forms.RichTextBox Dir_screen;
         private System.Windows.Forms.RadioButton Disk_Dir;
         private System.Windows.Forms.RadioButton Trk_Analysis;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button Debug_Button;
         private System.Windows.Forms.Panel Other_opts;
         private System.Windows.Forms.Button V2_export;
         private System.Windows.Forms.Button V3_Export;

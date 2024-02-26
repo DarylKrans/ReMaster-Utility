@@ -208,7 +208,7 @@ namespace V_Max_Tool
                 if (Tabs.TabPages.Contains(Adv_V3_Opts) || Tabs.TabPages.Contains(Adv_V2_Opts)) Adj_cbm.Visible = false; else Adj_cbm.Visible = true;
                 VBS_info.Visible = Reg_info.Visible = Other_opts.Visible = true;
                 if (ldr) Loader_Track.Text = "Loader Track : Yes"; else Loader_Track.Text = "Loader Track : No";
-                CBM_Tracks.Text = $"Standard CBM tracks : {cbm}";
+                CBM_Tracks.Text = $"CBM tracks : {cbm}";
                 VMax_Tracks.Text = $"V-Max tracks : {vmx}";
                 if (tracks > 42)
                 {
@@ -334,12 +334,9 @@ namespace V_Max_Tool
                         }
                         if ((V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
                         {
-                            //if (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3))
-                            //{
-                                d = Get_Density(NDS.Track_Length[trk] >> 3);
-                                temp = Rebuild_CBM(NDS.Track_Data[trk], NDS.sectors[trk], NDS.Disk_ID[trk], d, trk);
-                                Set_Dest_Arrays(temp, trk);
-                            //}
+                            d = Get_Density(NDS.Track_Length[trk] >> 3);
+                            temp = Rebuild_CBM(NDS.Track_Data[trk], NDS.sectors[trk], NDS.Disk_ID[trk], d, trk);
+                            Set_Dest_Arrays(temp, trk);
                         }
                         Set_Dest_Arrays(temp, trk);
                         (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk], NDS.Disk_ID[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);

@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Threading;
 
 /// CBM Block Header structure
 /// 8 plain bytes converted to 10 GCR bytes
@@ -390,7 +389,7 @@ namespace V_Max_Tool
                 if (d[0] == 0x52 && !(d[1] == 0x55 && d[2] == 0x55 && d[3] == 0x55))
                 {
                     byte[] g = Decode_GCR(d);
-                    if  (g[3] > 0 && g[3] < 43)
+                    if (g[3] > 0 && g[3] < 43)
                     {
                         if ((g[2] == sector)) { sector_found = true; return true; }
                         pos += sector_data.Count;
@@ -520,6 +519,120 @@ namespace V_Max_Tool
                 }
                 if ((b | 0x3f) == 0xff || (b | 0x3f) == 0x7f) fileType += "<";
                 return fileType;
+            }
+        }
+
+        void Create_Blank_Disk()
+        {
+            byte[] name = Encoding.ASCII.GetBytes("TEST DISK");
+            byte[] id = Encoding.ASCII.GetBytes("00 2A");
+            byte[] Disk_ID = new byte[] { id[1], id[0], 0x0f, 0x0f };
+            byte[] sync = new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff };
+            byte[] dir_s0 = Encode_GCR(T18S0());
+            byte[] dir_s1 = Encode_GCR(T18S1());
+            byte[] blank = Encode_GCR(Empty_Sector());
+            int ht;
+            for (int i = 0; i < 40; i++)
+            {
+                if (tracks > 42) ht = i * 2; else ht = i;
+                MemoryStream buffer = new MemoryStream();
+                BinaryWriter write = new BinaryWriter(buffer); // = new BinaryWriter(buffer);
+                for (int j = 0; j < Available_Sectors[i]; j++)
+                {
+                    bool w = true;
+                    write.Write(sync);
+                    write.Write(Build_BlockHeader(i + 1, j, Disk_ID));
+                    for (int k = 0; k < sector_gap_length[i]; k++) write.Write((byte)0x55);
+                    write.Write(sync);
+                    if (i == 17 && j == 0) { write.Write(dir_s0); w = false; }
+                    if (i == 17 && j == 1) { write.Write(dir_s1); w = false; }
+                    if (w) write.Write(blank);
+                    for (int k = 0; k < sector_gap_length[i]; k++) write.Write((byte)0x55);
+                }
+                while (buffer.Length < density[density_map[i]]) write.Write((byte)0x55);
+                byte[] nt = buffer.ToArray();
+                Set_Dest_Arrays(nt, ht);
+            }
+
+            byte[] T18S0()
+            {
+                int chksum = 0;
+                byte[] title = new byte[27];
+                byte[] ds0 = new byte[] { 0x12, 0x01, 0x41, 0x00 };
+                for (int i = 0; i < title.Length; i++)
+                {
+                    if (i < 18) if (i < name.Length) title[i] = name[i]; else title[i] = 0xa0;
+                    else if (i - 18 < id.Length) title[i] = id[i - 18]; else title[i] = 0xa0;
+                }
+                byte[] bam = Create_BAM();
+                var buff = new MemoryStream();
+                var wrt = new BinaryWriter(buff);
+                wrt.Write((byte)0x07);
+                wrt.Write(ds0);
+                wrt.Write(bam);
+                wrt.Write(title);
+                while (buff.Length < 256) wrt.Write((byte)0x00);
+                byte[] s = new byte[260];
+                Array.Copy(buff.ToArray(), 0, s, 0, buff.Length);
+                for (int i = 1; i < 257; i++) chksum ^= s[i];
+                s[257] = (byte)chksum;
+                return s;
+            }
+
+            byte[] T18S1()
+            {
+                int chksum = 0;
+                var buff = new MemoryStream();
+                var wrt = new BinaryWriter(buff);
+                wrt.Write((byte)0x07);
+                wrt.Write((byte)0x00);
+                wrt.Write((byte)0xff);
+                while (buff.Length < 260) wrt.Write((byte)0x00);
+                byte[] t = buff.ToArray();
+                for (int i = 1; i < 257; i++) chksum ^= t[i];
+                t[257] = (byte)chksum;
+                return t;
+            }
+
+            byte[] Create_BAM()
+            {
+                var buff = new MemoryStream();
+                var wrt = new BinaryWriter(buff);
+                byte[] bf = new byte[35];
+                byte[][] used_sectors = new byte[35][];
+                BitArray us = new BitArray(24);
+                for (int i = 0; i < 35; i++)
+                {
+                    bf[i] = Available_Sectors[i];
+                    used_sectors[i] = new byte[3];
+                    for (int j = 0; j < Available_Sectors[i]; j++) us[j] = true;
+                    us.CopyTo(used_sectors[i], 0);
+                    used_sectors[i] = Flip_Endian(used_sectors[i]);
+                    wrt.Write(bf[i]);
+                    wrt.Write(used_sectors[i]);
+                }
+                return buff.ToArray();
+            }
+
+            byte[] Empty_Sector()
+            {
+                int chksum = 0;
+                var buff = new MemoryStream();
+                var wrt = new BinaryWriter(buff);
+                wrt.Write((byte)0x07);
+                wrt.Write((byte)0x4b);
+                chksum ^= 0x4b;
+                while (buff.Length < 260)
+                {
+                    if (buff.Length < 257)
+                    {
+                        wrt.Write((byte)0x01);
+                        chksum ^= 1;
+                    }
+                    if (buff.Length == 257) wrt.Write((byte)chksum);
+                    if (buff.Length > 257) wrt.Write(((byte)0x00));
+                }
+                return buff.ToArray();
             }
         }
     }

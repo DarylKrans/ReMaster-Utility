@@ -26,12 +26,20 @@ namespace V_Max_Tool
 
         private readonly byte[] sector_gap_length = {
                 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,	/*  1 - 10 */
-            	10, 10, 10, 10, 10, 10, 10, 17, 17, 17,	/* 11 - 20 */
-            	17, 17, 17, 17, 11, 11, 11, 11, 11, 11,	/* 21 - 30 */
+            	10, 10, 10, 10, 10, 10, 10, 14, 14, 14,	/* 11 - 20 */
+            	14, 14, 14, 14, 11, 11, 11, 11, 11, 11,	/* 21 - 30 */
             	8, 8, 8, 8, 8,						/* 31 - 35 */
             	8, 8, 8, 8, 8, 8, 8				/* 36 - 42 (non-standard) */
             };
 
+        private readonly byte[] Available_Sectors =
+            {
+                21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+                19, 19, 19, 19, 19, 19, 19,
+                18, 18, 18, 18, 18, 18,
+                17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+
+            };
 
         private readonly byte[] density_map = {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
@@ -369,31 +377,31 @@ namespace V_Max_Tool
             return gcr;
         }
 
-        (byte, int) Find_Longest_Sync(byte[] data)
-        {
-            int count = 0;
-            int longest = 0;
-            byte comp = 0x00;
-            byte s = 0x00;
-            for (int i = 0; i < data.Length; i++)
-            {
-                if (data[i] == comp) count++;
-                else
-                {
-                    if (longest < count)
-                    {
-                        if (comp == 0xff)
-                        {
-                            longest = count;
-                            s = comp;
-                        }
-                    }
-                    comp = data[i];
-                    count = 0;
-                }
-            }
-            return (s, longest);
-        }
+        //(byte, int) Find_Longest_Sync(byte[] data)
+        //{
+        //    int count = 0;
+        //    int longest = 0;
+        //    byte comp = 0x00;
+        //    byte s = 0x00;
+        //    for (int i = 0; i < data.Length; i++)
+        //    {
+        //        if (data[i] == comp) count++;
+        //        else
+        //        {
+        //            if (longest < count)
+        //            {
+        //                if (comp == 0xff)
+        //                {
+        //                    longest = count;
+        //                    s = comp;
+        //                }
+        //            }
+        //            comp = data[i];
+        //            count = 0;
+        //        }
+        //    }
+        //    return (s, longest);
+        //}
 
         byte[] Build_BlockHeader(int track, int sector, byte[] ID)
         {
@@ -458,7 +466,7 @@ namespace V_Max_Tool
         {
             byte[] temp;
 
-            if (data.Length > density[trk_density]) // - 2)
+            if (data.Length > density[trk_density])
             {
                 int start = 0;
                 int longest = 0;
@@ -473,7 +481,7 @@ namespace V_Max_Tool
                         longest = count;
                     }
                 }
-                temp = new byte[density[trk_density]]; // - 2];
+                temp = new byte[density[trk_density]];
                 int shrink = data.Length - temp.Length;
                 try
                 {
@@ -518,6 +526,7 @@ namespace V_Max_Tool
 
         void Init()
         {
+            Debug_Button.Visible = debug;
             Other_opts.Visible = false;
             opt = true;
             Set_Boxes();
