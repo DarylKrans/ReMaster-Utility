@@ -312,9 +312,9 @@ namespace V_Max_Tool
                 BitArray dest = new BitArray((pa));
                 int pos = 0;
                 BitArray sixteen = new BitArray(16 * 8);
-                BitArray scomp = new BitArray(t_start.Length);
+                BitArray scomp = new BitArray(t_start.Length * 8);
                 byte[] ncomp = new byte[t_start.Length];
-                while (pos < source.Length - t_start.Length)
+                while (pos < source.Length - t_start.Length * 8)
                 {
                     for (int j = 0; j < scomp.Count; j++)
                     {
@@ -599,11 +599,7 @@ namespace V_Max_Tool
                         }
                         scomp.CopyTo(ncomp, 0);
                         ncomp = Flip_Endian(ncomp);
-                        if (Hex_Val(ncomp) == Hex_Val(t_start))
-                        {
-
-                            return 5;
-                        }
+                        if (Hex_Val(ncomp) == Hex_Val(t_start)) return 5;
                         pos++;
                     }
                 }
