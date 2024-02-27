@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,9 @@ namespace V_Max_Tool
         private readonly byte[] vm3_pos_sync = { 0x57, 0x5b, 0x5f, 0xff };
         private readonly string v3 = "49-49-49"; // V-MAX v3 sector header
 
+        // Vorpal stuff
+        //private readonly byte[] t_start = new byte[] { 0x35, 0x4d, 0x53, 0x54, 0xd5 };
+        private readonly byte[] t_start = new byte[] { 0xa9, 0x33, 0x3f, 0xd5 };
         /// ---------------------- Rebuild V-Max v3 --------------------------------------------------------------------------------
         byte[] Rebuild_V3(byte[] data, int trk)
         {
@@ -359,6 +363,63 @@ namespace V_Max_Tool
                 spos++;
             }
             return (buffer.ToArray(), (int)buffer.Length << 3, 0);
+        }
+
+        (int, int, int) Get_Vorpal_Track_Length(byte[] tdata)
+        {
+            byte[] data = new byte[tdata.Length];
+            Array.Copy(tdata, 0, data, 0, data.Length);
+            int data_start = 0;
+            int ptn_start = 0;
+            int data_end = 0;
+            int pos = 0;
+            int dest_pos = 0;
+            byte[] comp = new byte[t_start.Length];
+            byte[] rcomp = new byte[16];
+            BitArray source = new BitArray(Flip_Endian(data));
+            BitArray dest = new BitArray(source.Count);
+            BitArray sixteen = new BitArray(16 * 8);
+            BitArray scomp = new BitArray(t_start.Length * 8);
+            while (pos < source.Length - t_start.Length * 8)
+            {
+                for (int j = 0; j < scomp.Count; j++)
+                {
+                    scomp[j] = source[pos + j];
+                }
+                scomp.CopyTo(comp, 0);
+                comp = Flip_Endian(comp);
+                if (Hex_Val(comp) == Hex_Val(t_start))
+                {
+                    ptn_start = pos;
+                    break;
+                }
+                pos++;
+            }
+            data_end = source.Length - 1;
+            int sc = 0;
+            for (int j = pos; j < source.Count; j++)
+            {
+                dest[dest_pos] = source[j];
+                if (j >= source.Count - (16 * 8)) { sixteen[sc] = source[j]; sc++; }
+                dest_pos++;
+            }
+            sixteen.CopyTo(rcomp, 0);
+            rcomp = Flip_Endian(rcomp);
+            byte[] repeat = new byte[16];
+            Array.Copy(rcomp, 0, repeat, 0, repeat.Length);
+            pos = 0;
+            while (pos < source.Length - (16 * 8))
+            {
+                for (int j = 0; j < sixteen.Count; j++)
+                {
+                    sixteen[j] = source[pos + j];
+                }
+                sixteen.CopyTo(rcomp, 0);
+                rcomp = Flip_Endian(rcomp);
+                if (Hex_Val(rcomp) == Hex_Val(repeat)) { data_start = pos + sixteen.Count; }
+                pos++;
+            }
+            return (data_start, data_end, (data_end - data_start));
         }
     }
 }

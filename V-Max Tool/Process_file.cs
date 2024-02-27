@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -21,7 +22,7 @@ namespace V_Max_Tool
             "52-40-05-24", "52-40-05-64", "52-40-05-68", "52-40-05-6C", "52-40-05-34", "52-40-05-74", "52-40-05-78", "52-40-05-54", "52-40-05-A8",
             "52-40-05-AC", "52-40-05-C8", "52-40-05-CC", "52-40-05-B8" };
         // vmax = the block header values of V-Max v2 sectors (non-CBM sectors)
-        private readonly string[] secF = { "NDOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "tbd", "Unformatted" };
+        private readonly string[] secF = { "NDOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "Unformatted" };
 
 
         void Parse_Nib_Data()
@@ -156,6 +157,12 @@ namespace V_Max_Tool
                         Track_Info.Items.Add(" ");
                     }));
                 }
+                if (NDS.cbm[i] == 5)
+                {
+                    (NDS.D_Start[i], NDS.D_End[i], NDS.Track_Length[i]) = Get_Vorpal_Track_Length(NDS.Track_Data[i]);
+                    NDS.sectors[i] = 0;
+                }
+
                 if (NDS.D_Start[i] == 0 && NDS.D_End[i] == 0 && NDS.Track_Length[i] == 0)
                 {
                     NDS.Track_Length[i] = Get_Track_Len(NDS.Track_Data[i]);
@@ -183,6 +190,7 @@ namespace V_Max_Tool
                         if (NDS.cbm[i] == 2) color = Color.DarkMagenta;
                         if (NDS.cbm[i] == 3) color = Color.Green;
                         if (NDS.cbm[i] == 4) color = Color.Blue;
+                        if (NDS.cbm[i] == 5) color = Color.DarkCyan;
                         sf.Items.Add(new LineColor { Color = color, Text = $"{secF[NDS.cbm[i]]}" });
                         sl.Items.Add((NDS.Track_Length[i] >> 3).ToString("N0"));
                         ss.Items.Add(NDS.sectors[i]);
@@ -259,6 +267,7 @@ namespace V_Max_Tool
                     if (NDS.cbm[i] == 2) Process_VMAX_V2(i);
                     if (NDS.cbm[i] == 3) Process_VMAX_V3(i);
                     if (NDS.cbm[i] == 4) Process_Loader(i);
+                    if (NDS.cbm[i] == 5) Process_Vorpal(i);
                     if (NDA.Track_Length[i] > 0 && NDS.cbm[i] != 6)
                     {
                         out_size.Items.Add((NDA.Track_Length[i] / 8).ToString("N0"));
@@ -289,6 +298,61 @@ namespace V_Max_Tool
                 else { NDA.Track_Data[i] = NDS.Track_Data[i]; }
             }
             if (!opt && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"] && !manualRender) Check_Before_Draw(false);
+
+            void Process_Vorpal(int trk)
+            {
+                int ptn_start = 0;
+                byte[] data = new byte[NDS.Track_Data[trk].Length];
+                Array.Copy(NDS.Track_Data[trk], 0, data, 0, data.Length);
+                BitArray source = new BitArray(Flip_Endian(data));
+
+                int na = (((NDS.D_End[trk] - NDS.D_Start[trk]) / 8) * 8) - (NDS.D_End[trk] - NDS.D_Start[trk]);
+                int pa = NDS.D_End[trk] - NDS.D_Start[trk];
+                if (na > 0) pa += Math.Abs(na);
+                BitArray dest = new BitArray((pa));
+                int pos = 0;
+                BitArray sixteen = new BitArray(16 * 8);
+                BitArray scomp = new BitArray(t_start.Length);
+                byte[] ncomp = new byte[t_start.Length];
+                while (pos < source.Length - t_start.Length)
+                {
+                    for (int j = 0; j < scomp.Count; j++)
+                    {
+                        scomp[j] = source[pos + j];
+                    }
+                    scomp.CopyTo(ncomp, 0);
+                    ncomp = Flip_Endian(ncomp);
+                    if (Hex_Val(ncomp) == Hex_Val(t_start)) { ptn_start = pos; break; }
+                    pos++;
+                }
+                pos = ptn_start;
+                int dest_pos = 0;
+                while (dest_pos < (NDS.D_End[trk] - NDS.D_Start[trk]))
+                {
+                    dest[dest_pos] = source[pos];
+                    pos++; dest_pos++;
+                    if (pos == source.Length) pos = NDS.D_Start[trk];
+                }
+                if (dest_pos < dest.Length)
+                {
+                    bool c = false;
+                    while (dest_pos < dest.Length)
+                    {
+                        dest[dest_pos] = c;
+                        c = !c;
+                        dest_pos++;
+                    }
+                }
+                double p = (double)((dest_pos / 8) * 8) - dest_pos;
+                dest_pos += Math.Abs((int)p);
+                byte[] final = new byte[(dest.Length - 1) / 8 + 1];
+                dest.CopyTo(final, 0);
+                final = Flip_Endian(final);
+                Set_Dest_Arrays(final, trk);
+
+
+                //NDG.Track_Data[trk] = new byte[0];
+            }
 
             void Process_Ndos(int trk)
             {
@@ -512,6 +576,38 @@ namespace V_Max_Tool
                 }
 
                 if (t != 0) break;
+            }
+            if (t == 1)
+            {
+                byte[] temp = new byte[0];
+                byte[] ncomp = new byte[t_start.Length];
+                bool c;
+                (temp, c) = Decode_CBM_GCR(data, 12, true);
+                if (c) return 1;
+                else
+                {
+                    int pos = 0;
+                    BitArray source = new BitArray(Flip_Endian(data));
+                    BitArray dest = new BitArray(source.Count);
+                    BitArray sixteen = new BitArray(16 * 8);
+                    BitArray scomp = new BitArray(t_start.Length * 8);
+                    while (pos < source.Length - t_start.Length * 8)
+                    {
+                        for (int j = 0; j < scomp.Count; j++)
+                        {
+                            scomp[j] = source[pos + j];
+                        }
+                        scomp.CopyTo(ncomp, 0);
+                        ncomp = Flip_Endian(ncomp);
+                        if (Hex_Val(ncomp) == Hex_Val(t_start))
+                        {
+
+                            return 5;
+                        }
+                        pos++;
+                    }
+                }
+
             }
             if (t == 0) t = Check_Blank(data);
             return t;
