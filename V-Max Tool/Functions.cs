@@ -211,7 +211,6 @@ namespace V_Max_Tool
             if (start >= 0 && length != -1 && start + length <= bits.Length)
             {
                 temp = new BitArray(length);
-                //try { for (int i = 0; i < length; i++) temp[i] = bits[start + i]; } catch { }
                 for (int i = 0; i < length; i++) temp[i] = bits[start + i];
             }
             byte[] ret = new byte[((temp.Count - 1) / 8) + 1];
@@ -519,13 +518,13 @@ namespace V_Max_Tool
             Other_opts.Visible = false;
             opt = true;
             bool flip = false;
-            for (int i = 0; i < lead_0.Length; i++)
+            for (int i = 0; i < leadIn_std.Length; i++)
             {
-                if (i < 7) lead_0[i] = !flip;
-                lead_1[i] = flip;
+                if (i < 7) leadIn_std[i] = !flip;
+                leadIn_alt[i] = flip;
                 flip = !flip;
             }
-            lead_0[9] = true;
+            leadIn_std[9] = true;
             Set_Boxes();
             panel1.Controls.Add(outbox);
             panel1.Controls.Add(inbox);

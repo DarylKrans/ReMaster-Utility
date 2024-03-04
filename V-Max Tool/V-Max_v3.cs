@@ -187,7 +187,7 @@ namespace V_Max_Tool
             return buff.ToArray();
         }
 
-        /// ----------------------- Get V-Max v3 Track Length / Info -------------------------------------------------------------
+        /// ----------------------- Get_LeadIn_Position V-Max v3 Track Length / Info -------------------------------------------------------------
         (string[], int, int, int, int, int, int) Get_vmv3_track_length(byte[] data, int trk)
         {
             string msg = "";

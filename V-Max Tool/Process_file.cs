@@ -186,16 +186,6 @@ namespace V_Max_Tool
                             Track_Info.Items.Add(new LineColor { Color = Color.DarkBlue, Text = f[j] });
                         }
 
-                        string lb = "";
-                        BitArray ttt = new BitArray(Flip_Endian(NDS.Track_Data[i]));
-                        int pos = NDS.D_End[i] - 16;
-                        byte[] de = BitArray_to_ByteArray(ttt, true, NDS.D_End[i] - 64, 128);
-                        byte[] ds = BitArray_to_ByteArray(ttt, true, NDS.D_Start[i] - 64, 128);
-                        lb = $"{Hex_Val(de) == Hex_Val(ds)}";
-
-                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = lb });
-                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = Hex_Val(de) });
-                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = Hex_Val(ds) });
                         Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = $"Track Length : ({(NDS.D_End[i] - NDS.D_Start[i] >> 3)}) Sectors ({NDS.sectors[i]})" });
                         Track_Info.Items.Add(" ");
                     }));
@@ -371,7 +361,7 @@ namespace V_Max_Tool
                         byte[] temp = Adjust_Sync_CBM(NDS.Track_Data[trk], exp_snc, min_snc, ign_snc, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk);
                         if (adj && temp.Length > density[d])
                         {
-                            // ---------- Get rid of this section if images error on CBM tracks --------------------------
+                            // ---------- Get_LeadIn_Position rid of this section if images error on CBM tracks --------------------------
                             byte[] p_gap = { 0x55, 0xaa, 0x00, 0x11, 0x22, 0x44, 0x88, 0x45, 0x12, 0x15, 0x51 };
                             int gap = 0;
                             var tb = temp.Length - density[d];
@@ -398,8 +388,8 @@ namespace V_Max_Tool
                             Set_Dest_Arrays(temp, trk);
                         }
                         Set_Dest_Arrays(temp, trk);
-                        (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk], NDS.Disk_ID[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);
-                        f[0] = "";
+                        //(NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk], NDS.Disk_ID[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);
+                        //f[0] = "";
                     }
                     catch
                     {

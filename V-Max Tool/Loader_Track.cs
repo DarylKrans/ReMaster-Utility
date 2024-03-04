@@ -7,7 +7,7 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        /// ---------------------------------- Get Length of Loader Track ---------------------------------------------
+        /// ---------------------------------- Get_LeadIn_Position Length of Loader Track ---------------------------------------------
         (int, byte[]) Get_Loader_Len(byte[] data, int start_pos, int comp_length, int skip_length)
         {
             int q = 8192;
