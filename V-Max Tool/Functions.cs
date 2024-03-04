@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -203,6 +204,22 @@ namespace V_Max_Tool
             return BitConverter.ToString(data, a, b);
         }
 
+        byte[] BitArray_to_ByteArray(BitArray bits, bool FlipEndian, int start = 0, int length = -1)
+        {
+            BitArray temp = new BitArray(bits);
+            if (length < 0) length = bits.Length;
+            if (start >= 0 && length != -1 && start + length <= bits.Length)
+            {
+                temp = new BitArray(length);
+                //try { for (int i = 0; i < length; i++) temp[i] = bits[start + i]; } catch { }
+                for (int i = 0; i < length; i++) temp[i] = bits[start + i];
+            }
+            byte[] ret = new byte[((temp.Count - 1) / 8) + 1];
+            temp.CopyTo(ret, 0);
+            if (FlipEndian) return (Flip_Endian(ret));
+            return ret;
+        }
+
         public static string ToBinary(string data)
         {
             StringBuilder sb = new StringBuilder();
@@ -290,34 +307,6 @@ namespace V_Max_Tool
                 NDG.Track_Length[trk] = data.Length;
             }
             catch { }
-        }
-
-        void Export_File()
-        {
-            Save_Dialog.FileName = $"{fname}{fnappend}";
-            if (Out_Type) Save_Dialog.Filter = "G64|*.g64|NIB|*.nib";
-            else Save_Dialog.Filter = "G64|*.g64";
-            Save_Dialog.Title = "Save File";
-            if (Save_Dialog.ShowDialog() == DialogResult.OK)
-            {
-                string fs = Save_Dialog.FileName;
-                if (Save_Dialog.FilterIndex == 1) Make_G64(fs);
-                if (Save_Dialog.FilterIndex == 2) Make_NIB(fs);
-                if (nib_error || g64_error)
-                {
-                    string s = "";
-                    using (Message_Center center = new Message_Center(this)) // center message box
-                    {
-                        string t = "File Access Error!";
-                        if (nib_error) s = $"{nib_err_msg}";
-                        if (g64_error) s = $"{g64_err_msg}";
-                        if (nib_error && g64_error) s = $"{nib_err_msg}\n\n{g64_err_msg}";
-                        AutoClosingMessageBox.Show(s, t, 5000);
-                        error = true;
-                    }
-                    nib_error = g64_error = false;
-                }
-            }
         }
 
         byte[] Decode_GCR(byte[] gcr)
@@ -529,6 +518,14 @@ namespace V_Max_Tool
             Debug_Button.Visible = debug;
             Other_opts.Visible = false;
             opt = true;
+            bool flip = false;
+            for (int i = 0; i < lead_0.Length; i++)
+            {
+                if (i < 7) lead_0[i] = !flip;
+                lead_1[i] = flip;
+                flip = !flip;
+            }
+            lead_0[9] = true;
             Set_Boxes();
             panel1.Controls.Add(outbox);
             panel1.Controls.Add(inbox);

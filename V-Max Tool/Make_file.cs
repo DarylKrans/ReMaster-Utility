@@ -8,6 +8,39 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        void Export_File()
+        {
+            Save_Dialog.FileName = $"{fname}{fnappend}";
+            if (Out_Type) Save_Dialog.Filter = "G64|*.g64|NIB|*.nib|Both|*.g64;*.nib";
+            else Save_Dialog.Filter = "G64|*.g64";
+            Save_Dialog.Title = "Save File";
+            if (Save_Dialog.ShowDialog() == DialogResult.OK)
+            {
+                string fs = Save_Dialog.FileName;
+                if (Save_Dialog.FilterIndex == 1) Make_G64(fs);
+                if (Save_Dialog.FilterIndex == 2) Make_NIB(fs);
+                if (Save_Dialog.FilterIndex == 3)
+                {
+                    Make_NIB($@"{Path.GetDirectoryName(fs)}\{Path.GetFileNameWithoutExtension(fs)}.nib");
+                    Make_G64($@"{Path.GetDirectoryName(fs)}\{Path.GetFileNameWithoutExtension(fs)}.g64");
+                }
+                if (nib_error || g64_error)
+                {
+                    string s = "";
+                    using (Message_Center center = new Message_Center(this)) // center message box
+                    {
+                        string t = "File Access Error!";
+                        if (nib_error) s = $"{nib_err_msg}";
+                        if (g64_error) s = $"{g64_err_msg}";
+                        if (nib_error && g64_error) s = $"{nib_err_msg}\n\n{g64_err_msg}";
+                        AutoClosingMessageBox.Show(s, t, 5000);
+                        error = true;
+                    }
+                    nib_error = g64_error = false;
+                }
+            }
+        }
+
         void Make_NIB(string fname)
         {
             //if (!Directory.Exists($@"{dirname}\Output")) Directory.CreateDirectory($@"{dirname}\Output");

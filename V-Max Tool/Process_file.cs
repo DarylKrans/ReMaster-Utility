@@ -3,6 +3,8 @@ using System.Collections;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.IO;
+using System.Threading;
 
 namespace V_Max_Tool
 {
@@ -51,12 +53,25 @@ namespace V_Max_Tool
                 ht = 0.5;
             }
             else ht = 0;
+            Thread[] tt = new Thread[tracks];
+            Invoke(new Action(() => label5.Text = "Analyzing Tracks.."));
+            for (int i = 0; i < tracks; i++)
+            {
+                int x = i;
+                tt[i] = new Thread(new ThreadStart(() => Get_Fmt(x)));
+                tt[i].Start();
+            }
+            for (int i = 0; i < tracks; i++) tt[i]?.Join();
+            void Get_Fmt(int trk)
+            {
+                NDS.cbm[trk] = Get_Data_Format(NDS.Track_Data[trk]);
+            }
 
             int t;
             var color = Color.Black;
             for (int i = 0; i < tracks; i++)
             {
-                NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
+                //NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
                 if (NDS.cbm[i] == 0)
                 {
                     int l = Get_Track_Len(NDS.Track_Data[i]);
@@ -159,8 +174,31 @@ namespace V_Max_Tool
                 }
                 if (NDS.cbm[i] == 5)
                 {
-                    (NDS.D_Start[i], NDS.D_End[i], NDS.Track_Length[i]) = Get_Vorpal_Track_Length(NDS.Track_Data[i]);
-                    NDS.sectors[i] = 0;
+                    f = new string[0];
+                    (NDG.Track_Data[i], NDS.D_Start[i], NDS.D_End[i], NDS.Track_Length[i], NDS.Header_Len[i], NDS.sectors[i], f) = Get_Vorpal_Track_Length(NDS.Track_Data[i], i);
+                    if (tracks > 42) t = i / 2 + 1; else t = i + 1;
+                    Invoke(new Action(() =>
+                    {
+                        Track_Info.Items.Add(new LineColor { Color = Color.Blue, Text = $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}" });
+                        for (int j = 0; j < f.Length; j++)
+                        {
+                            Track_Info.Items.Add(new LineColor { Color = Color.DarkBlue, Text = f[j] });
+                        }
+
+                        string lb = "";
+                        BitArray ttt = new BitArray(Flip_Endian(NDS.Track_Data[i]));
+                        int pos = NDS.D_End[i] - 16;
+                        byte[] de = BitArray_to_ByteArray(ttt, true, NDS.D_End[i] - 64, 128);
+                        byte[] ds = BitArray_to_ByteArray(ttt, true, NDS.D_Start[i] - 64, 128);
+                        lb = $"{Hex_Val(de) == Hex_Val(ds)}";
+
+                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = lb });
+                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = Hex_Val(de) });
+                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = Hex_Val(ds) });
+                        Track_Info.Items.Add(new LineColor { Color = Color.Black, Text = $"Track Length : ({(NDS.D_End[i] - NDS.D_Start[i] >> 3)}) Sectors ({NDS.sectors[i]})" });
+                        Track_Info.Items.Add(" ");
+                    }));
+
                 }
 
                 if (NDS.D_Start[i] == 0 && NDS.D_End[i] == 0 && NDS.Track_Length[i] == 0)
@@ -301,57 +339,9 @@ namespace V_Max_Tool
 
             void Process_Vorpal(int trk)
             {
-                int ptn_start = 0;
-                byte[] data = new byte[NDS.Track_Data[trk].Length];
-                Array.Copy(NDS.Track_Data[trk], 0, data, 0, data.Length);
-                BitArray source = new BitArray(Flip_Endian(data));
-
-                int na = (((NDS.D_End[trk] - NDS.D_Start[trk]) / 8) * 8) - (NDS.D_End[trk] - NDS.D_Start[trk]);
-                int pa = NDS.D_End[trk] - NDS.D_Start[trk];
-                if (na > 0) pa += Math.Abs(na);
-                BitArray dest = new BitArray((pa));
-                int pos = 0;
-                BitArray sixteen = new BitArray(16 * 8);
-                BitArray scomp = new BitArray(t_start.Length * 8);
-                byte[] ncomp = new byte[t_start.Length];
-                while (pos < source.Length - t_start.Length * 8)
-                {
-                    for (int j = 0; j < scomp.Count; j++)
-                    {
-                        scomp[j] = source[pos + j];
-                    }
-                    scomp.CopyTo(ncomp, 0);
-                    ncomp = Flip_Endian(ncomp);
-                    if (Hex_Val(ncomp) == Hex_Val(t_start)) { ptn_start = pos; break; }
-                    pos++;
-                }
-                pos = ptn_start;
-                int dest_pos = 0;
-                while (dest_pos < (NDS.D_End[trk] - NDS.D_Start[trk]))
-                {
-                    dest[dest_pos] = source[pos];
-                    pos++; dest_pos++;
-                    if (pos == source.Length) pos = NDS.D_Start[trk];
-                }
-                if (dest_pos < dest.Length)
-                {
-                    bool c = false;
-                    while (dest_pos < dest.Length)
-                    {
-                        dest[dest_pos] = c;
-                        c = !c;
-                        dest_pos++;
-                    }
-                }
-                double p = (double)((dest_pos / 8) * 8) - dest_pos;
-                dest_pos += Math.Abs((int)p);
-                byte[] final = new byte[(dest.Length - 1) / 8 + 1];
-                dest.CopyTo(final, 0);
-                final = Flip_Endian(final);
-                Set_Dest_Arrays(final, trk);
-
-
-                //NDG.Track_Data[trk] = new byte[0];
+                byte[] temp = new byte[NDG.Track_Data[trk].Length];
+                Array.Copy(NDG.Track_Data[trk], 0, temp, 0, NDG.Track_Data[trk].Length);
+                Set_Dest_Arrays(temp, trk);
             }
 
             void Process_Ndos(int trk)
@@ -577,21 +567,27 @@ namespace V_Max_Tool
 
                 if (t != 0) break;
             }
-            if (t == 1)
+            if (t == 1 || t == 0 && !data.All(ss => ss == 0x00))
             {
                 byte[] temp = new byte[0];
-                byte[] ncomp = new byte[t_start.Length];
                 bool c;
-                (temp, c) = Decode_CBM_GCR(data, 12, true);
-                if (c) return 1;
+                int y = 0;
+                for (int i = 0; i < 16; i++)
+                {
+                    c = Find_Sector(data, i + 1);
+                    if (c) y++;
+                }
+                if (y > 4) return 1;
                 else
                 {
+                    byte[] ncomp = new byte[vpl_s0.Length];
                     int pos = 0;
-                    BitArray source = new BitArray(Flip_Endian(data));
+                    byte[] tdata = new byte[data.Length];
+                    Array.Copy(data, 0, tdata, 0, data.Length);
+                    BitArray source = new BitArray(Flip_Endian(tdata));
                     BitArray dest = new BitArray(source.Count);
-                    BitArray sixteen = new BitArray(16 * 8);
-                    BitArray scomp = new BitArray(t_start.Length * 8);
-                    while (pos < source.Length - t_start.Length * 8)
+                    BitArray scomp = new BitArray(vpl_s0.Length * 8);
+                    while (pos < source.Length - vpl_s0.Length * 8)
                     {
                         for (int j = 0; j < scomp.Count; j++)
                         {
@@ -599,18 +595,17 @@ namespace V_Max_Tool
                         }
                         scomp.CopyTo(ncomp, 0);
                         ncomp = Flip_Endian(ncomp);
-                        if (Hex_Val(ncomp) == Hex_Val(t_start)) return 5;
+                        if (Hex_Val(ncomp) == Hex_Val(vpl_s0) || Hex_Val(ncomp) == Hex_Val(vpl_s1)) return 5;
                         pos++;
                     }
                 }
-
             }
             if (t == 0) t = Check_Blank(data);
             return t;
 
             int Compare(byte[] d)
             {
-                if (Hex_Val(d).Contains(v2)) // == v2)
+                if (Hex_Val(d).Contains(v2))
                 {
                     if ((d[0] == 0x64 || d[0] == 0x4e))
                         return 2;

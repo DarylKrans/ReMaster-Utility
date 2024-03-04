@@ -53,6 +53,9 @@
     <Compile Include="CBM.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Vorpal.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Visualizer.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -87,7 +87,7 @@ namespace V_Max_Tool
                     {
                         var ds = NDS.D_Start[i];
                         var de = NDS.D_End[i];
-                        if (NDS.cbm[i] == 1) { ds >>= 3; de >>= 3; } else { ds = 0; de = 8192; }
+                        if (NDS.cbm[i] == 1 || NDS.cbm[i] == 5) { ds >>= 3; de >>= 3; } else { ds = 0; de = 8192; }
                         //if (NDS.Track_Length[i] > min_t_len) // <- view only tracks that are recognized formats and able to be processed
                         if (NDS.Track_Data[i].All(s => s != 0x00)) // <- view all tracks that aren't all 0x00 bytes
                         {

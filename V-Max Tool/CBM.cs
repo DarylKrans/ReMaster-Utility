@@ -312,7 +312,7 @@ namespace V_Max_Tool
 
                     byte[] dest = new byte[bcnt];
                     temp.CopyTo(dest, 0);
-                    dest = Flip_Endian(dest);
+                    dest = Rotate_Right(Flip_Endian(dest), 6);
                     return dest;
                 }
             }
@@ -399,6 +399,58 @@ namespace V_Max_Tool
             }
         }
 
+        bool Find_Sector(byte[] data, int sector)
+        {
+            BitArray source = new BitArray(Flip_Endian(data));
+            BitArray comp = new BitArray(5 * 8);
+            bool sector_found = false;
+            bool sync = false;
+            int sync_count = 0;
+            int pos = 0;
+            sector_found = Compare();
+            if (!sector_found)
+            {
+                while (pos < source.Length - 32)
+                {
+                    if (source[pos])
+                    {
+                        sync_count++;
+                        if (sync_count == 15) sync = true;
+                    }
+                    if (!source[pos])
+                    {
+                        if (sync) sector_found = Compare();
+                        if (sector_found) break; // return sector_marker;
+                        sync = false;
+                        sync_count = 0;
+                    }
+                    pos++;
+                }
+            }
+            return sector_found;
+
+            bool Compare()
+            {
+                byte[] d = new byte[5];
+                for (int i = 0; i < comp.Length; i++)
+                {
+                    comp[i] = source[pos + i];
+                }
+                comp.CopyTo(d, 0);
+                d = Flip_Endian(d);
+                if (d[0] == 0x52 && !(d[1] == 0x55 && d[2] == 0x55 && d[3] == 0x55))
+                {
+                    byte[] g = Decode_GCR(d);
+                    if (g[3] > 0 && g[3] < 43)
+                    {
+                        if ((g[2] == sector)) { sector_found = true; return true; }
+                        pos += (320 * 8);
+                    }
+                }
+                return false;
+            }
+        }
+
         void Get_Disk_Directory()
         {
             int l = 0;
@@ -419,7 +471,7 @@ namespace V_Max_Tool
                 while (Convert.ToInt32(next_sector[0]) == track)
                 {
                     Array.Copy(next_sector, 0, last_sector, 0, 2);
-                    (temp, c) = Decode_CBM_GCR(NDS.Track_Data[halftrack], Convert.ToInt32(next_sector[1]), true);
+                    (temp, c) = Decode_CBM_GCR(NDA.Track_Data[halftrack], Convert.ToInt32(next_sector[1]), true);
                     if (temp.Length > 0 && (c || !c))
                     {
                         Array.Copy(temp, 0, next_sector, 0, next_sector.Length);
@@ -438,7 +490,7 @@ namespace V_Max_Tool
                     // Read track 18 sector 1 if sector 0 signals the end of the directory
                     if (buff.Length < 257)
                     {
-                        (temp, c) = Decode_CBM_GCR(NDS.Track_Data[halftrack], 1, true);
+                        (temp, c) = Decode_CBM_GCR(NDA.Track_Data[halftrack], 1, true);
                         if (c || !c) wrt.Write(temp);
                     }
                     byte[] directory = buff.ToArray();

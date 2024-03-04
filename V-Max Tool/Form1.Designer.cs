@@ -49,6 +49,7 @@
             this.Cust_Density = new System.Windows.Forms.Label();
             this.VM_Ver = new System.Windows.Forms.Label();
             this.Reg_info = new System.Windows.Forms.Panel();
+            this.Debug_Button = new System.Windows.Forms.Button();
             this.VMax_Tracks = new System.Windows.Forms.Label();
             this.CBM_Tracks = new System.Windows.Forms.Label();
             this.Loader_Track = new System.Windows.Forms.Label();
@@ -107,7 +108,6 @@
             this.sl = new System.Windows.Forms.ListBox();
             this.ss = new System.Windows.Forms.ListBox();
             this.sf = new System.Windows.Forms.ListBox();
-            this.Debug_Button = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -263,7 +263,7 @@
             this.Import_File.Size = new System.Drawing.Size(870, 102);
             this.Import_File.TabIndex = 59;
             this.Import_File.TabStop = false;
-            this.Import_File.Text = "Analyzing Tracks";
+            this.Import_File.Text = "Parsing Image Data";
             // 
             // Import_Progress_Bar
             // 
@@ -368,6 +368,16 @@
             this.Reg_info.Name = "Reg_info";
             this.Reg_info.Size = new System.Drawing.Size(291, 97);
             this.Reg_info.TabIndex = 21;
+            // 
+            // Debug_Button
+            // 
+            this.Debug_Button.Location = new System.Drawing.Point(213, 4);
+            this.Debug_Button.Name = "Debug_Button";
+            this.Debug_Button.Size = new System.Drawing.Size(73, 42);
+            this.Debug_Button.TabIndex = 38;
+            this.Debug_Button.Text = "No!";
+            this.Debug_Button.UseVisualStyleBackColor = true;
+            this.Debug_Button.Click += new System.EventHandler(this.Button1_Click);
             // 
             // VMax_Tracks
             // 
@@ -1053,21 +1063,11 @@
             this.sf.Size = new System.Drawing.Size(115, 1002);
             this.sf.TabIndex = 26;
             // 
-            // Debug_Button
-            // 
-            this.Debug_Button.Location = new System.Drawing.Point(213, 4);
-            this.Debug_Button.Name = "Debug_Button";
-            this.Debug_Button.Size = new System.Drawing.Size(73, 42);
-            this.Debug_Button.TabIndex = 38;
-            this.Debug_Button.Text = "No!";
-            this.Debug_Button.UseVisualStyleBackColor = true;
-            this.Debug_Button.Click += new System.EventHandler(this.Button1_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2612, 1386);
+            this.ClientSize = new System.Drawing.Size(2109, 1386);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
