@@ -38,7 +38,7 @@ namespace V_Max_Tool
                 Import_File.Visible = true;
                 Track_Info.BeginUpdate();
             }));
-            bool ldr = false; int cbm = 0; int vmx = 0;
+            bool ldr = false; int cbm = 0; int vmx = 0; int vpl = 0;
             double ht;
             bool halftracks = false;
             string[] f;
@@ -174,6 +174,7 @@ namespace V_Max_Tool
                 }
                 if (NDS.cbm[i] == 5)
                 {
+                    vpl++;
                     f = new string[0];
                     (NDG.Track_Data[i], NDS.D_Start[i], NDS.D_End[i], NDS.Track_Length[i], NDS.Header_Len[i], NDS.sectors[i], f) = Get_Vorpal_Track_Length(NDS.Track_Data[i], i);
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
@@ -255,7 +256,9 @@ namespace V_Max_Tool
                 VBS_info.Visible = Reg_info.Visible = Other_opts.Visible = true;
                 if (ldr) Loader_Track.Text = "Loader Track : Yes"; else Loader_Track.Text = "Loader Track : No";
                 CBM_Tracks.Text = $"CBM tracks : {cbm}";
-                VMax_Tracks.Text = $"V-Max tracks : {vmx}";
+                if (vmx > 0) VMax_Tracks.Text = $"V-Max tracks : {vmx}";
+                if (vpl > 0) VMax_Tracks.Text = $"Vorpal tracks : {vpl}";
+                VMax_Tracks.Visible = (vmx > 0 || vpl > 0);
                 if (tracks > 42)
                 {
                     halftracks = true;
@@ -277,9 +280,10 @@ namespace V_Max_Tool
                     }
                 }
                 if (!cust_dens) Cust_Density.Text = "Track Densities : Standard"; else Cust_Density.Text = "Track Densities : Custom";
-                if (v2) VM_Ver.Text = "V-Max Version : v2 (Custom)";
-                if (v3) VM_Ver.Text = "V-Max Version : v3";
-                if (!v2 && !v3) VM_Ver.Text = "V-Max Version : v0-v2";
+                if (v2) VM_Ver.Text = "Protection : V-Max v2";
+                if (v3) VM_Ver.Text = "Protection : V-Max v3";
+                if (!v2 && !v3) VM_Ver.Text = "Protection : V-Max (CBM)";
+                if (NDS.cbm.Any(s => s == 5)) VM_Ver.Text = "Protection : Vorpal";
             }));
         }
 
@@ -342,6 +346,7 @@ namespace V_Max_Tool
                 byte[] temp = new byte[NDG.Track_Data[trk].Length];
                 Array.Copy(NDG.Track_Data[trk], 0, temp, 0, NDG.Track_Data[trk].Length);
                 Set_Dest_Arrays(temp, trk);
+                if (NDS.cbm.Any(ss => ss == 5)) fnappend = vorp;
             }
 
             void Process_Ndos(int trk)
@@ -386,7 +391,7 @@ namespace V_Max_Tool
                             // -------------------------------------------------------------------------------------------
                             if (temp.Length > density[d]) temp = Shrink_Track(temp, d); // this can cause corrupted tracks if sectors contain single byte repeats
                         }
-                        if ((V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
+                        if (!NDS.cbm.Any(s => s == 5) && (V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
                         {
                             d = Get_Density(NDS.Track_Length[trk] >> 3);
                             temp = Rebuild_CBM(NDS.Track_Data[trk], NDS.sectors[trk], NDS.Disk_ID[trk], d, trk);

@@ -13,6 +13,7 @@ namespace V_Max_Tool
         private readonly string ver = " v0.9.35 (beta)";
         private readonly string fix = "(sync_fixed)";
         private readonly string mod = "(modified)";
+        private readonly string vorp = "(aligned)";
         //private readonly int[] density = { 7692, 7142, 6666, 6250 }; // <- Actual capacity as defined by the manual
         private readonly int[] density = { 7672, 7122, 6646, 6230 }; // <- adjusted capacity to account for minor RPM variation higher than 300
         private bool error = false;
@@ -26,7 +27,8 @@ namespace V_Max_Tool
         public Form1()
         {
             InitializeComponent();
-            this.Text += ver;
+            //this.Text += ver;
+            this.Text = $"Bit-Wise : V-Max/Vorpal Re-Master Suite {ver}";
             Init();
             Set_ListBox_Items(true, true);
         }

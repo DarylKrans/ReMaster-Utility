@@ -29,6 +29,7 @@ namespace V_Max_Tool
         private readonly Brush cbm_brush = new SolidBrush(Color.FromArgb(200, 67, 200));
         private readonly Brush ldr_brush = new SolidBrush(Color.FromArgb(133, 133, 200));
         private readonly Brush vmx_brush = new SolidBrush(Color.FromArgb(30, 200, 30));
+        private readonly Brush vpl_brush = new SolidBrush(Color.FromArgb(30, 200, 200));
         private readonly Color Write_face = Color.FromArgb(41, 40, 36);
         private readonly Color Inner_face = Color.FromArgb(50, 49, 44);
 
@@ -36,7 +37,7 @@ namespace V_Max_Tool
         {
             var m = (Img_Q.SelectedIndex + 1) * 1000;
             circle = new FastBitmap(m, m);
-            Draw_Disk(circle, 3, m, "V-MAX! Sync Tool", bg_text);
+            Draw_Disk(circle, 3, m, this.Text, bg_text);
             circle_full = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             circle_small = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
             flat_large = (Bitmap)Resize_Image(circle.Bitmap, panPic.Width, panPic.Height, false, true);
@@ -88,7 +89,6 @@ namespace V_Max_Tool
                         var ds = NDS.D_Start[i];
                         var de = NDS.D_End[i];
                         if (NDS.cbm[i] == 1 || NDS.cbm[i] == 5) { ds >>= 3; de >>= 3; } else { ds = 0; de = 8192; }
-                        //if (NDS.Track_Length[i] > min_t_len) // <- view only tracks that are recognized formats and able to be processed
                         if (NDS.Track_Data[i].All(s => s != 0x00)) // <- view all tracks that aren't all 0x00 bytes
                         {
                             t = Draw_Track(flat_large, (42 * 14), NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked);
@@ -179,9 +179,6 @@ namespace V_Max_Tool
                 if (NDS.Track_Length[trk] > 0) break;
                 a++;
             }
-            //byte[] bgtxt = new byte[2000];
-            //Array.Copy(NDS.Track_Data[20], 0, bgtxt, 0, 2000);
-            //Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}", ToBinary(bgtxt));
             Draw_Disk(circle, m, width, $"{fi_nam}{fi_ext}", ToBinary(Encoding.ASCII.GetString(NDS.Track_Data[trk], 0, 2000)));
 
             while (r > 80 && track < tracks)
@@ -286,6 +283,7 @@ namespace V_Max_Tool
                     if (d == 0) sub = 0; if (d == 255) sub = 255 + 255;
                     col = Color.FromArgb(30, sub - d, 30);
                     if (track_fmt == 4) col = Color.FromArgb((int)(d / 1.5f), (int)(d / 1.5f), d);
+                    if (track_fmt == 5) col = Color.FromArgb(0, (int)(d / 1.5f), (int)(d / 1.5f));
                 }
             }
             else col = Color.FromArgb(30, d, 30);
@@ -445,8 +443,15 @@ namespace V_Max_Tool
             if (vm_reverse)
             {
                 Add_Text(circle.Bitmap, "CBM", Color.FromArgb(0, 40, 40, 40), cbm_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(1 * m), (int)(60 * m), (int)(17 * m));
-                Add_Text(circle.Bitmap, "Loader", Color.FromArgb(0, 40, 40, 40), ldr_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(18 * m), (int)(60 * m), (int)(17 * m));
-                Add_Text(circle.Bitmap, "V-Max!", Color.FromArgb(0, 40, 40, 40), vmx_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(35 * m), (int)(60 * m), (int)(17 * m));
+                if (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3))
+                {
+                    Add_Text(circle.Bitmap, "Loader", Color.FromArgb(0, 40, 40, 40), ldr_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(18 * m), (int)(60 * m), (int)(17 * m));
+                    Add_Text(circle.Bitmap, "V-Max!", Color.FromArgb(0, 40, 40, 40), vmx_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(35 * m), (int)(60 * m), (int)(17 * m));
+                }
+                if (NDS.cbm.Any(s => s == 5))
+                {
+                    Add_Text(circle.Bitmap, "Vorpal", Color.FromArgb(0, 40, 40, 40), vpl_brush, new Font("Ariel", 11 * m), (int)(1 * m), (int)(18 * m), (int)(60 * m), (int)(17 * m));
+                }
             }
         }
 
@@ -455,7 +460,6 @@ namespace V_Max_Tool
             Graphics g = Graphics.FromImage(temp);
             Brush b = new SolidBrush(c); // (Color.FromArgb(40, 40, 40));
             RectangleF rectf = new RectangleF(x1, y1, x2, y2);
-            //RectangleF rectg = new RectangleF(x1, y1, x2, y2);
             g.FillRectangle(b, rectf);
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.InterpolationMode = InterpolationMode.Bicubic;
