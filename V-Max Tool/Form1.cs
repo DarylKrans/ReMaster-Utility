@@ -10,7 +10,7 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
         private readonly bool debug = false;
-        private readonly string ver = " v0.9.40 (beta)";
+        private readonly string ver = " v0.9.55 (beta)";
         private readonly string fix = "(sync_fixed)";
         private readonly string mod = "(modified)";
         private readonly string vorp = "(aligned)";
@@ -28,7 +28,7 @@ namespace V_Max_Tool
         {
             InitializeComponent();
             //this.Text += ver;
-            this.Text = $"Bit-Wise V-Max/Vorpal reMaster Utility {ver}";
+            this.Text = $"Nib ReMaster: V-Max/Vorpal Utility {ver}";
             Init();
             Set_ListBox_Items(true, true);
         }

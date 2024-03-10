@@ -80,7 +80,7 @@ namespace V_Max_Tool
                         if (NDG.Track_Length[i] > min_t_len)
                         {
                             d = Get_Density(NDG.Track_Data[i].Length);
-                            t = Draw_Track(flat_large, (42 * 14), NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked);
+                            t = Draw_Track(flat_large, (42 * 14), NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked, NDS.cbm_sector[i]);
                             ext = "(flat_tracks).g64";
                         }
                     }
@@ -91,7 +91,7 @@ namespace V_Max_Tool
                         if (NDS.cbm[i] == 1 || NDS.cbm[i] == 5) { ds >>= 3; de >>= 3; } else { ds = 0; de = 8192; }
                         if (NDS.Track_Data[i].All(s => s != 0x00)) // <- view all tracks that aren't all 0x00 bytes
                         {
-                            t = Draw_Track(flat_large, (42 * 14), NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked);
+                            t = Draw_Track(flat_large, (42 * 14), NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked, NDS.cbm_sector[i]);
                             ext = $"(flat_tracks){fext}";
                         }
                     }
@@ -153,6 +153,7 @@ namespace V_Max_Tool
             string fi_ext = ".g64";
             string fi_nam = $"{fname}{fnappend}";
             bool v2 = false;
+            bool v5 = false;
             int width = m * 1000;
             int height = m * 1000;
             int track = 0;
@@ -194,7 +195,7 @@ namespace V_Max_Tool
                     {
                         for (i = 0; i < t_data.Length; i++)
                         {
-                            (col, v2) = Get_Color(t_data[i], NDS.v2info[track], track, i, de, NDS.cbm[track], v2);
+                            (col, v2, v5) = Get_Color(t_data[i], NDS.v2info[track], track, i, de, NDS.cbm[track], v2, v5);
                             Draw_Arc(circle, x, y, r + j, i, col);
                         }
                     }
@@ -225,12 +226,13 @@ namespace V_Max_Tool
             }
         }
 
-        private Bitmap Draw_Track(Bitmap bmp, int max_Height, byte[] data, int trk, int s, int e, int tf, byte[] v2i, int d, bool w)
+        private Bitmap Draw_Track(Bitmap bmp, int max_Height, byte[] data, int trk, int s, int e, int tf, byte[] v2i, int d, bool w, int[] v)
         {
             byte[] tdata = new byte[data.Length];
             Array.Copy(data, 0, tdata, 0, data.Length);
             Pen pen;
             bool v2 = false;
+            bool v5 = false;
             int t_height = (max_Height / 42) - 4;
             for (int j = 0; j < tdata.Length; j++)
             {
@@ -238,7 +240,8 @@ namespace V_Max_Tool
                 {
                     if (Cap_margins.Checked)
                     {
-                        pen = new Pen(Color.FromArgb(tdata[j] / 2, tdata[j] / 2, tdata[j] / 2), 1);
+                        //pen = new Pen(Color.FromArgb(tdata[j] / 2, tdata[j] / 2, tdata[j] / 2), 1);
+                        pen = new Pen(Color.FromArgb(tdata[j], 0, 0), 1);
                         if (j <= density[d]) pen = new Pen(Color.FromArgb(30, tdata[j], 30));
                         if (j > density[d] && j < density[d] + 5) pen = new Pen(Color.FromArgb(tdata[j], tdata[j], 30));
                     }
@@ -246,18 +249,36 @@ namespace V_Max_Tool
                     if (tf == 2 && tdata[j] == v2i[0]) v2 = true;
                     if (v2 && tdata[j] == v2i[1]) v2 = false;
                     if (Show_sec.Checked && ((tf == 3 && tdata[j] == 0x49) || v2)) pen = new Pen(Color.FromArgb(30, 30, 255));
+                    if (tf == 5 && Show_sec.Checked)
+                    {
+                        if ((Cap_margins.Checked && (j > s || j < e)) || !Cap_margins.Checked)
+                        {
+                            if (v.Any(x => x == j)) v5 = !v5;
+                            if (v5) pen = new Pen(Color.FromArgb((int)(tdata[j] / 1.5f), (int)(tdata[j] / 1.5f), (int)(tdata[j] / 1.5f)));
+                            else pen = new Pen(Color.FromArgb(0, (int)(tdata[j] / 1.5f), (int)(tdata[j] / 1.5f)));
+                        }
+                    }
                 }
                 else
                 {
                     if (Cap_margins.Checked)
                     {
-                        if (j < s || j > e) pen = new Pen(Color.FromArgb(tdata[j], tdata[j], 50));
+                        if (j < s || j > e) pen = new Pen(Color.FromArgb(tdata[j], 0, 0), 1); //pen = new Pen(Color.FromArgb(tdata[j], tdata[j], 50));
                         else pen = new Pen(Color.FromArgb(30, tdata[j], 30));
                     }
                     else pen = new Pen(Color.FromArgb(30, tdata[j], 30));
                     if (tf == 2 && tdata[j] == v2i[0]) v2 = true;
                     if (v2 && tdata[j] == v2i[1]) v2 = false;
                     if (Show_sec.Checked && ((tf == 3 && tdata[j] == 0x49) || v2)) pen = new Pen(Color.FromArgb(30, 30, 255));
+                    if (tf == 5 && Show_sec.Checked)
+                    {
+                        if ((Cap_margins.Checked && (j > s || j < e)) || !Cap_margins.Checked)
+                        {
+                            if (v.Any(x => x == j)) v5 = !v5;
+                            if (v5) pen = new Pen(Color.FromArgb((int)(tdata[j] / 1.5f), (int)(tdata[j] / 1.5f), (int)(tdata[j] / 1.5f)));
+                            else pen = new Pen(Color.FromArgb(0, (int)(tdata[j] / 1.5f), (int)(tdata[j] / 1.5f)));
+                        }
+                    }
                 }
                 int x1 = j;
                 int y1 = 0 + (trk * ((max_Height - 16) / 42));
@@ -271,7 +292,7 @@ namespace V_Max_Tool
             return bmp;
         }
 
-        private (Color, bool) Get_Color(byte d, byte[] v2info, int track, int position, int density, int track_fmt, bool v2)
+        private (Color, bool, bool) Get_Color(byte d, byte[] v2info, int track, int position, int density, int track_fmt, bool v2, bool v5)
         {
             Color col;
             if (vm_reverse) // && NDS.cbm[track] > 1)
@@ -305,8 +326,14 @@ namespace V_Max_Tool
             if (track_fmt == 2 && d == NDS.v2info[track][0]) v2 = true;
             if (v2 && d == v2info[1]) v2 = false;
             if (Show_sec.Checked && ((track_fmt == 3 && d == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
+            if (track_fmt == 5 && Show_sec.Checked)
+            {
+                if (NDS.cbm_sector[track].Any(x => x == position)) v5 = !v5;
+                if (v5) col = Color.FromArgb((int)(d / 1.5f), (int)(d / 1.5f), (int)(d / 1.5f));
+                //else col = Color.FromArgb(0, (int)(d / 1.5f), (int)(d / 1.5f));
+            }
 
-            return (col, v2);
+            return (col, v2, v5);
         }
 
         private byte[] Get_Track_Data(int track)

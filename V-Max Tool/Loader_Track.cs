@@ -71,9 +71,7 @@ namespace V_Max_Tool
                         dp++;
                         if (dp == d_bArray.Length) dp = 0;
                     }
-                    byte[] cc = new byte[d_bArray.Length / 8];
-                    d_bArray.CopyTo(cc, 0);
-                    cc = Flip_Endian(cc);
+                    byte[] cc = Flip_Endian(Bit2Byte(d_bArray));
                     int sec = 0;
                     for (int i = 0; i < cc.Length - 5; i++)
                     {
@@ -139,10 +137,10 @@ namespace V_Max_Tool
             for (int i = 0; i < tdata.Length - 4; i++)
             {
                 Array.Copy(tdata, i, comp, 0, comp.Length);
-                if (Hex_Val(comp) == Hex_Val(v1)) { Patch_V3(i - 4); f = true; }
-                if (Hex_Val(comp) == Hex_Val(v2)) { Patch_V2(i - 3); f = true; }
-                if (Hex_Val(comp) == Hex_Val(v3)) { Patch_V3(i - 4); f = true; }
-                if (Hex_Val(comp) == Hex_Val(v4)) { Patch_V2(i - 3); f = true; }
+                if (BytesMatch(comp, v1)) { Patch_V3(i - 4); f = true; }
+                if (BytesMatch(comp, v2)) { Patch_V2(i - 3); f = true; }
+                if (BytesMatch(comp, v3)) { Patch_V3(i - 4); f = true; }
+                if (BytesMatch(comp, v4)) { Patch_V2(i - 3); f = true; }
                 if (f) break;
             }
             if (f) f_load.Text = "Fix Loader Sync ( Fixed )";

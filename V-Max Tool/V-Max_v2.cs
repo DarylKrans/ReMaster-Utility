@@ -289,9 +289,9 @@ namespace V_Max_Tool
             return (tdata, data_start, data_end, sec_zero, (data_end - data_start) << 3, all_headers.ToArray(), sectors, m);
         }
 
-        byte[] Adjust_V2_Sync(byte[] data, int data_start, int data_end, byte[] t_info, bool Fix_Sync, int trk)
+        byte[] Adjust_V2_Sync(byte[] data, int data_start, int data_end, byte[] t_info, bool Fix_Sync, int trk = -1)
         {
-            if (trk == 1) trk = 0;
+            if (trk < 0) trk = 0;
             byte[] temp_data = new byte[data_end - data_start];
             byte[] start_byte = { t_info[0] };
             byte[] end_byte = { t_info[1] };

@@ -2,9 +2,8 @@
 using System.Collections;
 using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
-using System.IO;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace V_Max_Tool
 {
@@ -53,15 +52,18 @@ namespace V_Max_Tool
                 ht = 0.5;
             }
             else ht = 0;
-            Thread[] tt = new Thread[tracks];
-            Invoke(new Action(() => label5.Text = "Analyzing Tracks.."));
-            for (int i = 0; i < tracks; i++)
+            if (!manualRender)
             {
-                int x = i;
-                tt[i] = new Thread(new ThreadStart(() => Get_Fmt(x)));
-                tt[i].Start();
+                Thread[] tt = new Thread[tracks];
+                Invoke(new Action(() => label5.Text = "Analyzing Tracks.."));
+                for (int i = 0; i < tracks; i++)
+                {
+                    int x = i;
+                    tt[i] = new Thread(new ThreadStart(() => Get_Fmt(x)));
+                    tt[i].Start();
+                }
+                for (int i = 0; i < tracks; i++) tt[i]?.Join();
             }
-            for (int i = 0; i < tracks; i++) tt[i]?.Join();
             void Get_Fmt(int trk)
             {
                 NDS.cbm[trk] = Get_Data_Format(NDS.Track_Data[trk]);
@@ -72,6 +74,7 @@ namespace V_Max_Tool
             for (int i = 0; i < tracks; i++)
             {
                 //NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
+                if (manualRender) Get_Fmt(i); // NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
                 if (NDS.cbm[i] == 0)
                 {
                     int l = Get_Track_Len(NDS.Track_Data[i]);
@@ -176,7 +179,7 @@ namespace V_Max_Tool
                 {
                     vpl++;
                     f = new string[0];
-                    (NDG.Track_Data[i], NDS.D_Start[i], NDS.D_End[i], NDS.Track_Length[i], NDS.Header_Len[i], NDS.sectors[i], f) = Get_Vorpal_Track_Length(NDS.Track_Data[i], i);
+                    (NDG.Track_Data[i], NDS.D_Start[i], NDS.D_End[i], NDS.Track_Length[i], NDS.Header_Len[i], NDS.sectors[i], NDS.cbm_sector[i], f) = Get_Vorpal_Track_Length(NDS.Track_Data[i], i);
                     if (tracks > 42) t = i / 2 + 1; else t = i + 1;
                     Invoke(new Action(() =>
                     {
@@ -352,44 +355,22 @@ namespace V_Max_Tool
                 int exp_snc = 40;   // expected sync length.  (sync will be adjusted to this value if it is >= minimum value (or) =< ignore value
                 int min_snc = 16;   // minimum sync length to signal this is a sync marker that needs adjusting
                 int ign_snc = 80;   // ignore sync if it is >= to value
-                bool adj = false;
                 var d = 0;
+                byte[] temp = new byte[0];
                 if (cbm)
                 {
                     try
                     {
-                        byte[] temp = Adjust_Sync_CBM(NDS.Track_Data[trk], exp_snc, min_snc, ign_snc, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk);
-                        if (adj && temp.Length > density[d])
-                        {
-                            // ---------- Get_LeadIn_Position rid of this section if images error on CBM tracks --------------------------
-                            byte[] p_gap = { 0x55, 0xaa, 0x00, 0x11, 0x22, 0x44, 0x88, 0x45, 0x12, 0x15, 0x51 };
-                            int gap = 0;
-                            var tb = temp.Length - density[d];
-                            byte[] nt = new byte[temp.Length - tb];
-                            for (int i = 1; i < 200; i++)
-                            {
-                                if (p_gap.Any(s => s == temp[temp.Length - i])) gap++; else gap = 0;
-                                if (gap == tb + 2)
-                                {
-                                    Array.Copy(temp, 0, nt, 0, temp.Length - i);
-                                    Array.Copy(temp, (temp.Length - i) + tb, nt, temp.Length - i, nt.Length - (temp.Length - i));
-                                    temp = new byte[nt.Length];
-                                    Array.Copy(nt, 0, temp, 0, temp.Length);
-                                    break;
-                                }
-                            }
-                            // -------------------------------------------------------------------------------------------
-                            if (temp.Length > density[d]) temp = Shrink_Track(temp, d); // this can cause corrupted tracks if sectors contain single byte repeats
-                        }
-                        if (!NDS.cbm.Any(s => s == 5) && (V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
+                        temp = Adjust_Sync_CBM(NDS.Track_Data[trk], exp_snc, min_snc, ign_snc, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk);
+                        if ((V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
                         {
                             d = Get_Density(NDS.Track_Length[trk] >> 3);
                             temp = Rebuild_CBM(NDS.Track_Data[trk], NDS.sectors[trk], NDS.Disk_ID[trk], d, trk);
                             Set_Dest_Arrays(temp, trk);
                         }
                         Set_Dest_Arrays(temp, trk);
-                        //(NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk], NDS.Disk_ID[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);
-                        //f[0] = "";
+                        (NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk], NDA.Track_Length[trk], f, NDA.sectors[trk], NDS.cbm_sector[trk], NDA.Total_Sync[trk], NDS.Disk_ID[trk]) = Find_Sector_Zero(NDA.Track_Data[trk], false);
+                        f[0] = "";
                     }
                     catch
                     {

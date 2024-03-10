@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -204,10 +203,10 @@ namespace V_Max_Tool
             return BitConverter.ToString(data, a, b);
         }
 
-        byte[] BitArray_to_ByteArray(BitArray bits, bool FlipEndian, int start = 0, int length = -1)
+        byte[] Bit2Byte(BitArray bits, int start = 0, int length = -1)
         {
             BitArray temp = new BitArray(bits);
-            if (length < 0) length = bits.Length;
+            if (length < 0) length = bits.Length - start;
             if (start >= 0 && length != -1 && start + length <= bits.Length)
             {
                 temp = new BitArray(length);
@@ -215,7 +214,7 @@ namespace V_Max_Tool
             }
             byte[] ret = new byte[((temp.Count - 1) / 8) + 1];
             temp.CopyTo(ret, 0);
-            if (FlipEndian) return (Flip_Endian(ret));
+            //if (FlipEndian) return (Flip_Endian(ret));
             return ret;
         }
 
@@ -224,6 +223,11 @@ namespace V_Max_Tool
             StringBuilder sb = new StringBuilder();
             foreach (char c in data.ToCharArray()) sb.Append(Convert.ToString(c, 2).PadLeft(8, '0'));
             return sb.ToString();
+        }
+
+        public static String Byte_to_Binary(Byte[] data)
+        {
+            return string.Join("-", data.Select(byt => Convert.ToString(byt, 2).PadLeft(8, '0')));
         }
 
         void Pad_Bits(int position, int count, BitArray bitarray)
@@ -281,16 +285,33 @@ namespace V_Max_Tool
             return (false);
         }
 
-        int Find_Data(string find, byte[] sdat, int clen)
+        int Find_Data(string find, byte[] data, int clen)
         {
             int i;
             byte[] comp = new byte[clen];
-            for (i = 0; i < sdat.Length - find.Length; i++)
+            for (i = 0; i < data.Length - find.Length; i++)
             {
-                Array.Copy(sdat, i, comp, 0, comp.Length);
+                Array.Copy(data, i, comp, 0, comp.Length);
                 if (Hex_Val(comp) == find) break;
             }
             return i;
+        }
+
+        //int Find_bytes(byte[] find, byte[] data)
+        //{
+        //    int i;
+        //    byte[] comp = new byte[find.Length];
+        //    for (i = 0; i < data.Length - find.Length; i++)
+        //    {
+        //        Array.Copy(data, i, comp, 0, comp.Length);
+        //        if (BytesMatch(comp, find)) break;
+        //    }
+        //    return i;
+        //}
+
+        bool BytesMatch(byte[] source, byte[] target)
+        {
+            return (Hex_Val(source) == Hex_Val(target));
         }
 
         void Set_Dest_Arrays(byte[] data, int trk)
@@ -442,12 +463,7 @@ namespace V_Max_Tool
                 Array.Copy(NDG.Track_Data[trk], 0, temp, 0, start);
                 Array.Copy(NDG.Track_Data[trk], start + skip, temp, start, (temp.Length - 1) - start);
             }
-            NDG.Track_Data[trk] = new byte[temp.Length];
-            Array.Copy(temp, 0, NDG.Track_Data[trk], 0, temp.Length);
-            Array.Copy(temp, 0, NDA.Track_Data[trk], 0, temp.Length);
-            Array.Copy(temp, 0, NDA.Track_Data[trk], temp.Length, NDA.Track_Data[trk].Length - temp.Length);
-            NDG.Track_Length[trk] = NDG.Track_Data[trk].Length;
-            NDA.Track_Length[trk] = NDG.Track_Length[trk] * 8;
+            Set_Dest_Arrays(temp, trk);
         }
 
         byte[] Shrink_Track(byte[] data, int trk_density)

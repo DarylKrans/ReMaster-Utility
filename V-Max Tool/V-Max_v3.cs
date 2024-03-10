@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,9 +16,9 @@ namespace V_Max_Tool
         private readonly string v3 = "49-49-49"; // V-MAX v3 sector header
 
         /// ---------------------- Rebuild V-Max v3 --------------------------------------------------------------------------------
-        byte[] Rebuild_V3(byte[] data, int trk)
+        byte[] Rebuild_V3(byte[] data, int trk = -1)
         {
-            if (trk == 0) trk = 0;
+            if (trk < 0) trk = 0;
             int d = Get_Density(data.Length);
             int sectors = 0;
             int header_len = 0;
@@ -51,7 +50,7 @@ namespace V_Max_Tool
             for (int i = 0; i < data.Length - comp.Length; i++)
             {
                 if (data[i] == sb[0]) Array.Copy(data, i, comp, 0, comp.Length);
-                if (Hex_Val(comp) == Hex_Val(header))
+                if (BytesMatch(comp, header))
                 {
                     int b = 0;
                     while (data[i + b] == sb[0]) b++;
@@ -212,7 +211,7 @@ namespace V_Max_Tool
             for (int i = 0; i < data.Length - comp.Length; i++)
             {
                 Array.Copy(data, i, comp, 0, comp.Length);
-                if (Hex_Val(comp) == Hex_Val(header))
+                if (BytesMatch(comp, header))
                 {
                     var a = 0;
                     while (data[i + a] == header[0]) a++;
@@ -320,11 +319,11 @@ namespace V_Max_Tool
 
         /// ------------------------------- Adjust V-Max v3 Sync Markers -------------------------------------------------
 
-        (byte[], int, int) Adjust_Vmax_V3_Sync(byte[] data, int sds, int sde, int ssz)
+        (byte[], int, int) Adjust_Vmax_V3_Sync(byte[] data, int data_start, int data_end, int sector_zero)
         {
-            byte[] bdata = new byte[sde - sds];
-            Array.Copy(data, sds, bdata, 0, sde - sds);
-            byte[] tdata = Rotate_Left(bdata, ((ssz >> 3) - (sds >> 3)));
+            byte[] bdata = new byte[data_end - data_start];
+            Array.Copy(data, data_start, bdata, 0, data_end - data_start);
+            byte[] tdata = Rotate_Left(bdata, ((sector_zero >> 3) - (data_start >> 3)));
             var buffer = new MemoryStream();
             var write = new BinaryWriter(buffer);
             int spos = 0;
@@ -338,7 +337,7 @@ namespace V_Max_Tool
                     try
                     {
                         Array.Copy(tdata, spos + 2, comp, 0, comp.Length);
-                        if (Hex_Val(comp) == Hex_Val(hd)) // && (spos < tdata.Length - 4))
+                        if (BytesMatch(comp, hd)) // && (spos < tdata.Length - 4))
                         {
                             var a = 0;
                             while (tdata[spos + a] != hd[0])
