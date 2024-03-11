@@ -79,7 +79,7 @@ namespace V_Max_Tool
             return buffer.ToArray();
         }
 
-        
+
         (int, int, int, int, string[], int, int[], int, byte[]) Find_Sector_Zero(byte[] data, bool checksums)
         {
             string[] csm = new string[] { "OK", "Bad!" };
@@ -131,18 +131,18 @@ namespace V_Max_Tool
             list.Add($"{(len) / 8} {data_start} {data_end}");
             //this.Text = $"{data_start} {data_end} {sector_zero} {Math.Abs(len)} {start_found} {end_found}";  // for testing
             return (data_start, data_end, sector_zero, len, headers.ToArray(), sectors, s_st, total_sync, Disk_ID);
-        
+
             void add_total()
             {
                 if (sync && sync_count < 80) total_sync += sync_count;
             }
-        
+
             void Compare(int p)
             {
                 d = Flip_Endian(Bit2Byte(source, pos, comp));
                 if (d[0] == 0x52 && !(d[1] == 0x55 && d[2] == 0x55 && d[3] == 0x55))
                 {
-        
+
                     for (int i = 1; i < sz.Length; i++) d[i] &= sz[i];
                     h = Hex_Val(d);
                     if (valid_cbm.Any(s => s == h)) //.Contains(h))
@@ -197,7 +197,7 @@ namespace V_Max_Tool
                                     (s_dat, c) = Decode_CBM_GCR(pdata, a, true);
                                     if (!c) sec_c = csm[1];
                                 }
-        
+
                                 headers[0] = $"Sector ({a}){sz} Checksum ({sec_c}) pos ({data_start / 8}) Sync ({sync_count} bits) Header-ID [ {decoded_header.Substring(6, decoded_header.Length - 12)} ] Header ({hdr_c})";
                                 headers.Add($"pos {p / 8} ** repeat ** {h}");
                                 if (data_start == 0) data_end = pos;

@@ -46,13 +46,14 @@ namespace V_Max_Tool
             string le = "Length";
             string fm = "Format";
             string bl = "** Potentially bad loader! **";
+            var a = tracks; // <- used to show analyse progress on progress bar when processing multi-threaded
             if (tracks > 42)
             {
                 halftracks = true;
                 ht = 0.5;
             }
             else ht = 0;
-            if (!manualRender)
+            if (!manualRender) // <- if CPU is determined to be fast, Checking track format is multi-threaded to improve speed 
             {
                 Thread[] tt = new Thread[tracks];
                 Invoke(new Action(() => label5.Text = "Analyzing Tracks.."));
@@ -64,17 +65,11 @@ namespace V_Max_Tool
                 }
                 for (int i = 0; i < tracks; i++) tt[i]?.Join();
             }
-            void Get_Fmt(int trk)
-            {
-                NDS.cbm[trk] = Get_Data_Format(NDS.Track_Data[trk]);
-            }
-
             int t;
             var color = Color.Black;
             for (int i = 0; i < tracks; i++)
             {
-                //NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
-                if (manualRender) Get_Fmt(i); // NDS.cbm[i] = Get_Data_Format(NDS.Track_Data[i]);
+                if (manualRender) Get_Fmt(i); // NDS.cbm[track] = Get_Data_Format(NDS.Track_Data[track]);
                 if (NDS.cbm[i] == 0)
                 {
                     int l = Get_Track_Len(NDS.Track_Data[i]);
@@ -278,6 +273,20 @@ namespace V_Max_Tool
                 if (!v2 && !v3) VM_Ver.Text = "Protection : V-Max (CBM)";
                 if (NDS.cbm.Any(s => s == 5)) VM_Ver.Text = "Protection : Vorpal";
             }));
+
+            void Get_Fmt(int trk)
+            { 
+                NDS.cbm[trk] = Get_Data_Format(NDS.Track_Data[trk]);
+                a--;
+                if (!manualRender)
+                {
+                    Invoke(new Action(() =>
+                    {
+                        Import_Progress_Bar.Maximum = (int)((double)Import_Progress_Bar.Value / (double)((tracks - a) + 1) * tracks);
+                        Update();
+                    }));
+                }
+            }
         }
 
         void Process_Nib_Data(bool cbm, bool short_sector, bool rb_vm)
@@ -334,14 +343,6 @@ namespace V_Max_Tool
             }
             if (!opt && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"] && !manualRender) Check_Before_Draw(false);
 
-            void Process_Vorpal(int trk)
-            {
-                byte[] temp = new byte[NDG.Track_Data[trk].Length];
-                Array.Copy(NDG.Track_Data[trk], 0, temp, 0, NDG.Track_Data[trk].Length);
-                Set_Dest_Arrays(temp, trk);
-                if (NDS.cbm.Any(ss => ss == 5)) fnappend = vorp;
-            }
-
             void Process_Ndos(int trk)
             {
                 NDA.Track_Data[trk] = NDS.Track_Data[trk];
@@ -378,13 +379,18 @@ namespace V_Max_Tool
                         {
                             using (Message_Center center = new Message_Center(this)) // center message box
                             {
-                                string m = "This image is not compatible with this program!";
-                                string t = "This is not a CBM or (known) V-Max variant";
+                                string t = "This image is not compatible with this program!";
+                                string m = "Image data may be corrupt or unsupported format";
                                 MessageBox.Show(m, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 error = true;
                             }
                         }
                     }
+                }
+                if (!(V3_Auto_Adj.Checked || V3_Custom.Checked))
+                {
+                    if (Adj_cbm.Checked) fnappend = mod;
+                    else fnappend = fix;
                 }
 
             }
@@ -495,6 +501,14 @@ namespace V_Max_Tool
                     }
                     catch { }
                 }
+            }
+
+            void Process_Vorpal(int trk)
+            {
+                byte[] temp = new byte[NDG.Track_Data[trk].Length];
+                Array.Copy(NDG.Track_Data[trk], 0, temp, 0, NDG.Track_Data[trk].Length);
+                Set_Dest_Arrays(temp, trk);
+                if (NDS.cbm.Any(ss => ss == 5)) fnappend = vorp;
             }
 
             void Shrink_Loader(int trk)

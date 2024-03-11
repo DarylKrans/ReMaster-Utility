@@ -28,7 +28,7 @@ namespace V_Max_Tool
         {
             InitializeComponent();
             //this.Text += ver;
-            this.Text = $"Nib ReMaster: V-Max/Vorpal Utility {ver}";
+            this.Text = $"Nib-Master: V-Max/Vorpal Duplication Utility {ver}";
             Init();
             Set_ListBox_Items(true, true);
         }

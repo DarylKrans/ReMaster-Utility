@@ -182,7 +182,7 @@ namespace V_Max_Tool
             List<string> headers = new List<string>();
             for (int i = 0; i < data.Length - 4; i++)
             {
-                Array.Copy(data, i, compare, 0, compare.Length);
+                try { Array.Copy(data, i, compare, 0, compare.Length); } catch { }
                 if (Hex_Val(compare) == Hex_Val(pattern))
                 {
                     start_byte[0] = data[i - 1];
@@ -302,7 +302,7 @@ namespace V_Max_Tool
             int head_len = Convert.ToInt32(t_info[2]);
             int sec_zero;
             int vs = Convert.ToInt32(t_info[3]);
-            Array.Copy(data, data_start, temp_data, 0, data_end - data_start);
+            try { Array.Copy(data, data_start, temp_data, 0, data_end - data_start); } catch { }
             for (int i = 0; i < temp_data.Length - 5; i++)
             {
                 Array.Copy(temp_data, i, compare, 0, compare.Length);
