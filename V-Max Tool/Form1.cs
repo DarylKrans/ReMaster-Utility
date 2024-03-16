@@ -28,7 +28,7 @@ namespace V_Max_Tool
         {
             InitializeComponent();
             //this.Text += ver;
-            this.Text = $"Nib-Master: V-Max/Vorpal Duplication Utility {ver}";
+            this.Text = $"Re-Master V-Max/Vorpal Utility {ver}";
             Init();
             Set_ListBox_Items(true, true);
         }
@@ -295,6 +295,7 @@ namespace V_Max_Tool
                     {
                         Invoke(new Action(() =>
                         {
+                            
                             Process_Nib_Data(true, false, true);
                             Set_ListBox_Items(false, false);
                             Get_Disk_Directory();
@@ -309,6 +310,18 @@ namespace V_Max_Tool
                             M_render.Enabled = true;
                             Import_File.Visible = false;
                             Adv_ctrl.Enabled = true;
+                            if (Encoding.ASCII.GetString(g64_header, 0, 8) == "GCR-1541" && NDS.cbm.Any(s => s == 5))
+                            {
+                                using (Message_Center center = new Message_Center(this)) // center message box
+                                {
+                                    string t = "Output integrity warning!";
+
+                                    string s = "Vorpal tracks detected.\n\nIt is advised to use NIB files when processing Vorpal images\nWhen processing G64's, the output file may not work correctly.";
+                                    if (s.ToLower().Contains("source array")) s = "Image is corrupt and cannot be opened";
+                                    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                    error = true;
+                                }
+                            }
                         }));
                     }
                 });

@@ -153,7 +153,7 @@ namespace V_Max_Tool
             string fi_ext = ".g64";
             string fi_nam = $"{fname}{fnappend}";
             bool v2 = false;
-            bool v5 = false;
+            //bool v5 = false;
             int width = m * 1000;
             int height = m * 1000;
             int track = 0;
@@ -184,6 +184,7 @@ namespace V_Max_Tool
 
             while (r > 80 && track < tracks)
             {
+                bool v5 = false;
                 if (NDG.Track_Length[track] > min_t_len)
                 {
                     pt++;
