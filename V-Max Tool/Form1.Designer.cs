@@ -38,6 +38,7 @@
             this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.Main = new System.Windows.Forms.TabPage();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.Import_File = new System.Windows.Forms.GroupBox();
             this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
             this.label5 = new System.Windows.Forms.Label();
@@ -144,9 +145,10 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(23, 3);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(192, 25);
+            this.label2.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.label2.Size = new System.Drawing.Size(70, 25);
             this.label2.TabIndex = 2;
-            this.label2.Text = "Track / header info";
+            this.label2.Text = "label2";
             // 
             // f_load
             // 
@@ -237,6 +239,7 @@
             // 
             this.Main.BackColor = System.Drawing.Color.Gainsboro;
             this.Main.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Main.Controls.Add(this.linkLabel1);
             this.Main.Controls.Add(this.Import_File);
             this.Main.Controls.Add(this.Other_opts);
             this.Main.Controls.Add(this.VBS_info);
@@ -250,6 +253,16 @@
             this.Main.Size = new System.Drawing.Size(908, 183);
             this.Main.TabIndex = 0;
             this.Main.Text = "File Info";
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(304, 3);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(231, 25);
+            this.linkLabel1.TabIndex = 61;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "View source on GitHub";
             // 
             // Import_File
             // 
@@ -1192,6 +1205,7 @@
         private System.Windows.Forms.Panel Other_opts;
         private System.Windows.Forms.Button V2_export;
         private System.Windows.Forms.Button V3_Export;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }
 

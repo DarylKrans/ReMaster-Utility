@@ -307,6 +307,7 @@ namespace V_Max_Tool
                             label2.Text = l2;
                             label1.Update();
                             label2.Update();
+                            linkLabel1.Visible = false;
                             M_render.Enabled = true;
                             Import_File.Visible = false;
                             Adv_ctrl.Enabled = true;
@@ -530,5 +531,11 @@ namespace V_Max_Tool
         {
             Create_Blank_Disk();
         }
+        private void linkLabel1_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
+        {
+            this.linkLabel1.LinkVisited = true;
+            System.Diagnostics.Process.Start("https://github.com/DarylKrans/V-Max-Sync-Tool");
+        }
+
     }
 }
