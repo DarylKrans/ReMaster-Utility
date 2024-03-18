@@ -530,7 +530,7 @@ namespace V_Max_Tool
         private void Button1_Click(object sender, EventArgs e)
         {
             Create_Blank_Disk();
-        }
+        }//
         private void linkLabel1_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
         {
             this.linkLabel1.LinkVisited = true;
