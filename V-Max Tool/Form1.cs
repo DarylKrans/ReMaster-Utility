@@ -189,7 +189,7 @@ namespace V_Max_Tool
                     var head = Encoding.ASCII.GetString(nib_header, 0, 13);
                     var hm = "Bad Header";
                     if (head == "MNIB-1541-RAW") hm = "Header Match!";
-                    var lab = $"Total Track ({tracks}), {l}, {hm}";
+                    var lab = $"Total Tracks ({tracks}), {l}, {hm}";
                     Process(true, lab);
                 }
                 if (fext.ToLower() == supported[1])
@@ -235,7 +235,7 @@ namespace V_Max_Tool
                             }
                         }
                         Stream.Close();
-                        var lab = $"Total Track ({tracks}), G64 Track Size ({tr_size:N0})";
+                        var lab = $"Total Tracks ({tracks}), G64 Track Size ({tr_size:N0})";
                         Out_Type = false;
                         Process(false, lab);
                     }

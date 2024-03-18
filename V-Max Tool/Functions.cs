@@ -543,6 +543,9 @@ namespace V_Max_Tool
                 flip = !flip;
             }
             leadIn_std[9] = true;
+            Tabs.Controls.Remove(Import_File);
+            this.Controls.Add(Import_File);
+            Import_File.BringToFront();
             Set_Boxes();
             panel1.Controls.Add(outbox);
             panel1.Controls.Add(inbox);
@@ -610,6 +613,11 @@ namespace V_Max_Tool
             Trk_Analysis.Checked = true;
             Dir_screen.Visible = Disk_Dir.Checked;
             Check_CPU_Speed();
+            Tabs.Controls.Remove(Import_File);
+            this.Controls.Add(Import_File);
+            Import_File.BringToFront();
+            Import_File.Top = 60;
+            Import_File.Left = 15;
             opt = false;
 
             void Set_Boxes()

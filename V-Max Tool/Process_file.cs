@@ -363,7 +363,8 @@ namespace V_Max_Tool
                     try
                     {
                         temp = Adjust_Sync_CBM(NDS.Track_Data[trk], exp_snc, min_snc, ign_snc, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk);
-                        if ((V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
+                        //if ((V2_Auto_Adj.Checked || V3_Auto_Adj.Checked || Adj_cbm.Checked)) // && (NDS.cbm.Any(s => s == 2) || NDS.cbm.Any(s => s == 3)))
+                        if ((V2_Auto_Adj.Checked && Tabs.TabPages.Contains(Adv_V2_Opts)) || (V3_Auto_Adj.Checked && Tabs.TabPages.Contains(Adv_V3_Opts)) || Adj_cbm.Checked) 
                         {
                             d = Get_Density(NDS.Track_Length[trk] >> 3);
                             temp = Rebuild_CBM(NDS.Track_Data[trk], NDS.sectors[trk], NDS.Disk_ID[trk], d, trk);
