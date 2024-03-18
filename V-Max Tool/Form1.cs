@@ -525,7 +525,7 @@ namespace V_Max_Tool
         private void Dir_View_CheckedChanged(object sender, EventArgs e)
         {
             Dir_screen.Visible = Disk_Dir.Checked;
-        }
+        } //
 
         private void Button1_Click(object sender, EventArgs e)
         {
