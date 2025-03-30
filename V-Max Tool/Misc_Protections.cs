@@ -434,8 +434,8 @@ namespace V_Max_Tool
                         }
                         else
                         {
-                            int p = density[3] >> 1;
-                            return ArrayConcat(FastArray.Init(p - 1, 0xac), new byte[] { 0xa0 }, FastArray.Init(density[3] - p, 0xca));
+                            int p = density[2] >> 1;
+                            return ArrayConcat(FastArray.Init(p - 1, 0xac), new byte[] { 0xa0 }, FastArray.Init(density[2] - p, 0xca));
                         }
                     }
                 }

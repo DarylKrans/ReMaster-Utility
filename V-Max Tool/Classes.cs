@@ -92,7 +92,8 @@ namespace V_Max_Tool
 
         protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)
         {
-            Func<double, double> DegToRad = (angle) => Math.PI * angle / 180.0;
+            //Func<double, double> DegToRad = (angle) => Math.PI * angle / 180.0;
+            double DegToRad(double angle) => Math.PI * angle / 180.0;
 
             Brush b = new SolidBrush(this.ForeColor);
             SizeF size = e.Graphics.MeasureString(this.NewText, this.Font, this.Parent.Width);

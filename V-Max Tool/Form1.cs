@@ -17,7 +17,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private readonly string ver = " v1.0.4.7";
+        private readonly string ver = " v1.0.5.0 (test build)";
         private readonly string fix = "_ReMaster";
         private readonly string mod = "_ReMaster"; // _(modified)";
         private readonly string vorp = "_ReMaster"; //(aligned)";
@@ -57,50 +57,7 @@ namespace V_Max_Tool
             Set_ListBox_Items(true, true);
 
             // debugging buttons
-            button1.Visible = button2.Visible = false;
-        }
-
-        void Test_RLD()
-        {
-            byte[] sector = File.ReadAllBytes($@"c:\test\rlsec11.bin");
-            int ck = 0;
-            for (int i = 1; i < sector.Length; i++) ck ^= sector[i];
-            ck ^= sector[sector.Length - 1];
-            ck ^= sector[sector.Length - 2];
-
-            byte x = (byte)(sector[sector.Length - 2] << 3);
-            byte b24 = (byte)(ck & 0x03); // a;
-            b24 ^= (byte)(ck & 0x0c); // a;
-            b24 ^= (byte)(x & 0xc0);
-            b24 ^= (byte)((x & 0x18) << 1);
-            Text = $"{Hex_Val(new byte[] { (byte)ck, b24})}";
-        }
-
-        void Test_RL1()
-        {
-            byte[] sector = File.ReadAllBytes($@"c:\test\rlsec1.bin");
-            
-            byte and1 = 0;
-            byte and2 = 0;
-            byte a = 0, x = 0;
-            byte stk1 = 0;
-            byte g1 = 0, g2 = 0, g3 = 0;
-            byte d1 = 0, d2 = 0;
-            byte b0 = 0, b1 = 0;
-            int pos = 1;
-            //
-            while (pos < sector.Length)
-            {
-                g1 = sector[pos++];
-                g2 = sector[pos++];
-                g3 = sector[pos++];
-                and1 = (byte)(g1 << 1);
-                and2 = ROR(g1, 3);
-                stk1 = ROR(g2, 1);
-                a = (byte)(stk1 >> 3);
-                x = 0x02;
-            
-            }
+            //button1.Visible = button2.Visible = false;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)
@@ -1044,7 +1001,7 @@ namespace V_Max_Tool
                         (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
                         if (!cksm)
                         {
-                            (byte[] rawsector, _, _, _) = Decode_Vorpal(source, j, false);
+                            //(byte[] rawsector, _, _, _) = Decode_Vorpal(source, j, false);
                             BitArray newsec = Encode_Vorpal_GCR(sector, true, isone);
                             for (int k = 0; k < newsec.Length; k++)
                             {
@@ -1060,99 +1017,5 @@ namespace V_Max_Tool
             //Text = $"{sw.Elapsed.TotalMilliseconds}";
         }
 
-
-        private void Button1_Click(object sender, EventArgs e)
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < tracks; i++)
-            {
-                if (NDS.cbm[i] == 5)
-                {
-                    BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[i]));
-                    for (int j = 0; j < NDS.sectors[i]; j++)
-                    {
-                        (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
-
-                        (byte[] rawsector, _, _, _) = Decode_Vorpal(source, j, false);
-                        BitArray newsec = Encode_Vorpal_GCR(sector, true, isone);
-                        for (int k = 0; k < newsec.Length; k++)
-                        {
-                            source[pos + k] = newsec[k];
-                        }
-                        byte[] temp = Bit2Byte(source);
-
-                        byte[] newsector = Bit2Byte(newsec, 0, 1290);
-                        rawsector = Bit2Byte(NewBit(rawsector, 1290));
-                        for (int k = 0; k < rawsector.Length; k++)
-                        {
-                            if (rawsector[k] != newsector[k])
-                            {
-                                byte g = 0;
-                                for (int k2 = 0; k2 < sector.Length; k2++) g ^= sector[k2];
-                                File.WriteAllBytes($@"c:\test\cg\Raw_Cg_t{i + 1}-s{j}.bin", rawsector);
-                                File.WriteAllBytes($@"c:\test\cg\New_Cg_t{i + 1}-s{j}.bin", newsector);
-                                break;
-                            }
-                        }
-                        Set_Dest_Arrays(temp, i);
-                    }
-                }
-            }
-            sw.Stop();
-            Text = $"{sw.Elapsed.TotalMilliseconds}";
-
-            //var trk = tracks > 42 ? 64 : 32;
-            //var sec = 14;
-            //if (NDS.cbm[trk] == 5)
-            //{
-            //    BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[trk]));
-            //
-            //    //void Dump()
-            //    //{
-            //    (byte[] sector, _, bool isone, int pos) = Decode_Vorpal(source, sec);
-            //    if (sector != null)
-            //    {
-            //        File.WriteAllBytes($@"c:\test\cgintro_t33-s14", sector);
-            //        if (File.Exists($@"c:\test\cgintro_t33-s14.bin"))
-            //        {
-            //            byte[] newsector = File.ReadAllBytes($@"c:\test\cgintro_t33-s14.bin");
-            //
-            //            BitArray newsec = Encode_Vorpal_GCR(newsector, true, isone);
-            //
-            //            for (int i = 0; i < newsec.Length; i++)
-            //            {
-            //                source[pos + i] = newsec[i];
-            //            }
-            //            byte[] temp = Bit2Byte(source);
-            //            Set_Dest_Arrays(temp, trk);
-            //        }
-            //    }
-            //    sec = 17;
-            //    (sector, _, isone, pos) = Decode_Vorpal(source, sec);
-            //    if (sector != null)
-            //    {
-            //        File.WriteAllBytes($@"c:\test\cgintro_t33-s17", sector);
-            //        if (File.Exists($@"c:\test\cgintro_t33-s17.bin"))
-            //        {
-            //            byte[] newsector = File.ReadAllBytes($@"c:\test\cgintro_t33-s17.bin");
-            //
-            //            BitArray newsec = Encode_Vorpal_GCR(newsector, true, isone);
-            //
-            //            for (int i = 0; i < newsec.Length; i++)
-            //            {
-            //                source[pos + i] = newsec[i];
-            //            }
-            //            byte[] temp = Bit2Byte(source);
-            //            Set_Dest_Arrays(temp, trk);
-            //        }
-            //    }
-            //    //}
-            //}
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            Test_RLD();
-        }
     }
 }

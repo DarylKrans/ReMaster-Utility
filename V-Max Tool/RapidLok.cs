@@ -3,11 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Threading;
-using System.Security.Cryptography;
-using System.Linq.Expressions;
 
 namespace V_Max_Tool
 {
@@ -390,8 +386,7 @@ namespace V_Max_Tool
                         if (tsnc >= 16)
                         {
                             sb_sec = (sl - tsnc - 8) >> 3;
-                            //a_headers.Add($"pos ({pos >> 3}) 0x7B sector Length {sb_sec} First sector = {first_sector + 1}");
-                            a_headers.Add($"pos ({pos >> 3}) 0x7B sector Length {sb_sec}");
+                            a_headers.Add($"Security sector (0x7B) Length {sb_sec}");
                             break;
                         }
                         tsnc = 0;
@@ -408,7 +403,7 @@ namespace V_Max_Tool
                     d_start = pos;
                 }
                 string hdr = "";
-                try { hdr = Hex_Val(Decode_RL_Data(CopyFrom(d, 1)).Item1); } catch { }  
+                try { hdr = Hex_Val(Decode_RL_Data(CopyFrom(d, 1)).Item1); } catch { }
                 string head = Hex_Val(d, 0, 7); //6
                 if (!headers.Any(x => x == head))
                 {
@@ -424,11 +419,6 @@ namespace V_Max_Tool
                         }
                         a_headers.Add($"sector ({headers.Count}) Header ID [ {hdr} ] Checksum ({cksm})");
                         if (ckm < 1) errors++;
-                        //if (!batch && ckm < 1)
-                        //{
-                        //    //int errtk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-                        //    if (!ErrorList.Contains($"Checksum failed on track {track}")) ErrorList.Add($"Checksum failed on track {track}");
-                        //}
                     }
                     sectors++;
                     if (build) BuildSectorData();
@@ -577,7 +567,7 @@ namespace V_Max_Tool
         {
             if (sector == null) return (new byte[0], false);
             int pos = sector[0] == 0x6b ? 1 : 0;
-            bool rl_ver = sector[195 + pos] == 0xa4;
+            bool rl_ver = (sector.Length == 583 && sector[195 + pos] == 0xa4);
             byte GCR_a, GCR_b, GCR_c;
             byte dec0 = 0, dec1;
             List<byte> output = new List<byte>();
@@ -619,7 +609,7 @@ namespace V_Max_Tool
         {
             int cksm = 0;
             RL_Decrypt(data);
-            foreach (byte d in data) cksm ^= d; 
+            foreach (byte d in data) cksm ^= d;
             MemoryStream buffer = new MemoryStream();
             BinaryWriter write = new BinaryWriter(buffer);
             int pos = 0;
@@ -643,7 +633,7 @@ namespace V_Max_Tool
                 if ((GCR_a & 0xF8) == 0xF8) GCR_a &= 0xEF;
                 if ((GCR_a & 0x3F) == 0x3F && (GCR_b & 0xC0) == 0xC0) GCR_a &= 0xFE;
                 if ((GCR_c & 0x3E) == 0x3E) GCR_c &= 0xFB;
-                return new byte[] {  GCR_a, GCR_b, GCR_c };
+                return new byte[] { GCR_a, GCR_b, GCR_c };
             }
         }
     }

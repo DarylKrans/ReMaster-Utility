@@ -1,5 +1,4 @@
-﻿using ReMaster_Utility.Properties;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,6 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
+using ReMaster_Utility.Properties;
 
 
 namespace V_Max_Tool

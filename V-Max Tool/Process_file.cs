@@ -467,6 +467,7 @@ namespace V_Max_Tool
                                     for (int j = 0; j < f[i].Length; j++)
                                     {
                                         Color color1 = f[i][j].Contains("(Failed!)") ? Color.FromArgb(190, 0, 0) : f[i][j].Contains("(Empty") ? Color.Black : Color.DarkMagenta;
+                                        if (f[i][j].Contains("0x7B")) color1 = Color.Green;
                                         Track_Info.Items.Add(new LineColor { Color = color1, Text = f[i][j] });
                                     }
                                 }
@@ -513,7 +514,7 @@ namespace V_Max_Tool
 
             void Get_Fmt(int trk)
             {
-                NDS.cbm[trk] = Get_Data_Format(NDS.Track_Data[trk], trk);
+                NDS.cbm[trk] = Get_Data_Fmt2(NDS.Track_Data[trk], trk);
             }
 
             void Update_Progress_Bar(int i)
@@ -1275,209 +1276,73 @@ namespace V_Max_Tool
             }
         }
 
-        int Get_Data_Format(byte[] data, int track)
+        int Get_Data_Fmt2(byte[] data, int track) // improved for speed and reliability (needs testing)
         {
-            bool blnk = false;
-            int t = 0;
-            int csec = 0;
-            int trk = tracks > 42 ? (track / 2) + 1 : track + 1;
-            if (trk > 35)
+            if (data == null) return 0;
+
+            Dictionary<byte, int> headerDict = new Dictionary<byte, int>()
             {
-                (t, blnk) = Check_Blank(data);
-                if (!blnk && t == 9) return t;
-                blnk = false;
-                t = 0;
-            }
-            byte[] comp = new byte[4];
-            if (Check_RapidLok(data))
-            {
-                return 6;
-            }
-            if ((tracks <= 42 && track == 19) || tracks > 42 && track == 38) if (Check_Loader(data)) return 4;
+                { 0xff, 0 }, { 0x64, 1 }, { 0x4e, 2 }, { 0x49, 3 }, { 0x3f, 4 }, { 0xbf, 5 }
+            };
+
+            bool blank_track = true;
+            byte compare = 0;
+            int tk = tracks > 42 ? (track / 2) + 1 : track + 1;
+            int idx = -1;
+            int cbm = 0, rl = 0, v2 = 0, v3 = 0, vpl = 0, mps = 0;
+            int lastcbm = -1, lastrl = -1, lastv2 = -1, lastv3 = -1, lastvpl = -1;
+            int sync = 0;
+            int sync_run = 0;
+            int rl_min = 596 << 3;      // sets minimum distance allowed between sectors
+            int cbm_min = 365 << 3;     // sets minimum distance allowed between sectors
+            int v2_min = 328 << 3;      // sets minimum distance allowed between sectors
+            int v3_min = 80 << 3;       // sets minimum distance allowed between sectors
+            int vpl_min = 140 << 3;     // sets minimum distance allowed between sectors
             BitArray source = new BitArray(Flip_Endian(data));
-            for (int i = 0; i < (data.Length) - comp.Length; i++)
+            for (int i = 0; i < source.Length; i++)
             {
-                Buffer.BlockCopy(data, i, comp, 0, comp.Length);
-                t = Compare(comp, i);
-                if (t == 3 && i + 20 < data.Length)
+                compare <<= 1;
+                if (source[i])
                 {
-                    for (int j = 0; j < 20; j++) if (data[i + j] == 0xee) return 3;
-                    t = 0;
+                    compare |= 1;
+                    ++sync;
                 }
-                if (t != 0) break;
-            }
-            if (t == 1 || t == 0)
-            {
-                if (blnk) return t;
-                byte[] temp = new byte[0];
-                bool c;
-                int mp = 0;
-                int y = 0;
-                int p = 0;
-                int ps = 0;
-                int seek = 32;
-                for (int i = 0; i < 20; i++)
+                else
                 {
-                    (c, ps, _, _) = Find_Sector(source, i + 1);
-                    /// ------------ Detect Microprose track --------------------------
-                    if (c && ps + seek < data.Length)
-                    {
-                        int snc = 0;
-                        int w = 0;
-                        int pp = (ps);
-                        while (data[pp + w] == 0xff) w++;
-                        if (w < seek)
-                        {
-                            while (w < seek && pp + w < data.Length)
-                            {
-                                if ((data[pp + w] == 0xff)) snc++;
-                                w++;
-                            }
-                            if (snc == 0) mp++;
-                        }
-                    }
-                    /// --------------------------------------------------------------
-                    if (c) { y++; p = ps + 320; if (p > data.Length) p = 0; }
-                    if (y > 4 && mp < 1) return 1;  /// <-- This is a CBM formatted track
-                    if (y > 4 && mp > 4) return 10; /// <-- This is a Microprose custom format track
+                    if (sync > sync_run) sync_run = sync;
+                    sync = 0;
                 }
-                byte[] ncomp = new byte[vpl_s0.Length];
-                int pos = 0;
-                if (trk < 36)
+                if (compare != 0)
                 {
-                    while (pos < source.Length - vpl_s0.Length * 8)
+                    if (blank_track) blank_track = false;
+                    idx = headerDict.TryGetValue(compare, out int value) ? value : -1;
+                    if (idx >= 0)
                     {
-                        ncomp = Bit2Byte(source, pos, vpl_s0.Length << 3);
-                        if (Match(vpl_s0, ncomp) || Match(vpl_s1, ncomp))
+                        switch (idx)
                         {
-                            if (Get_VPL_Sectors(source) > 30) return 5;
+                            case 0: Check_cbm_rlk(i + 1); break;
+                            case 1: Check_V2(i - 7); break;
+                            case 2: Check_V2(i - 7); break;
+                            case 3: Check_V3(i - 7); break;
+                            case 4: Check_VPL(i - 7); break;
+                            case 5: Check_VPL(i - 7); break;
                         }
-                        pos++;
+                        if (cbm > 6) return 1;
+                        if (mps > 5) return 10;
+                        if ((tk == 20 && v2 >= 20) || (tk != 20 && v2 > 5)) return 2;
+                        if (rl > 5) return 6;
+                        if (v3 > 5 || (v3 >= 1 && sync_run > 8000)) return 3;
+                        if (vpl > 20) return 5;
                     }
+                    
                 }
             }
-            if (t == 0) (t, blnk) = Check_Blank(data);
-            return t;
+            if (blank_track || sync_run == source.Count) return 0;
+            if (tk == 20 && Check_VMLoader(data)) return 4;
+            if (sync_run > 30000 && tk == 36) return 7;
+            return Check_Signatures(data);
 
-            int Compare(byte[] d, int p)
-            {
-                if (Match(d, vv2n) || Match(d, vv2p)) return 2;
-                if (Match(d, v3a)) return 3;
-                if (Match(d, RLok))
-                {
-                    bool c;
-                    int y = 0;
-                    p = 0;
-                    int ps = 0;
-                    for (int i = 0; i < 20; i++)
-                    {
-                        (c, ps, _, _) = Find_Sector(source, i + 1);
-                        if (c) { y++; p = ps + 320; if (p > data.Length) p = 0; }
-                        if (y > 4) return 1;
-                    }
-                    return 6;
-                }
-                if (d[0] == sz[0])
-                {
-                    d[1] &= sz[1]; d[2] &= sz[2]; d[3] &= sz[3];
-                    if (valid_cbm.Contains(Hex_Val(d))) { csec++; if (csec > 1) return 1; } /// change csec > 6 if there are issues
-                }
-                return 0;
-            }
-
-            (int, bool) Check_Blank(byte[] d)
-            {
-                HashSet<byte> blankSet = new HashSet<byte>(blank);
-                int b = 0;
-                int snc = 0;
-                if (d.All(x => x == 0xff)) return (0, false);
-                for (int i = 0; i < d.Length; i++)
-                {
-                    if (blankSet.Contains(d[i])) b++;
-                    if (d[i] == 0xff) snc++;
-
-                    try
-                    {
-                        if (d[i] == 0xff && d[i + 1] == ssp[1])
-                        {
-                            if (CheckPattern(ssp, i) && CheckPadding(0)) return (11, false);
-                        }
-
-                        if (d[i] == gmt[0])
-                        {
-                            byte[] gm = new byte[gmt.Length];
-                            try
-                            {
-                                Buffer.BlockCopy(d, i, gm, 0, gmt.Length);
-                                for (int j = 1; j < gmt.Length; j++) gm[j] &= gmt[j];
-                                if (Match(gm, gmt) && CheckPadding(0)) return (11, false);
-                            }
-                            catch { }
-                        }
-
-                        if (ps1.Contains(d[i]) || ps2.Contains(d[i]))
-                        {
-                            if ((d[i] == ps1[0] && CheckPattern(ps1, i)) || (d[i] == ps2[0] && CheckPattern(ps2, i))) return (8, false);
-                        }
-
-                        if ((trk > 35 && trk < 41) && d[i] == ramb[0] || (i > 0 && d[i] == 0xff && d[i - 1] != 0xff))
-                        {
-                            if (d[i] == 0xff)
-                            {
-                                int ps = i;
-                                int sc = 0;
-                                while (ps < i + 150 && ps < d.Length)
-                                {
-                                    if (d[ps] != 0xff) break;
-                                    ps++; sc++;
-                                    if (sc > 140) break;
-                                }
-                                if (sc >= 108 && sc <= 132 && CheckPadding(0)) return (9, false);
-                            }
-                            else if (CheckPattern(ramb, i))
-                            {
-                                int ptn = 0;
-                                int itt = 0;
-                                while (i + (itt * ramb.Length) < d.Length)
-                                {
-                                    if (!CheckPattern(ramb, i + (itt * ramb.Length))) break;
-                                    ptn++;
-                                    if (ptn > 100) return (9, false);
-                                    itt++;
-                                }
-                                return (9, false);
-                            }
-                        }
-                    }
-                    catch { }
-                }
-
-                if (b > 1000 && snc < 10) return (0, false);
-                if (snc > 1000 && trk == 36) return (7, false);
-                return (0, true);
-                //return (0, false);
-
-                bool CheckPattern(byte[] pattern, int pos)
-                {
-                    if (pos + pattern.Length >= d.Length - 1) return false;
-                    byte[] compare = new byte[pattern.Length];
-                    Buffer.BlockCopy(d, pos, compare, 0, pattern.Length);
-                    return Match(pattern, compare);
-                }
-
-                bool CheckPadding(int start)
-                {
-                    int pad = 0;
-                    for (int j = start; j < d.Length; j++)
-                    {
-                        if (d[j] == 0x55 || d[j] == 0xaa) pad++;
-                        if (pad > 3000) return true;
-                    }
-                    return false;
-                }
-            }
-
-            bool Check_Loader(byte[] d)
+            bool Check_VMLoader(byte[] d)
             {
                 int l = 0;
                 byte[] cmp = new byte[4];
@@ -1496,29 +1361,186 @@ namespace V_Max_Tool
                 if (l > 30) return true; else return false;
             }
 
-            bool Check_RapidLok(byte[] d)
+            void Check_cbm_rlk(int pos)
             {
-                if (compare(0)) return true;
-                int sync = 0;
-                int sec = 0;
-                for (int i = 0; i < 2800; i++)
+                if (sync > 24 && pos + 8 < source.Count)
                 {
-                    if (d[i] == 0xff) sync++;
-                    else
+                    byte[] cbit = Bit2Byte(source, pos, 8);
+
+                    if (sync < 288 && cbit[0] == 0x52)
                     {
-                        if (sync > 3 && d[i] == 0x75) if (compare(i)) sec++;
-                        if (sec == 2) return true;
-                        sync = 0;
+                        CheckProtection(pos, ref lastcbm, cbm_min, 4, header =>
+                        {
+                            for (int i = 1; i < sz.Length; i++) header[i] &= sz[i];
+                            return valid_cbm.Any(x => x == Hex_Val(header));
+                        }, ref cbm);
+                        if (!HasSyncWithinRange(32 << 3)) // checks for CBM data block sync
+                        {
+                            mps++;  // if no sync was found, It's a MicroProse sector
+                            cbm--;  // Adjust CBM count
+                        }
+                    }
+
+                    if (sync < 420 && cbit[0] == 0x75)
+                    {
+                        CheckProtection(pos, ref lastrl, rl_min, 6, header =>
+                        {
+                            header[1] &= RLok1[1];
+                            header[2] &= RLok1[2];
+                            return header[0] == RLok1[0] && header[1] == 0x90 && header[2] == 0x09 &&
+                                   header[4] == 0xd6 && header[5] == 0xed;
+                        }, ref rl);
                     }
                 }
-                return false;
 
-                bool compare(int p)
+                bool HasSyncWithinRange(int length)
                 {
-                    byte[] cmp = new byte[6];
-                    Buffer.BlockCopy(d, p, cmp, 0, cmp.Length);
-                    cmp[1] &= RLok1[1]; cmp[2] &= RLok1[2];
-                    if (cmp[0] == RLok1[0] && cmp[1] == 0x90 && cmp[2] == 0x09 && cmp[4] == 0xd6 && cmp[5] == 0xed) return true;
+                    if (pos + length >= source.Count) return false;
+
+                    int snc = 0;
+                    for (int i = 0; i < length; i++)
+                    {
+                        if (source[pos + i]) snc++;
+                        else
+                        {
+                            if (snc >= 10) return true;
+                            snc = 0;
+                        }
+                    }
+                    return snc >= 10;
+                }
+            }
+
+            void Check_V2(int pos)
+            {
+                CheckProtection(pos, ref lastv2, v2_min, 5, header =>
+                {
+                    return (vm2_ver[0].Any(x => x == Hex_Val(header, 1, 2)) ||
+                            vm2_ver[1].Any(x => x == Hex_Val(header, 1, 2))) &&
+                           (header[1] == header[3] && header[2] == header[4]);
+                }, ref v2);
+            }
+
+            void Check_V3(int pos)
+            {
+                CheckProtection(pos, ref lastv3, v3_min, 9, header =>
+                {
+                    if (header[0] == 0x49 && header[1] == 0x49 && header[2] == 0x49)
+                    {
+                        for (int i = 3; i < header.Length; i++)
+                        {
+                            if (header[i - 1] == 0x49 && header[i] == 0xee)
+                                return true;
+                        }
+                    }
+                    return false;
+                }, ref v3);
+            }
+
+            void Check_VPL(int pos)
+            {
+                CheckProtection(pos, ref lastvpl, vpl_min, 3, header =>
+                {
+                    return (header[0] == 0x3f || header[0] == 0xbf) && header[1] == 0xd5 && (header[2] & 0x7f) != 0x80;
+                }, ref vpl);
+            }
+
+            void CheckProtection(int pos, ref int lastPos, int minDistance, int byteLength, Func<byte[], bool> validation, ref int count)
+            {
+                if ((lastPos < 0 || pos - lastPos > minDistance) && pos >= 0 && pos + (byteLength << 3) < source.Length)
+                {
+                    byte[] header = Bit2Byte(source, pos, byteLength << 3);
+                    if (validation(header))
+                    {
+                        count++;
+                        lastPos = pos;
+                    }
+                }
+            }
+
+            int Check_Signatures(byte[] d)
+            {
+                HashSet<byte> blankSet = new HashSet<byte>(blank);
+                int b = 0;
+                int snc = 0;
+                if (d.All(x => x == 0xff)) return 0;
+                for (int i = 0; i < d.Length; i++)
+                {
+                    if (blankSet.Contains(d[i])) b++;
+                    if (d[i] == 0xff) snc++;
+
+                    try
+                    {
+                        if (d[i] == 0xff && d[i + 1] == ssp[1])
+                        {
+                            if (MatchSeq(d, i, ssp) && CheckPadding(0)) return 11;
+                        }
+
+                        if (d[i] == gmt[0])
+                        {
+                            byte[] gm = new byte[gmt.Length];
+                            try
+                            {
+                                bool m = true;
+                                for (int j = 1; j < gmt.Length; j++)
+                                {
+                                    if (!((d[i + j] & gmt[j]) == gmt[j]))
+                                    {
+                                        m = false;
+                                        break;
+                                    }
+                                }
+                                if (m && CheckPadding(0)) return 11;
+                            }
+                            catch { }
+                        }
+
+                        if (ps1.Contains(d[i]) || ps2.Contains(d[i]))
+                        {
+                            if ((d[i] == ps1[0] && MatchSeq(d, i, ps1)) || (d[i] == ps2[0] && MatchSeq(d, i, ps2))) return 8;
+                        }
+
+                        if ((tk > 35 && tk < 41) && d[i] == ramb[0] || (i > 0 && d[i] == 0xff && d[i - 1] != 0xff))
+                        {
+                            if (d[i] == 0xff)
+                            {
+                                int ps = i;
+                                int sc = 0;
+                                while (ps < i + 150 && ps < d.Length)
+                                {
+                                    if (d[ps] != 0xff) break;
+                                    ps++; sc++;
+                                    if (sc > 140) break;
+                                }
+                                if (sc >= 108 && sc <= 132 && CheckPadding(0)) return 9;
+                            }
+                            else if (MatchSeq(d, i, ramb))
+                            {
+                                int ptn = 0;
+                                int itt = 0;
+                                while (i + (itt * ramb.Length) < d.Length)
+                                {
+                                    if (!MatchSeq(d, i + (itt * ramb.Length), ramb)) break;
+                                    ptn++;
+                                    if (ptn > 100) return 9;
+                                    itt++;
+                                }
+                                return 9;
+                            }
+                        }
+                    }
+                    catch { }
+                }
+                return 0;
+
+                bool CheckPadding(int start)
+                {
+                    int pad = 0;
+                    for (int j = start; j < d.Length; j++)
+                    {
+                        if (d[j] == 0x55 || d[j] == 0xaa) pad++;
+                        if (pad > 3000) return true;
+                    }
                     return false;
                 }
             }
@@ -1795,11 +1817,11 @@ namespace V_Max_Tool
                         snc = 0;
                     }
                 }
-                
+
                 if (sectors.Length > 0)
                 {
                     jt[(int)trk] = db_Text.Length;
-                    
+
                     if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes, Sectors ({sectors.Length})\n\n");
 
                     for (int i = 0; i < sectors.Length; i++)

@@ -797,6 +797,7 @@ namespace V_Max_Tool
                         int index = i / 8;
                         int bitOffset = i % 8;
                         ret[index] |= (byte)(1 << (7 - bitOffset));
+
                     }
                 }
                 return (ret);
@@ -950,6 +951,19 @@ namespace V_Max_Tool
                 if (Hex_Val(sdat, i, clen) == find) return (true);
             }
             return (false);
+        }
+
+        static bool MatchSeq(byte[] source, int startIndex, byte[] pattern)
+        {
+            if (startIndex < 0 || startIndex + pattern.Length > source.Length)
+                return false;
+
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                if (source[startIndex + i] != pattern[i])
+                    return false;
+            }
+            return true;
         }
 
         static bool Match(byte[] expecting, byte[] have)

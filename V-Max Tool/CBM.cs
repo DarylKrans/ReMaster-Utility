@@ -252,7 +252,7 @@ namespace V_Max_Tool
                                 sector_zero = pos;
                                 sec_zero = true;
                             }
-                            if (checksums) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).Item2;
+                            if (checksums) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
                             if (!batch) headers.Add($"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
                                 $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])})");
                         }
@@ -264,7 +264,7 @@ namespace V_Max_Tool
                                 if (dec_hdr[2] == 0x00) sz = "*";
                                 decoded_header = Hex_Val(dec_hdr);
                                 h_cksm = Check_Header(dec_hdr);
-                                if (checksums) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).Item2;
+                                if (checksums) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
                                 if (!batch)
                                 {
                                     headers[0] = $"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
@@ -987,7 +987,7 @@ namespace V_Max_Tool
                         var fmt = NDS.cbm[i];
                         if (fmt < secF.Length - 1)
                         {
-                            int sec = Sectors_by_density[(Get_Density(NDG.Track_Data[i].Length))];
+                            int sec = Sectors_by_density[Get_Density(NDG.Track_Data[i].Length)];
                             for (int j = 0; j < 21; j++)
                             {
                                 Color color = fmt < 2 || fmt == secF.Length - 1 || j >= sec ? Color.FromArgb(30, 100, 100, 100) : Color.FromArgb(200, 100, 30, 100);

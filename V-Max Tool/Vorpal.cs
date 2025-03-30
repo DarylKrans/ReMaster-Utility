@@ -15,20 +15,6 @@ namespace V_Max_Tool
         readonly BitArray leadIn_alt = new BitArray(10);
         readonly int com = 20;
 
-        //Dictionary<byte, string> Vorpal_primaryGCR = new Dictionary<byte, string>
-        //    {
-        //        { 0x0, "01001" }, { 0x1, "01010" }, { 0x2, "01011" }, { 0x3, "01101" },
-        //        { 0x4, "01110" }, { 0x5, "01111" }, { 0x6, "10010" }, { 0x7, "10011" },
-        //        { 0x8, "10101" }, { 0x9, "10110" }, { 0xA, "10111" }, { 0xB, "11001" },
-        //        { 0xC, "11010" }, { 0xD, "11011" }, { 0xE, "11101" }, { 0xF, "11110" }
-        //    };
-        //
-        //// Alternate encodings for specific scenarios
-        //Dictionary<byte, string> Vorpal_alternateGCR = new Dictionary<byte, string>
-        //    {
-        //        { 0x5, "01100" }, { 0xA, "10100" }, { 0xE, "00101" }, { 0xF, "00110" }
-        //    };
-
         void Vorpal_Rebuild()
         {
             bool p = false;
@@ -279,21 +265,6 @@ namespace V_Max_Tool
             }
             return (new byte[0], false, false, 0);
         }
-
-        //byte DecodeSectorID(byte encodedID)
-        //{
-        //    BitArray f = new BitArray(encodedID);
-        //    BitArray e = new BitArray(8);
-        //    int pos = 0;
-        //    for (int i = 0; i < 8; i++)
-        //    {
-        //        if (i % 3 != 0) e[pos++] = f[i];
-        //    }
-        //    byte[] ID = new byte[1];
-        //    e.CopyTo(ID, 0);
-        //    ID = Flip_Endian(ID);
-        //    return ID[0];
-        //}
 
         bool GetVorpal_Checksum(byte[] data, byte[] GCR_value)
         {
@@ -580,9 +551,6 @@ namespace V_Max_Tool
             }
             return plain;
         }
-
-
-
         BitArray Encode_Vorpal_GCR(byte[] sector, bool Calculate_Checksum, bool nextBit)
         {
             if (sector == null) return null;
