@@ -1334,6 +1334,7 @@ namespace V_Max_Tool
                         if (v3 > 5 || (v3 >= 1 && sync_run > 8000)) return 3;
                         if (vpl > 20) return 5;
                     }
+
                 }
             }
             if (blank_track || sync_run == source.Count) return 0;
