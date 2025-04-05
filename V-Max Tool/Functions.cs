@@ -218,7 +218,6 @@ namespace V_Max_Tool
                     v3aa = V3_Auto_Adj.Checked;
                     v3cc = V3_Custom.Checked;
                 }
-                //this.Text = $"v3aa {v3aa} v3cc {v3cc} v2aa {v2aa} v2cc {v2cc} b {busy}";
                 V3_Auto_Adj.Checked = V3_Custom.Checked = false;
                 v2aa = V2_Auto_Adj.Checked;
                 v2cc = V2_Custom.Checked;
@@ -232,7 +231,6 @@ namespace V_Max_Tool
                 V3_Auto_Adj.Checked = (v3aa || V3_Auto_Adj.Checked);
                 V3_Custom.Checked = (v3cc || V3_Custom.Checked);
                 end_track = tracks > 42 ? 75 : 38;
-                //this.Text = $"v3aa {v3aa} v3cc {v3cc} v2aa {v2aa} v2cc {v2cc} b {busy}";
                 if (V2_Auto_Adj.Checked || V2_Custom.Checked)
                 {
                     v2aa = V2_Auto_Adj.Checked;
@@ -281,13 +279,11 @@ namespace V_Max_Tool
             {
                 List<int> tl = new List<int>();
                 int tr = 0;
+                if (NDS.cbm.Any(x => x == 10)) return true;
                 for (int i = 0; i < tracks; i++)
                 {
                     tr = tracks > 42 ? i / 2 : i;
-                    if (NDS.cbm[i] == 1 && NDS.sectors[i] >= Available_Sectors[tr])
-                    {
-                        tl.Add(NDS.Track_Length[i]);
-                    }
+                    if (NDS.cbm[i] == 1 && NDS.sectors[i] >= Available_Sectors[tr]) tl.Add(NDS.Track_Length[i]);
                 }
                 if (tl.Count > 0) return tl.Max() >> 3 < 8000;
                 return false;
@@ -1266,5 +1262,59 @@ namespace V_Max_Tool
                 }
             }
         }
+
+        public static List<(byte[] pattern, int count)> GetTopPatterns(byte[] data, int patternLength, int topN = 5)
+        {
+            if (data == null || data.Length < patternLength)
+                return new List<(byte[] pattern, int count)>();
+
+            List<(byte[] pattern, int count)> results = new List<(byte[] pattern, int count)>();
+            List<(byte[] pattern, int count)> pool = new List<(byte[] pattern, int count)>();
+
+            for (int i = 0; i <= data.Length - patternLength; i++)
+            {
+                byte[] current = new byte[patternLength];
+                Array.Copy(data, i, current, 0, patternLength);
+
+                bool merged = false;
+
+                for (int j = 0; j < pool.Count; j++)
+                {
+                    if (IsSimilar(pool[j].pattern, current, patternLength))
+                    {
+                        pool[j] = (pool[j].pattern, pool[j].count + 1);
+                        merged = true;
+                        i += patternLength;
+                        break;
+                    }
+                }
+
+                if (!merged)
+                {
+                    pool.Add((current, 1));
+                }
+            }
+
+            return pool
+                .OrderByDescending(p => p.count)
+                .Take(topN)
+                .ToList();
+        }
+
+        private static bool IsSimilar(byte[] a, byte[] b, int len)
+        {
+            if (a.Length != b.Length) return false;
+            int diffCount = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i])
+                {
+                    diffCount++;
+                    if (diffCount > len - 1) return false;
+                }
+            }
+            return true;
+        }
+
     }
 }

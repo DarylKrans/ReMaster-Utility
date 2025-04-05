@@ -15,49 +15,11 @@ namespace V_Max_Tool
         {
             //Test_RLD();
             Test_GetFmt();
-            //int size = 8192;
-            //byte[] s = new byte[size];
-            //byte[] b = new byte[size];
-            //Buffer.BlockCopy(NDS.Track_Data[0], 0, s, 0, size);
-            //Buffer.BlockCopy(NDS.Track_Data[0], 0, b, 0, size);
-            ////b = Flip_Endian(s);
-            //Stopwatch sw = Stopwatch.StartNew();
-            //bool match = false;
-            //for (int i = 0; i < 10000; i++)
-            //{
-            //    match = Match(s, b);
-            //}
-            //sw.Stop();
-            //string time = $"match time : {sw.Elapsed.TotalMilliseconds} {match} ";
-            //sw.Reset();
-            //sw.Start();
-            //for (int i = 0; i < 10000; i++)
-            //{
-            //    match = MatchSeq(s, b, 0);
-            //}
-            //sw.Stop();
-            //time += $"matchseq time : {sw.Elapsed.TotalMilliseconds} {match}";
-            //Text = time;
-
-            //Stopwatch sw = Stopwatch.StartNew();
-            //BitArray source = new BitArray(Flip_Endian(NDS.Track_Data[0]));
-            //for (int j = 0; j < 41; j++)
-            //{
-            //
-            //    for (int i = 0; i < NDS.sectors[0]; i++)
-            //    {
-            //        //(_, _, byte[] sector, _) = Find_Sector(source, i);
-            //        (byte[] dec, bool cksm) = Decode_CBM_Sector(NDS.Track_Data[0], i, true, source);
-            //    }
-            //}
-            //sw.Stop();
-            //Text = sw.Elapsed.TotalMilliseconds.ToString();
         }
 
         void Test_GetFmt()
         {
-
-
+            Stopwatch sw = Stopwatch.StartNew();
             /// Run Process on single thread
             //for (int j = 0; j < 10; j++)
             //{
@@ -73,21 +35,26 @@ namespace V_Max_Tool
             //        }
             //    }
             //}
-            Stopwatch sw = Stopwatch.StartNew();
-            /// Run Process Treaded
-            Job = new Thread[tracks];
-            for (int j = 0; j < 1; j++)
-            {
-                for (int i = 0; i < tracks; i++)
-                {
-                    int x = i;
-                    Task_Limit.WaitOne();
-                    Job[i] = new Thread(new ThreadStart(() => New_Task(x)));
-                    Job[i].Start();
-                }
-                foreach (var thread in Job) thread?.Join();
-            }
+            ///// Run Process Treaded
+            //Job = new Thread[tracks];
+            //for (int j = 0; j < 1; j++)
+            //{
+            //    for (int i = 0; i < tracks; i++)
+            //    {
+            //        int x = i;
+            //        Task_Limit.WaitOne();
+            //        Job[i] = new Thread(new ThreadStart(() => New_Task(x)));
+            //        Job[i].Start();
+            //    }
+            //    foreach (var thread in Job) thread?.Join();
+            //}
 
+            //var topPatterns = GetTopPatterns(NDG.Track_Data[19], 8, 80);
+            //
+            //foreach (var pattern in topPatterns)
+            //{
+            //    Console.WriteLine($"{Hex_Val(pattern.pattern)} {pattern.count}");
+            //}
             sw.Stop();
             Text = sw.Elapsed.TotalMilliseconds.ToString();
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -55,9 +56,9 @@ namespace V_Max_Tool
             this.Text = $"Re-Master {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
-            
+
             // debugging buttons
-            button1.Visible = button2.Visible = false;
+            //button1.Visible = button2.Visible = false;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)
@@ -385,6 +386,12 @@ namespace V_Max_Tool
                     MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     error = true;
                 }
+                //List<string> e = new List<string>();
+                //for (int i = 0; i < tracks; i++)
+                //{
+                //    e.Add($"track {i} format {NDS.cbm[i]} length {NDS.Track_Length[i]}");
+                //}
+                //File.WriteAllLines($@"c:\test\error list.txt", e.ToArray());
             }
             GC.Collect();
             if (!error && !supported.Any(s => s == fext.ToLower()))
@@ -455,15 +462,50 @@ namespace V_Max_Tool
                                 //s = "Image is corrupt and cannot be opened";
                                 MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             }
+                            //List<string> e = new List<string>();
+                            //for (int i = 0; i < tracks; i++)
+                            //{
+                            //    e.Add($"track {i + 1} format {secF[NDS.cbm[i]]} length {NDS.Track_Length[i]}");
+                            //}
+                            //File.WriteAllLines($@"c:\test\error list.txt", e.ToArray());
                             Reset_to_Defaults();
                         }
                     }
                     if (!batch && ErrorList.Count > 0)
                     {
-                        bool norepair = (NDS.cbm.Any(x => x == 6) || NDS.cbm.Any(x => x ==10));
+                        bool norepair = (NDS.cbm.Any(x => x == 6)); // || NDS.cbm.Any(x => x ==10));
                         string s = "";// "- The following error(s) were found -\n\n";
                         List<string> list = new List<string>(ErrorList);
-                        list.Sort();
+                        var sorted = list.Select(srt =>
+                        {
+                            // Extract track and sector using a simple pattern match
+                            var match = System.Text.RegularExpressions.Regex.Match(s, @"track (\d+) sector (\d+)");
+                            if (match.Success)
+                            {
+                                return new
+                                {
+                                    Original = srt,
+                                    Track = int.Parse(match.Groups[1].Value),
+                                    Sector = int.Parse(match.Groups[2].Value)
+                                };
+                            }
+                            else
+                            {
+                                // If it doesn't match the expected format, assign default values so it stays at the end
+                                return new
+                                {
+                                    Original = srt,
+                                    Track = int.MinValue,
+                                    Sector = int.MinValue
+                                };
+                            }
+                        })
+                        .OrderBy(x => x.Track)
+                        .ThenBy(x => x.Sector)
+                        .Select(x => x.Original)
+                        .ToList();
+                        list.Reverse();
+
                         foreach (string err in list) { s += $"{err}\n"; }
                         s += norepair ? "\nThis image cannot be repaired (yet)\nOutput image may not work" : "\n Would you like to (attempt) repairing?";
                         using (Message_Center center = new Message_Center(this)) // center message box
@@ -993,28 +1035,62 @@ namespace V_Max_Tool
             Stopwatch sw = Stopwatch.StartNew();
             for (int i = 0; i < tracks; i++)
             {
-                if (NDS.cbm[i] == 5)
+                switch (NDS.cbm[i])
                 {
-                    BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[i]));
-                    for (int j = 0; j < NDS.sectors[i]; j++)
-                    {
-                        (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
-                        if (!cksm)
-                        {
-                            //(byte[] rawsector, _, _, _) = Decode_Vorpal(source, j, false);
-                            BitArray newsec = Encode_Vorpal_GCR(sector, true, isone);
-                            for (int k = 0; k < newsec.Length; k++)
-                            {
-                                source[pos + k] = newsec[k];
-                            }
-                        }
-                    }
-                    byte[] temp = Bit2Byte(source);
-                    Set_Dest_Arrays(temp, i);
+                    case 5: FixVPL(i); break;
+                    case 10: FixMPS(i); break;
                 }
             }
             sw.Stop();
             //Text = $"{sw.Elapsed.TotalMilliseconds}";
+
+            void FixVPL(int track)
+            {
+                BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                bool rewrite = false;
+                for (int j = 0; j < NDS.sectors[track]; j++)
+                {
+                    (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
+                    if (!cksm)
+                    {
+                        BitArray newsec = Encode_Vorpal_GCR(sector, true, isone);
+                        for (int k = 0; k < newsec.Length; k++)
+                        {
+                            source[pos + k] = newsec[k];
+                        }
+                        rewrite = true;
+                    }
+                }
+                if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
+                //byte[] temp = Bit2Byte(source);
+                //Set_Dest_Arrays(temp, track);
+            }
+
+            void FixMPS(int track)
+            {
+                BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                bool rewrite = false;
+                for (int j = 0; j < NDS.sectors[track]; j++)
+                {
+                    (byte[] sector, bool checksum, int pos) = Decode_MicroProse_Sector(source, j, false);
+                    if (!checksum && (sector != null && pos >= 0))
+                    {
+                        int start = sector.Length == 335 ? 9 : sector.Length == 325 ? 1 : 0;
+                        int end = sector.Length == 335 ? 266 : sector.Length == 325 ? 257 : 0;
+                        byte[] dec = Decode_CBM_GCR(sector);
+                        if (dec != null && (dec.Length == 268 || dec.Length == 260) && (start == 9 || start == 1) && (end == 257 || end == 266))
+                        {
+                            int chksm = 0;
+                            for (int k = start; k < end; k++) chksm ^= dec[k];
+                            dec[end] = (byte)chksm;
+                            BitArray newsec = new BitArray(Flip_Endian(Encode_CBM_GCR(dec)));
+                            for (int k = 0; k < newsec.Length; k++) source[pos + k] = newsec[k];
+                        }
+                        rewrite = true;
+                    }
+                }
+                if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
+            }
         }
     }
 }

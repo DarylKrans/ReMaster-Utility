@@ -283,7 +283,7 @@ namespace V_Max_Tool
             string tr = "Track";
             string le = "Length";
             string fm = "Format";
-            string bl = "** Potentially bad loader! **";
+            //string bl = "** Potentially bad loader! **";
             if (tracks > 42)
             {
                 halftracks = true;
@@ -476,16 +476,19 @@ namespace V_Max_Tool
 
                         void ProcessTrackInfo(int cbmIndex, string label, Color defaultColor)
                         {
-                            foreach (var info in NDS.Info[i])
+                            if (NDS.Info[i] != null && NDS.Info.Length > 0)
                             {
-                                Color infoColor = info.Contains("(Failed!)") ? Color.FromArgb(190, 0, 0) :
-                                                  info.Contains("(0)*") ? Color.White :
-                                                  info.Contains("Track Length") ? Color.Black :
-                                                  info.Contains("Repeat") ? Color.Black :
-                                                  info.Contains("Gap") ? Color.Black :
-                                                  info.Contains("Format") ? Color.Blue :
-                                                  defaultColor;
-                                AddTrackInfo(infoColor, info);
+                                foreach (var info in NDS.Info[i])
+                                {
+                                    Color infoColor = info.Contains("(Failed!)") ? Color.FromArgb(190, 0, 0) :
+                                                      info.Contains("(0)*") ? Color.White :
+                                                      info.Contains("Track Length") ? Color.Black :
+                                                      info.Contains("Repeat") ? Color.Black :
+                                                      info.Contains("Gap") ? Color.Black :
+                                                      info.Contains("Format") ? Color.Blue :
+                                                      defaultColor;
+                                    AddTrackInfo(infoColor, info);
+                                }
                             }
                         }
 
@@ -582,7 +585,7 @@ namespace V_Max_Tool
                             temp = tmp;
                         }
                     }
-                    if (temp.Length <= 8000)
+                    if (temp != null && (temp.Length > 6000 && temp.Length <= 8000))
                     {
                         int tempLengthBits = temp.Length << 3;
                         NDS.D_Start[trk] = 0;
@@ -1348,7 +1351,9 @@ namespace V_Max_Tool
                 }
             }
             // If not enough positive header matches found, double check some specific conditions
-            if (noData || sync_run == source.Count) return 0;   // track is all '0's or all '1's (nothing here, it's blank)
+            //if (noData || sync_run == source.Count) return 0;   // track is all '0's or all '1's (nothing here, it's blank)
+            if (noData) return secF.Length - 1;
+            if (sync_run == source.Count) return 0;   // track is all '0's or all '1's (nothing here, it's blank)
             if (tk == 20 && Check_VMaxLoader()) return 4;       // Checks for specific repeating patterns found on V-Max Loader track (20)
             if (sync_run > 30000 && tk == 36) return 7;         // If it's mostly sync and it's track 36, it's most likely a RapidLok Key track
             bool padding = CheckPadding();                      // Check the track to see if it's mostly padding (0x55/0xaa)
@@ -1868,7 +1873,7 @@ namespace V_Max_Tool
                         BitArray tdata = new BitArray(Flip_Endian(tmp));
                         for (int i = 0; i < NDS.sectors[t]; i++)
                         {
-                            if (mps) (temp[i], valid_checksum[i]) = Decode_MicroProse_Sector(tdata, i);
+                            if (mps) (temp[i], valid_checksum[i], _) = Decode_MicroProse_Sector(tdata, i);
                             else (temp[i], valid_checksum[i]) = Decode_CBM_Sector(NDG.Track_Data[t], i, true, tdata);
                             total += temp[i].Length;
                         }

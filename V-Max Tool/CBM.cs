@@ -8,6 +8,7 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -264,7 +265,7 @@ namespace V_Max_Tool
                                 else
                                 {
                                     s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
-                                    if (!s_cksm) err.Add($"{sect:00}");
+                                    if (!s_cksm) err.Add($"{sect}");
                                 }
 
                             }
@@ -597,20 +598,23 @@ namespace V_Max_Tool
             (bool, byte[], bool) Compare()
             {
                 int cl = 10;
-                byte[] d = Bit2Byte(source, pos, cl * 8);
-                if (d[0] == 0x52)
+                if (pos + (cl << 3) < source.Length)
                 {
-                    byte[] g = Decode_CBM_GCR(d);
-                    byte[] ID = new byte[2];
-                    byte csm = 0x00;
-                    for (int i = 2; i < 6; i++) csm ^= g[i];
-                    cksm = (g[1] == csm);
-                    Buffer.BlockCopy(g, 4, ID, 0, 2);
-                    if (g[3] > 0 && g[3] < 43 && g[2] == sector)
+                    byte[] d = Bit2Byte(source, pos, cl << 3);
+                    if (d[0] == 0x52)
                     {
-                        return (true, ID, cksm);
+                        byte[] g = Decode_CBM_GCR(d);
+                        byte[] ID = new byte[2];
+                        byte csm = 0x00;
+                        for (int i = 2; i < 6; i++) csm ^= g[i];
+                        cksm = (g[1] == csm);
+                        Buffer.BlockCopy(g, 4, ID, 0, 2);
+                        if (g[3] > 0 && g[3] < 43 && g[2] == sector)
+                        {
+                            return (true, ID, cksm);
+                        }
+                        pos += (320 << 3);
                     }
-                    pos += (320 * 8);
                 }
                 return (false, null, cksm);
             }
@@ -1437,16 +1441,15 @@ namespace V_Max_Tool
             return fName;
         }
 
-        (byte[] data, bool checksum) Decode_MicroProse_Sector(BitArray source, int sect, bool decode = true)
+        (byte[] data, bool checksum, int position) Decode_MicroProse_Sector(BitArray source, int sect, bool decode = true)
         {
-            if (source == null) return (null, false);// source = new BitArray(Flip_Endian(data));
+            if (source == null) return (null, false, -1);// source = new BitArray(Flip_Endian(data));
             int pos = 0;
             int mps = 335 << 3;
             int cbm = 325 << 3;
             int blk_snc = 80 << 3;
             const int sectorDataLength = 300 << 3;
 
-            byte[] tmp = null;
             bool sync = false;
             int syncCount = 0;
             /// --- next line commented out to skip first sector found if it resides at position 0.  Uncomment to check position 0 for sector
@@ -1467,15 +1470,15 @@ namespace V_Max_Tool
                 }
                 pos++;
             }
-            return (null, false);
+            return (null, false, -1);
 
-            (byte[], bool) Decode()
+            (byte[], bool, int) Decode()
             {
-                if (pos + mps >= source.Length) return (null, false);
+                if (pos + mps >= source.Length) return (null, false, -1);
                 byte[] dec = Bit2Byte(source, pos, mps);
 
                 // Determine if it's a CBM sector by detecting multiple consecutive 0xFF bytes
-                (bool isCBMSector, int location) = Contains_BlockSync(dec);
+                (bool isCBMSector, int location) = Check_BlockSync_BitLevel();
 
                 if (!isCBMSector)
                 {
@@ -1484,48 +1487,71 @@ namespace V_Max_Tool
                     {
                         int checksum = 0;
                         for (int i = 9; i < 266; i++) checksum ^= decoded[i];
-                        return (decode ? CopyArray(decoded, 9, 256) : dec, checksum == decoded[266]);
+                        return (decode ? CopyArray(decoded, 9, 256) : dec, checksum == decoded[266], pos);
                     }
                 }
                 else
                 {
                     // Look for standard CBM sector data since sync was found shortly after the header
-                    if (pos + location + (325 << 3) < source.Length)
+                    if (pos + location + (cbm) < source.Length)
                     {
                         byte[] decoded = Decode_CBM_GCR(Bit2Byte(source, pos + location, cbm));
                         if (decoded != null && decoded.Length == 260 && decoded[0] == 0x07)
                         {
                             int checksum = 0;
                             for (int i = 1; i < 257; i++) checksum ^= decoded[i];
-                            //return (decode ? decoded : dec, checksum == decoded[257]);
-                            return (decode ? CopyArray(decoded, 1, 256) : dec, checksum == decoded[257]);
+                            return (decode ? CopyArray(decoded, 1, 256) : dec, checksum == decoded[257], pos + location);
                         }
                     }
-                    
+
                 }
-                return (null, false);
+                return (null, false, -1);
             }
 
-            (bool, int) Contains_BlockSync(byte[] data)
+            //(bool, int) Contains_BlockSync_ByteLevel(byte[] data)
+            //{
+            //    int ffCount = 0;
+            //    for (int i = 0; i < data.Length; i++)
+            //    {
+            //        if (data[i] == 0xFF)
+            //        {
+            //            ffCount++;
+            //            if (ffCount > 3)
+            //            {
+            //                while (i < data.Length)
+            //                {
+            //                    if (i > 0 && data[i] == 0x55 && data[i - 1] == 0xFF) return (true, i << 3);
+            //                    i++;
+            //                }
+            //            }
+            //        }
+            //        else ffCount = 0;
+            //    }
+            //    return (false, 0);
+            //}
+
+            (bool, int) Check_BlockSync_BitLevel()
             {
-                int ffCount = 0;
-                for (int i = 0; i < data.Length; i++)
+                if (pos + (blk_snc) < source.Length)
                 {
-                    if (data[i] == 0xFF)
+                    int tsnc = 0;
+                    int cpos = pos + (80 << 3);
+                    int location = 0;
+                    while (pos + location < cpos)
                     {
-                        ffCount++;
-                        if (ffCount > 3)
+                        if (source[pos + location]) tsnc++;
+                        else
                         {
-                            while (i < data.Length)
+                            if (tsnc > 24)
                             {
-                                if (i > 0 && data[i] == 0x55 && data[i - 1] == 0xFF) return (true, i << 3);
-                                i++;
+                                if (Bit2Byte(source, pos + location, 8)[0] == 0x55 && pos + location + cbm < source.Length) return (true, location);
                             }
+                            tsnc = 0;
                         }
+                        location++;
                     }
-                    else ffCount = 0;
                 }
-                return (false, 0);
+                return (false, -1);
             }
 
             bool CompareSectorMarker()
