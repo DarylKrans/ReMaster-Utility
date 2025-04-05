@@ -80,6 +80,9 @@
     <Compile Include="Function_Testing.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="GCR.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Initialize.cs">
       <SubType>Form</SubType>
     </Compile>

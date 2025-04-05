@@ -221,32 +221,32 @@ namespace V_Max_Tool
 
         byte[] Fix_Loader(byte[] data)
         {
-            byte[] tdata = data;
+            //byte[] tdata = data;
             byte[] v2 = new byte[] { 0x5b, 0x57, 0x52, 0x4d }; // Cinemaware and some other v2 variants
             byte[] v3 = new byte[] { 0xaa, 0xaf, 0xda, 0x5f }; // V3 Taito (arkanoid)
             byte[] v1 = new byte[] { 0xaa, 0xbf, 0xb4, 0xbf }; // v3 Taito (bubble bobble)
             byte[] v4 = new byte[] { 0x6b, 0xd9, 0xb6, 0xdd }; // Sega
-            byte[] comp = new byte[4];
+            //byte[] comp = new byte[4];
             bool f = false;
-            for (int i = 0; i < tdata.Length - 4; i++)
+            for (int i = 0; i < data.Length - 4; i++)
             {
-                Buffer.BlockCopy(tdata, i, comp, 0, comp.Length);
-                if (Match(comp, v1)) { Patch_V3(i - 4); f = true; }
-                if (Match(comp, v2)) { Patch_V2(i - 3); f = true; }
-                if (Match(comp, v3)) { Patch_V3(i - 4); f = true; }
-                if (Match(comp, v4)) { Patch_V2(i - 3); f = true; }
+                //Buffer.BlockCopy(tdata, i, comp, 0, comp.Length);
+                if (MatchSeq(data, v1, i)) { Patch_V3(i - 4); f = true; }
+                if (MatchSeq(data, v2, i)) { Patch_V2(i - 3); f = true; }
+                if (MatchSeq(data, v3, i)) { Patch_V3(i - 4); f = true; }
+                if (MatchSeq(data, v4, i)) { Patch_V2(i - 3); f = true; }
                 if (f) break;
             }
             if (f) Invoke(new Action(() => f_load.Text = "Fix Loader (Fixed)"));
-            return tdata;
+            return data;
 
             void Patch_V2(int pos)
             {
                 if (pos > 0)
                 {
-                    tdata[pos] = 0xde;
-                    tdata[pos + 1] = 0xff;
-                    tdata[pos + 2] = 0xff;
+                    data[pos] = 0xde;
+                    data[pos + 1] = 0xff;
+                    data[pos + 2] = 0xff;
                 }
             }
 
@@ -254,9 +254,9 @@ namespace V_Max_Tool
             {
                 if (pos > 0)
                 {
-                    tdata[pos] = 0x5f;
-                    tdata[pos + 1] = 0xff;
-                    tdata[pos + 2] = 0xff;
+                    data[pos] = 0x5f;
+                    data[pos + 1] = 0xff;
+                    data[pos + 2] = 0xff;
                 }
             }
         }

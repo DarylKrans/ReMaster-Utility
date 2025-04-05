@@ -5,9 +5,13 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Numerics;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using static System.Collections.Specialized.BitVector32;
 
 /// CBM Block Header structure
 /// 8 plain bytes converted to 10 GCR bytes
@@ -85,8 +89,6 @@ namespace V_Max_Tool
             byte[] sync = FastArray.Init(5, 0xff);
             byte[] head_gap = SetSectorGap(sector_gap_density[t_density] - dif);
             byte[] tail_gap = SetSectorGap(sector_gap_density[t_density] + dif);
-            //byte[] head_gap = SetSectorGap(7);
-            //byte[] tail_gap = SetSectorGap(19);
             byte[] current_sector;
             byte[] block_header = new byte[10];
             start = !alt ? 0 : start;
@@ -105,7 +107,6 @@ namespace V_Max_Tool
                 if (i != sectors - 1) write.Write(tail_gap);
             }
             int rem = (int)(density[t_density] - buffer.Length);
-            //write.Write(new byte[] { 0x55, 0x55, 0x55, 0x50, 0x00, 0x05, 0x55, 0x55, 0x55 });
             if (rem > 0)
             {
                 write.Write(FastArray.Init(rem, cbm_gap));
@@ -114,9 +115,10 @@ namespace V_Max_Tool
             return buffer.ToArray();
         }
 
-        (int, int, int, int, string[], int, int[], int, byte[], int[], int, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1)
+        (int, int, int, int, string[], int, int[], int, byte[], int[], int, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
         {
             int track = trk;
+            List<string> err = new List<string>();
             if (tracks > 42) track = (trk / 2);
             string[] csm = new string[] { "OK", "Failed!" };
             string decoded_header;
@@ -147,7 +149,7 @@ namespace V_Max_Tool
             List<string> headers = new List<string>();
             int[] s_pos = new int[22];
             byte[] d = new byte[4];
-            var h = "";
+            //var h = "";
             var sect = 0;
             Compare(pos);
             while (pos < source.Length - 32)
@@ -155,7 +157,6 @@ namespace V_Max_Tool
                 if (source[pos])
                 {
                     sync_count++;
-                    //if (sync_count == 15) sync = true;
                     if (sync_count == 10) sync = true;
                 }
                 if (!source[pos])
@@ -189,6 +190,12 @@ namespace V_Max_Tool
                 headers.Add($"{data_start} {data_end} {start_found} {end_found} {sectors}");
             }
             var len = (data_end - data_start);
+            if (!batch && !cbm && err.Count > 0)
+            {
+                int errtk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
+                //err.Sort();
+                foreach (string s in err) ErrorList.Add($"Checksum failed on track {errtk} sector {s}");
+            }
             return (data_start, data_end, sector_zero, len, headers.ToArray(), sectors, s_st, total_sync, Disk_ID, s_pos, track_id, dont_adj);
 
             void add_total()
@@ -224,7 +231,6 @@ namespace V_Max_Tool
                 if (d[0] == 0x52 && !skip && pos + 80 < source.Length)
                 {
                     for (int i = 1; i < sz.Length; i++) d[i] &= sz[i];
-                    h = Hex_Val(d);
                     dec_hdr = Decode_CBM_GCR(Bit2Byte(source, pos, 80));
                     sect = Convert.ToInt32(dec_hdr[2]);
 
@@ -252,7 +258,16 @@ namespace V_Max_Tool
                                 sector_zero = pos;
                                 sec_zero = true;
                             }
-                            if (checksums) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                            if (checksums)
+                            {
+                                if (cbm) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                else
+                                {
+                                    s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
+                                    if (!s_cksm) err.Add($"{sect:00}");
+                                }
+
+                            }
                             if (!batch) headers.Add($"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
                                 $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])})");
                         }
@@ -264,12 +279,18 @@ namespace V_Max_Tool
                                 if (dec_hdr[2] == 0x00) sz = "*";
                                 decoded_header = Hex_Val(dec_hdr);
                                 h_cksm = Check_Header(dec_hdr);
-                                if (checksums) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                //if (checksums) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                if (checksums)
+                                {
+                                    if (cbm) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                    else s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
+
+                                }
                                 if (!batch)
                                 {
                                     headers[0] = $"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
                                         $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])})";
-                                    headers.Add($"pos {p / 8} ** repeat ** {h}");
+                                    headers.Add($"pos {p / 8} ** repeat ** {Hex_Val(d)}");
                                 }
                                 if (data_start == 0) data_end = pos;
                                 else data_end = pos;
@@ -343,8 +364,7 @@ namespace V_Max_Tool
                         dest_pos++;
                         if (dest_pos == d.Length) break;
                     }
-
-                    if (dest_pos < d.Length) Pad_Bits(dest_pos, d.Length - dest_pos, d);
+                    //if (dest_pos < d.Length) Pad_Bits(dest_pos, d.Length - dest_pos, d);
                     int bcnt;
                     var a = Math.Abs(((dest_pos >> 3) << 3) - dest_pos);
                     if (a != 0) bcnt = (dest_pos >> 3) + 1;
@@ -362,12 +382,6 @@ namespace V_Max_Tool
                 }
             }
             return data;
-
-            //bool Match(byte[] s, int p, byte[] m)
-            //{
-            //    for (int i = 0; i < m.Length; i++) if (s[i + p] != m[i]) return false;
-            //    return true;
-            //}
         }
 
         (byte[] data, bool checksum) Decode_CBM_Sector(byte[] data, int sector, bool decode, BitArray source = null, int pos = 0)
@@ -388,7 +402,7 @@ namespace V_Max_Tool
                 {
                     syncCount++;
                     //if (syncCount == 12) sync = true;
-                    if (syncCount == 8) sync = true;
+                    if (syncCount == 10) sync = true;
                 }
                 else
                 {
@@ -1423,54 +1437,113 @@ namespace V_Max_Tool
             return fName;
         }
 
-        byte[] Decode_CBM_GCR(byte[] gcr)
+        (byte[] data, bool checksum) Decode_MicroProse_Sector(BitArray source, int sect, bool decode = true)
         {
-            byte[] plain = new byte[(gcr.Length / 5) << 2];
-            for (int i = 0; i < gcr.Length / 5; i++)
-            {
-                int baseIndex = i * 5;
-                byte b1 = gcr[baseIndex];
-                byte b2 = gcr[baseIndex + 1];
-                plain[(i << 2) + 0] = CombineNibbles((byte)(b1 >> 3), (byte)(((b1 << 2) | (b2 >> 6)) & 0x1f));
-                b1 = gcr[baseIndex + 1];
-                b2 = gcr[baseIndex + 2];
-                plain[(i << 2) + 1] = CombineNibbles((byte)((b1 >> 1) & 0x1f), (byte)(((b1 << 4) | (b2 >> 4)) & 0x1f));
-                b1 = gcr[baseIndex + 2];
-                b2 = gcr[baseIndex + 3];
-                plain[(i << 2) + 2] = CombineNibbles((byte)(((b1 << 1) | (b2 >> 7)) & 0x1f), (byte)((b2 >> 2) & 0x1f));
-                b1 = gcr[baseIndex + 3];
-                b2 = gcr[baseIndex + 4];
-                plain[(i << 2) + 3] = CombineNibbles((byte)(((b1 << 3) | (b2 >> 5)) & 0x1f), (byte)(b2 & 0x1f));
-            }
-            return plain;
+            if (source == null) return (null, false);// source = new BitArray(Flip_Endian(data));
+            int pos = 0;
+            int mps = 335 << 3;
+            int cbm = 325 << 3;
+            int blk_snc = 80 << 3;
+            const int sectorDataLength = 300 << 3;
 
-            byte CombineNibbles(byte hnib, byte lnib)
-            {
-                hnib = GCR_decode_high[hnib];
-                lnib = GCR_decode_low[lnib];
-                if (hnib == 0xff || lnib == 0xff) return 0x00;
-                else return (byte)(hnib | lnib);
-            }
-        }
+            byte[] tmp = null;
+            bool sync = false;
+            int syncCount = 0;
+            /// --- next line commented out to skip first sector found if it resides at position 0.  Uncomment to check position 0 for sector
+            if (CompareSectorMarker()) return Decode();
 
-        byte[] Encode_CBM_GCR(byte[] plain)
-        {
-            int l = plain.Length >> 2;
-            byte[] gcr = new byte[l * 5];
-            for (int i = 0; i < l; i++)
+            while (pos < source.Length - 32)
             {
-                int baseIndex = i << 2;
-                byte p1 = plain[baseIndex];
-                byte p2 = plain[baseIndex + 1];
-                byte p3 = plain[baseIndex + 2];
-                byte p4 = plain[baseIndex + 3];
-                gcr[0 + (i * 5)] = (byte)((GCR_encode[p1 >> 4] << 3) | (GCR_encode[p1 & 0x0f] >> 2));
-                gcr[1 + (i * 5)] = (byte)((GCR_encode[p1 & 0x0f] << 6) | (GCR_encode[p2 >> 4] << 1) | (GCR_encode[p2 & 0x0f] >> 4));
-                gcr[2 + (i * 5)] = (byte)((GCR_encode[p2 & 0x0f] << 4) | (GCR_encode[p3 >> 4] >> 1));
-                gcr[3 + (i * 5)] = (byte)((GCR_encode[p3 >> 4] << 7) | (GCR_encode[p3 & 0x0f] << 2) | (GCR_encode[p4 >> 4] >> 3));
-                gcr[4 + (i * 5)] = (byte)((GCR_encode[p4 >> 4] << 5) | GCR_encode[p4 & 0x0f]);
+                if (source[pos])
+                {
+                    syncCount++;
+                    if (syncCount == 10) sync = true;
+                }
+                else
+                {
+                    if (sync && CompareSectorMarker()) return Decode();
+                    sync = false;
+                    syncCount = 0;
+                }
+                pos++;
             }
-            return gcr;
+            return (null, false);
+
+            (byte[], bool) Decode()
+            {
+                if (pos + mps >= source.Length) return (null, false);
+                byte[] dec = Bit2Byte(source, pos, mps);
+
+                // Determine if it's a CBM sector by detecting multiple consecutive 0xFF bytes
+                (bool isCBMSector, int location) = Contains_BlockSync(dec);
+
+                if (!isCBMSector)
+                {
+                    byte[] decoded = Decode_CBM_GCR(dec);
+                    if (decoded != null && decoded.Length == 268)
+                    {
+                        int checksum = 0;
+                        for (int i = 9; i < 266; i++) checksum ^= decoded[i];
+                        return (decode ? CopyArray(decoded, 9, 256) : dec, checksum == decoded[266]);
+                    }
+                }
+                else
+                {
+                    // Look for standard CBM sector data since sync was found shortly after the header
+                    if (pos + location + (325 << 3) < source.Length)
+                    {
+                        byte[] decoded = Decode_CBM_GCR(Bit2Byte(source, pos + location, cbm));
+                        if (decoded != null && decoded.Length == 260 && decoded[0] == 0x07)
+                        {
+                            int checksum = 0;
+                            for (int i = 1; i < 257; i++) checksum ^= decoded[i];
+                            //return (decode ? decoded : dec, checksum == decoded[257]);
+                            return (decode ? CopyArray(decoded, 1, 256) : dec, checksum == decoded[257]);
+                        }
+                    }
+                    
+                }
+                return (null, false);
+            }
+
+            (bool, int) Contains_BlockSync(byte[] data)
+            {
+                int ffCount = 0;
+                for (int i = 0; i < data.Length; i++)
+                {
+                    if (data[i] == 0xFF)
+                    {
+                        ffCount++;
+                        if (ffCount > 3)
+                        {
+                            while (i < data.Length)
+                            {
+                                if (i > 0 && data[i] == 0x55 && data[i - 1] == 0xFF) return (true, i << 3);
+                                i++;
+                            }
+                        }
+                    }
+                    else ffCount = 0;
+                }
+                return (false, 0);
+            }
+
+            bool CompareSectorMarker()
+            {
+                int checkLength = 10;
+                byte[] header = Bit2Byte(source, pos, checkLength << 3);
+
+                if (header[0] == 0x52)
+                {
+                    byte[] decodedHeader = Decode_CBM_GCR(header);
+                    if (decodedHeader[3] > 0 && decodedHeader[3] < 42 && decodedHeader[2] == sect)
+                    {
+                        return true;
+                    }
+                    pos += sectorDataLength;
+                }
+                return false;
+            }
         }
     }
 }

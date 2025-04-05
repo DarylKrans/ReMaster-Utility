@@ -15,46 +15,81 @@ namespace V_Max_Tool
         {
             //Test_RLD();
             Test_GetFmt();
+            //int size = 8192;
+            //byte[] s = new byte[size];
+            //byte[] b = new byte[size];
+            //Buffer.BlockCopy(NDS.Track_Data[0], 0, s, 0, size);
+            //Buffer.BlockCopy(NDS.Track_Data[0], 0, b, 0, size);
+            ////b = Flip_Endian(s);
+            //Stopwatch sw = Stopwatch.StartNew();
+            //bool match = false;
+            //for (int i = 0; i < 10000; i++)
+            //{
+            //    match = Match(s, b);
+            //}
+            //sw.Stop();
+            //string time = $"match time : {sw.Elapsed.TotalMilliseconds} {match} ";
+            //sw.Reset();
+            //sw.Start();
+            //for (int i = 0; i < 10000; i++)
+            //{
+            //    match = MatchSeq(s, b, 0);
+            //}
+            //sw.Stop();
+            //time += $"matchseq time : {sw.Elapsed.TotalMilliseconds} {match}";
+            //Text = time;
+
+            //Stopwatch sw = Stopwatch.StartNew();
+            //BitArray source = new BitArray(Flip_Endian(NDS.Track_Data[0]));
+            //for (int j = 0; j < 41; j++)
+            //{
+            //
+            //    for (int i = 0; i < NDS.sectors[0]; i++)
+            //    {
+            //        //(_, _, byte[] sector, _) = Find_Sector(source, i);
+            //        (byte[] dec, bool cksm) = Decode_CBM_Sector(NDS.Track_Data[0], i, true, source);
+            //    }
+            //}
+            //sw.Stop();
+            //Text = sw.Elapsed.TotalMilliseconds.ToString();
         }
 
         void Test_GetFmt()
         {
-            Stopwatch sw = Stopwatch.StartNew();
+
 
             /// Run Process on single thread
+            //for (int j = 0; j < 10; j++)
+            //{
+            //    for (int i = 0; i < tracks; i++)
+            //    {
+            //        int tk = tracks > 42 ? (i / 2) + 1 : i + 1;
+            //        int fmt = Get_Data_Fmt2(NDS.Track_Data[i], i);
+            //        //int fmt = Get_Data_Format(NDS.Track_Data[i], i);
+            //        if (fmt > 0)
+            //        {
+            //            Text = $"track {tk} {secF[fmt]}"; // fmt.ToString();
+            //            Thread.Sleep(200);
+            //        }
+            //    }
+            //}
+            Stopwatch sw = Stopwatch.StartNew();
+            /// Run Process Treaded
+            Job = new Thread[tracks];
             for (int j = 0; j < 1; j++)
             {
                 for (int i = 0; i < tracks; i++)
                 {
-                    int tk = tracks > 42 ? (i / 2) + 1 : i + 1;
-                    int fmt = Get_Data_Fmt2(NDS.Track_Data[i], i);
-                    //int fmt = Get_Data_Format(NDS.Track_Data[i], i);
-                    if (fmt > 0)
-                    {
-                        //Text = $"track {tk} {secF[fmt]}"; // fmt.ToString();
-                        //Thread.Sleep(200);
-                    }
+                    int x = i;
+                    Task_Limit.WaitOne();
+                    Job[i] = new Thread(new ThreadStart(() => New_Task(x)));
+                    Job[i].Start();
                 }
+                foreach (var thread in Job) thread?.Join();
             }
 
-            /// Run Process Treaded
-            //Job = new Thread[tracks];
-            //for (int j = 0; j < 1; j++)
-            //{
-            //    for (int i = 0; i < tracks; i++)
-            //    {
-            //        int x = i;
-            //        Task_Limit.WaitOne();
-            //        Job[i] = new Thread(new ThreadStart(() => New_Task(x)));
-            //        Job[i].Start();
-            //        //Update_Progress_Bar(i);
-            //        //if (tracks > 42) i++;
-            //    }
-            //    foreach (var thread in Job) thread?.Join();
-            //}
-
             sw.Stop();
-            //Text = sw.Elapsed.TotalMilliseconds.ToString();
+            Text = sw.Elapsed.TotalMilliseconds.ToString();
         }
 
         void New_Task(int x)

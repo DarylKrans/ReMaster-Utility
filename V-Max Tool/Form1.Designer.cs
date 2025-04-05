@@ -38,6 +38,7 @@
             this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
             this.Main = new System.Windows.Forms.TabPage();
+            this.button2 = new System.Windows.Forms.Button();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.Other_opts = new System.Windows.Forms.Panel();
             this.Density_Range = new System.Windows.Forms.CheckBox();
@@ -209,7 +210,6 @@
             this.label20 = new System.Windows.Forms.Label();
             this.ND_id = new System.Windows.Forms.TextBox();
             this.ND_name = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -385,6 +385,16 @@
             this.Main.Size = new System.Drawing.Size(1032, 186);
             this.Main.TabIndex = 0;
             this.Main.Text = "File Info";
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(770, 18);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 62;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.Button2_Click);
             // 
             // linkLabel1
             // 
@@ -2579,16 +2589,6 @@
             this.ND_name.Size = new System.Drawing.Size(280, 31);
             this.ND_name.TabIndex = 0;
             this.ND_name.Text = "NEW DISK";
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(770, 18);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 62;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.Button2_Click);
             // 
             // Form1
             // 

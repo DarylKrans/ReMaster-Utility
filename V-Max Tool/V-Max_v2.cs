@@ -299,7 +299,7 @@ namespace V_Max_Tool
                 }
                 if (co > 10) { m[4] = 1; snc = ""; break; }
             }
-            if (!batch) all_headers.Add($"track {tr} Format : {secF[NDS.cbm[trk]]} {ver}");
+            if (!batch) all_headers.Add($"Track {tr} Format : {secF[NDS.cbm[trk]]} {ver}");
             byte[] comp = new byte[2];
             byte[] rep = new byte[0];
             int dif = 0;
@@ -316,7 +316,7 @@ namespace V_Max_Tool
                         {
                             hd.Add(data[pos]); pos++;
                         }
-                        if (!Match(rep, comp))
+                        if (!MatchSeq(rep, comp))
                         {
                             var a = Array.FindIndex(vm2_ver[vs], s => s == Hex_Val(comp));
                             if (pos - dif > 370)
@@ -341,7 +341,7 @@ namespace V_Max_Tool
                             if (!batch)
                             {
                                 all_headers.Add($"pos {i} ** Repeat ** {Hex_Val(start_byte, 0, 1)}-{Hex_Val(hd.ToArray())}-{Hex_Val(end_byte, 0, 1)}");
-                                all_headers.Add($"Track length ({data_end - data_start}){snc} Sectors ({sectors}) Sector 0 ({sec_zero}) Header length ({hd.Count + 2}) {Hex_Val(m)}");
+                                all_headers.Add($"Track Length ({data_end - data_start}){snc} Sectors ({sectors}) Sector 0 ({sec_zero}) Header length ({hd.Count + 2}) {Hex_Val(m)}");
                                 all_headers.Add(" ");
                             }
                             break;
@@ -389,7 +389,7 @@ namespace V_Max_Tool
                 if (temp_data[i] == find[0])
                 {
                     Buffer.BlockCopy(temp_data, i, comp, 0, comp.Length);
-                    if (Match(comp, find))
+                    if (MatchSeq(comp, find))
                     {
                         if (i > 5)
                         {

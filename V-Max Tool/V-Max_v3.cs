@@ -116,8 +116,8 @@ namespace V_Max_Tool
             data = Rotate_Left(data, a);
             for (int i = 0; i < data.Length - comp.Length; i++)
             {
-                if (data[i] == sb) Buffer.BlockCopy(data, i, comp, 0, comp.Length);
-                if (Match(comp, header))
+                if (data[i] == sb && MatchSeq(data, header, i)) //Buffer.BlockCopy(data, i, comp, 0, comp.Length);
+                //if (MatchSeq(data, header, i))
                 {
                     int b = 0;
                     while (data[i + b] == sb) b++;
@@ -255,7 +255,7 @@ namespace V_Max_Tool
                             if (!batch)
                             {
                                 build_list();
-                                s.Add($"Pos {i - a} **repeat** {Hex_Val(head).Remove(8, Hex_Val(head).Length - 8)}");
+                                s.Add($"Pos {i - a} **Repeat** {Hex_Val(head).Remove(8, Hex_Val(head).Length - 8)}");
                                 stats = $"Track Length ({data_end - data_start}) Sectors ({ss.Count})";
                             }
                             if (!s_zero)
@@ -356,32 +356,29 @@ namespace V_Max_Tool
             var buffer = new MemoryStream();
             var write = new BinaryWriter(buffer);
             int spos = 0;
-            byte[] hd = FastArray.Init(2, 0x49);
-            byte[] comp = new byte[2];
             int cust = (int)V3_hlen.Value;
             int cur_sec = 0;
             while (spos < bdata.Length)
             {
-                if (spos + 2 < bdata.Length && bdata[spos + 2] == hd[0])
+                if (spos + 2 < bdata.Length && bdata[spos + 2] == 0x49)
                 {
                     try
                     {
-                        Buffer.BlockCopy(bdata, spos + 2, comp, 0, comp.Length);
-                        if (Match(comp, hd))
+                        if (MatchSeq(bdata, new byte[] { 0x49, 0x49 }, spos + 2))
                         {
                             var a = 0;
-                            while (bdata[spos + a] != hd[0])
+                            while (bdata[spos + a] != 0x49)
                             {
                                 if (!vm3_pos_sync.Any(s => s == bdata[spos + a])) write.Write(bdata[spos + a]);
                                 a++;
                             }
                             var b = 0;
-                            while (spos + (a + b) < bdata.Length && bdata[spos + (a + b)] == hd[0]) b++;
+                            while (spos + (a + b) < bdata.Length && bdata[spos + (a + b)] == 0x49) b++;
                             spos += (a + b);
                             if (b < 15 && V3_Custom.Checked) b = cust;
                             if (cur_sec < sectors) write.Write(v3_sector_sync);
                             cur_sec++;
-                            for (int i = 0; i < b; i++) write.Write((byte)hd[0]);
+                            for (int i = 0; i < b; i++) write.Write((byte)0x49);
                         }
                     }
                     catch { }

@@ -184,8 +184,6 @@ namespace V_Max_Tool
             }
             catch { }
             int total_size = offset + (tend - tstart);
-            //if (!VPL_only_sectors.Checked)
-            //{
             int leadout_len = (((output.Length << 3) - total_size) >> 3);
             byte[] leadout = FastArray.Init(leadout_len, endbyte);
             if (leadptn == 0) leadout[leadout.Length - 1] = 0xbd;
@@ -194,7 +192,6 @@ namespace V_Max_Tool
             {
                 output_bits[total_size + i] = leadout_bits[i];
             }
-            //}
             output = Bit2Byte(output_bits);
             Check_Sync();
             return output;
@@ -269,7 +266,7 @@ namespace V_Max_Tool
         bool GetVorpal_Checksum(byte[] data, byte[] GCR_value)
         {
             int cksm = 0;
-            byte ck = CombineNibbles(VPL_decode_high[GCR_value[0] >> 3], VPL_decode_low[((GCR_value[0] << 2) | (GCR_value[1] >> 6)) & 0x1f]);
+            byte ck = CombineNibbles_VPL(VPL_decode_high[GCR_value[0] >> 3], VPL_decode_low[((GCR_value[0] << 2) | (GCR_value[1] >> 6)) & 0x1f]);
             for (int i = 0; i < 128; i++) cksm ^= data[i];
             return ck == cksm;
         }
@@ -522,61 +519,6 @@ namespace V_Max_Tool
                 }
             });
             Vorpal_Rebuild();
-        }
-
-        byte CombineNibbles(byte highNibble, byte lowNibble)
-        {
-            if (highNibble == 0xff || lowNibble == 0xff) return 0x00;
-            else return (byte)(highNibble | lowNibble);
-        }
-
-        byte[] Decode_Vorpal_GCR(byte[] gcr)
-        {
-            byte[] plain = new byte[(gcr.Length / 5) << 2];
-            for (int i = 0; i < gcr.Length / 5; i++)
-            {
-                int baseIndex = i * 5;
-                byte b1 = gcr[baseIndex];
-                byte b2 = gcr[baseIndex + 1];
-                plain[(i << 2) + 0] = CombineNibbles(VPL_decode_high[b1 >> 3], VPL_decode_low[((b1 << 2) | (b2 >> 6)) & 0x1f]);
-                b1 = gcr[baseIndex + 1];
-                b2 = gcr[baseIndex + 2];
-                plain[(i << 2) + 1] = CombineNibbles(VPL_decode_high[(b1 >> 1) & 0x1f], VPL_decode_low[((b1 << 4) | (b2 >> 4)) & 0x1f]);
-                b1 = gcr[baseIndex + 2];
-                b2 = gcr[baseIndex + 3];
-                plain[(i << 2) + 2] = CombineNibbles(VPL_decode_high[((b1 << 1) | (b2 >> 7)) & 0x1f], VPL_decode_low[(b2 >> 2) & 0x1f]);
-                b1 = gcr[baseIndex + 3];
-                b2 = gcr[baseIndex + 4];
-                plain[(i << 2) + 3] = CombineNibbles(VPL_decode_high[((b1 << 3) | (b2 >> 5)) & 0x1f], VPL_decode_low[b2 & 0x1f]);
-            }
-            return plain;
-        }
-        BitArray Encode_Vorpal_GCR(byte[] sector, bool Calculate_Checksum, bool nextBit)
-        {
-            if (sector == null) return null;
-            int index = 0, checksum = 0;
-            if (Calculate_Checksum)
-            {
-                foreach (byte b in sector) checksum ^= b;
-                sector = ArrayConcat(sector, new byte[] { (byte)checksum });
-            }
-            byte[] nybl = new byte[sector.Length << 1];
-            for (int i = 0; i < sector.Length; i++)
-            {
-                nybl[index++] = VPL_encode[(sector[i] >> 4) & 0x0F];
-                nybl[index++] = VPL_encode[sector[i] & 0x0F];
-            }
-            BitArray encoded = new BitArray(sector.Length * 10);
-            for (int i = 0; i < nybl.Length; i++)
-            {
-                index = i * 5;
-                if (nybl[i] == 0x0f && (i < nybl.Length - 1 && (nybl[i + 1] & 0x10) != 0 || i == nybl.Length - 1 && nextBit)) nybl[i] = 0x0c;
-                if (nybl[i] == 0x17 && (i < nybl.Length - 1 && (nybl[i + 1] & 0x10) != 0 || i == nybl.Length - 1 && nextBit)) nybl[i] = 0x14;
-                if (nybl[i] == 0x1d && i > 0 && (nybl[i - 1] & 0x01) != 0) nybl[i] = 0x05;
-                if (nybl[i] == 0x1e && i > 0 && (nybl[i - 1] & 0x01) != 0) nybl[i] = 0x06;
-                for (int j = 0; j < 5; j++) encoded[index + (4 - j)] = (nybl[i] & (1 << j)) != 0;
-            }
-            return encoded;
         }
     }
 }

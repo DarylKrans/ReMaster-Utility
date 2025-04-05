@@ -698,6 +698,27 @@ namespace V_Max_Tool
             return result;
         }
 
+        //public static byte[] CopyArray(byte[] source, int start = 0, int length = -1)
+        //{
+        //    if (source == null || start >= source.Length || start < 0) return null;
+        //    if (length > 0 && start + length > source.Length) return null;
+        //    if (length == -1) length = source.Length - start;
+        //    byte[] ret = new byte[length]; 
+        //    Buffer.BlockCopy(source, start, ret, 0, length);
+        //    return ret;
+        //}
+
+        public static byte[] CopyArray(byte[] source, int start = 0, int length = -1)
+        {
+            if (source == null || start < 0 || start >= source.Length) return null;
+            if (length == -1) length = source.Length - start;
+            if (length < 0 || start + length > source.Length) return null;
+
+            byte[] ret = new byte[length];
+            Buffer.BlockCopy(source, start, ret, 0, length);
+            return ret;
+        }
+
         string Hex_Val(byte[] data, int start = 0, int end = -1)
         {
             if (data != null)
@@ -730,7 +751,7 @@ namespace V_Max_Tool
                 (byte[] sec_data, bool chksum) = Decode_CBM_Sector(data, sector, true, source, pos);
                 error = !chksum ? 5 : error;
                 error = (sec_data == null || sec_data?.Length != 256) ? 4 : error;
-                if (ID != null) error = (!Match(ID, id)) ? 11 : error;
+                if (ID != null) error = (!MatchSeq(id, ID)) ? 11 : error;
                 /* if Decode is set to true, Send back the un-altered sector data from the track */
                 if (!decode) (sec_data, _) = Decode_CBM_Sector(data, sector, false, source, pos);
                 return (sec_data, error, pos);
@@ -953,9 +974,9 @@ namespace V_Max_Tool
             return (false);
         }
 
-        static bool MatchSeq(byte[] source, int startIndex, byte[] pattern)
+        static bool MatchSeq(byte[] source, byte[] pattern, int startIndex = 0)
         {
-            if (startIndex < 0 || startIndex + pattern.Length > source.Length)
+            if ((source != null && pattern != null) && startIndex < 0 || startIndex + pattern.Length > source.Length)
                 return false;
 
             for (int i = 0; i < pattern.Length; i++)

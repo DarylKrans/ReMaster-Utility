@@ -327,7 +327,7 @@ namespace V_Max_Tool
                 const int bitBlockSize = 10 * 8;
                 if (pos + bitBlockSize >= source.Length) return;
                 c = Bit2Byte(source, pos, bitBlockSize);
-                if (Match(RLok_7b, c)) HandleRLok7bMatch();
+                if (MatchSeq(RLok_7b, c)) HandleRLok7bMatch();
                 else if (trk_id) HandleTrackId(c);
                 else
                 {
@@ -525,7 +525,7 @@ namespace V_Max_Tool
                 for (int i = 0; i < 8000; i++)
                 {
                     byte[] find = Bit2Byte(source, i, comp.Length << 3);
-                    if (Match(find, comp))
+                    if (MatchSeq(find, comp))
                     {
                         int rpos = i + (comp.Length << 3);
                         byte[] rem = Bit2Byte(source, rpos, dif << 3);
@@ -561,80 +561,6 @@ namespace V_Max_Tool
                 data[i] = (byte)(RapidLok_Decode_High[(byte)(data[i] >> 4)] | RapidLok_Decode_Low[(byte)(data[i] & 0x0f)]);
             }
             return data;
-        }
-
-        (byte[], bool) Decode_RL_Data(byte[] sector)
-        {
-            if (sector == null) return (new byte[0], false);
-            int pos = sector[0] == 0x6b ? 1 : 0;
-            bool rl_ver = (sector.Length == 583 && sector[195 + pos] == 0xa4);
-            byte GCR_a, GCR_b, GCR_c;
-            byte dec0 = 0, dec1;
-            List<byte> output = new List<byte>();
-            while (pos < sector.Length)
-            {
-                if (pos < 300 && sector[pos] == 0xa4) pos++;
-                GCR_a = sector[pos++];
-                GCR_b = sector[pos++];
-                GCR_c = pos < sector.Length ? sector[pos++] : (byte)0;
-                dec0 = (byte)((0xb6 & GCR_b) + (GCR_a & 0x49));
-                if (GCR_c != 0)
-                {
-                    dec1 = (byte)((0xdb & GCR_c) + (GCR_a & 0x24));
-                    output.Add(dec0);
-                    output.Add(dec1);
-                }
-            }
-            return (output.ToArray(), rl_ver ? RL2_7_Checksum(output.ToArray(), dec0) : RL1_Checksum(sector));
-
-            bool RL2_7_Checksum(byte[] data, byte value)
-            {
-                int ck = 0;
-                foreach (byte b in data) ck ^= b;
-                ck ^= value;
-                return value == ck;
-            }
-
-            bool RL1_Checksum(byte[] data)
-            {
-                int ck = 0;
-                for (int i = 1; i < data.Length - 2; i++) ck ^= data[i];
-                byte x = (byte)(data[data.Length - 2] << 3);
-                byte value = (byte)(ck & 0x03 ^ ck & 0x0c ^ x & 0xc0 ^ (x & 0x18) << 1);
-                return ck == value;
-            }
-        }
-
-        byte[] Encode_RLK(byte[] data)
-        {
-            int cksm = 0;
-            RL_Decrypt(data);
-            foreach (byte d in data) cksm ^= d;
-            MemoryStream buffer = new MemoryStream();
-            BinaryWriter write = new BinaryWriter(buffer);
-            int pos = 0;
-            write.Write((byte)0x6b);
-            while (pos < data.Length)
-            {
-                write.Write(Encode(data[pos++], data[pos++]));
-                if (buffer.Length == 196) write.Write((byte)0xa4);
-            }
-            write.Write(CopyFrom(Encode((byte)cksm, 0), 0, 2));
-            return buffer.ToArray();
-
-            byte[] Encode(byte b1, byte b2)
-            {
-                byte GCR_a = (byte)(0x92 | ((byte)((b1 & 0x49) | (b2 & 0x24))));
-                byte GCR_b = (byte)(0x49 | (b1 & 0xb6));
-                byte GCR_c = (byte)(0x24 | (b2 & 0xdb));
-                /// Check to make sure GCR is valid (can't have too many '1' bits in a row)
-                if ((GCR_a & 0x03) == 0x03 && (GCR_b & 0xE0) == 0xE0) GCR_b &= 0xBF;
-                if ((GCR_c & 0x80) == 0x80 && (GCR_b & 0x07) == 0x07) GCR_b &= 0xFE;
-                if ((GCR_a & 0xF8) == 0xF8) GCR_a &= 0xEF;
-                if ((GCR_a & 0x3F) == 0x3F && (GCR_b & 0xC0) == 0xC0) GCR_a &= 0xFE;
-                if ((GCR_c & 0x3E) == 0x3E) GCR_c &= 0xFB;
-                return new byte[] { GCR_a, GCR_b, GCR_c };
-            }
         }
     }
 }

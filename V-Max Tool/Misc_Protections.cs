@@ -9,12 +9,12 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        private readonly byte[] ps1 = { 0xeb, 0xd7, 0xaa, 0x55, 0xaa }; /// <- Piraye Slayer v1 secondary check
-        private readonly byte[] ps2 = { 0xd7, 0xd7, 0xeb, 0xcc, 0xad }; /// <- Pirate Slayer v1/2 check
-        private readonly byte[] ramb = new byte[] { 0xbe, 0x55, 0x5b, 0xe5, 0x55 }; /// <- RainbowArts / MagicBytes key signature found on t36
+        private readonly byte[] prt_slay1 = { 0xeb, 0xd7, 0xaa, 0x55, 0xaa }; /// <- Piraye Slayer v1 secondary check
+        private readonly byte[] prt_slay2 = { 0xd7, 0xd7, 0xeb, 0xcc, 0xad }; /// <- Pirate Slayer v1/2 check
+        private readonly byte[] rainbowArts_magicBytes = new byte[] { 0xbe, 0x55, 0x5b, 0xe5, 0x55 }; /// <- RainbowArts / MagicBytes key signature found on t36
         private readonly byte[] blank = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x45, 0x14, 0x12, 0x51, 0x88, 0x18, 0x31, 0x23 };
-        private readonly byte[] gmt = new byte[] { 0x69, 0x50, 0x50, 0xa0, 0xa0 };
-        private readonly byte[] ssp = new byte[] { 0xff, 0x56, 0x56, 0xa3, 0xa3 };
+        private readonly byte[] gma = new byte[] { 0x69, 0x50, 0x50, 0xa0, 0xa0 };
+        private readonly byte[] securispeed = new byte[] { 0xff, 0x56, 0x56, 0xa3, 0xa3 };
 
         byte[] Pirate_Slayer(byte[] data)
         {
@@ -23,39 +23,33 @@ namespace V_Max_Tool
             byte[] end_gap = new byte[] { 0xc8, 0x00, 0x88, 0xaa, 0xaa, 0xba };
             byte[] lead = FastArray.Init(1001, 0xd7);
             byte[] ldout = FastArray.Init(127, 0xd7);
-            byte[] de = new byte[dataend.Length];
             int start = 0;
             int end = 0;
             int pos = 0;
             int slay_ver = 2;
             MemoryStream buffer = new MemoryStream();
             BinaryWriter write = new BinaryWriter(buffer);
-            byte[] comp = new byte[ps1.Length];
-            for (int i = 0; i < data.Length - comp.Length; i++)
+            for (int i = 0; i < data.Length - prt_slay1.Length; i++)
             {
-                Buffer.BlockCopy(data, i, comp, 0, comp.Length);
-                if (Match(ps1, comp)) { slay_ver = 1; break; }
-                if (Match(ps2, comp)) { slay_ver = 2; break; }
+                if (MatchSeq(data, prt_slay1, i)) { slay_ver = 1; break; }
+                if (MatchSeq(data, prt_slay2, i)) { slay_ver = 2; break; }
             }
             if (slay_ver == 2) Slayer2();
             if (slay_ver == 1) Slayer1();
 
             void Slayer1()
             {
-                comp = new byte[2];
                 byte[] exp = new byte[] { 0xd7, 0xaa };
                 for (int i = start; i < data.Length; i++)
                 {
                     if (data[i] == 0x55)
                     {
-                        Buffer.BlockCopy(data, i, de, 0, de.Length);
-                        if (Match(dataend1, de)) { end = i + de.Length + 3; pos = i; }
+                        if (MatchSeq(data, dataend1, i)) { end = i + dataend1.Length + 3; pos = i; }
                     }
                 }
                 while (pos >= 0)
                 {
-                    Buffer.BlockCopy(data, pos, comp, 0, comp.Length);
-                    if (Match(exp, comp)) { start = pos; break; }
+                    if (MatchSeq(data, exp, pos)) { start = pos; break; }
                     pos--;
                 }
                 write.Write(FastArray.Init(184, 0xeb));
@@ -69,15 +63,14 @@ namespace V_Max_Tool
                 {
                     if (data[i] == 0x55)
                     {
-                        Buffer.BlockCopy(data, i, de, 0, de.Length);
-                        if (Match(dataend, de) || Match(dataend1, de)) { end = i + de.Length; pos = i; }
+                        if (MatchSeq(data, dataend, i) || MatchSeq(data, dataend1, i)) { end = i + dataend.Length; pos = i; }
                     }
                 }
                 while (pos >= 0)
                 {
-                    if (data[pos] == ps2[0])
+                    if (data[pos] == prt_slay2[0])
                     {
-                        if (data[pos + 1] == ps2[1] && data[pos + 2] == ps2[2] && data[pos + 3] == ps2[3] && data[pos + 4] == ps2[4]) { start = pos + 2; break; }
+                        if (data[pos + 1] == prt_slay2[1] && data[pos + 2] == prt_slay2[2] && data[pos + 3] == prt_slay2[3] && data[pos + 4] == prt_slay2[4]) { start = pos + 2; break; }
                     }
                     pos--;
                 }
@@ -275,20 +268,19 @@ namespace V_Max_Tool
             int pos = 0;
             bool weak = false;
             bool end = false;
-            byte[] s1 = new byte[gmt.Length];
-            for (int i = 0; i < data.Length - gmt.Length; i++)
+            for (int i = 0; i < data.Length - gma.Length; i++)
             {
-                if (data[i] == gmt[0] || (data[i] == ssp[0] && data[i + 1] == ssp[1]))
+                if (data[i] == gma[0] || (data[i] == securispeed[0] && data[i + 1] == securispeed[1]))
                 {
-                    Buffer.BlockCopy(data, i, s1, 0, s1.Length);
-                    if (Match(ssp, s1))
+                    if (MatchSeq(data, securispeed, i))
                     {
                         pos = i;
                         if (pos == 0) start = 5;
                         break;
                     }
-                    for (int j = 1; j < gmt.Length; j++) s1[j] &= gmt[j];
-                    if (Match(gmt, s1))
+                    bool m = true;
+                    for (int j = 1; j < gma.Length; j++) if (!((data[j] &= gma[j]) == gma[j])) m = false;
+                    if (m)
                     {
                         for (int k = i; k < i + 60; k++)
                         {
@@ -310,7 +302,7 @@ namespace V_Max_Tool
             if (weak) data = Remove_Weak_Bits(data, true);
             if (start == 5) Buffer.BlockCopy(sync, 0, key, 0, sync.Length);
             Buffer.BlockCopy(data, 0, key, start, key.Length - start);
-            if (key[0] == gmt[0])
+            if (key[0] == gma[0])
             {
                 key = Rotate_Right(key, 6);
                 Buffer.BlockCopy(sync, 0, key, 0, sync.Length);
@@ -324,15 +316,14 @@ namespace V_Max_Tool
             int start;
             int end = 0;
             int sync;
-            byte[] s2 = new byte[ramb.Length];
             byte[] temp = new byte[0];
             int v = 0;
-            for (int i = 0; i < data.Length - ramb.Length; i++)
+            for (int i = 0; i < data.Length - rainbowArts_magicBytes.Length; i++)
             {
-                if (data[i] == ramb[0])
+                if (MatchSeq(data, rainbowArts_magicBytes, i))
                 {
-                    Buffer.BlockCopy(data, i, s2, 0, s2.Length);
-                    if (Match(ramb, s2)) { pos = i; v = 1; break; }
+                    pos = i; v = 1;
+                    break;
                 }
                 if (data[i] == 0xff && (i > 0 && data[i - 1] != 0xff)) { v = 255; break; }
             }

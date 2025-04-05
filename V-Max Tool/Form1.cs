@@ -17,7 +17,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private readonly string ver = " v1.0.5.0 (test build)";
+        private readonly string ver = " v1.0.5.3 (Private UNtestED build)";
         private readonly string fix = "_ReMaster";
         private readonly string mod = "_ReMaster"; // _(modified)";
         private readonly string vorp = "_ReMaster"; //(aligned)";
@@ -55,9 +55,9 @@ namespace V_Max_Tool
             this.Text = $"Re-Master {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
-
+            
             // debugging buttons
-            //button1.Visible = button2.Visible = false;
+            button1.Visible = button2.Visible = false;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)
@@ -460,7 +460,7 @@ namespace V_Max_Tool
                     }
                     if (!batch && ErrorList.Count > 0)
                     {
-                        bool norepair = NDS.cbm.Any(x => x == 6);
+                        bool norepair = (NDS.cbm.Any(x => x == 6) || NDS.cbm.Any(x => x ==10));
                         string s = "";// "- The following error(s) were found -\n\n";
                         List<string> list = new List<string>(ErrorList);
                         list.Sort();
@@ -1016,6 +1016,5 @@ namespace V_Max_Tool
             sw.Stop();
             //Text = $"{sw.Elapsed.TotalMilliseconds}";
         }
-
     }
 }
