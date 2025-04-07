@@ -182,9 +182,10 @@ namespace V_Max_Tool
             int skipFactor = tracks <= 42 ? 2 : 1;
             int progress = 0;
             IntPtr bmpPtr = circle.GetPixelPtr();
-            for (int track = 0; track < tracks && radius > 80; track++)
+            //for (int track = 0; track < tracks && radius > 80; track++)
+            for (int track = 0; track < (Src_view.Checked ? tracks : end_track) && radius > 80; track++)
             {
-                if (NDG.Track_Length[track] > min_t_len && NDS.cbm[track] < secF.Length - 1)
+                if (NDG.Track_Length[track] > min_t_len && NDS.cbm[track] < (Src_view.Checked ? tracks : end_track))
                 {
                     int sb = 0;
                     progress++;

@@ -279,7 +279,7 @@ namespace V_Max_Tool
                         break;
                     }
                     bool m = true;
-                    for (int j = 1; j < gma.Length; j++) if (!((data[j] &= gma[j]) == gma[j])) m = false;
+                
                     if (m)
                     {
                         for (int k = i; k < i + 60; k++)

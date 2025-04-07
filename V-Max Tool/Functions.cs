@@ -269,6 +269,7 @@ namespace V_Max_Tool
             {
                 if (!DB_force.Checked) cbmadj = Check_tlen(); else cbmadj = true;
             }
+            //for (int i = end_track; i < tracks; i++) NDS.cbm[i] = secF.Length - 1;
             return (v2a, v3a, vpa, v2adj, v2cust, v3adj, v3cust, cbmadj, sl, fl, vpadj, rb_vm, vpl_lead);
 
             (bool, bool, bool) Check_Tabs()
@@ -292,6 +293,8 @@ namespace V_Max_Tool
                 if (tl.Count > 0) return tl.Max() >> 3 < 8000;
                 return false;
             }
+         
+
         }
 
         void SwapDensities(bool update = false)
@@ -669,36 +672,23 @@ namespace V_Max_Tool
         {
             int totalLength = arrays.Sum(a => a.Length);
             byte[] result = new byte[totalLength];
-
+        
             int offset = 0;
             foreach (byte[] array in arrays)
             {
                 Buffer.BlockCopy(array, 0, result, offset, array.Length);
                 offset += array.Length;
             }
-
+        
             return result;
         }
-
-        //public static byte[] CopyArray(byte[] source, int start = 0, int length = -1)
-        //{
-        //    if (source == null || start >= source.Length || start < 0) return null;
-        //    if (length > 0 && start + length > source.Length) return null;
-        //    if (length == -1) length = source.Length - start;
-        //    byte[] ret = new byte[length]; 
-        //    Buffer.BlockCopy(source, start, ret, 0, length);
-        //    return ret;
-        //}
 
         public static byte[] CopyArray(byte[] source, int start = 0, int length = -1)
         {
             if (source == null || start < 0 || start >= source.Length) return null;
             if (length == -1) length = source.Length - start;
             if (length < 0 || start + length > source.Length) return null;
-
-            byte[] ret = new byte[length];
-            Buffer.BlockCopy(source, start, ret, 0, length);
-            return ret;
+            return source.Skip(start).Take(length).ToArray();
         }
 
         string Hex_Val(byte[] data, int start = 0, int end = -1)

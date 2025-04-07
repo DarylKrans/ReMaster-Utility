@@ -263,8 +263,11 @@ namespace V_Max_Tool
                 using (BinaryWriter write = new BinaryWriter(buffer))
                 {
                     int cursec = (first_sector == sectors || first_sector == -1) ? 0 : first_sector;
-                    if (sb_sec > 0) write.Write(ArrayConcat(FastArray.Init(snc, 0xff), new byte[] { 0x55 }, (nsb == 0)
-                        ? FastArray.Init(sb_sec - 1, 0x7b) : FastArray.Init(nsb, 0x7b)));
+                    if (sb_sec > 0)
+                    {
+                        write.Write(ArrayConcat(FastArray.Init(snc, 0xff), new byte[] { 0x55 }, (nsb == 0)
+                            ? FastArray.Init(sb_sec - 1, 0x7b) : FastArray.Init(nsb, 0x7b)));
+                    }
                     write.Write(ArrayConcat(FastArray.Init(snc << 1, 0xff), Verify_Track_ID(tid), FastArray.Init((snc * 3) - os_sync.Length, 0xff)));
                     int rem = Math.Max((density[den] - ((int)buffer.Length + (sectors * (583 + 7 + (os_sync.Length << 1))))) / (sectors << 1), 5);
                     byte[] sector_gap = FastArray.Init(rem, 0x00);

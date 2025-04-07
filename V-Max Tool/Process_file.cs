@@ -879,7 +879,8 @@ namespace V_Max_Tool
                 else ht = 0;
                 Color color = new Color();
                 Color tcolor = new Color();
-                for (int i = 0; i < tracks; i++)
+                //for (int i = 0; i < tracks; i++)
+                for (int i = 0; i < end_track; i++)
                 {
                     if (halftracks) ht += .5; else ht += 1;
                     if (!batch && (NDS.cbm[i] < secF.Length - 1 && NDS.cbm[i] >= 0) && (NDS.Track_Length[i] > 6000 && NDS.Track_Length[i] >> 3 < 8100))
@@ -1040,7 +1041,7 @@ namespace V_Max_Tool
                     if (fat_trk < 0) fat_trk = track;
                     if (track != NDS.Track_ID[trk] && track >= 34 && !NDS.cbm.Any(x => x == 11)) end_track = trk + htk;
                 }
-                else if (Math.Abs(track - currentID) > 1) NDS.cbm[trk] = secF.Length - 1; // mark unformatted if flagged as Fat but track ID dif > 1
+                //else if (Math.Abs(track - currentID) > 1) NDS.cbm[trk] = secF.Length - 1; // mark unformatted if flagged as Fat but track ID dif > 1
                 /// --------------------------------------------------------------
                 /// --- Handles a Protection found on Jordan vs Bird (EA) --------
                 if (track > 33 && NDS.sectors[trk] == 1)
@@ -1345,21 +1346,20 @@ namespace V_Max_Tool
                             case 4: Check_Vorpal(i - 7); break;
                             case 5: Check_Vorpal(i - 7); break;
                         }
-                        if (cbm > 6) return 1;
+                        if (cbm > 6 || (tk > 38 && cbm > 0)) return 1;
                         if ((tk == 20 && vmax_v2 >= 20) || (tk != 20 && vmax_v2 > 5)) return 2;
                         if (vmax_v3 > 5) return 3;
                         if (vorpal > 20) return 5;
                         if (rapidlok > 5) return 6;
-                        if (microprose > 5) return 10;
+                        if (microprose > 4) return 10;
                     }
                 }
             }
             // If not enough positive header matches found, double check some specific conditions
-            //if (noData || sync_run == source.Count) return 0;   // track is all '0's or all '1's (nothing here, it's blank)
             if (noData) return secF.Length - 1;
             if (sync_run == source.Count) return 0;   // track is all '0's or all '1's (nothing here, it's blank)
             if (tk == 20 && Check_VMaxLoader()) return 4;       // Checks for specific repeating patterns found on V-Max Loader track (20)
-            if (sync_run > 30000 && tk == 36) return 7;         // If it's mostly sync and it's track 36, it's most likely a RapidLok Key track
+            if (sync_run > 26000 && tk == 36) return 7;         // If it's mostly sync and it's track 36, it's most likely a RapidLok Key track
             bool padding = CheckPadding();                      // Check the track to see if it's mostly padding (0x55/0xaa)
             if (vmax_v3 > 0 && (sync_run > 8000 || padding)) return 3;  // some V-Max v3 tracks contain only 1 - 5 sectors
             if (tk == 35 && cbm > 0 && weak_bits > 4000) return 1;      // EA protection found on Jordan Vs. Bird (maybe others)
