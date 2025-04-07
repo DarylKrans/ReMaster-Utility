@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -782,8 +781,8 @@ namespace V_Max_Tool
                 {
                     HashSet<int> ignore = new HashSet<int>();
                     if (m == 2 || m == 3) ignore.UnionWith(new int[] { 0, 1, 4 });
-                    if (m == 5 || m == 10) ignore.UnionWith(new int[] { 0, 1 });
-                    if (m == 6) ignore.UnionWith(new int[] { 0, 1, 7 });
+                    if (m == 5 || m == 10) ignore.UnionWith(new int[] { 0, 1, secF.Length - 1 });
+                    if (m == 6) ignore.UnionWith(new int[] { 0, 1, 7, secF.Length - 1 });
                     Change_Fmt(ignore, m);
                 }
 
@@ -979,7 +978,7 @@ namespace V_Max_Tool
             void Process_MPS(int trk, bool acbm)
             {
                 int d = Get_Density(NDS.Track_Length[trk] >> 3);
-                byte[] temp = new byte[NDS.Track_Length[trk] >> 3];
+                var temp = new byte[NDS.Track_Length[trk] >> 3];
                 Buffer.BlockCopy(NDS.Track_Data[trk], NDS.D_Start[trk] >> 3, temp, 0, ((NDS.D_End[trk] >> 3) - (NDS.D_Start[trk] >> 3)));
                 if (temp != null)
                 {
@@ -1027,17 +1026,26 @@ namespace V_Max_Tool
                 //ad = false;
                 int htk = tracks > 42 ? 2 : 1;
                 int track = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-                if ((track != NDS.Track_ID[trk] && track == NDS.Track_ID[trk] + 1) || (trk + htk < NDS.Track_ID.Length && track == NDS.Track_ID[trk + htk]))
+
+                /// ---------------- smart Fat-Track detection logic -------------
+                int currentID = NDS.Track_ID[trk];
+                bool isNextValid = trk + htk < NDS.Track_ID.Length;
+                bool isFatTrack =
+                    (track != currentID && track == currentID + 1) ||
+                    (isNextValid && NDS.Track_ID[trk + htk] == currentID && track == currentID + 1);
+
+                if (isFatTrack)
                 {
-                    NDG.Fat_Track[trk] = true;
+                    NDG.Fat_Track[trk - htk] = true;
                     if (fat_trk < 0) fat_trk = track;
-                    //if (track != NDS.Track_ID[trk] && track >= 34 && !NDS.cbm.Any(x => x == 11)) end_track = trk + htk;
+                    if (track != NDS.Track_ID[trk] && track >= 34 && !NDS.cbm.Any(x => x == 11)) end_track = trk + htk;
                 }
-                byte[] temp = new byte[0];
+                else if (Math.Abs(track - currentID) > 1) NDS.cbm[trk] = secF.Length - 1; // mark unformatted if flagged as Fat but track ID dif > 1
+                /// --------------------------------------------------------------
                 /// --- Handles a Protection found on Jordan vs Bird (EA) --------
                 if (track > 33 && NDS.sectors[trk] == 1)
                 {
-                    temp = JvB(NDS.Track_Data[trk]);
+                    var temp = JvB(NDS.Track_Data[trk]);
                     Set_Dest_Arrays(temp, trk);
                 }
                 /// --------------------------------------------------------------
@@ -1053,7 +1061,7 @@ namespace V_Max_Tool
                     {
                         try
                         {
-                            temp = Adjust_Sync_CBM(NDS.Track_Data[trk], exp_snc, min_snc, ign_snc, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk, ad);
+                            var temp = Adjust_Sync_CBM(NDS.Track_Data[trk], exp_snc, min_snc, ign_snc, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk, ad);
                             if (temp != null)
                             {
                                 if (Original.OT[trk]?.Length == 0)
@@ -1121,7 +1129,7 @@ namespace V_Max_Tool
                 bool replace_headers = V2_swap_headers.Checked;
                 if (rbv || cv2c)
                 {
-                    byte[] temp = Adjust_V2_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.v2info[trk], true, trk);
+                    var temp = Adjust_V2_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.v2info[trk], true, trk);
                     if (NDS.v2info[trk].Length > 0 && NDS.Loader.Length == 0)
                     {
                         NDS.Loader = new byte[3];
@@ -1139,7 +1147,7 @@ namespace V_Max_Tool
                         Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
                         Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);
                     }
-                    byte[] tdata;
+                    var tdata = new byte[0];
                     (tdata, NDA.D_Start[trk], NDA.D_End[trk], NDA.Sector_Zero[trk]) = Rebuild_V2(Original.OT[trk], NDS.sectors[trk], NDS.v2info[trk], trk, NDG.newheader, replace_headers);
                     Set_Dest_Arrays(tdata, trk);
                 }
@@ -1164,7 +1172,7 @@ namespace V_Max_Tool
                         Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
                         Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);
                     }
-                    byte[] temp = Rebuild_V3(NDG.Track_Data[trk], NDS.Gap_Sector[trk], NDS.t18_ID, trk);
+                    var temp = Rebuild_V3(NDG.Track_Data[trk], NDS.Gap_Sector[trk], NDS.t18_ID, trk);
                     Set_Dest_Arrays(temp, trk);
                 }
                 if (NDG.Track_Data[trk].Length > 0)
@@ -1208,7 +1216,7 @@ namespace V_Max_Tool
                     Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
                     Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);
                 }
-                byte[] temp = new byte[0];
+                var temp = new byte[0];
                 if (avp)
                 {
                     temp = Rebuild_Vorpal(Original.OT[trk], trk, lead);
@@ -1234,7 +1242,7 @@ namespace V_Max_Tool
                 int track = trk;
                 if (tracks > 42) track = (trk / 2);
                 int sbl = Replace_RapidLok_Key ? rl_7b[track] : 0;
-                byte[] temp;
+                var temp = new byte[0];
                 int q; int s; int e; int b; int h;
                 string[] f;
                 (temp, s, e, q, b, h, f) = RapidLok_Track_Info(NDS.Track_Data[trk], trk, true, NDS.t18_ID, sbl);
@@ -1243,7 +1251,7 @@ namespace V_Max_Tool
 
             void Process_RapidLokKey(int trk)
             {
-                byte[] newkey;
+                var newkey = new byte[0];
                 (newkey, NDS.Loader) = RapidLok_Key_Fix(NDS.Track_Data[trk], !Replace_RapidLok_Key ? null : rl_nkey);
                 NDS.Track_Length[trk] = newkey.Length << 3;
                 Set_Dest_Arrays(newkey, trk);
@@ -1251,7 +1259,7 @@ namespace V_Max_Tool
 
             void Process_Rainbow(int trk)
             {
-                byte[] temp = RainbowArts(NDS.Track_Data[trk]);
+                var temp = RainbowArts(NDS.Track_Data[trk]);
                 Set_Dest_Arrays(temp, trk);
             }
 
@@ -1261,10 +1269,6 @@ namespace V_Max_Tool
                 byte[] temp = new byte[0];
                 Buffer.BlockCopy(NDG.Track_Data[trk], 0, temp1, 0, temp1.Length);
                 (int pos, int longest) = Longest_Run(temp1, new byte[] { 0x55, 0xaa });
-                //if (longest > 5)
-                //{
-                //    temp1 = Rotate_Left(temp1, pos + longest);
-                //}
                 temp1 = longest > 5 ? Rotate_Left(temp1, pos + longest) : temp1;
                 int d = Get_Density(temp1.Length);
                 if (temp1.Length > density[d])

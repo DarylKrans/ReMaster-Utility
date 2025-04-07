@@ -66,7 +66,7 @@
             this.BD_tracks = new System.Windows.Forms.NumericUpDown();
             this.Create_Blank = new System.Windows.Forms.Button();
             this.DB_force = new System.Windows.Forms.CheckBox();
-            this.DB_g64 = new System.Windows.Forms.CheckBox();
+            this.Pad_Tracks = new System.Windows.Forms.CheckBox();
             this.CPP_tog = new System.Windows.Forms.CheckBox();
             this.DB_timers = new System.Windows.Forms.CheckBox();
             this.RL_Fix = new System.Windows.Forms.CheckBox();
@@ -572,7 +572,7 @@
             this.D_Bug.Controls.Add(this.DB_cores);
             this.D_Bug.Controls.Add(this.CBD_box);
             this.D_Bug.Controls.Add(this.DB_force);
-            this.D_Bug.Controls.Add(this.DB_g64);
+            this.D_Bug.Controls.Add(this.Pad_Tracks);
             this.D_Bug.Controls.Add(this.CPP_tog);
             this.D_Bug.Controls.Add(this.DB_timers);
             this.D_Bug.Location = new System.Drawing.Point(4, 37);
@@ -735,14 +735,14 @@
             // 
             // DB_g64
             // 
-            this.DB_g64.AutoSize = true;
-            this.DB_g64.Location = new System.Drawing.Point(16, 88);
-            this.DB_g64.Margin = new System.Windows.Forms.Padding(4);
-            this.DB_g64.Name = "DB_g64";
-            this.DB_g64.Size = new System.Drawing.Size(463, 29);
-            this.DB_g64.TabIndex = 2;
-            this.DB_g64.Text = "Pad empty track-space in G64 output tracks";
-            this.DB_g64.UseVisualStyleBackColor = true;
+            this.Pad_Tracks.AutoSize = true;
+            this.Pad_Tracks.Location = new System.Drawing.Point(16, 88);
+            this.Pad_Tracks.Margin = new System.Windows.Forms.Padding(4);
+            this.Pad_Tracks.Name = "DB_g64";
+            this.Pad_Tracks.Size = new System.Drawing.Size(463, 29);
+            this.Pad_Tracks.TabIndex = 2;
+            this.Pad_Tracks.Text = "Pad empty track-space in G64 output tracks";
+            this.Pad_Tracks.UseVisualStyleBackColor = true;
             // 
             // CPP_tog
             // 
@@ -2791,7 +2791,7 @@
         private System.Windows.Forms.TabPage D_Bug;
         private System.Windows.Forms.CheckBox CPP_tog;
         private System.Windows.Forms.CheckBox DB_timers;
-        private System.Windows.Forms.CheckBox DB_g64;
+        private System.Windows.Forms.CheckBox Pad_Tracks;
         private System.Windows.Forms.CheckBox DB_force;
         private System.Windows.Forms.Button Create_Blank;
         private System.Windows.Forms.GroupBox CBD_box;

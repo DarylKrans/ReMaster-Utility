@@ -5,14 +5,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Numerics;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using static System.Collections.Specialized.BitVector32;
 
 /// CBM Block Header structure
 /// 8 plain bytes converted to 10 GCR bytes
@@ -213,12 +208,12 @@ namespace V_Max_Tool
                     int test = pos;
                     int sc = 0;
 
-                    while (test < 3000)
+                    while (test < 3000 && test < source.Length)
                     {
                         if (source[test]) sc++;
                         if (!source[test])
                         {
-                            if (sc > 12)
+                            if (sc > 12 && sc < 60 && test + comp < source.Length)
                             {
                                 byte[] dd = Bit2Byte(source, test, comp);
                                 if (dd[0] != 0x52) break;
@@ -1003,7 +998,7 @@ namespace V_Max_Tool
                     try
                     {
                         var fmt = NDS.cbm[i];
-                        if (fmt < secF.Length - 1)
+                        if (fmt < secF.Length - 1 && NDG.Track_Data[i] != null)
                         {
                             int sec = Sectors_by_density[Get_Density(NDG.Track_Data[i].Length)];
                             for (int j = 0; j < 21; j++)
@@ -1508,7 +1503,7 @@ namespace V_Max_Tool
                 return (null, false, -1);
             }
 
-            //(bool, int) Contains_BlockSync_ByteLevel(byte[] data)
+            //(bool, int) Check_BlockSync_ByteLevel(byte[] data)
             //{
             //    int ffCount = 0;
             //    for (int i = 0; i < data.Length; i++)

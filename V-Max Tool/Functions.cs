@@ -256,6 +256,10 @@ namespace V_Max_Tool
                 fnappend = (VPL_rb.Checked || Adj_cbm.Checked || vpadj) ? mod : vorp;
                 vpl_lead = Lead_ptn.SelectedIndex;
             }
+            if (NDS.cbm.Any(ss => ss == 6))
+            {
+                end_track = tracks > 42 ? 71 : 36;
+            }
             RL_Fix.Visible = NDS.cbm.Any(x => x == 6) || cynldr;
             if (NDS.cbm.Any(ss => ss == 10))
             {
@@ -300,6 +304,7 @@ namespace V_Max_Tool
                 Process_Nib_Data(true, false, false, true);
             }
         }
+
         public static byte[] Compress(byte[] data)
         {
             MemoryStream output = new MemoryStream();
@@ -324,50 +329,31 @@ namespace V_Max_Tool
 
         (int, int) Longest_Run(byte[] data, byte[] of = null)
         {
-            int count = 0;
-            int longest = 0;
-            int pos = 0;
-            byte prev = 0x00;
-            if (data != null && data.Length > 0)
+            if (data == null || data.Length == 0) return (-1, -1);
+            int count = 0, longest = 0, pos = 0;
+            byte prev = data[0];
+            for (int i = 0; i < data.Length; i++)
             {
-                for (int i = 0; i < data.Length; i++)
-                {
-                    if (of != null)
-                    {
-                        if (of.Any(x => x == data[i])) count++;
-                        else
-                        {
-                            if (count > longest)
-                            {
-                                longest = count;
-                                pos = i - count;
-                            }
-                            count = 0;
-                        }
-                    }
-                    else
-                    {
-                        if (data[i] == prev) count++;
-                        else
-                        {
-                            prev = data[i];
-                            if (count > longest)
-                            {
-                                longest = count;
-                                pos = i - count;
-                            }
-                            count = 0;
-                        }
-                    }
-                }
-                return (pos, longest);
-            }
-            else return (-1, -1);
+                bool match = of != null ? of.Contains(data[i]) : data[i] == prev;
 
-            //void Set_Counters(int p, int l, int c)
-            //{
-            //    if (c > l) longest = c;
-            //}
+                if (match) count++;
+                else
+                {
+                    if (count > longest)
+                    {
+                        longest = count;
+                        pos = i - count;
+                    }
+                    count = 0;
+                    if (of == null) prev = data[i];
+                }
+            }
+            if (count > longest)
+            {
+                longest = count;
+                pos = data.Length - count;
+            }
+            return (pos, longest);
         }
 
         void Data_Viewer(bool stop = false)

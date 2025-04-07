@@ -499,7 +499,7 @@ namespace V_Max_Tool
                 //File.WriteAllBytes($@"c:\test\compressed\vmv2dt1.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\vmv2dt1")), 0x4e));
             }
             catch { }
-            DB_g64.Checked = true;
+            Pad_Tracks.Checked = true;
 
             void Set_Boxes()
             {

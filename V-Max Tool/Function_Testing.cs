@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -14,7 +12,13 @@ namespace V_Max_Tool
         private void Button2_Click(object sender, EventArgs e)
         {
             //Test_RLD();
-            Test_GetFmt();
+            //Test_GetFmt();
+            //Make_G64("file", tracks);
+            //BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[16]));
+            //(byte[] sector, bool checksum, int pos) = Decode_MicroProse_Sector(source, 9, false);
+            //File.WriteAllBytes($@"c:\test\mpst9s9_enc", sector);
+            //sector = Decode_CBM_GCR(sector);
+            //File.WriteAllBytes($@"c:\test\mpst9s9_dec", sector);
         }
 
         void Test_GetFmt()
