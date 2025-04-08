@@ -20,74 +20,51 @@ namespace V_Max_Tool
         {
             byte[] dataend = new byte[] { 0x55, 0xae, 0x9b, 0x55, 0xad, 0x55, 0xcb, 0xae, 0x6b, 0xab, 0xad, 0xaf };
             byte[] dataend1 = new byte[] { 0x55, 0xae, 0x9b, 0x55, 0xad, 0x55, 0x2b, 0xae, 0x2b, 0xab, 0xad, 0xaf };
-            byte[] end_gap = new byte[] { 0xc8, 0x00, 0x88, 0xaa, 0xaa, 0xba };
-            byte[] lead = FastArray.Init(1001, 0xd7);
-            byte[] ldout = FastArray.Init(127, 0xd7);
-            int start = 0;
-            int end = 0;
-            int pos = 0;
-            int slay_ver = 2;
             MemoryStream buffer = new MemoryStream();
             BinaryWriter write = new BinaryWriter(buffer);
             for (int i = 0; i < data.Length - prt_slay1.Length; i++)
             {
-                if (MatchSeq(data, prt_slay1, i)) { slay_ver = 1; break; }
-                if (MatchSeq(data, prt_slay2, i)) { slay_ver = 2; break; }
+                if (MatchSeq(data, prt_slay1, i)) { Slayer1(); break; }
+                if (MatchSeq(data, prt_slay2, i)) { Slayer2(); break; }
             }
-            if (slay_ver == 2) Slayer2();
-            if (slay_ver == 1) Slayer1();
+            return (buffer.Length == density[3]) ? buffer.ToArray() : data;
 
             void Slayer1()
             {
-                byte[] exp = new byte[] { 0xd7, 0xaa };
-                for (int i = start; i < data.Length; i++)
+                for (int i = 0; i < data.Length; i++)
                 {
-                    if (data[i] == 0x55)
+                    if (MatchSeq(data, dataend1, i))
                     {
-                        if (MatchSeq(data, dataend1, i)) { end = i + dataend1.Length + 3; pos = i; }
+                        var key = data.Skip(i).Take(15).ToArray();
+                        var aa55 = PaddingFill(2049, 0x55, 0xaa); aa55[0] = 0xd7;
+                        write.Write(ArrayConcat(FastArray.Init(184, 0xeb), aa55, key, FastArray.Init(3982, 0xeb)));
+                        break;
                     }
                 }
-                while (pos >= 0)
-                {
-                    if (MatchSeq(data, exp, pos)) { start = pos; break; }
-                    pos--;
-                }
-                write.Write(FastArray.Init(184, 0xeb));
-                for (int i = start; i < end; i++) write.Write((byte)data[i]);
-                if (buffer.Length < density[3]) write.Write(FastArray.Init(density[3] - (int)buffer.Length, 0xd7));
             }
 
             void Slayer2()
             {
-                for (int i = start; i < data.Length; i++)
+                for (int i = 0; i < data.Length; i++)
                 {
-                    if (data[i] == 0x55)
+                    if (MatchSeq(data, dataend, i) || MatchSeq(data, dataend1, i))
                     {
-                        if (MatchSeq(data, dataend, i) || MatchSeq(data, dataend1, i)) { end = i + dataend.Length; pos = i; }
+                        var ccad = PaddingFill(1024, 0xcc, 0xad);
+                        var d7 = FastArray.Init(1024, 0xd7);
+                        var key = data.Skip(i).Take(15).ToArray();
+                        var eb = new byte[] { 0xeb };
+                        write.Write(ArrayConcat(d7, eb, ccad, key, d7, eb, ccad, key, d7, FastArray.Init(1078, 0xeb)));
+                        break;
                     }
                 }
-                while (pos >= 0)
-                {
-                    if (data[pos] == prt_slay2[0])
-                    {
-                        if (data[pos + 1] == prt_slay2[1] && data[pos + 2] == prt_slay2[2] && data[pos + 3] == prt_slay2[3] && data[pos + 4] == prt_slay2[4]) { start = pos + 2; break; }
-                    }
-                    pos--;
-                }
-                byte[] key = new byte[end - start];
-                Buffer.BlockCopy(data, start, key, 0, end - start);
-                for (int i = 0; i < 2; i++)
-                {
-                    write.Write(key);
-                    write.Write(lead);
-                }
-                write.Write(key);
-                write.Write(ldout);
-                write.Write(end_gap);
-                while (buffer.Position < density[3]) write.Write((byte)0xfa);
             }
-            if (buffer.Length == density[3]) return buffer.ToArray();
-            else return data;
+
+            byte[] PaddingFill(int length, byte even, byte odd)
+            {
+                var arr = new byte[length];
+                for (int i = 0; i < length; i++) arr[i] = (i % 2 == 0) ? even : odd;
+                return arr;
+            }
         }
 
         (bool, byte[], int) Radwar(byte[] data, bool fix = false, int sector = -1)
@@ -279,7 +256,7 @@ namespace V_Max_Tool
                         break;
                     }
                     bool m = true;
-                
+
                     if (m)
                     {
                         for (int k = i; k < i + 60; k++)
