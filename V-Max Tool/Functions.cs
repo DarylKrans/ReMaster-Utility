@@ -822,6 +822,20 @@ namespace V_Max_Tool
             return newbit;
         }
 
+        public static BitArray BitRotateLeft(BitArray bits, int shift)
+        {
+            if (bits == null || bits.Length == 0) return null;
+            int len = bits.Length;
+            if (len == 0 || shift == 0 || shift % len == 0) return new BitArray(bits); // No change needed
+            if (shift > len) shift %= len;
+            BitArray result = new BitArray(len);
+            // Copy bits from [shift..end] to [0..len-shift]
+            for (int i = 0; i < len - shift; i++) result[i] = bits[i + shift];
+            // Copy bits from [0..shift] to [len-shift..end]
+            for (int i = 0; i < shift; i++) result[len - shift + i] = bits[i];
+            return result;
+        }
+
         BitArray BitCopy(BitArray bits, int start = 0, int length = -1)
         {
             if (length < 0) length = bits.Length - start;
@@ -1206,36 +1220,33 @@ namespace V_Max_Tool
 
         void Check_Before_Draw(bool dontDrawFlat, bool timeout = false)
         {
-            if (Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
+            if (tracks > 0 && !batch && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])
             {
-                if (!batch)
+                RunBusy(() =>
                 {
-                    RunBusy(() =>
+                    Draw?.Abort();
+                    circ?.Abort();
+                    flat?.Abort();
+                    check_alive?.Abort();
+                    flat?.Join();
+                    try
                     {
-                        Draw?.Abort();
-                        circ?.Abort();
-                        flat?.Abort();
-                        check_alive?.Abort();
-                        flat?.Join();
-                        try
+                        if (!dontDrawFlat)
                         {
-                            if (!dontDrawFlat)
-                            {
-                                flat_large?.Dispose();
-                                flat = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false, (Cores < 3))));
-                                flat.Start();
-                            }
-                            circle?.Dispose();
-                            circ = new Thread(new ThreadStart(() => Draw_Circular_Tracks((Cores < 3))));
-                            circ.Start();
+                            flat_large?.Dispose();
+                            flat = new Thread(new ThreadStart(() => Draw_Flat_Tracks(false, (Cores < 3))));
+                            flat.Start();
                         }
-                        catch { }
-                        drawn = true;
-                        GC.Collect();
-                        Draw = new Thread(new ThreadStart(() => Progress_Thread_Check((Cores < 3))));
-                        Draw.Start();
-                    });
-                }
+                        circle?.Dispose();
+                        circ = new Thread(new ThreadStart(() => Draw_Circular_Tracks((Cores < 3))));
+                        circ.Start();
+                    }
+                    catch { }
+                    drawn = true;
+                    GC.Collect();
+                    Draw = new Thread(new ThreadStart(() => Progress_Thread_Check((Cores < 3))));
+                    Draw.Start();
+                });
             }
         }
 

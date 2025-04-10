@@ -61,6 +61,25 @@ namespace ReMaster_Utility.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Programmed by Daryl Krans (2023–2025)
+        ///No rights reserved.
+        ///
+        ///ReMaster began as a simple utility for analyzing patterns in copy-protected Commodore 64
+        ///disk images—just a way to learn how various protections worked in the &apos;80s and &apos;90s.
+        ///
+        ///Over time, it grew into a powerful preservation tool capable of generating G64 images
+        ///from many types of protected disks that are notoriously difficult to duplicate, even with
+        ///advanced tools like Nibtools and the XUM (ZoomFloppy) adapter.
+        ///
+        ///Some protections, like V-Max, use extr [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string About {
+            get {
+                return ResourceManager.GetString("About", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] C64_Pro_Mono_STYLE {

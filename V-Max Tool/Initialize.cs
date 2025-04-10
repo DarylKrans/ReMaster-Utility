@@ -130,6 +130,7 @@ namespace V_Max_Tool
             }
             end_track = -1;
             fat_trk = -1;
+            tracks = -1;
             Img_style.Enabled = Img_View.Enabled = Img_opts.Enabled = Save_Circle_btn.Visible = M_render.Visible = Adv_ctrl.Enabled = false;
             VBS_info.Visible = Reg_info.Visible = false;
             Other_opts.Visible = false;
@@ -141,6 +142,7 @@ namespace V_Max_Tool
             Default_Dir_Screen();
             label2.Text = string.Empty;
             Dir_Box.Items.Clear();
+            saveAsToolStripMenuItem.Enabled = false;
             busy = false;
         }
 
@@ -258,6 +260,7 @@ namespace V_Max_Tool
             Font customFont = GetCustomFont(12.0f, FontStyle.Regular);
             usecpp = Load_Dll();
             if (!usecpp) CPP_tog.Enabled = false;
+            saveAsToolStripMenuItem.Enabled = false;
             Batch_List_Box.Visible = false; // set to true for debugging that requires a listbox
             Batch_List_Box.HorizontalScrollbar = true;
             Other_opts.Visible = false;

@@ -14,9 +14,6 @@ namespace V_Max_Tool
             //Test_RLD();
             //Test_GetFmt();
             //Make_G64("file", tracks);
-            //byte[] data = Pirate_Slayer(NDS.Track_Data[2], "eat shit");
-            //Text = $"{NDS.cbm[2]} {data.Length}";
-            //File.WriteAllBytes($@"c:\test\pslr.bin", data);
         }
 
         void Test_GetFmt()

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -8,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using ReMaster_Utility.Properties;
 
 
 
@@ -34,6 +34,7 @@ namespace V_Max_Tool
         private bool nib_error = false;
         private bool g64_error = false;
         private bool batch = false;
+        private bool exitConfirmed = false;
         private string nib_err_msg;
         private string g64_err_msg;
         private byte[] rak1 = new byte[0];
@@ -55,7 +56,6 @@ namespace V_Max_Tool
             this.Text = $"Re-Master {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
-
             // debugging buttons
             //button1.Visible = button2.Visible = false;
         }
@@ -177,9 +177,27 @@ namespace V_Max_Tool
                     Stream.Close();
                     var head = Encoding.ASCII.GetString(nib_header, 0, 13);
                     var hm = "Bad Header";
-                    if (head == "MNIB-1541-RAW") hm = "Header Match!";
-                    var lab = $"Total Tracks ({tracks}), {l}, {hm}";
-                    Process(true, lab);
+                    if (head == "MNIB-1541-RAW")
+                    {
+                        hm = "Header Match!";
+                        var lab = $"Total Tracks ({tracks}), {l}, {hm}";
+                        Process(true, lab);
+                    }
+                    else
+                    {
+                        label1.Text = $"{hm}";
+                        label2.Text = "";
+                    }
+                    if (hm == "Bad Header")
+                    {
+                        using (Message_Center center = new Message_Center(this)) // center message box
+                        {
+                            string t = "Bad Header!";
+                            string s = "Image is corrupt and cannot be opened";
+                            MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            error = true;
+                        }
+                    }
                 }
                 if (fext.ToLower() == supported[1] || fext.ToLower() == supported[4])
                 {
@@ -448,6 +466,7 @@ namespace V_Max_Tool
                         Adv_ctrl.Enabled = true;
                         Blk_pan.Enabled = true;
                         Disable_Core_Controls(false);
+                        saveAsToolStripMenuItem.Enabled = true;
                     }
                     catch (Exception ex)
                     {
@@ -872,6 +891,68 @@ namespace V_Max_Tool
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            if (!exitConfirmed)
+            {
+                bool shouldExit = Exit(batch);
+                if (!shouldExit)
+                {
+                    e.Cancel = true; // User cancelled exit
+                }
+                else
+                {
+                    exitConfirmed = true; // Mark it confirmed to avoid prompt loop
+                    Terminate();
+                }
+            }
+        }
+
+        private bool Exit(bool busy)
+        {
+            if (busy)
+            {
+                using (Message_Center center = new Message_Center(this))
+                {
+                    string message = "Cancel operations and exit?";
+                    string title = "Operations in progress!";
+                    DialogResult exit = MessageBox.Show(message, title, MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+                    return exit == DialogResult.OK;
+                }
+            }
+            return true;
+        }
+
+        //protected override void OnFormClosing(FormClosingEventArgs e)
+        //{
+        //    Exit(batch);
+        //    //try
+        //    //{
+        //    //    cancel = true;
+        //    //    this.Text = "Closing..";
+        //    //    Application.Exit();
+        //    //    Environment.Exit(0);
+        //    //}
+        //    //catch { }
+        //    //this.Close();
+        //}
+
+        //private void Exit(bool busy)
+        //{
+        //    if (busy)
+        //    {
+        //        using (Message_Center center = new Message_Center(this))
+        //        {
+        //            string message = "Cancel operations and exit?";
+        //            string title = "Operations in progress!";
+        //            DialogResult exit = MessageBox.Show(message, title, MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+        //            if (exit == DialogResult.OK) Terminate();
+        //        }
+        //    }
+        //    else Terminate();
+        //
+        //}
+
+        private void Terminate()
+        {
             try
             {
                 cancel = true;
@@ -1029,67 +1110,76 @@ namespace V_Max_Tool
             ProcessNewFiletoImage(File_List);
         }
 
-        private void Fix_Errors()
+
+
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < tracks; i++)
-            {
-                switch (NDS.cbm[i])
-                {
-                    case 5: FixVPL(i); break;
-                    case 10: FixMPS(i); break;
-                }
-            }
-            sw.Stop();
-            //Text = $"{sw.Elapsed.TotalMilliseconds}";
+            this.Close(); // triggers OnFormClosing, which handles confirmation and cleanup
+        }
 
-            void FixVPL(int track)
+        private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form AboutForm = new Form
             {
-                BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
-                bool rewrite = false;
-                for (int j = 0; j < NDS.sectors[track]; j++)
-                {
-                    (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
-                    if (!cksm)
-                    {
-                        BitArray newsec = Encode_Vorpal_GCR(sector, true, isone);
-                        for (int k = 0; k < newsec.Length; k++)
-                        {
-                            source[pos + k] = newsec[k];
-                        }
-                        rewrite = true;
-                    }
-                }
-                if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
-                //byte[] temp = Bit2Byte(source);
-                //Set_Dest_Arrays(temp, track);
-            }
+                Text = "About ReMaster Utilities",
+                MinimizeBox = false,
+                MaximizeBox = false,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                // Center relative to the main form
+                Size = new Size(600, 650),
+                StartPosition = FormStartPosition.Manual
+            };
+            AboutForm.Location = new Point(
+                this.Location.X + (this.Width - AboutForm.Width) / 2,
+                this.Location.Y + (this.Height - AboutForm.Height) / 2);
 
-            void FixMPS(int track)
+            RichTextBox richTextBox = new RichTextBox
             {
-                BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
-                bool rewrite = false;
-                for (int j = 0; j < NDS.sectors[track]; j++)
+                Dock = DockStyle.Fill,
+                ReadOnly = true,
+                BorderStyle = BorderStyle.None,
+                BackColor = this.BackColor,
+                Font = new Font("Segoe UI", 10),
+                Enabled = false,
+                ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None,
+                Text = $"ReMaster {ver}\n\n" + Resources.About,
+
+            };
+            AboutForm.Controls.Add(richTextBox);
+            AboutForm.ShowDialog(this);
+        }
+
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Title = "Open Disk Image";
+            openFileDialog1.Filter = "Disk Images (*.nib;*.nbz;*.g64;*.d64)|*.nib;*.nbz;*.g64;*.d64";
+            openFileDialog1.RestoreDirectory = true;
+            openFileDialog1.FileName = "";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                string selectedFile = openFileDialog1.FileName;
+                if (File.Exists(selectedFile))
                 {
-                    (byte[] sector, bool checksum, int pos) = Decode_MicroProse_Sector(source, j, false);
-                    if (!checksum && (sector != null && pos >= 0))
-                    {
-                        int start = sector.Length == 335 ? 9 : sector.Length == 325 ? 1 : 0;
-                        int end = sector.Length == 335 ? 266 : sector.Length == 325 ? 257 : 0;
-                        byte[] dec = Decode_CBM_GCR(sector);
-                        if (dec != null && (dec.Length == 268 || dec.Length == 260) && (start == 9 || start == 1) && (end == 257 || end == 266))
-                        {
-                            int chksm = 0;
-                            for (int k = start; k < end; k++) chksm ^= dec[k];
-                            dec[end] = (byte)chksm;
-                            BitArray newsec = new BitArray(Flip_Endian(Encode_CBM_GCR(dec)));
-                            for (int k = 0; k < newsec.Length; k++) source[pos + k] = newsec[k];
-                        }
-                        rewrite = true;
-                    }
+                    fname = Path.GetFileNameWithoutExtension(selectedFile).Replace("_ReMaster", "");
+                    fext = Path.GetExtension(selectedFile);
+                    ClearInfo();
+                    Process_New_Image(selectedFile);
                 }
-                if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
             }
+            void ClearInfo()
+            {
+                Source.Visible = Output.Visible = false;
+                f_load.Text = "Fix Loader";
+                Save_Disk.Visible = false;
+                sl.DataSource = null;
+                out_size.DataSource = null;
+            }
+        }
+
+        private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Export_File(end_track);
         }
     }
 }

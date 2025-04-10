@@ -738,21 +738,22 @@ namespace V_Max_Tool
 
                 if (NDS.cbm[trk] == 8)
                 {
-                    byte[] EA = Pirate_Slayer(NDS.Track_Data[trk]);
+                    byte[] EA = Pirate_Slayer(NDS.Track_Data[trk], NDS.v2info[trk], NDS.Header_Len[trk]);
                     NDS.Track_Length[trk] = EA.Length << 3;
                     Set_Dest_Arrays(EA, trk);
                 }
 
                 if (NDS.cbm[trk] == 9)
                 {
-                    byte[] RA = RainbowArts(NDS.Track_Data[trk]);
+                    //byte[] RA = RainbowArts(NDS.Track_Data[trk]);
+                    byte[] RA = RainbowArts(NDS.Track_Data[trk], NDS.Header_Len[trk]);
                     NDS.Track_Length[trk] = RA.Length << 3;
                     Set_Dest_Arrays(RA, trk);
                 }
 
                 if (NDS.cbm[trk] == 11)
                 {
-                    byte[] GMA = Securispeed(NDS.Track_Data[trk]);
+                    byte[] GMA = Securispeed(NDS.Track_Data[trk], NDS.Header_Len[trk]);
                     NDS.Track_Length[trk] = GMA.Length << 3;
                     Set_Dest_Arrays(GMA, trk);
                 }
@@ -1224,7 +1225,6 @@ namespace V_Max_Tool
                 }
                 else
                 {
-                    //temp = NDG.Track_Data[trk];
                     BitArray source = new BitArray(Flip_Endian(NDS.Track_Data[trk]));
                     BitArray dest = new BitArray(NDS.Track_Length[trk] + 1);
                     int pos = NDS.Header_Len[trk];
@@ -1260,7 +1260,7 @@ namespace V_Max_Tool
 
             void Process_Rainbow(int trk)
             {
-                var temp = RainbowArts(NDS.Track_Data[trk]);
+                var temp = RainbowArts(NDS.Track_Data[trk], NDS.Header_Len[trk]);
                 Set_Dest_Arrays(temp, trk);
             }
 
@@ -1482,52 +1482,92 @@ namespace V_Max_Tool
 
             int Check_Signatures()
             {
-                int dataLength = data.Length;
-                for (int i = 0; i < dataLength; i++)
+                for (int h = 0; h < 8; h++)
                 {
-                    // Check for Pirate Slayer
-                    if (MatchSeq(data, prt_slay1, i) || MatchSeq(data, prt_slay2, i)) return 8;
-                    // Ensure track > 35 checks only once
-                    if (tk <= 35) continue;
-                    // Check for Securispeed (bounds check first)
-                    if (i + 1 < dataLength && data[i] == 0xff && data[i + 1] == securispeed[1] &&
-                        MatchSeq(data, securispeed, i) && padding) return 11;
-                    // Check for GMA
-                    if (data[i] == gma[0] && i + gma.Length < dataLength)
+                    if (h > 0) data = Bit2Byte(BitRotateLeft(source, h));
+                    int dataLength = data.Length;
+                    for (int i = 0; i < dataLength; i++)
                     {
-                        bool m = true;
-                        for (int j = 1; j < gma.Length; j++)
+                        // Check for Pirate Slayer
+                        if (MatchSeq(data, prt_slay1, i) || MatchSeq(data, prt_slay2, i))
                         {
-                            if (!((data[i + j] & gma[j]) == gma[j]))
+                            if (CheckForKey())
                             {
-                                m = false;
-                                break;
+                                NDS.Header_Len[track] = MatchSeq(data, prt_slay2, i) ? 2 : 1;
+                                return 8;
                             }
                         }
-                        if (m && padding) return 11;
+                        // Ensure track > 35 checks only once
+                        if (tk <= 35) continue;
+                        // Check for Securispeed (bounds check first)
+                        if (i + 1 < dataLength && data[i] == 0xff && data[i + 1] == securispeed[1] &&
+                            MatchSeq(data, securispeed, i) && padding)// return 11;
+                        {
+                            NDS.Header_Len[track] = h;
+                            return 11;
+                        }
+                        // Check for GMA
+                        if (data[i] == gma[0] && i + gma.Length < dataLength)
+                        {
+                            bool m = true;
+                            for (int j = 1; j < gma.Length; j++)
+                            {
+                                if (!((data[i + j] & gma[j]) == gma[j]))
+                                {
+                                    m = false;
+                                    break;
+                                }
+                            }
+                            if (m && padding)// return 11;
+                            {
+                                NDS.Header_Len[track] = h;
+                                return 11;
+                            }
+                        }
+                        // Check for Rainbow Arts
+                        if (data[i] == rainbowArts_magicBytes[0] || (i > 0 && data[i] == 0xff && data[i - 1] != 0xff))
+                        {
+                            if (data[i] == 0xff)
+                            {
+                                int sync_count = 1;
+                                while (i + sync_count < dataLength && sync_count < 140 && data[i + sync_count] == 0xff)
+                                {
+                                    sync_count++;
+                                }
+                                if (sync_count >= 108 && sync_count <= 132 && padding) // return 9;
+                                {
+                                    NDS.Header_Len[track] = h;
+                                    return 9;
+                                }
+                            }
+                            else if (MatchSeq(data, rainbowArts_magicBytes, i))
+                            {
+                                int ptn = 1;
+                                while (i + (ptn * rainbowArts_magicBytes.Length) < dataLength &&
+                                       MatchSeq(data, rainbowArts_magicBytes, i + (ptn * rainbowArts_magicBytes.Length)))
+                                {
+                                    if (++ptn > 60)// return 9;
+                                    {
+                                        NDS.Header_Len[track] = h;
+                                        return 9;
+                                    }
+                                }
+                            }
+                        }
                     }
-                    // Check for Rainbow Arts
-                    if (data[i] == rainbowArts_magicBytes[0] || (i > 0 && data[i] == 0xff && data[i - 1] != 0xff))
+                }
+
+                bool CheckForKey()
+                {
+                    for (int i = 0; i < data.Length; i++)
                     {
-                        if (data[i] == 0xff)
+                        if ((MatchSeq(data, slayer_key1, i) || MatchSeq(data, slayer_key2, i)) && i + 11 < data.Length)
                         {
-                            int sync_count = 1;
-                            while (i + sync_count < dataLength && sync_count < 140 && data[i + sync_count] == 0xff)
-                            {
-                                sync_count++;
-                            }
-                            if (sync_count >= 108 && sync_count <= 132 && padding) return 9;
-                        }
-                        else if (MatchSeq(data, rainbowArts_magicBytes, i))
-                        {
-                            int ptn = 1;
-                            while (i + (ptn * rainbowArts_magicBytes.Length) < dataLength &&
-                                   MatchSeq(data, rainbowArts_magicBytes, i + (ptn * rainbowArts_magicBytes.Length)))
-                            {
-                                if (++ptn > 60) return 9;
-                            }
+                            NDS.v2info[track] = data.Skip(i).Take(12).ToArray();
+                            return true;
                         }
                     }
+                    return false;
                 }
                 return 0;
             }
@@ -2018,6 +2058,67 @@ namespace V_Max_Tool
         {
             for (int i = 0; i < data.Length; i++) if ((data[i] >= 0 && data[i] <= 31) || data[i] == 95 || data[i] >= 128) data[i] = 0x2e;
             return data;
+        }
+
+        private void Fix_Errors()
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            for (int i = 0; i < tracks; i++)
+            {
+                switch (NDS.cbm[i])
+                {
+                    case 5: FixVPL(i); break;
+                    case 10: FixMPS(i); break;
+                }
+            }
+            sw.Stop();
+            //Text = $"{sw.Elapsed.TotalMilliseconds}";
+
+            void FixVPL(int track)
+            {
+                BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                bool rewrite = false;
+                for (int j = 0; j < NDS.sectors[track]; j++)
+                {
+                    (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
+                    if (!cksm)
+                    {
+                        BitArray newsec = Encode_Vorpal_GCR(sector, true, isone);
+                        for (int k = 0; k < newsec.Length; k++)
+                        {
+                            source[pos + k] = newsec[k];
+                        }
+                        rewrite = true;
+                    }
+                }
+                if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
+            }
+
+            void FixMPS(int track)
+            {
+                BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                bool rewrite = false;
+                for (int j = 0; j < NDS.sectors[track]; j++)
+                {
+                    (byte[] sector, bool checksum, int pos) = Decode_MicroProse_Sector(source, j, false);
+                    if (!checksum && (sector != null && pos >= 0))
+                    {
+                        int start = sector.Length == 335 ? 9 : sector.Length == 325 ? 1 : 0;
+                        int end = sector.Length == 335 ? 266 : sector.Length == 325 ? 257 : 0;
+                        byte[] dec = Decode_CBM_GCR(sector);
+                        if (dec != null && (dec.Length == 268 || dec.Length == 260) && (start == 9 || start == 1) && (end == 257 || end == 266))
+                        {
+                            int chksm = 0;
+                            for (int k = start; k < end; k++) chksm ^= dec[k];
+                            dec[end] = (byte)chksm;
+                            BitArray newsec = new BitArray(Flip_Endian(Encode_CBM_GCR(dec)));
+                            for (int k = 0; k < newsec.Length; k++) source[pos + k] = newsec[k];
+                        }
+                        rewrite = true;
+                    }
+                }
+                if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
+            }
         }
     }
 }

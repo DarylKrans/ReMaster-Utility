@@ -1,0 +1,35 @@
+Programmed by Daryl Krans (2023–2025)
+No rights reserved.
+
+ReMaster began as a simple utility for analyzing patterns in copy-protected Commodore 64
+disk images—just a way to learn how various protections worked in the '80s and '90s.
+
+Over time, it grew into a powerful preservation tool capable of generating G64 images
+from many types of protected disks that are notoriously difficult to duplicate, even with
+advanced tools like Nibtools and the XUM (ZoomFloppy) adapter.
+
+Some protections, like V-Max, use extremely short sync marks that are often misinterpreted
+as data. Others, like Vorpal, employ tiny headers that can cause bit-shifting, making it
+hard to determine track boundaries.
+
+ReMaster tackles these challenges head-on. Simply import a NIB file, and it will
+automatically analyze, correct, align and output a working G64 image ready for emulators
+or even writing back to real disks (assuming a clean image source).
+
+Support for checksum repair and error detection is built in for some encoding schemes with
+partial or full correction available depending on the protection. Supports error checking
+and correction on Vorpal, MicroProse custom format disks, RapidLok is error checing only.
+
+Have fun!!
+
+Special thanks to:
+Pete Rittwage (author of Nibtools)
+Luigi Di Fraia (Vorpal GCR encoding documentation)
+Lord Crass (V-Max documentation and creator of Revolution V)
+Bangui Bob (RapidLok documentation and patching)
+Jani (Cyan Loader documention and patching)
+Kamil Kubiczek (ReMaster Testing)
+
+Your work, support, and documentation have been essential in the creation of ReMaster!
+
+

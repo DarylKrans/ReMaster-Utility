@@ -167,6 +167,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\About.txt" />
     <Content Include="tool.ico" />
   </ItemGroup>
   <ItemGroup>

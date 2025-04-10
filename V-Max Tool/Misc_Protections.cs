@@ -9,54 +9,43 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        private readonly byte[] prt_slay1 = { 0xeb, 0xd7, 0xaa, 0x55, 0xaa }; /// <- Piraye Slayer v1 secondary check
-        private readonly byte[] prt_slay2 = { 0xd7, 0xd7, 0xeb, 0xcc, 0xad }; /// <- Pirate Slayer v1/2 check
-        private readonly byte[] rainbowArts_magicBytes = new byte[] { 0xbe, 0x55, 0x5b, 0xe5, 0x55 }; /// <- RainbowArts / MagicBytes key signature found on t36
-        private readonly byte[] blank = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x45, 0x14, 0x12, 0x51, 0x88, 0x18, 0x31, 0x23 };
+        private readonly byte[] prt_slay1 = { 0xeb, 0xd7, 0xaa, 0x55, 0xaa }; // <- Piraye Slayer v1 check
+        private readonly byte[] prt_slay2 = { 0xd7, 0xd7, 0xeb, 0xcc, 0xad }; // <- Pirate Slayer v2 check
+        private readonly byte[] slayer_key1 = new byte[] { 0x55, 0xae, 0x9b, 0x55, 0xad, 0x55, 0xcb, 0xae, 0x6b, 0xab, 0xad, 0xaf };
+        private readonly byte[] slayer_key2 = new byte[] { 0x55, 0xae, 0x9b, 0x55, 0xad, 0x55, 0x2b, 0xae, 0x2b, 0xab, 0xad, 0xaf };
+        private readonly byte[] rainbowArts_magicBytes = new byte[] { 0xbe, 0x55, 0x5b, 0xe5, 0x55 }; // <- RainbowArts / MagicBytes key signature found on t36
         private readonly byte[] gma = new byte[] { 0x69, 0x50, 0x50, 0xa0, 0xa0 };
         private readonly byte[] securispeed = new byte[] { 0xff, 0x56, 0x56, 0xa3, 0xa3 };
+        private readonly byte[] blank = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x45, 0x14, 0x12, 0x51, 0x88, 0x18, 0x31, 0x23 }; // weak GCR
 
-        byte[] Pirate_Slayer(byte[] data)
+        byte[] Pirate_Slayer(byte[] data, byte[] key, int version)
         {
-            byte[] dataend = new byte[] { 0x55, 0xae, 0x9b, 0x55, 0xad, 0x55, 0xcb, 0xae, 0x6b, 0xab, 0xad, 0xaf };
-            byte[] dataend1 = new byte[] { 0x55, 0xae, 0x9b, 0x55, 0xad, 0x55, 0x2b, 0xae, 0x2b, 0xab, 0xad, 0xaf };
+            if (key == null || version == 0) return data;
+            int track_density = density[3];
             MemoryStream buffer = new MemoryStream();
             BinaryWriter write = new BinaryWriter(buffer);
-            for (int i = 0; i < data.Length - prt_slay1.Length; i++)
-            {
-                if (MatchSeq(data, prt_slay1, i)) { Slayer1(); break; }
-                if (MatchSeq(data, prt_slay2, i)) { Slayer2(); break; }
-            }
-            return (buffer.Length == density[3]) ? buffer.ToArray() : data;
+            if (version == 1) Slayer1();
+            if (version == 2) Slayer2();
+            return buffer.Length == track_density ? buffer.ToArray() : data.Length >= track_density ? data.Take(track_density).ToArray() : data;
 
             void Slayer1()
             {
-                for (int i = 0; i < data.Length; i++)
-                {
-                    if (MatchSeq(data, dataend1, i))
-                    {
-                        var key = data.Skip(i).Take(15).ToArray();
-                        var aa55 = PaddingFill(2049, 0x55, 0xaa); aa55[0] = 0xd7;
-                        write.Write(ArrayConcat(FastArray.Init(184, 0xeb), aa55, key, FastArray.Init(3982, 0xeb)));
-                        break;
-                    }
-                }
+                // I'm not entirely sure the correct byte sequence, but this works. Fast Hackem's method didn't work well in Vice
+                var head = FastArray.Init(184, 0xeb);
+                var aa55 = PaddingFill(2049, 0x55, 0xaa); aa55[0] = 0xd7;
+                var fill = FastArray.Init(track_density - new[] { head, aa55, key }.Sum(arr => arr.Length), 0xeb);
+                write.Write(ArrayConcat(head, aa55, key, fill));
             }
 
             void Slayer2()
             {
-                for (int i = 0; i < data.Length; i++)
-                {
-                    if (MatchSeq(data, dataend, i) || MatchSeq(data, dataend1, i))
-                    {
-                        var ccad = PaddingFill(1024, 0xcc, 0xad);
-                        var d7 = FastArray.Init(1024, 0xd7);
-                        var key = data.Skip(i).Take(15).ToArray();
-                        var eb = new byte[] { 0xeb };
-                        write.Write(ArrayConcat(d7, eb, ccad, key, d7, eb, ccad, key, d7, FastArray.Init(1078, 0xeb)));
-                        break;
-                    }
-                }
+                // Out of my code Hacker!  Hi Kris, Interesting, yet simple and effective protection. It got me as a kid,
+                // and now I'm here helping preserving your work.  E-mail me wadzinsky@hotmail.com :)
+                var d7 = FastArray.Init(1001, 0xd7);
+                var eb = new byte[] { 0xeb };
+                var ccad = PaddingFill(1024, 0xcc, 0xad);
+                for (int i = 0; i < 3; i++) write.Write(ArrayConcat(d7, eb, ccad, key, new byte[] { 0x57 }));
+                write.Write(FastArray.Init(track_density - (int)buffer.Length, 0xeb));
             }
 
             byte[] PaddingFill(int length, byte even, byte odd)
@@ -237,8 +226,10 @@ namespace V_Max_Tool
             return (data, exists);
         }
 
-        byte[] Securispeed(byte[] data)
+        byte[] Securispeed(byte[] data, int shifted)
         {
+            if (data == null) return null;
+            if (shifted > 0) data = Bit2Byte(BitRotateLeft(new BitArray(Flip_Endian(data)), shifted));
             byte[] key = new byte[density[3]];
             byte[] sync = FastArray.Init(5, 0xff);
             int start = 0;
@@ -274,7 +265,6 @@ namespace V_Max_Tool
                 }
             }
 
-
             if (pos >= 5) data = Rotate_Left(data, pos - 5);
             if (weak) data = Remove_Weak_Bits(data, true);
             if (start == 5) Buffer.BlockCopy(sync, 0, key, 0, sync.Length);
@@ -287,8 +277,10 @@ namespace V_Max_Tool
             return key;
         }
 
-        byte[] RainbowArts(byte[] data)
+        byte[] RainbowArts(byte[] data, int shifted)
         {
+            if (data == null) return null;
+            if (shifted > 0) data = Bit2Byte(BitRotateLeft(new BitArray(Flip_Endian(data)), shifted));
             int pos = 0;
             int start;
             int end = 0;
