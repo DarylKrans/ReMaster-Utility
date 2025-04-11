@@ -764,7 +764,7 @@ namespace V_Max_Tool
             Invoke(new Action(() => Disable_Core_Controls(true)));
             if (BD_name.Text == "") BD_name.Text = "BLANK DISK";
             if (BD_id.Text == "") BD_id.Text = "00 2A";
-            byte[] name = Encoding.ASCII.GetBytes($"{BD_name.Text}");
+            byte[] name = Encoding.ASCII.GetBytes($"{BD_name.Text.ToUpper()}");
             fname = BD_name.Text;
             tracks = Convert.ToInt32(BD_tracks.Value);
             sl.DataSource = null;
@@ -773,7 +773,7 @@ namespace V_Max_Tool
             Track_Info.Items.Clear();
             Set_Arrays(tracks);
             Set_ListBox_Items(true, false);
-            byte[] id = Encoding.ASCII.GetBytes(BD_id.Text);
+            byte[] id = Encoding.ASCII.GetBytes(BD_id.Text.ToUpper());
             byte[] Disk_ID = new byte[] { id[1], id[0], 0x0f, 0x0f };
             byte[] sync = new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff };
             byte[] dir_s0 = Encode_CBM_GCR(T18S0());
@@ -821,7 +821,6 @@ namespace V_Max_Tool
                     Get_Disk_Directory();
                     Set_BlockMap();
                     Set_ListBox_Items(false, false);
-                    Import_File.Visible = false;
                     Adv_ctrl.Enabled = true;
                     Save_Disk.Visible = true;
                     Batch_List_Box.Visible = false;
@@ -1415,7 +1414,6 @@ namespace V_Max_Tool
                 Source.Visible = Output.Visible = true;
                 label1.Text = $"{fname}{fext}";
                 M_render.Enabled = true;
-                Import_File.Visible = false;
                 Adv_ctrl.Enabled = true;
                 Blk_pan.Enabled = true;
                 Disable_Core_Controls(false);

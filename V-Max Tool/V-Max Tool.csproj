@@ -140,6 +140,7 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Properties\about.rtf" />
     <None Include="Properties\C64_Pro_Mono-STYLE.ttf" />
     <None Include="Properties\cpp_extf.bin" />
     <None Include="Properties\cyan.bin" />

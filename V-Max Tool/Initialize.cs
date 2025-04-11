@@ -42,10 +42,10 @@ namespace V_Max_Tool
         private bool CPP_LZ = true;
         private string def_bg_text;
         private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
-        private Label[] BlkMap_track = new Label[41];
-        private Label[] BlkMap_sector = new Label[21];
+        private readonly Label[] BlkMap_track = new Label[41];
+        private readonly Label[] BlkMap_sector = new Label[21];
         //private Button[][] BlkMap_bam = new Button[41][];
-        private Panel[][] BlkMap_bam = new Panel[41][];
+        private readonly Panel[][] BlkMap_bam = new Panel[41][];
         private ConcurrentBag<string> ErrorList = new ConcurrentBag<string>();
 
         private readonly byte[] sector_gap_length =
@@ -121,7 +121,7 @@ namespace V_Max_Tool
             busy = true;
             Img_Q.SelectedIndex = 2;
             Set_ListBox_Items(true, true, clear_batch_list);
-            Import_File.Visible = f_load.Visible = false;
+            f_load.Visible = false;
             Tabs.Controls.Remove(Advanced_Opts);
             if (clear_batch_list)
             {
@@ -254,7 +254,8 @@ namespace V_Max_Tool
             //Dir_screen.DragEnter += new DragEventHandler(Dir_Screen_DragEnter);
             //Dir_screen.DragDrop += new DragEventHandler(Dir_Screen_DragDrop);
 
-
+            Options.Controls.Add(Options_Box);
+            Options_Box.Location = new Point(0, 0);
             byte[] fontData = Resources.C64_Pro_Mono_STYLE;
             FontFamily customFontFamily = LoadFontFromResource(fontData);
             Font customFont = GetCustomFont(12.0f, FontStyle.Regular);
@@ -303,10 +304,8 @@ namespace V_Max_Tool
             Dir_Ftype.Enabled = Dir_ChgType.Checked;
             Dir_Ftype.DataSource = new string[] { "PRG", "SEQ", "USR", "REL", "DEL" };
             /// ----------------------------
-            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel1_LinkClicked);
-            Tabs.Controls.Remove(Import_File);
-            this.Controls.Add(Import_File);
-            Import_File.BringToFront();
+            //this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel1_LinkClicked);
+            linkLabel1.Visible = false;
             panel1.Controls.Add(outbox);
             panel1.Controls.Add(inbox);
             Height = PreferredSize.Height;
@@ -343,7 +342,6 @@ namespace V_Max_Tool
             Data_Sep.SelectedIndex = 1;
             VS_hex.Checked = true;
             T_jump.Visible = Jump.Visible = false;
-            DV_pbar.Value = 0;
             DV_gcr.Checked = true;
             fnappend = fix;
             label1.Text = label2.Text = coords.Text = "";
@@ -448,7 +446,6 @@ namespace V_Max_Tool
             label4.Visible = Img_Q.Visible = Circle_View.Checked;
             Circle_Render.Visible = Flat_Render.Visible = label3.Visible = false;
             Img_opts.Enabled = Img_style.Enabled = Img_View.Enabled = false;
-            Import_File.Visible = false;
             Batch_Box.Visible = false;
             for (int i = 0; i < 8000; i++) { def_bg_text += "10"; }
             M_render.Enabled = false;
@@ -457,11 +454,6 @@ namespace V_Max_Tool
             Dir_screen.BackColor = C64_screen;
             Dir_screen.ForeColor = c64_text;
             Dir_screen.ReadOnly = true;
-            Tabs.Controls.Remove(Import_File);
-            this.Controls.Add(Import_File);
-            Import_File.BringToFront();
-            Import_File.Top = 57;
-            Import_File.Left = 19;
             DB_cores.Enabled = DB_core_override.Checked;
             SwapDensities();
             Set_Boxes();

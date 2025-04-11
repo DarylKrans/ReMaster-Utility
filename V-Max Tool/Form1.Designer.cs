@@ -54,10 +54,14 @@
             this.Save_Disk = new System.Windows.Forms.Button();
             this.Advanced_Opts = new System.Windows.Forms.TabPage();
             this.V2_export = new System.Windows.Forms.Button();
-            this.D_Bug = new System.Windows.Forms.TabPage();
             this.DB_core_override = new System.Windows.Forms.CheckBox();
             this.DB_cores = new System.Windows.Forms.NumericUpDown();
+            this.DB_force = new System.Windows.Forms.CheckBox();
+            this.Pad_Tracks = new System.Windows.Forms.CheckBox();
+            this.CPP_tog = new System.Windows.Forms.CheckBox();
+            this.DB_timers = new System.Windows.Forms.CheckBox();
             this.CBD_box = new System.Windows.Forms.GroupBox();
+            this.CBD_Cancel = new System.Windows.Forms.Button();
             this.BD_id = new System.Windows.Forms.TextBox();
             this.label12 = new System.Windows.Forms.Label();
             this.BD_name = new System.Windows.Forms.TextBox();
@@ -65,10 +69,6 @@
             this.label10 = new System.Windows.Forms.Label();
             this.BD_tracks = new System.Windows.Forms.NumericUpDown();
             this.Create_Blank = new System.Windows.Forms.Button();
-            this.DB_force = new System.Windows.Forms.CheckBox();
-            this.Pad_Tracks = new System.Windows.Forms.CheckBox();
-            this.CPP_tog = new System.Windows.Forms.CheckBox();
-            this.DB_timers = new System.Windows.Forms.CheckBox();
             this.RL_Fix = new System.Windows.Forms.CheckBox();
             this.label13 = new System.Windows.Forms.Label();
             this.V2_swap_headers = new System.Windows.Forms.CheckBox();
@@ -122,7 +122,6 @@
             this.Data_View = new System.Windows.Forms.TabPage();
             this.button1 = new System.Windows.Forms.Button();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
-            this.DV_pbar = new System.Windows.Forms.ProgressBar();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.VS_bin = new System.Windows.Forms.RadioButton();
             this.VS_hex = new System.Windows.Forms.RadioButton();
@@ -168,9 +167,6 @@
             this.track_label = new V_Max_Tool.CustomLabel();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.Import_File = new V_Max_Tool.Gbox();
-            this.Import_Progress_Bar = new System.Windows.Forms.ProgressBar();
-            this.label5 = new System.Windows.Forms.Label();
             this.RPL_Advanced = new System.Windows.Forms.GroupBox();
             this.RL_success = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
@@ -206,10 +202,13 @@
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.createBlankDiskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.Options_Box = new System.Windows.Forms.GroupBox();
             this.GB_NewDisk = new V_Max_Tool.Gbox();
             this.S_Interleave = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
@@ -226,7 +225,6 @@
             this.VBS_info.SuspendLayout();
             this.Reg_info.SuspendLayout();
             this.Advanced_Opts.SuspendLayout();
-            this.D_Bug.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DB_cores)).BeginInit();
             this.CBD_box.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BD_tracks)).BeginInit();
@@ -254,7 +252,6 @@
             this.BlockMap.SuspendLayout();
             this.BlkMap_Panel.SuspendLayout();
             this.panel1.SuspendLayout();
-            this.Import_File.SuspendLayout();
             this.RPL_Advanced.SuspendLayout();
             this.V2_Advanced.SuspendLayout();
             this.V3_Advanced.SuspendLayout();
@@ -262,6 +259,7 @@
             this.Batch_Box.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            this.Options_Box.SuspendLayout();
             this.GB_NewDisk.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -368,7 +366,6 @@
             this.Tabs.Appearance = System.Windows.Forms.TabAppearance.Buttons;
             this.Tabs.Controls.Add(this.Main);
             this.Tabs.Controls.Add(this.Advanced_Opts);
-            this.Tabs.Controls.Add(this.D_Bug);
             this.Tabs.Location = new System.Drawing.Point(13, 44);
             this.Tabs.Margin = new System.Windows.Forms.Padding(4);
             this.Tabs.Name = "Tabs";
@@ -574,29 +571,10 @@
             this.V2_export.UseVisualStyleBackColor = true;
             this.V2_export.Click += new System.EventHandler(this.Make);
             // 
-            // D_Bug
-            // 
-            this.D_Bug.BackColor = System.Drawing.Color.Gainsboro;
-            this.D_Bug.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.D_Bug.Controls.Add(this.DB_core_override);
-            this.D_Bug.Controls.Add(this.DB_cores);
-            this.D_Bug.Controls.Add(this.CBD_box);
-            this.D_Bug.Controls.Add(this.DB_force);
-            this.D_Bug.Controls.Add(this.Pad_Tracks);
-            this.D_Bug.Controls.Add(this.CPP_tog);
-            this.D_Bug.Controls.Add(this.DB_timers);
-            this.D_Bug.Location = new System.Drawing.Point(4, 37);
-            this.D_Bug.Margin = new System.Windows.Forms.Padding(4);
-            this.D_Bug.Name = "D_Bug";
-            this.D_Bug.Padding = new System.Windows.Forms.Padding(4);
-            this.D_Bug.Size = new System.Drawing.Size(1032, 186);
-            this.D_Bug.TabIndex = 4;
-            this.D_Bug.Text = "Options";
-            // 
             // DB_core_override
             // 
             this.DB_core_override.AutoSize = true;
-            this.DB_core_override.Location = new System.Drawing.Point(268, 19);
+            this.DB_core_override.Location = new System.Drawing.Point(12, 76);
             this.DB_core_override.Margin = new System.Windows.Forms.Padding(4);
             this.DB_core_override.Name = "DB_core_override";
             this.DB_core_override.Size = new System.Drawing.Size(170, 29);
@@ -607,7 +585,7 @@
             // 
             // DB_cores
             // 
-            this.DB_cores.Location = new System.Drawing.Point(456, 17);
+            this.DB_cores.Location = new System.Drawing.Point(200, 74);
             this.DB_cores.Margin = new System.Windows.Forms.Padding(4);
             this.DB_cores.Maximum = new decimal(new int[] {
             255,
@@ -629,9 +607,55 @@
             0});
             this.DB_cores.ValueChanged += new System.EventHandler(this.DB_cores_ValueChanged);
             // 
+            // DB_force
+            // 
+            this.DB_force.AutoSize = true;
+            this.DB_force.Location = new System.Drawing.Point(12, 186);
+            this.DB_force.Margin = new System.Windows.Forms.Padding(4);
+            this.DB_force.Name = "DB_force";
+            this.DB_force.Size = new System.Drawing.Size(631, 29);
+            this.DB_force.TabIndex = 3;
+            this.DB_force.Text = "Force Auto-Adjusting CBM tracks (ignores special conditions)";
+            this.DB_force.UseVisualStyleBackColor = true;
+            // 
+            // Pad_Tracks
+            // 
+            this.Pad_Tracks.AutoSize = true;
+            this.Pad_Tracks.Location = new System.Drawing.Point(12, 150);
+            this.Pad_Tracks.Margin = new System.Windows.Forms.Padding(4);
+            this.Pad_Tracks.Name = "Pad_Tracks";
+            this.Pad_Tracks.Size = new System.Drawing.Size(463, 29);
+            this.Pad_Tracks.TabIndex = 2;
+            this.Pad_Tracks.Text = "Pad empty track-space in G64 output tracks";
+            this.Pad_Tracks.UseVisualStyleBackColor = true;
+            // 
+            // CPP_tog
+            // 
+            this.CPP_tog.AutoSize = true;
+            this.CPP_tog.Location = new System.Drawing.Point(12, 113);
+            this.CPP_tog.Margin = new System.Windows.Forms.Padding(4);
+            this.CPP_tog.Name = "CPP_tog";
+            this.CPP_tog.Size = new System.Drawing.Size(565, 29);
+            this.CPP_tog.TabIndex = 1;
+            this.CPP_tog.Text = "Disable C++ Extensions. *Use if experiencing crashing";
+            this.CPP_tog.UseVisualStyleBackColor = true;
+            this.CPP_tog.CheckedChanged += new System.EventHandler(this.DB_vpl_CheckedChanged);
+            // 
+            // DB_timers
+            // 
+            this.DB_timers.AutoSize = true;
+            this.DB_timers.Location = new System.Drawing.Point(12, 39);
+            this.DB_timers.Margin = new System.Windows.Forms.Padding(4);
+            this.DB_timers.Name = "DB_timers";
+            this.DB_timers.Size = new System.Drawing.Size(245, 29);
+            this.DB_timers.TabIndex = 0;
+            this.DB_timers.Text = "Show Process Times";
+            this.DB_timers.UseVisualStyleBackColor = true;
+            // 
             // CBD_box
             // 
             this.CBD_box.BackColor = System.Drawing.Color.Silver;
+            this.CBD_box.Controls.Add(this.CBD_Cancel);
             this.CBD_box.Controls.Add(this.BD_id);
             this.CBD_box.Controls.Add(this.label12);
             this.CBD_box.Controls.Add(this.BD_name);
@@ -639,18 +663,27 @@
             this.CBD_box.Controls.Add(this.label10);
             this.CBD_box.Controls.Add(this.BD_tracks);
             this.CBD_box.Controls.Add(this.Create_Blank);
-            this.CBD_box.Location = new System.Drawing.Point(754, 3);
+            this.CBD_box.Location = new System.Drawing.Point(2208, 446);
             this.CBD_box.Margin = new System.Windows.Forms.Padding(4);
             this.CBD_box.Name = "CBD_box";
             this.CBD_box.Padding = new System.Windows.Forms.Padding(4);
-            this.CBD_box.Size = new System.Drawing.Size(272, 178);
+            this.CBD_box.Size = new System.Drawing.Size(401, 201);
             this.CBD_box.TabIndex = 40;
             this.CBD_box.TabStop = false;
-            this.CBD_box.Text = "Create Blank Disk";
+            // 
+            // CBD_Cancel
+            // 
+            this.CBD_Cancel.Location = new System.Drawing.Point(76, 138);
+            this.CBD_Cancel.Name = "CBD_Cancel";
+            this.CBD_Cancel.Size = new System.Drawing.Size(106, 40);
+            this.CBD_Cancel.TabIndex = 46;
+            this.CBD_Cancel.Text = "Cancel";
+            this.CBD_Cancel.UseVisualStyleBackColor = true;
+            this.CBD_Cancel.Click += new System.EventHandler(this.CBD_Cancel_Click);
             // 
             // BD_id
             // 
-            this.BD_id.Location = new System.Drawing.Point(52, 104);
+            this.BD_id.Location = new System.Drawing.Point(307, 86);
             this.BD_id.Margin = new System.Windows.Forms.Padding(4);
             this.BD_id.MaxLength = 5;
             this.BD_id.Name = "BD_id";
@@ -661,7 +694,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(14, 108);
+            this.label12.Location = new System.Drawing.Point(269, 90);
             this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(32, 25);
@@ -670,7 +703,7 @@
             // 
             // BD_name
             // 
-            this.BD_name.Location = new System.Drawing.Point(68, 62);
+            this.BD_name.Location = new System.Drawing.Point(76, 86);
             this.BD_name.Margin = new System.Windows.Forms.Padding(4);
             this.BD_name.MaxLength = 16;
             this.BD_name.Name = "BD_name";
@@ -681,7 +714,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(4, 67);
+            this.label11.Location = new System.Drawing.Point(12, 91);
             this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(65, 25);
@@ -691,7 +724,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(6, 27);
+            this.label10.Location = new System.Drawing.Point(14, 51);
             this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(119, 25);
@@ -700,7 +733,7 @@
             // 
             // BD_tracks
             // 
-            this.BD_tracks.Location = new System.Drawing.Point(136, 23);
+            this.BD_tracks.Location = new System.Drawing.Point(144, 47);
             this.BD_tracks.Margin = new System.Windows.Forms.Padding(4);
             this.BD_tracks.Maximum = new decimal(new int[] {
             41,
@@ -723,7 +756,7 @@
             // 
             // Create_Blank
             // 
-            this.Create_Blank.Location = new System.Drawing.Point(148, 104);
+            this.Create_Blank.Location = new System.Drawing.Point(223, 138);
             this.Create_Blank.Margin = new System.Windows.Forms.Padding(4);
             this.Create_Blank.Name = "Create_Blank";
             this.Create_Blank.Size = new System.Drawing.Size(110, 40);
@@ -731,51 +764,6 @@
             this.Create_Blank.Text = "Create";
             this.Create_Blank.UseVisualStyleBackColor = true;
             this.Create_Blank.Click += new System.EventHandler(this.Debug_Button_Click);
-            // 
-            // DB_force
-            // 
-            this.DB_force.AutoSize = true;
-            this.DB_force.Location = new System.Drawing.Point(16, 123);
-            this.DB_force.Margin = new System.Windows.Forms.Padding(4);
-            this.DB_force.Name = "DB_force";
-            this.DB_force.Size = new System.Drawing.Size(631, 29);
-            this.DB_force.TabIndex = 3;
-            this.DB_force.Text = "Force Auto-Adjusting CBM tracks (ignores special conditions)";
-            this.DB_force.UseVisualStyleBackColor = true;
-            // 
-            // Pad_Tracks
-            // 
-            this.Pad_Tracks.AutoSize = true;
-            this.Pad_Tracks.Location = new System.Drawing.Point(16, 88);
-            this.Pad_Tracks.Margin = new System.Windows.Forms.Padding(4);
-            this.Pad_Tracks.Name = "Pad_Tracks";
-            this.Pad_Tracks.Size = new System.Drawing.Size(463, 29);
-            this.Pad_Tracks.TabIndex = 2;
-            this.Pad_Tracks.Text = "Pad empty track-space in G64 output tracks";
-            this.Pad_Tracks.UseVisualStyleBackColor = true;
-            // 
-            // CPP_tog
-            // 
-            this.CPP_tog.AutoSize = true;
-            this.CPP_tog.Location = new System.Drawing.Point(16, 54);
-            this.CPP_tog.Margin = new System.Windows.Forms.Padding(4);
-            this.CPP_tog.Name = "CPP_tog";
-            this.CPP_tog.Size = new System.Drawing.Size(565, 29);
-            this.CPP_tog.TabIndex = 1;
-            this.CPP_tog.Text = "Disable C++ Extensions. *Use if experiencing crashing";
-            this.CPP_tog.UseVisualStyleBackColor = true;
-            this.CPP_tog.CheckedChanged += new System.EventHandler(this.DB_vpl_CheckedChanged);
-            // 
-            // DB_timers
-            // 
-            this.DB_timers.AutoSize = true;
-            this.DB_timers.Location = new System.Drawing.Point(16, 19);
-            this.DB_timers.Margin = new System.Windows.Forms.Padding(4);
-            this.DB_timers.Name = "DB_timers";
-            this.DB_timers.Size = new System.Drawing.Size(245, 29);
-            this.DB_timers.TabIndex = 0;
-            this.DB_timers.Text = "Show Process Times";
-            this.DB_timers.UseVisualStyleBackColor = true;
             // 
             // RL_Fix
             // 
@@ -1469,7 +1457,6 @@
             this.Data_View.BackColor = System.Drawing.Color.Silver;
             this.Data_View.Controls.Add(this.button1);
             this.Data_View.Controls.Add(this.linkLabel3);
-            this.Data_View.Controls.Add(this.DV_pbar);
             this.Data_View.Controls.Add(this.groupBox1);
             this.Data_View.Controls.Add(this.Data_Box);
             this.Data_View.Controls.Add(this.Disp_Data);
@@ -1504,14 +1491,6 @@
             this.linkLabel3.TabStop = true;
             this.linkLabel3.Text = "Save as .TXT file";
             this.linkLabel3.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.SaveDataBox_TextOutput);
-            // 
-            // DV_pbar
-            // 
-            this.DV_pbar.Location = new System.Drawing.Point(6, 1267);
-            this.DV_pbar.Margin = new System.Windows.Forms.Padding(4);
-            this.DV_pbar.Name = "DV_pbar";
-            this.DV_pbar.Size = new System.Drawing.Size(1136, 15);
-            this.DV_pbar.TabIndex = 6;
             // 
             // groupBox1
             // 
@@ -1574,7 +1553,7 @@
             this.Data_Box.Margin = new System.Windows.Forms.Padding(4);
             this.Data_Box.Name = "Data_Box";
             this.Data_Box.ReadOnly = true;
-            this.Data_Box.Size = new System.Drawing.Size(1132, 1139);
+            this.Data_Box.Size = new System.Drawing.Size(1132, 1138);
             this.Data_Box.TabIndex = 4;
             this.Data_Box.Text = "";
             // 
@@ -2068,7 +2047,6 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.Gainsboro;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.Import_File);
             this.panel1.Controls.Add(this.RPL_Advanced);
             this.panel1.Controls.Add(this.V2_Advanced);
             this.panel1.Controls.Add(this.V3_Advanced);
@@ -2094,42 +2072,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1022, 1123);
             this.panel1.TabIndex = 37;
-            // 
-            // Import_File
-            // 
-            this.Import_File.BackColor = System.Drawing.Color.Gainsboro;
-            this.Import_File.BorderColor = System.Drawing.Color.Black;
-            this.Import_File.Controls.Add(this.Import_Progress_Bar);
-            this.Import_File.Controls.Add(this.label5);
-            this.Import_File.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.Import_File.ForeColor = System.Drawing.Color.DarkBlue;
-            this.Import_File.Location = new System.Drawing.Point(15, 951);
-            this.Import_File.Margin = new System.Windows.Forms.Padding(4);
-            this.Import_File.Name = "Import_File";
-            this.Import_File.Padding = new System.Windows.Forms.Padding(4);
-            this.Import_File.Size = new System.Drawing.Size(1004, 108);
-            this.Import_File.TabIndex = 59;
-            this.Import_File.TabStop = false;
-            this.Import_File.Text = "Parsing Image Data";
-            // 
-            // Import_Progress_Bar
-            // 
-            this.Import_Progress_Bar.Location = new System.Drawing.Point(6, 37);
-            this.Import_Progress_Bar.Margin = new System.Windows.Forms.Padding(4);
-            this.Import_Progress_Bar.Name = "Import_Progress_Bar";
-            this.Import_Progress_Bar.Size = new System.Drawing.Size(992, 29);
-            this.Import_Progress_Bar.TabIndex = 39;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(6, 67);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(137, 25);
-            this.label5.TabIndex = 38;
-            this.label5.Text = "Processing...";
             // 
             // RPL_Advanced
             // 
@@ -2518,7 +2460,7 @@
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(2459, 42);
+            this.menuStrip1.Size = new System.Drawing.Size(2622, 42);
             this.menuStrip1.TabIndex = 39;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -2528,6 +2470,8 @@
             this.openToolStripMenuItem,
             this.saveAsToolStripMenuItem,
             this.toolStripSeparator1,
+            this.createBlankDiskToolStripMenuItem,
+            this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(71, 38);
@@ -2537,7 +2481,7 @@
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(367, 44);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
@@ -2545,20 +2489,31 @@
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
             this.saveAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
-            this.saveAsToolStripMenuItem.Text = "Save As";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(367, 44);
+            this.saveAsToolStripMenuItem.Text = "Export Image";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAsToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(356, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(364, 6);
+            // 
+            // createBlankDiskToolStripMenuItem
+            // 
+            this.createBlankDiskToolStripMenuItem.Name = "createBlankDiskToolStripMenuItem";
+            this.createBlankDiskToolStripMenuItem.Size = new System.Drawing.Size(367, 44);
+            this.createBlankDiskToolStripMenuItem.Text = "Create Blank Disk";
+            this.createBlankDiskToolStripMenuItem.Click += new System.EventHandler(this.createBlankDiskToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(364, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X)));
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(367, 44);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
@@ -2567,6 +2522,7 @@
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(118, 38);
             this.optionsToolStripMenuItem.Text = "Options";
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -2578,6 +2534,21 @@
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // Options_Box
+            // 
+            this.Options_Box.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.Options_Box.Controls.Add(this.DB_core_override);
+            this.Options_Box.Controls.Add(this.DB_timers);
+            this.Options_Box.Controls.Add(this.DB_cores);
+            this.Options_Box.Controls.Add(this.CPP_tog);
+            this.Options_Box.Controls.Add(this.DB_force);
+            this.Options_Box.Controls.Add(this.Pad_Tracks);
+            this.Options_Box.Location = new System.Drawing.Point(2207, 663);
+            this.Options_Box.Name = "Options_Box";
+            this.Options_Box.Size = new System.Drawing.Size(669, 319);
+            this.Options_Box.TabIndex = 41;
+            this.Options_Box.TabStop = false;
             // 
             // GB_NewDisk
             // 
@@ -2591,7 +2562,7 @@
             this.GB_NewDisk.Controls.Add(this.label20);
             this.GB_NewDisk.Controls.Add(this.ND_id);
             this.GB_NewDisk.Controls.Add(this.ND_name);
-            this.GB_NewDisk.Location = new System.Drawing.Point(2226, 178);
+            this.GB_NewDisk.Location = new System.Drawing.Point(2213, 149);
             this.GB_NewDisk.Name = "GB_NewDisk";
             this.GB_NewDisk.Size = new System.Drawing.Size(417, 276);
             this.GB_NewDisk.TabIndex = 38;
@@ -2675,9 +2646,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2459, 1383);
+            this.ClientSize = new System.Drawing.Size(2622, 1412);
+            this.Controls.Add(this.Options_Box);
             this.Controls.Add(this.GB_NewDisk);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.CBD_box);
             this.Controls.Add(this.Adv_ctrl);
             this.Controls.Add(this.Tabs);
             this.Controls.Add(this.menuStrip1);
@@ -2699,8 +2672,6 @@
             this.Reg_info.ResumeLayout(false);
             this.Reg_info.PerformLayout();
             this.Advanced_Opts.ResumeLayout(false);
-            this.D_Bug.ResumeLayout(false);
-            this.D_Bug.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DB_cores)).EndInit();
             this.CBD_box.ResumeLayout(false);
             this.CBD_box.PerformLayout();
@@ -2742,8 +2713,6 @@
             this.BlkMap_Panel.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            this.Import_File.ResumeLayout(false);
-            this.Import_File.PerformLayout();
             this.RPL_Advanced.ResumeLayout(false);
             this.RPL_Advanced.PerformLayout();
             this.V2_Advanced.ResumeLayout(false);
@@ -2757,6 +2726,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.Options_Box.ResumeLayout(false);
+            this.Options_Box.PerformLayout();
             this.GB_NewDisk.ResumeLayout(false);
             this.GB_NewDisk.PerformLayout();
             this.ResumeLayout(false);
@@ -2824,8 +2795,6 @@
         private System.Windows.Forms.ListBox out_track;
         private System.Windows.Forms.ListBox out_dif;
         private System.Windows.Forms.ListBox out_size;
-        private System.Windows.Forms.ProgressBar Import_Progress_Bar;
-        private System.Windows.Forms.Label label5;
         private System.Windows.Forms.PictureBox Drag_pic;
         private System.Windows.Forms.Panel Reg_info;
         private System.Windows.Forms.Label Protected_Tracks;
@@ -2839,7 +2808,6 @@
         private System.Windows.Forms.Panel Other_opts;
         private System.Windows.Forms.Button V2_export;
         private System.Windows.Forms.LinkLabel linkLabel1;
-        private Gbox Import_File;
         private System.Windows.Forms.CheckBox VPL_lead;
         private System.Windows.Forms.CheckBox VPL_rb;
         private System.Windows.Forms.NumericUpDown Lead_In;
@@ -2860,7 +2828,6 @@
         private System.Windows.Forms.RadioButton VS_bin;
         private System.Windows.Forms.RadioButton VS_hex;
         private System.Windows.Forms.RadioButton VS_dat;
-        private System.Windows.Forms.ProgressBar DV_pbar;
         private System.Windows.Forms.ComboBox Lead_ptn;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.NumericUpDown VD3;
@@ -2874,7 +2841,6 @@
         private System.Windows.Forms.Button B_cancel;
         private System.Windows.Forms.ProgressBar Batch_Bar;
         private System.Windows.Forms.ListBox Batch_List_Box;
-        private System.Windows.Forms.TabPage D_Bug;
         private System.Windows.Forms.CheckBox CPP_tog;
         private System.Windows.Forms.CheckBox DB_timers;
         private System.Windows.Forms.CheckBox Pad_Tracks;
@@ -2948,12 +2914,16 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem createBlankDiskToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.Button CBD_Cancel;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.GroupBox Options_Box;
     }
 }

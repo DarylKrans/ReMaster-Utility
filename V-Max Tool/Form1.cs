@@ -15,9 +15,30 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        Form Blank_Disk = new Form
+        {
+            Text = "Create Blank Disk",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            // Center relative to the main form
+            Size = new Size(250, 150),
+            StartPosition = FormStartPosition.Manual
+        };
+
+        Form Options = new Form
+        {
+            Text = "Options",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            // Center relative to the main form
+            Size = new Size(350, 200),
+            StartPosition = FormStartPosition.Manual
+        };
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private readonly string ver = " v1.0.5.3 (Private UNtestED build)";
+        private readonly string ver = " v1.1";
         private readonly string fix = "_ReMaster";
         private readonly string mod = "_ReMaster"; // _(modified)";
         private readonly string vorp = "_ReMaster"; //(aligned)";
@@ -57,7 +78,7 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
             // debugging buttons
-            //button1.Visible = button2.Visible = false;
+            button1.Visible = button2.Visible = false;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)
@@ -462,7 +483,6 @@ namespace V_Max_Tool
                         Source.Visible = Output.Visible = true;
                         label1.Text = $"{fname}{fext}";
                         M_render.Enabled = true;
-                        Import_File.Visible = false;
                         Adv_ctrl.Enabled = true;
                         Blk_pan.Enabled = true;
                         Disable_Core_Controls(false);
@@ -841,6 +861,7 @@ namespace V_Max_Tool
         private void Debug_Button_Click(object sender, EventArgs e)
         {
             RunBusy(Create_Blank_Disk);
+            Blank_Disk.Close();
         }
 
         private void V2_Swap_Headers_CheckedChanged(object sender, EventArgs e)
@@ -1142,10 +1163,14 @@ namespace V_Max_Tool
                 Font = new Font("Segoe UI", 10),
                 Enabled = false,
                 ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None,
-                Text = $"ReMaster {ver}\n\n" + Resources.About,
-
+                Rtf = Resources.about1
             };
+            AboutForm.Controls.Add(linkLabel1);
             AboutForm.Controls.Add(richTextBox);
+            linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel1_LinkClicked);
+            linkLabel1.Location = new Point((AboutForm.Width - linkLabel1.Width) - 60, 2);
+            linkLabel1.Visible = true;
+            linkLabel1.BringToFront();
             AboutForm.ShowDialog(this);
         }
 
@@ -1180,6 +1205,35 @@ namespace V_Max_Tool
         private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Export_File(end_track);
+        }
+
+        private void createBlankDiskToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+           
+            Blank_Disk.Location = new Point(
+                this.Location.X + (this.Width - Blank_Disk.Width) / 2,
+                this.Location.Y + (this.Height - Blank_Disk.Height) / 2);
+
+            Blank_Disk.Controls.Add(CBD_box);
+            CBD_box.Location = new Point(0, 0);  
+            CBD_box.Visible = true;
+            CBD_box.Size = PreferredSize;
+            Blank_Disk.ShowDialog(this);
+        }
+
+        private void CBD_Cancel_Click(object sender, EventArgs e)
+        {
+            Blank_Disk.Close();
+        }
+
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Options.Location = new Point(
+               this.Location.X + (this.Width - Options.Width) / 2,
+               this.Location.Y + (this.Height - Options.Height) / 2);
+
+            Options_Box.Size = PreferredSize;
+            Options.ShowDialog(this);
         }
     }
 }

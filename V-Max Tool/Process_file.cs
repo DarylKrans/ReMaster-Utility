@@ -98,6 +98,7 @@ namespace V_Max_Tool
                 Drag_pic.Visible = Adv_ctrl.Enabled = false;
                 Batch_Box.Visible = true;
                 batch = true;
+                menuStrip1.Enabled = false;
                 CBD_box.Enabled = false;
                 Batch_Bar.Value = 0;
                 Batch_Bar.Maximum = 100;
@@ -128,7 +129,6 @@ namespace V_Max_Tool
                                 label8.Text = $"Processing file {i + 1} of {batch_list.Length}";
                                 label9.Text = $"{Path.GetFileName(batch_list[i])}";
                                 Batch_Bar.Maximum = (int)((double)Batch_Bar.Value / (double)(i + 1) * batch_list.Length);
-                                if (Cores > 1) Import_File.Visible = false; else Import_File.Visible = true;
                             }));
                             string curfile = $@"{path}\{Path.GetDirectoryName(batch_list[i]).Replace(basedir, "")}\{Path.GetFileNameWithoutExtension(batch_list[i]).Replace("_ReMaster", "")}{fnappend}.g64";
                             fext = Path.GetExtension(batch_list[0]);
@@ -181,8 +181,6 @@ namespace V_Max_Tool
                         }
                         MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
-                    Import_File.Visible = false;
-                    Import_Progress_Bar.Value = 0;
                     Batch_Bar.Value = 0;
                     Batch_Box.Visible = false;
                     cancel = false;
@@ -194,6 +192,7 @@ namespace V_Max_Tool
                     Set_Auto_Opts();
                     Reset_to_Defaults(false);
                     Disable_Core_Controls(false);
+                    menuStrip1.Enabled = true;
                 }));
                 batch = false;
             }
@@ -267,15 +266,7 @@ namespace V_Max_Tool
             ErrorList = new ConcurrentBag<string>();
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            Invoke(new Action(() =>
-            {
-                RL_Fix.Checked = false;
-                Import_Progress_Bar.Value = 0;
-                Import_Progress_Bar.Maximum = 100;
-                Import_Progress_Bar.Maximum *= 100;
-                Import_Progress_Bar.Value = Import_Progress_Bar.Maximum / 100;
-                if (Cores < 8) Import_Progress_Bar.Visible = true;
-            }));
+            Invoke(new Action(() =>  RL_Fix.Checked = false));
             int cbm = 0; int vmx = 0; int vpl = 0; int rlk = 0; int mps = 0;
             double ht;
             bool halftracks = false;
@@ -298,7 +289,6 @@ namespace V_Max_Tool
                 Task_Limit.WaitOne();
                 Job[i] = new Thread(new ThreadStart(() => Analyze_Track(x)));
                 Job[i].Start();
-                Update_Progress_Bar(i);
                 if (tracks > 42) i++;
             }
             foreach (var thread in Job) thread?.Join();
@@ -514,18 +504,6 @@ namespace V_Max_Tool
             void Get_Fmt(int trk)
             {
                 NDS.cbm[trk] = Get_Data_Fmt2(NDS.Track_Data[trk], trk);
-            }
-
-            void Update_Progress_Bar(int i)
-            {
-                Invoke(new Action(() =>
-                {
-                    if ((int)sw.Elapsed.TotalMilliseconds > 300) Import_File.Visible = true;
-                    if (halftracks) ht = (i / 2) + 1; else ht = i + 1;
-                    Import_Progress_Bar.Maximum = (int)((double)Import_Progress_Bar.Value / (double)(i + 1) * tracks);
-                    if (tracks <= 42) label5.Text = $"Analyzing Disk : Track {(int)ht + 1}";
-                    else if (i % 2 == 0) label5.Text = $"Analyzing Disk : Track {(int)ht + 1}";
-                }));
             }
 
             void Get_Track_Info(int trk)
@@ -1604,10 +1582,6 @@ namespace V_Max_Tool
                 if (VS_bin.Checked) Data_Box.Font = new Font("Lucida Console", 7.5f); else Data_Box.Font = new Font("Lucida Console", 10, FontStyle.Regular);
                 Data_Box.Visible = false;
                 Data_Box.Clear();
-                DV_pbar.Value = 0;
-                DV_pbar.Maximum = 100;
-                DV_pbar.Maximum *= 100;
-                DV_pbar.Value = DV_pbar.Maximum / 100;
                 ds = Data_Sep.SelectedIndex;
             }));
             if (ds >= 1) tr = true;
@@ -1617,7 +1591,6 @@ namespace V_Max_Tool
             if (tracks > 42) ht = true;
             for (int i = 0; i < tracks; i++)
             {
-                Invoke(new Action(() => DV_pbar.Maximum = (int)((double)DV_pbar.Value / (double)(i + 1) * tracks)));
                 if (NDS.cbm[i] >= 0 && NDS.cbm[i] < secF.Length - 1 && NDG.Track_Data?[i] != null && NDG.Track_Data?[i].Length > 6000)
                 {
                     if (DV_gcr.Checked)
@@ -1678,7 +1651,6 @@ namespace V_Max_Tool
                 if (ds >= 1 && jmp > 0) { T_jump.Visible = Jump.Visible = true; } else { T_jump.Visible = Jump.Visible = false; }
                 Data_Box.Text = db_Text.ToString();
                 Disp_Data.Text = "Refresh";
-                DV_pbar.Value = 0;
                 displayed = true;
                 busy = false;
                 sw.Stop();

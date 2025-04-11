@@ -184,6 +184,7 @@ namespace V_Max_Tool
             bool sl = false, fl = false, vpadj = false;
             int vpl_lead = 0;
             (v2a, v3a, vpa) = Check_Tabs();
+            Advanced_Opts.Enabled = !batch;
             if (NDS.cbm.Any(x => x == 2))
             {
                 V2_Auto_Adj.Checked = (v2aa || V2_Auto_Adj.Checked);
