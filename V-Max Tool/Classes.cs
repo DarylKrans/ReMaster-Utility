@@ -11,8 +11,10 @@ using System.Windows.Forms.VisualStyles;
 
 namespace V_Max_Tool
 {
+
     public static class TEMP
     {
+
         public static string path = $@"{Path.GetTempPath()}\remaster\".Replace(@"\\", @"\");
         public static string dll = "cpp_extf.dll";
         public static string Nibtools = "nibpath.txt";
@@ -168,6 +170,22 @@ namespace V_Max_Tool
         }
     }
 
+    class FunctionLoader
+    {
+        [DllImport("Kernel32.dll")]
+        private static extern IntPtr LoadLibrary(string path);
+
+        [DllImport("Kernel32.dll")]
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+        public static Delegate LoadFunction<T>(string dllPath, string functionName)
+        {
+            var hModule = LoadLibrary(dllPath);
+            var functionAddress = GetProcAddress(hModule, functionName);
+            return Marshal.GetDelegateForFunctionPointer(functionAddress, typeof(T));
+        }
+    }
+
     public class NativeMethods
     {
         [DllImport("cpp_extf.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -181,6 +199,8 @@ namespace V_Max_Tool
         [DllImport("cpp_extf.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int TestLoaded();
     }
+
+    
 
     public class CustomCheckedListBox : CheckedListBox
     {

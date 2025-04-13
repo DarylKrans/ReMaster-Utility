@@ -1003,22 +1003,17 @@ namespace V_Max_Tool
                 }
                 else
                 {
-                    // If the file doesn't exist, create it
                     WriteNewFile(dfl, cpp);
                 }
-
-                // Hide the file after writing
-                //try
-                //{
-                //    //File.SetAttributes(DLL.path, FileAttributes.Hidden);
-                //}
-                //catch { }
 
                 // Attempt to load and test the DLL
                 int test = 0;
                 try
                 {
+                    string originalDir = Environment.CurrentDirectory;
+                    Environment.CurrentDirectory = TEMP.path;
                     test = NativeMethods.TestLoaded();
+                    Environment.CurrentDirectory = originalDir;
                 }
                 catch { }
 

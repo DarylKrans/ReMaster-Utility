@@ -14,6 +14,8 @@ namespace V_Max_Tool
         readonly string n_writ = "nibwrite.exe";
         readonly string a_rpm = "rpm1541.exe";
         readonly string[] trk_aln = { "Automatic", "Longest run of unformatted data", "Longest gap", "Longest sync", "Sector 0", "Raw Data" };
+        readonly string[] ProHand = { "V-Max! (v3)", "V-Max! (v2) Cinemaware", "GMA/Secruispeed (T38/T39)", "Rainbow Arts/Magic Bytes (T36)",
+                                      "Rapidlok", "Vorpal (newer) EPYX", "Pirateslayer/Buster" };
         static bool zero = false;
         static bool rpm = false;
 
@@ -38,6 +40,8 @@ namespace V_Max_Tool
             rpm = File.Exists($@"{NibPath}\{a_rpm}".Replace(@"\\", @"\"));
             Drv_status.Visible = File.Exists($@"c:\program files\opencbm\cbmctrl.exe");
 
+            W_prot.DataSource = ProHand;
+            W_prot.Enabled = WP.Checked;
             W_align.DataSource = trk_aln;
             W_advopts.Enabled = WAdv.Checked;
             W_start.Enabled = W_end.Enabled = W_override.Checked;
@@ -187,6 +191,20 @@ namespace V_Max_Tool
                 if (W_limit.Checked && !W_override.Checked) args += "-E40 ";
                 if (WAdv.Checked && !zero)
                 {
+                    if (WP.Checked)
+                    {
+                        var se = W_prot.SelectedIndex;
+                        switch (se)
+                        {
+                            case 0: args += "-px "; break;
+                            case 1: args += "-pc "; break;
+                            case 2: args += "-pg "; break;
+                            case 3: args += "-pm "; break;
+                            case 4: args += "-pr "; break;
+                            case 5: args += "-pv "; break;
+                            case 6: args += "-pp "; break;
+                        }
+                    }
                     if (WTA.Checked)
                     {
                         var se = W_align.SelectedIndex;
@@ -366,6 +384,7 @@ namespace V_Max_Tool
             W_advopts.Enabled = WAdv.Checked;
             W_align.Enabled = WTA.Checked;
             W_tgap.Enabled = W_gapmatch.Checked;
+            W_prot.Enabled = WP.Checked;
             W_tskew.Enabled = W_skew.Checked;
             W_rpm.Enabled = Wrpm.Checked;
             W_cap.Enabled = W_capmar.Checked;
