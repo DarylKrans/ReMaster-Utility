@@ -266,7 +266,7 @@ namespace V_Max_Tool
             ErrorList = new ConcurrentBag<string>();
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            Invoke(new Action(() =>  RL_Fix.Checked = false));
+            Invoke(new Action(() => RL_Fix.Checked = false));
             int cbm = 0; int vmx = 0; int vpl = 0; int rlk = 0; int mps = 0;
             double ht;
             bool halftracks = false;

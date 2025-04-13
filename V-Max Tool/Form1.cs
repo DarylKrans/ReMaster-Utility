@@ -15,27 +15,6 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        Form Blank_Disk = new Form
-        {
-            Text = "Create Blank Disk",
-            MinimizeBox = false,
-            MaximizeBox = false,
-            FormBorderStyle = FormBorderStyle.FixedDialog,
-            // Center relative to the main form
-            Size = new Size(250, 150),
-            StartPosition = FormStartPosition.Manual
-        };
-
-        Form Options = new Form
-        {
-            Text = "Options",
-            MinimizeBox = false,
-            MaximizeBox = false,
-            FormBorderStyle = FormBorderStyle.FixedDialog,
-            // Center relative to the main form
-            Size = new Size(350, 200),
-            StartPosition = FormStartPosition.Manual
-        };
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
         private readonly string ver = " v1.1";
@@ -44,7 +23,6 @@ namespace V_Max_Tool
         private readonly string vorp = "_ReMaster"; //(aligned)";
         private readonly byte loader_padding = 0x55;
         private readonly int[] CBM_Standard_Density = { 7692, 7142, 6666, 6250 }; // <- density zone capacity accoriding to CBM specifications
-        //private readonly int[] ReMaster_Adjusted_Density = { 7672, 7122, 6646, 6230 }; // <- adjusted capacity to account for minor RPM variation higher than 300
         private readonly int[] ReMaster_Adjusted_Density = { 7672, 7122, 6646, 6230 }; // <- adjusted capacity to account for minor RPM variation higher than 300
         private readonly int[] vpl_density = { 7750, 6950, 6585, 6255 }; // <- Vorpal densities used to be more accurate to original disk-reads
         private readonly int[] vpl_defaults = { 7750, 6950, 6585, 6255 };
@@ -71,58 +49,62 @@ namespace V_Max_Tool
         private int fat_trk = -1;
         System.Windows.Forms.Panel lastHoveredButton = null;
 
+        Form Blank_Disk = new Form
+        {
+            Text = "Create Blank Disk",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            Size = new Size(250, 150),
+            StartPosition = FormStartPosition.Manual
+        };
+
+        Form Options = new Form
+        {
+            Text = "Options",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            Size = new Size(350, 200),
+            StartPosition = FormStartPosition.Manual,
+            AutoScaleMode = AutoScaleMode.Font
+        };
+
+        Form ReadNib = new Form
+        {
+            Text = "Read Image From Disk",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            Size = new Size(350, 200),
+            StartPosition = FormStartPosition.Manual,
+            AutoScaleMode = AutoScaleMode.Font
+        };
+
+        Form WriteNib = new Form
+        {
+            Text = "<- Use RPM guide and adjust your drive accordingly (if possible) ** Write Image To Disk",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            Size = new Size(350, 200),
+            StartPosition = FormStartPosition.Manual,
+            AutoScaleMode = AutoScaleMode.Font
+        };
+
         public Form1()
         {
             InitializeComponent();
             this.Text = $"Re-Master {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
-            // debugging buttons
+            // debugging buttons -- comment next line to enable debugging buttons
             button1.Visible = button2.Visible = false;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)
         {
             string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop);
-            //int img = 0, prg = 0;
-            //
-            //if (CBD_box.Visible)
-            //{
-            //    // File categorization
-            //    foreach (var file in fileList)
-            //    {
-            //        if (System.IO.File.Exists(file))
-            //        {
-            //            bool isSupported = supported.Any(x => x == Path.GetExtension(file).ToLower());
-            //            if (isSupported) img++;
-            //            else if (new FileInfo(file).Length / 254 < 664) prg++;
-            //            //Text = $"{prg} {img}";
-            //        }
-            //    }
-            //
-            //    // Handle non-image files
-            //    if (prg > img)
-            //    {
-            //        if (tracks == 0)
-            //        {
-            //            if (ShowConfirmation("Build a new Disk image?", "Non-Image file has been selected!\nWould you like to build a NEW disk image?"))
-            //            {
-            //                NewDiskBtn.Click += (senderr, ee) => NewDiskBtn_Click(sender, e, fileList);
-            //                GB_NewDisk.Visible = true;
-            //            }
-            //        }
-            //        else
-            //        {
-            //            if (ShowConfirmation("Confirmation", "Add file(s) to current Disk?"))
-            //            {
-            //                ProcessNewFiletoImage(fileList);
-            //            }
-            //        }
-            //    }
-            //}
-
-            // Batch processing for multiple files or directories
-            //if ((fileList.Length > 1 && img > 1) || Directory.Exists(fileList[0]))
             if ((fileList.Length > 1) || Directory.Exists(fileList[0]))
             {
                 if (ShowConfirmation("Multiple Files Selected", "Only .NIB/NBZ files will be processed\nand exported as .G64 with the\nAuto-Adjust options\n\nStart Batch-Processing?"))
@@ -132,10 +114,7 @@ namespace V_Max_Tool
                     Worker_Main.Start();
                 }
             }
-            else
-            {
-                ProcessSingleFile(fileList[0]);
-            }
+            else ProcessSingleFile(fileList[0]);
 
             bool ShowConfirmation(string title, string message)
             {
@@ -453,12 +432,12 @@ namespace V_Max_Tool
                 Dir_screen.Text = "LOAD\"$\",8\nSEARCHING FOR $\nLOADING";
                 loader_fixed = false;
                 Worker_Main?.Abort();
-                Worker_Main = new Thread(new ThreadStart(() => Do_work()));
+                Worker_Main = new Thread(new ThreadStart(() => Do_work(file)));
                 Worker_Main.Start();
             }
         }
 
-        void Do_work()
+        void Do_work(string file)
         {
             Stopwatch parse = new Stopwatch();
             Stopwatch proc = new Stopwatch();
@@ -487,6 +466,8 @@ namespace V_Max_Tool
                         Blk_pan.Enabled = true;
                         Disable_Core_Controls(false);
                         saveAsToolStripMenuItem.Enabled = true;
+                        AddRecentFile(file);
+                        NibWriteImage.Enabled = true;
                     }
                     catch (Exception ex)
                     {
@@ -978,6 +959,7 @@ namespace V_Max_Tool
             {
                 cancel = true;
                 this.Text = "Closing..";
+                SaveSettings();
                 Application.Exit();
                 Environment.Exit(0);
             }
@@ -1192,13 +1174,16 @@ namespace V_Max_Tool
                     Process_New_Image(selectedFile);
                 }
             }
-            void ClearInfo()
+        }
+
+        private void OpenFileFromRecent(string filename)
+        {
+            if (File.Exists(filename))
             {
-                Source.Visible = Output.Visible = false;
-                f_load.Text = "Fix Loader";
-                Save_Disk.Visible = false;
-                sl.DataSource = null;
-                out_size.DataSource = null;
+                fname = Path.GetFileNameWithoutExtension(filename).Replace("_ReMaster", "");
+                fext = Path.GetExtension(filename);
+                ClearInfo();
+                Process_New_Image(filename);
             }
         }
 
@@ -1209,13 +1194,13 @@ namespace V_Max_Tool
 
         private void createBlankDiskToolStripMenuItem_Click(object sender, EventArgs e)
         {
-           
+
             Blank_Disk.Location = new Point(
                 this.Location.X + (this.Width - Blank_Disk.Width) / 2,
                 this.Location.Y + (this.Height - Blank_Disk.Height) / 2);
 
             Blank_Disk.Controls.Add(CBD_box);
-            CBD_box.Location = new Point(0, 0);  
+            CBD_box.Location = new Point(0, 0);
             CBD_box.Visible = true;
             CBD_box.Size = PreferredSize;
             Blank_Disk.ShowDialog(this);
@@ -1226,14 +1211,75 @@ namespace V_Max_Tool
             Blank_Disk.Close();
         }
 
-        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Options.Location = new Point(
                this.Location.X + (this.Width - Options.Width) / 2,
                this.Location.Y + (this.Height - Options.Height) / 2);
 
-            Options_Box.Size = PreferredSize;
+            //Options_Box.Size = PreferredSize;
+            Options.Size = new Size(Options_Box.Width + 10, Options_Box.Height + 30);
             Options.ShowDialog(this);
+        }
+
+        private void ConfigurePathToNibtools_Click(object sender, EventArgs e)
+        {
+            folderBrowserDialog1.ShowNewFolderButton = false;
+            DialogResult ok = folderBrowserDialog1.ShowDialog(this);
+            if (ok == DialogResult.OK)
+            {
+                string fldr = $@"{folderBrowserDialog1.SelectedPath}\".Replace(@"\\", @"\");
+                if (!(File.Exists(fldr + "nibread.exe") || File.Exists(fldr + "nibwrite.exe")))
+                {
+                    using (Message_Center center = new Message_Center(this))
+                    {
+                        var message = "Nibread/Nibwrite doesn't exist here";
+                        var title = "Nibtools not found!";
+                        MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    File.WriteAllText(TEMP.path + TEMP.Nibtools, fldr);
+                    FindNibtools();
+                }
+            }
+        }
+
+        private void NibReadImage_Click(object sender, EventArgs e)
+        {
+            Read_GBox.Size = Read_GBox.PreferredSize;
+            ReadNib.Size = new Size(Read_GBox.Width, Read_GBox.Height + 40);
+            ReadNib.Location = new Point(
+                this.Location.X + (this.Width - ReadNib.Width) / 2,
+                this.Location.Y + (this.Height - ReadNib.Height) / 2);
+            ReadNib.ShowDialog(this);
+        }
+
+        private void NibWriteImage_Click(object sender, EventArgs e)
+        {
+            Make_G64($"{TEMP.path}temp_write.g64", end_track);
+            Write_GBox.Size = Write_GBox.PreferredSize;
+            WriteNib.Size = new Size(Write_GBox.Width + 10, Write_GBox.Height + 30);
+            WriteNib.Location = new Point(
+                this.Location.X + ((this.Width - WriteNib.Width) / 2) + 120,
+                this.Location.Y + (this.Height - WriteNib.Height) / 2);
+            WriteNib.ShowDialog(this);
+        }
+
+        private void No_Warn_CheckedChanged(object sender, EventArgs e)
+        {
+            if (No_Warn.Checked && !busy)
+            {
+                using (Message_Center center = new Message_Center(this))
+                {
+                    string message = "With this enabled, you will not be prompted before\nreading or writing a disk image!\n\n" +
+                        "I am not responsible for any lost data\nplease make sure your important disks (originals)\n" +
+                        "or ANYTHING you don't want destroyed is write-protected.";
+                    string title = "Proceed with caution!";
+                    MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
         }
     }
 }

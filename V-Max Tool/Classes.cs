@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,10 +11,27 @@ using System.Windows.Forms.VisualStyles;
 
 namespace V_Max_Tool
 {
-    public static class DLL
+    public static class TEMP
     {
-        //public static string path = Path.GetTempPath();
-        public static readonly string path = $@"{Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location)}\cpp_extf.dll".Replace(@"\\", @"\");
+        public static string path = $@"{Path.GetTempPath()}\remaster\".Replace(@"\\", @"\");
+        public static string dll = "cpp_extf.dll";
+        public static string Nibtools = "nibpath.txt";
+        public static string recent = "recent.files";
+        public static string settings = $"{path}setting.txt";
+
+        public static string exedir = AssemblyDirectory;
+
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return $@"{Path.GetDirectoryName(path)}\".Replace(@"\\", @"\");
+            }
+        }
+        //public static readonly string path = $@"{Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location)}\cpp_extf.dll".Replace(@"\\", @"\");
     }
     public static class NDS  // Global variables for Nib file source data
     {

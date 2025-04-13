@@ -22,6 +22,17 @@ namespace V_Max_Tool
             busy = false;
         }
 
+        //public static string AssemblyDirectory
+        //{
+        //    get
+        //    {
+        //        string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+        //        UriBuilder uri = new UriBuilder(codeBase);
+        //        string path = Uri.UnescapeDataString(uri.Path);
+        //        return $@"{Path.GetDirectoryName(path)}\".Replace(@"\\" , @"\");
+        //    }
+        //}
+
         string Get_DirectoryFileType(byte b)
         {
             string fileType = " ";
@@ -625,6 +636,15 @@ namespace V_Max_Tool
         {
             for (int i = 0; i < data.Length; i++) data[i] ^= value;
             return data;
+        }
+
+        void ClearInfo()
+        {
+            Source.Visible = Output.Visible = false;
+            f_load.Text = "Fix Loader";
+            Save_Disk.Visible = false;
+            sl.DataSource = null;
+            out_size.DataSource = null;
         }
 
         byte[] Rotate_Right(byte[] data, int pos)

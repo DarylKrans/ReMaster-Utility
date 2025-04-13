@@ -11,7 +11,6 @@ using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
 
-
 namespace V_Max_Tool
 {
     public partial class Form1 : Form
@@ -26,6 +25,9 @@ namespace V_Max_Tool
         private Semaphore Task_Limit = new Semaphore(3, 3);
         private readonly System.Windows.Forms.ToolTip tips = new System.Windows.Forms.ToolTip();
         private List<string> LB_File_List = new List<string>();
+        private List<string> RM_Recent = new List<string>();
+        private string NibPath = string.Empty;
+        private string recentPath = Path.Combine(TEMP.path, TEMP.recent); //Path.Combine(Path.GetTempPath(), "ReMaster_recent.txt");
         private int Cores;
         private int Default_Cores;
         private int pan_defw;
@@ -143,6 +145,7 @@ namespace V_Max_Tool
             label2.Text = string.Empty;
             Dir_Box.Items.Clear();
             saveAsToolStripMenuItem.Enabled = false;
+            NibWriteImage.Enabled = false;
             busy = false;
         }
 
@@ -195,6 +198,171 @@ namespace V_Max_Tool
             DiskDir.Entry = new byte[0][];
             DiskDir.FileName = new string[0];
             Dir_Box.Items.Clear();
+        }
+
+        void AddRecentFile(string filePath)
+        {
+            // Remove it if it already exists (to move it to the top)
+            RM_Recent.Remove(filePath);
+
+            // Insert at the top
+            RM_Recent.Insert(0, filePath);
+
+            // Keep only 10 most recent entries
+            if (RM_Recent.Count > 10)
+                RM_Recent.RemoveRange(10, RM_Recent.Count - 10);
+
+            // Save to disk
+            SaveRecentList();
+        }
+
+        void SaveRecentList()
+        {
+            File.WriteAllLines(recentPath, RM_Recent);
+            LoadRecentList();
+        }
+
+        void LoadRecentList()
+        {
+            if (!File.Exists(recentPath))
+            {
+                File.Create(recentPath).Close(); // Important: Close the stream immediately
+                recentMenu.Enabled = false;
+                return;
+            }
+
+            if (new FileInfo(recentPath).Length > 0)
+            {
+                RM_Recent = File.ReadAllLines(recentPath).ToList();
+                recentMenu.Enabled = RM_Recent.Count > 0;
+            }
+            else
+            {
+                recentMenu.Enabled = false;
+            }
+
+            PopulateRecentFilesMenu();
+        }
+
+        void PopulateRecentFilesMenu()
+        {
+            recentMenu.DropDownItems.Clear();
+
+            foreach (string file in RM_Recent)
+            {
+                if (File.Exists(file))
+                {
+                    ToolStripMenuItem item = new ToolStripMenuItem(Path.GetFileName(file))
+                    {
+                        ToolTipText = file
+                    };
+
+                    item.Click += (sender, e) =>
+                    {
+                        string selectedFile = ((ToolStripMenuItem)sender).ToolTipText;
+                        OpenFileFromRecent(selectedFile); // Replace with your actual file-opening method
+                    };
+
+                    recentMenu.DropDownItems.Add(item);
+                }
+            }
+
+            // Optional: Add a separator and a "Clear List" option
+            if (RM_Recent.Count > 0)
+            {
+                recentMenu.DropDownItems.Add(new ToolStripSeparator());
+
+                ToolStripMenuItem clearItem = new ToolStripMenuItem("Clear Recent Files");
+                clearItem.Click += (s, e) =>
+                {
+                    RM_Recent.Clear();
+                    SaveRecentList();
+                    recentMenu.Enabled = false;
+                    PopulateRecentFilesMenu();
+                };
+                recentMenu.DropDownItems.Add(clearItem);
+            }
+            else
+            {
+                ToolStripMenuItem empty = new ToolStripMenuItem("(No recent files)")
+                {
+                    Enabled = false
+                };
+                recentMenu.DropDownItems.Add(empty);
+            }
+        }
+
+        void SaveSettings()
+        {
+            var lines = new List<string>
+            {
+                $"No_Warn={No_Warn.Checked}",
+                $"Parallel={Parallel.Checked}",
+                $"WParallel={WParallel.Checked}",
+                $"Dev_num={Dev_num.Value}",
+                $"W_num={W_num.Value}",
+                $"CPP_tog={CPP_tog.Checked}",
+                $"Pad_Tracks={Pad_Tracks.Checked}",
+                $"R_limit={R_limit.Checked}",
+                $"W_limit={W_limit.Checked}",
+                $"R_verb={R_verb.Checked}",
+                $"W_verb={W_verb.Checked}"
+            };
+            File.WriteAllLines(TEMP.settings, lines);
+        }
+
+        void LoadSettings()
+        {
+            if (!File.Exists(TEMP.settings)) SaveSettings();
+
+            var lines = File.ReadAllLines(TEMP.settings);
+            foreach (var line in lines)
+            {
+                var parts = line.Split('=');
+                if (parts.Length != 2) continue;
+
+                string key = parts[0];
+                string value = parts[1];
+
+                switch (key)
+                {
+                    case "No_Warn": No_Warn.Checked = bool.Parse(value); break;
+                    case "Parallel": Parallel.Checked = bool.Parse(value); break;
+                    case "WParallel": WParallel.Checked = bool.Parse(value); break;
+                    case "Dev_num": Dev_num.Value = int.Parse(value); break;
+                    case "W_num": W_num.Value = int.Parse(value); break;
+                    case "CPP_tog": CPP_tog.Checked = bool.Parse(value); break;
+                    case "Pad_Tracks": Pad_Tracks.Checked = bool.Parse(value); break;
+                    case "R_limit": R_limit.Checked = bool.Parse(value); break;
+                    case "W_limit": W_limit.Checked = bool.Parse(value); break;
+                    case "R_verb": R_verb.Checked = bool.Parse(value); break;
+                    case "W_verb": W_verb.Checked = bool.Parse(value); break;
+                }
+            }
+        }
+
+        void FindNibtools()
+        {
+            bool Nwrite = false, Nread = false;
+            if (File.Exists(TEMP.path + TEMP.Nibtools) && new System.IO.FileInfo(TEMP.path + TEMP.Nibtools).Length > 0)
+            {
+                NibPath = File.ReadAllText(TEMP.path + TEMP.Nibtools);
+            }
+            else
+            {
+                NibPath = TEMP.exedir;
+            }
+            Nwrite = File.Exists(NibPath + "nibwrite.exe");
+            Nread = File.Exists(NibPath + "nibread.exe");
+
+            if (Nwrite || Nread)
+            {
+                NibReadImage.Enabled = NibReadImage.Visible = Nread;
+                NibWriteImage.Enabled = NibWriteImage.Visible = Nwrite;
+                NibSeparator.Visible = true;
+            }
+            else NibReadImage.Visible = NibWriteImage.Visible = NibSeparator.Visible = false;
+
         }
 
         public static Font GetCustomFont(float fontSize, FontStyle fontStyle)
@@ -253,13 +421,23 @@ namespace V_Max_Tool
             //Dir_screen.AllowDrop = true;
             //Dir_screen.DragEnter += new DragEventHandler(Dir_Screen_DragEnter);
             //Dir_screen.DragDrop += new DragEventHandler(Dir_Screen_DragDrop);
+            //NibReadImage.Visible = NibWriteImage.Visible = NibSeparator.Visible = false;
 
+
+            ReadNib.Controls.Add(Read_GBox);
+            Read_GBox.Location = new Point(0, 0);
+            //nibToolsMenu.Enabled = false;
             Options.Controls.Add(Options_Box);
             Options_Box.Location = new Point(0, 0);
             byte[] fontData = Resources.C64_Pro_Mono_STYLE;
             FontFamily customFontFamily = LoadFontFromResource(fontData);
             Font customFont = GetCustomFont(12.0f, FontStyle.Regular);
             usecpp = Load_Dll();
+            FindNibtools();
+            Init_Read_Options();
+            Init_Write_Options();
+            LoadRecentList();
+
             if (!usecpp) CPP_tog.Enabled = false;
             saveAsToolStripMenuItem.Enabled = false;
             Batch_List_Box.Visible = false; // set to true for debugging that requires a listbox
@@ -304,7 +482,6 @@ namespace V_Max_Tool
             Dir_Ftype.Enabled = Dir_ChgType.Checked;
             Dir_Ftype.DataSource = new string[] { "PRG", "SEQ", "USR", "REL", "DEL" };
             /// ----------------------------
-            //this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel1_LinkClicked);
             linkLabel1.Visible = false;
             panel1.Controls.Add(outbox);
             panel1.Controls.Add(inbox);
@@ -464,8 +641,6 @@ namespace V_Max_Tool
             Cores = Get_Cores();
             Set_Cores();
             Set_Tool_Tips();
-            //out_size.BringToFront();
-            //Output.Height = 12;
             tips.ShowAlways = true;
             manualRender = M_render.Visible = Cores <= 3;
             if (Cores < 2) Img_Q.SelectedIndex = 0;
@@ -479,6 +654,7 @@ namespace V_Max_Tool
                 return null;
             });
             Build_BitReverseTable();
+            RunBusy (()=> LoadSettings());
             try
             {
                 //File.WriteAllBytes($@"c:\test\compressed\fload.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\fload")), 0xf1));
@@ -804,19 +980,21 @@ namespace V_Max_Tool
             {
                 byte[] cpp = Decompress(XOR(Resources.cpp_extf, 0xda));
 
+                if (!Directory.Exists(TEMP.path)) Directory.CreateDirectory(TEMP.path);
                 // Check if the file exists and needs to be overwritten
-                if (File.Exists(DLL.path))
+                string dfl = Path.Combine(TEMP.path, TEMP.dll);
+                if (File.Exists(dfl))
                 {
                     try
                     {
-                        byte[] verify = File.ReadAllBytes(DLL.path);
+                        var verify = File.ReadAllBytes(dfl);
 
                         // If the file contents differ, overwrite it
                         if (cpp.Length != verify.Length || !cpp.SequenceEqual(verify))
                         {
                             try
                             {
-                                OverwriteFile(DLL.path, cpp);
+                                OverwriteFile(dfl, cpp);
                             }
                             catch { return false; }
                         }
@@ -826,15 +1004,15 @@ namespace V_Max_Tool
                 else
                 {
                     // If the file doesn't exist, create it
-                    WriteNewFile(DLL.path, cpp);
+                    WriteNewFile(dfl, cpp);
                 }
 
                 // Hide the file after writing
-                try
-                {
-                    File.SetAttributes(DLL.path, FileAttributes.Hidden);
-                }
-                catch { }
+                //try
+                //{
+                //    //File.SetAttributes(DLL.path, FileAttributes.Hidden);
+                //}
+                //catch { }
 
                 // Attempt to load and test the DLL
                 int test = 0;

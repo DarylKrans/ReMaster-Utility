@@ -157,14 +157,9 @@
             this.Dir_screen = new System.Windows.Forms.RichTextBox();
             this.BlockMap = new System.Windows.Forms.TabPage();
             this.BlkMap_Panel = new System.Windows.Forms.Panel();
-            this.CSTfmt = new V_Max_Tool.CustomLabel();
-            this.ErrorBlk = new V_Max_Tool.CustomLabel();
-            this.AllocBlk = new V_Max_Tool.CustomLabel();
-            this.FreeBlk = new V_Max_Tool.CustomLabel();
             this.label21 = new System.Windows.Forms.Label();
             this.Blk_pan = new System.Windows.Forms.Panel();
             this.label17 = new System.Windows.Forms.Label();
-            this.track_label = new V_Max_Tool.CustomLabel();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RPL_Advanced = new System.Windows.Forms.GroupBox();
@@ -202,13 +197,84 @@
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.recentMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.createBlankDiskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nibToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.NibReadImage = new System.Windows.Forms.ToolStripMenuItem();
+            this.NibWriteImage = new System.Windows.Forms.ToolStripMenuItem();
+            this.NibSeparator = new System.Windows.Forms.ToolStripSeparator();
+            this.configurePathToNibtoolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.Options_Box = new System.Windows.Forms.GroupBox();
+            this.No_Warn = new System.Windows.Forms.CheckBox();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.Read_GBox = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.Drive_Num = new System.Windows.Forms.Label();
+            this.R_limit = new System.Windows.Forms.CheckBox();
+            this.Dev_num = new System.Windows.Forms.NumericUpDown();
+            this.Parallel = new System.Windows.Forms.CheckBox();
+            this.T_override = new System.Windows.Forms.CheckBox();
+            this.S_track = new System.Windows.Forms.NumericUpDown();
+            this.E_track = new System.Windows.Forms.NumericUpDown();
+            this.Read_Start = new System.Windows.Forms.Button();
+            this.R_Retry = new System.Windows.Forms.NumericUpDown();
+            this.R_verb = new System.Windows.Forms.CheckBox();
+            this.Retry = new System.Windows.Forms.CheckBox();
+            this.R_advanced = new System.Windows.Forms.CheckBox();
+            this.R_adv = new System.Windows.Forms.GroupBox();
+            this.R_halftracks = new System.Windows.Forms.CheckBox();
+            this.DR_killer = new System.Windows.Forms.CheckBox();
+            this.FD_density = new System.Windows.Forms.CheckBox();
+            this.R_tgap = new System.Windows.Forms.NumericUpDown();
+            this.ET_matching = new System.Windows.Forms.CheckBox();
+            this.Read_tgap = new System.Windows.Forms.CheckBox();
+            this.II_mode = new System.Windows.Forms.CheckBox();
+            this.EP_tests = new System.Windows.Forms.CheckBox();
+            this.U_sensor = new System.Windows.Forms.CheckBox();
+            this.U_alignment = new System.Windows.Forms.CheckBox();
+            this.U_bitrate = new System.Windows.Forms.CheckBox();
+            this.U_test = new System.Windows.Forms.CheckBox();
+            this.IHS = new System.Windows.Forms.CheckBox();
+            this.Write_GBox = new System.Windows.Forms.GroupBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.Wrt_devnum = new System.Windows.Forms.Label();
+            this.Drv_status = new System.Windows.Forms.Button();
+            this.W_limit = new System.Windows.Forms.CheckBox();
+            this.ADJ_RPM = new System.Windows.Forms.Button();
+            this.W_num = new System.Windows.Forms.NumericUpDown();
+            this.WParallel = new System.Windows.Forms.CheckBox();
+            this.W_override = new System.Windows.Forms.CheckBox();
+            this.W_start = new System.Windows.Forms.NumericUpDown();
+            this.W_end = new System.Windows.Forms.NumericUpDown();
+            this.Write_Start = new System.Windows.Forms.Button();
+            this.W_verb = new System.Windows.Forms.CheckBox();
+            this.WAdv = new System.Windows.Forms.CheckBox();
+            this.Zero_Disk = new System.Windows.Forms.Button();
+            this.W_advopts = new System.Windows.Forms.GroupBox();
+            this.W_cap = new System.Windows.Forms.NumericUpDown();
+            this.W_capmar = new System.Windows.Forms.CheckBox();
+            this.W_autobad = new System.Windows.Forms.CheckBox();
+            this.W_agg = new System.Windows.Forms.NumericUpDown();
+            this.W_aggcr = new System.Windows.Forms.CheckBox();
+            this.W_tgap = new System.Windows.Forms.NumericUpDown();
+            this.W_timedalign = new System.Windows.Forms.CheckBox();
+            this.W_rpm = new System.Windows.Forms.NumericUpDown();
+            this.W_gapmatch = new System.Windows.Forms.CheckBox();
+            this.W_capacity = new System.Windows.Forms.CheckBox();
+            this.Wrpm = new System.Windows.Forms.CheckBox();
+            this.W_gapreduce = new System.Windows.Forms.CheckBox();
+            this.W_skew = new System.Windows.Forms.CheckBox();
+            this.W_gcrrunred = new System.Windows.Forms.CheckBox();
+            this.W_tskew = new System.Windows.Forms.NumericUpDown();
+            this.W_syncred = new System.Windows.Forms.CheckBox();
+            this.W_align = new System.Windows.Forms.ComboBox();
+            this.WTA = new System.Windows.Forms.CheckBox();
             this.GB_NewDisk = new V_Max_Tool.Gbox();
             this.S_Interleave = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
@@ -218,6 +284,11 @@
             this.label20 = new System.Windows.Forms.Label();
             this.ND_id = new System.Windows.Forms.TextBox();
             this.ND_name = new System.Windows.Forms.TextBox();
+            this.CSTfmt = new V_Max_Tool.CustomLabel();
+            this.ErrorBlk = new V_Max_Tool.CustomLabel();
+            this.AllocBlk = new V_Max_Tool.CustomLabel();
+            this.FreeBlk = new V_Max_Tool.CustomLabel();
+            this.track_label = new V_Max_Tool.CustomLabel();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -260,6 +331,25 @@
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.Options_Box.SuspendLayout();
+            this.Read_GBox.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Dev_num)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.S_track)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.E_track)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.R_Retry)).BeginInit();
+            this.R_adv.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.R_tgap)).BeginInit();
+            this.Write_GBox.SuspendLayout();
+            this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.W_num)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_start)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_end)).BeginInit();
+            this.W_advopts.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.W_cap)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_agg)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_tgap)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_rpm)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_tskew)).BeginInit();
             this.GB_NewDisk.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -663,7 +753,7 @@
             this.CBD_box.Controls.Add(this.label10);
             this.CBD_box.Controls.Add(this.BD_tracks);
             this.CBD_box.Controls.Add(this.Create_Blank);
-            this.CBD_box.Location = new System.Drawing.Point(2208, 446);
+            this.CBD_box.Location = new System.Drawing.Point(2217, 53);
             this.CBD_box.Margin = new System.Windows.Forms.Padding(4);
             this.CBD_box.Name = "CBD_box";
             this.CBD_box.Padding = new System.Windows.Forms.Padding(4);
@@ -1948,58 +2038,6 @@
             this.BlkMap_Panel.Size = new System.Drawing.Size(1135, 1289);
             this.BlkMap_Panel.TabIndex = 0;
             // 
-            // CSTfmt
-            // 
-            this.CSTfmt.AutoSize = true;
-            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
-            this.CSTfmt.Location = new System.Drawing.Point(20, 284);
-            this.CSTfmt.Name = "CSTfmt";
-            this.CSTfmt.NewText = "";
-            this.CSTfmt.RotateAngle = 0;
-            this.CSTfmt.Size = new System.Drawing.Size(177, 29);
-            this.CSTfmt.TabIndex = 12;
-            this.CSTfmt.Text = "Custom Format";
-            // 
-            // ErrorBlk
-            // 
-            this.ErrorBlk.AutoSize = true;
-            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
-            this.ErrorBlk.Location = new System.Drawing.Point(20, 488);
-            this.ErrorBlk.Name = "ErrorBlk";
-            this.ErrorBlk.NewText = "";
-            this.ErrorBlk.RotateAngle = 0;
-            this.ErrorBlk.Size = new System.Drawing.Size(133, 29);
-            this.ErrorBlk.TabIndex = 11;
-            this.ErrorBlk.Text = "Block Error";
-            // 
-            // AllocBlk
-            // 
-            this.AllocBlk.AutoSize = true;
-            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
-            this.AllocBlk.Location = new System.Drawing.Point(18, 655);
-            this.AllocBlk.Name = "AllocBlk";
-            this.AllocBlk.NewText = "";
-            this.AllocBlk.RotateAngle = 0;
-            this.AllocBlk.Size = new System.Drawing.Size(179, 29);
-            this.AllocBlk.TabIndex = 10;
-            this.AllocBlk.Text = "Allocated Block";
-            // 
-            // FreeBlk
-            // 
-            this.FreeBlk.AutoSize = true;
-            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
-            this.FreeBlk.Location = new System.Drawing.Point(18, 871);
-            this.FreeBlk.Name = "FreeBlk";
-            this.FreeBlk.NewText = "";
-            this.FreeBlk.RotateAngle = 0;
-            this.FreeBlk.Size = new System.Drawing.Size(130, 29);
-            this.FreeBlk.TabIndex = 9;
-            this.FreeBlk.Text = "Free Block";
-            // 
             // label21
             // 
             this.label21.AutoSize = true;
@@ -2029,19 +2067,6 @@
             this.label17.Size = new System.Drawing.Size(93, 31);
             this.label17.TabIndex = 1;
             this.label17.Text = "Sector";
-            // 
-            // track_label
-            // 
-            this.track_label.AutoSize = true;
-            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.track_label.Location = new System.Drawing.Point(2, 82);
-            this.track_label.Name = "track_label";
-            this.track_label.NewText = null;
-            this.track_label.RotateAngle = 0;
-            this.track_label.Size = new System.Drawing.Size(215, 37);
-            this.track_label.TabIndex = 0;
-            this.track_label.Text = "customLabel1";
             // 
             // panel1
             // 
@@ -2457,10 +2482,11 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.optionsToolStripMenuItem,
+            this.nibToolsMenu,
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(2622, 42);
+            this.menuStrip1.Size = new System.Drawing.Size(3725, 48);
             this.menuStrip1.TabIndex = 39;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -2470,11 +2496,13 @@
             this.openToolStripMenuItem,
             this.saveAsToolStripMenuItem,
             this.toolStripSeparator1,
+            this.recentMenu,
+            this.toolStripSeparator3,
             this.createBlankDiskToolStripMenuItem,
             this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(71, 38);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(71, 44);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // openToolStripMenuItem
@@ -2498,6 +2526,17 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(364, 6);
             // 
+            // recentMenu
+            // 
+            this.recentMenu.Name = "recentMenu";
+            this.recentMenu.Size = new System.Drawing.Size(367, 44);
+            this.recentMenu.Text = "Open Recent";
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(364, 6);
+            // 
             // createBlankDiskToolStripMenuItem
             // 
             this.createBlankDiskToolStripMenuItem.Name = "createBlankDiskToolStripMenuItem";
@@ -2520,14 +2559,51 @@
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(118, 38);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(118, 44);
             this.optionsToolStripMenuItem.Text = "Options";
-            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.OptionsToolStripMenuItem_Click);
+            // 
+            // nibToolsMenu
+            // 
+            this.nibToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.NibReadImage,
+            this.NibWriteImage,
+            this.NibSeparator,
+            this.configurePathToNibtoolsToolStripMenuItem});
+            this.nibToolsMenu.Name = "nibToolsMenu";
+            this.nibToolsMenu.Size = new System.Drawing.Size(124, 44);
+            this.nibToolsMenu.Text = "Nibtools";
+            // 
+            // NibReadImage
+            // 
+            this.NibReadImage.Name = "NibReadImage";
+            this.NibReadImage.Size = new System.Drawing.Size(434, 44);
+            this.NibReadImage.Text = "Read Image From Disk";
+            this.NibReadImage.Click += new System.EventHandler(this.NibReadImage_Click);
+            // 
+            // NibWriteImage
+            // 
+            this.NibWriteImage.Name = "NibWriteImage";
+            this.NibWriteImage.Size = new System.Drawing.Size(434, 44);
+            this.NibWriteImage.Text = "Write Image To Disk";
+            this.NibWriteImage.Click += new System.EventHandler(this.NibWriteImage_Click);
+            // 
+            // NibSeparator
+            // 
+            this.NibSeparator.Name = "NibSeparator";
+            this.NibSeparator.Size = new System.Drawing.Size(431, 6);
+            // 
+            // configurePathToNibtoolsToolStripMenuItem
+            // 
+            this.configurePathToNibtoolsToolStripMenuItem.Name = "configurePathToNibtoolsToolStripMenuItem";
+            this.configurePathToNibtoolsToolStripMenuItem.Size = new System.Drawing.Size(434, 44);
+            this.configurePathToNibtoolsToolStripMenuItem.Text = "Configure path to Nibtools";
+            this.configurePathToNibtoolsToolStripMenuItem.Click += new System.EventHandler(this.ConfigurePathToNibtools_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(99, 38);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(99, 44);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItem_Click);
             // 
@@ -2538,17 +2614,821 @@
             // Options_Box
             // 
             this.Options_Box.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.Options_Box.Controls.Add(this.No_Warn);
             this.Options_Box.Controls.Add(this.DB_core_override);
             this.Options_Box.Controls.Add(this.DB_timers);
             this.Options_Box.Controls.Add(this.DB_cores);
             this.Options_Box.Controls.Add(this.CPP_tog);
             this.Options_Box.Controls.Add(this.DB_force);
             this.Options_Box.Controls.Add(this.Pad_Tracks);
-            this.Options_Box.Location = new System.Drawing.Point(2207, 663);
+            this.Options_Box.Location = new System.Drawing.Point(2219, 901);
             this.Options_Box.Name = "Options_Box";
-            this.Options_Box.Size = new System.Drawing.Size(669, 319);
+            this.Options_Box.Size = new System.Drawing.Size(806, 319);
             this.Options_Box.TabIndex = 41;
             this.Options_Box.TabStop = false;
+            // 
+            // No_Warn
+            // 
+            this.No_Warn.AutoSize = true;
+            this.No_Warn.ForeColor = System.Drawing.Color.Brown;
+            this.No_Warn.Location = new System.Drawing.Point(11, 237);
+            this.No_Warn.Name = "No_Warn";
+            this.No_Warn.Size = new System.Drawing.Size(753, 29);
+            this.No_Warn.TabIndex = 43;
+            this.No_Warn.Text = "I know what I\'m doing! -Disable warning message on Nibtools (Read/Write)";
+            this.No_Warn.UseVisualStyleBackColor = true;
+            this.No_Warn.CheckedChanged += new System.EventHandler(this.No_Warn_CheckedChanged);
+            // 
+            // Read_GBox
+            // 
+            this.Read_GBox.Controls.Add(this.groupBox2);
+            this.Read_GBox.Controls.Add(this.Read_Start);
+            this.Read_GBox.Controls.Add(this.R_Retry);
+            this.Read_GBox.Controls.Add(this.R_verb);
+            this.Read_GBox.Controls.Add(this.Retry);
+            this.Read_GBox.Controls.Add(this.R_advanced);
+            this.Read_GBox.Controls.Add(this.R_adv);
+            this.Read_GBox.Location = new System.Drawing.Point(2213, 262);
+            this.Read_GBox.Name = "Read_GBox";
+            this.Read_GBox.Size = new System.Drawing.Size(1294, 308);
+            this.Read_GBox.TabIndex = 42;
+            this.Read_GBox.TabStop = false;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.BackColor = System.Drawing.Color.Gainsboro;
+            this.groupBox2.Controls.Add(this.Drive_Num);
+            this.groupBox2.Controls.Add(this.R_limit);
+            this.groupBox2.Controls.Add(this.Dev_num);
+            this.groupBox2.Controls.Add(this.Parallel);
+            this.groupBox2.Controls.Add(this.T_override);
+            this.groupBox2.Controls.Add(this.S_track);
+            this.groupBox2.Controls.Add(this.E_track);
+            this.groupBox2.Location = new System.Drawing.Point(6, 30);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(502, 186);
+            this.groupBox2.TabIndex = 47;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Device Settings";
+            // 
+            // Drive_Num
+            // 
+            this.Drive_Num.AutoSize = true;
+            this.Drive_Num.Location = new System.Drawing.Point(6, 32);
+            this.Drive_Num.Name = "Drive_Num";
+            this.Drive_Num.Size = new System.Drawing.Size(80, 25);
+            this.Drive_Num.TabIndex = 29;
+            this.Drive_Num.Text = "Drive #";
+            // 
+            // R_limit
+            // 
+            this.R_limit.AutoSize = true;
+            this.R_limit.Location = new System.Drawing.Point(206, 28);
+            this.R_limit.Name = "R_limit";
+            this.R_limit.Size = new System.Drawing.Size(193, 29);
+            this.R_limit.TabIndex = 28;
+            this.R_limit.Text = "Limit (Track 40)";
+            this.R_limit.UseVisualStyleBackColor = true;
+            // 
+            // Dev_num
+            // 
+            this.Dev_num.Location = new System.Drawing.Point(106, 28);
+            this.Dev_num.Maximum = new decimal(new int[] {
+            11,
+            0,
+            0,
+            0});
+            this.Dev_num.Minimum = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.Dev_num.Name = "Dev_num";
+            this.Dev_num.Size = new System.Drawing.Size(73, 31);
+            this.Dev_num.TabIndex = 23;
+            this.Dev_num.Value = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            // 
+            // Parallel
+            // 
+            this.Parallel.AutoSize = true;
+            this.Parallel.Location = new System.Drawing.Point(11, 120);
+            this.Parallel.Name = "Parallel";
+            this.Parallel.Size = new System.Drawing.Size(358, 29);
+            this.Parallel.TabIndex = 22;
+            this.Parallel.Text = "Use parallel Transfer (1571 only)";
+            this.Parallel.UseVisualStyleBackColor = true;
+            // 
+            // T_override
+            // 
+            this.T_override.AutoSize = true;
+            this.T_override.Location = new System.Drawing.Point(11, 80);
+            this.T_override.Name = "T_override";
+            this.T_override.Size = new System.Drawing.Size(309, 29);
+            this.T_override.TabIndex = 25;
+            this.T_override.Text = "Override (Start) (End) Track";
+            this.T_override.UseVisualStyleBackColor = true;
+            this.T_override.CheckedChanged += new System.EventHandler(this.Override_CheckedChanged);
+            // 
+            // S_track
+            // 
+            this.S_track.Location = new System.Drawing.Point(336, 79);
+            this.S_track.Maximum = new decimal(new int[] {
+            41,
+            0,
+            0,
+            0});
+            this.S_track.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.S_track.Name = "S_track";
+            this.S_track.Size = new System.Drawing.Size(74, 31);
+            this.S_track.TabIndex = 26;
+            this.S_track.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.S_track.ValueChanged += new System.EventHandler(this.Track_ValueChanged);
+            // 
+            // E_track
+            // 
+            this.E_track.Location = new System.Drawing.Point(416, 79);
+            this.E_track.Maximum = new decimal(new int[] {
+            41,
+            0,
+            0,
+            0});
+            this.E_track.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.E_track.Name = "E_track";
+            this.E_track.Size = new System.Drawing.Size(75, 31);
+            this.E_track.TabIndex = 27;
+            this.E_track.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.E_track.ValueChanged += new System.EventHandler(this.E_track_ValueChanged);
+            // 
+            // Read_Start
+            // 
+            this.Read_Start.Location = new System.Drawing.Point(15, 258);
+            this.Read_Start.Name = "Read_Start";
+            this.Read_Start.Size = new System.Drawing.Size(173, 37);
+            this.Read_Start.TabIndex = 6;
+            this.Read_Start.Text = "Read Disk";
+            this.Read_Start.UseVisualStyleBackColor = true;
+            this.Read_Start.Click += new System.EventHandler(this.Read_Start_Click);
+            // 
+            // R_Retry
+            // 
+            this.R_Retry.Location = new System.Drawing.Point(388, 225);
+            this.R_Retry.Name = "R_Retry";
+            this.R_Retry.Size = new System.Drawing.Size(120, 31);
+            this.R_Retry.TabIndex = 51;
+            // 
+            // R_verb
+            // 
+            this.R_verb.AutoSize = true;
+            this.R_verb.Location = new System.Drawing.Point(17, 225);
+            this.R_verb.Name = "R_verb";
+            this.R_verb.Size = new System.Drawing.Size(124, 29);
+            this.R_verb.TabIndex = 32;
+            this.R_verb.Text = "Verbose";
+            this.R_verb.UseVisualStyleBackColor = true;
+            // 
+            // Retry
+            // 
+            this.Retry.AutoSize = true;
+            this.Retry.Location = new System.Drawing.Point(201, 227);
+            this.Retry.Name = "Retry";
+            this.Retry.Size = new System.Drawing.Size(169, 29);
+            this.Retry.TabIndex = 50;
+            this.Retry.Text = "Read Retries";
+            this.Retry.UseVisualStyleBackColor = true;
+            this.Retry.CheckedChanged += new System.EventHandler(this.Retry_CheckedChanged);
+            // 
+            // R_advanced
+            // 
+            this.R_advanced.AutoSize = true;
+            this.R_advanced.Location = new System.Drawing.Point(201, 262);
+            this.R_advanced.Name = "R_advanced";
+            this.R_advanced.Size = new System.Drawing.Size(293, 29);
+            this.R_advanced.TabIndex = 48;
+            this.R_advanced.Text = "Enable Advanced Options";
+            this.R_advanced.UseVisualStyleBackColor = true;
+            this.R_advanced.CheckedChanged += new System.EventHandler(this.R_advanced_CheckedChanged);
+            // 
+            // R_adv
+            // 
+            this.R_adv.Controls.Add(this.R_halftracks);
+            this.R_adv.Controls.Add(this.DR_killer);
+            this.R_adv.Controls.Add(this.FD_density);
+            this.R_adv.Controls.Add(this.R_tgap);
+            this.R_adv.Controls.Add(this.ET_matching);
+            this.R_adv.Controls.Add(this.Read_tgap);
+            this.R_adv.Controls.Add(this.II_mode);
+            this.R_adv.Controls.Add(this.EP_tests);
+            this.R_adv.Controls.Add(this.U_sensor);
+            this.R_adv.Controls.Add(this.U_alignment);
+            this.R_adv.Controls.Add(this.U_bitrate);
+            this.R_adv.Controls.Add(this.U_test);
+            this.R_adv.Controls.Add(this.IHS);
+            this.R_adv.Location = new System.Drawing.Point(550, 30);
+            this.R_adv.Name = "R_adv";
+            this.R_adv.Size = new System.Drawing.Size(738, 265);
+            this.R_adv.TabIndex = 49;
+            this.R_adv.TabStop = false;
+            this.R_adv.Text = "Advanced Options";
+            // 
+            // R_halftracks
+            // 
+            this.R_halftracks.AutoSize = true;
+            this.R_halftracks.Location = new System.Drawing.Point(11, 42);
+            this.R_halftracks.Name = "R_halftracks";
+            this.R_halftracks.Size = new System.Drawing.Size(201, 29);
+            this.R_halftracks.TabIndex = 33;
+            this.R_halftracks.Text = "Read half-tracks";
+            this.R_halftracks.UseVisualStyleBackColor = true;
+            // 
+            // DR_killer
+            // 
+            this.DR_killer.AutoSize = true;
+            this.DR_killer.Location = new System.Drawing.Point(323, 77);
+            this.DR_killer.Name = "DR_killer";
+            this.DR_killer.Size = new System.Drawing.Size(347, 29);
+            this.DR_killer.TabIndex = 28;
+            this.DR_killer.Text = "Disable reading of \'killer\' tracks ";
+            this.DR_killer.UseVisualStyleBackColor = true;
+            // 
+            // FD_density
+            // 
+            this.FD_density.AutoSize = true;
+            this.FD_density.Location = new System.Drawing.Point(11, 77);
+            this.FD_density.Name = "FD_density";
+            this.FD_density.Size = new System.Drawing.Size(262, 29);
+            this.FD_density.TabIndex = 29;
+            this.FD_density.Text = "Force default densities";
+            this.FD_density.UseVisualStyleBackColor = true;
+            // 
+            // R_tgap
+            // 
+            this.R_tgap.Location = new System.Drawing.Point(589, 41);
+            this.R_tgap.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.R_tgap.Name = "R_tgap";
+            this.R_tgap.Size = new System.Drawing.Size(106, 31);
+            this.R_tgap.TabIndex = 46;
+            this.R_tgap.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // ET_matching
+            // 
+            this.ET_matching.AutoSize = true;
+            this.ET_matching.Location = new System.Drawing.Point(11, 112);
+            this.ET_matching.Name = "ET_matching";
+            this.ET_matching.Size = new System.Drawing.Size(257, 29);
+            this.ET_matching.TabIndex = 30;
+            this.ET_matching.Text = "Enable track matching";
+            this.ET_matching.UseVisualStyleBackColor = true;
+            // 
+            // Read_tgap
+            // 
+            this.Read_tgap.AutoSize = true;
+            this.Read_tgap.Location = new System.Drawing.Point(323, 42);
+            this.Read_tgap.Name = "Read_tgap";
+            this.Read_tgap.Size = new System.Drawing.Size(253, 29);
+            this.Read_tgap.TabIndex = 45;
+            this.Read_tgap.Text = "Match track gap (adv)";
+            this.Read_tgap.UseVisualStyleBackColor = true;
+            this.Read_tgap.CheckedChanged += new System.EventHandler(this.Read_tgap_CheckedChanged);
+            // 
+            // II_mode
+            // 
+            this.II_mode.AutoSize = true;
+            this.II_mode.Location = new System.Drawing.Point(11, 145);
+            this.II_mode.Name = "II_mode";
+            this.II_mode.Size = new System.Drawing.Size(283, 29);
+            this.II_mode.TabIndex = 31;
+            this.II_mode.Text = "Interactive imaging mode";
+            this.II_mode.UseVisualStyleBackColor = true;
+            // 
+            // EP_tests
+            // 
+            this.EP_tests.AutoSize = true;
+            this.EP_tests.Location = new System.Drawing.Point(11, 180);
+            this.EP_tests.Name = "EP_tests";
+            this.EP_tests.Size = new System.Drawing.Size(282, 29);
+            this.EP_tests.TabIndex = 34;
+            this.EP_tests.Text = "Extend parallel port tests";
+            this.EP_tests.UseVisualStyleBackColor = true;
+            // 
+            // U_sensor
+            // 
+            this.U_sensor.AutoSize = true;
+            this.U_sensor.Location = new System.Drawing.Point(323, 112);
+            this.U_sensor.Name = "U_sensor";
+            this.U_sensor.Size = new System.Drawing.Size(258, 29);
+            this.U_sensor.TabIndex = 35;
+            this.U_sensor.Text = "Use index hole sensor";
+            this.U_sensor.UseVisualStyleBackColor = true;
+            // 
+            // U_alignment
+            // 
+            this.U_alignment.AutoSize = true;
+            this.U_alignment.Location = new System.Drawing.Point(323, 145);
+            this.U_alignment.Name = "U_alignment";
+            this.U_alignment.Size = new System.Drawing.Size(259, 29);
+            this.U_alignment.TabIndex = 36;
+            this.U_alignment.Text = "Track alignment report";
+            this.U_alignment.UseVisualStyleBackColor = true;
+            // 
+            // U_bitrate
+            // 
+            this.U_bitrate.AutoSize = true;
+            this.U_bitrate.Location = new System.Drawing.Point(323, 180);
+            this.U_bitrate.Name = "U_bitrate";
+            this.U_bitrate.Size = new System.Drawing.Size(246, 29);
+            this.U_bitrate.TabIndex = 37;
+            this.U_bitrate.Text = "Deep bitrate analysis";
+            this.U_bitrate.UseVisualStyleBackColor = true;
+            // 
+            // U_test
+            // 
+            this.U_test.AutoSize = true;
+            this.U_test.Location = new System.Drawing.Point(323, 215);
+            this.U_test.Name = "U_test";
+            this.U_test.Size = new System.Drawing.Size(262, 29);
+            this.U_test.TabIndex = 38;
+            this.U_test.Text = "Test index hole sensor";
+            this.U_test.UseVisualStyleBackColor = true;
+            // 
+            // IHS
+            // 
+            this.IHS.AutoSize = true;
+            this.IHS.Location = new System.Drawing.Point(11, 215);
+            this.IHS.Name = "IHS";
+            this.IHS.Size = new System.Drawing.Size(279, 29);
+            this.IHS.TabIndex = 39;
+            this.IHS.Text = "Use SC+ compatible IHS";
+            this.IHS.UseVisualStyleBackColor = true;
+            this.IHS.CheckedChanged += new System.EventHandler(this.IHS_CheckedChanged);
+            // 
+            // Write_GBox
+            // 
+            this.Write_GBox.Controls.Add(this.groupBox4);
+            this.Write_GBox.Controls.Add(this.Write_Start);
+            this.Write_GBox.Controls.Add(this.W_verb);
+            this.Write_GBox.Controls.Add(this.WAdv);
+            this.Write_GBox.Controls.Add(this.Zero_Disk);
+            this.Write_GBox.Controls.Add(this.W_advopts);
+            this.Write_GBox.Location = new System.Drawing.Point(2217, 576);
+            this.Write_GBox.Name = "Write_GBox";
+            this.Write_GBox.Size = new System.Drawing.Size(1452, 308);
+            this.Write_GBox.TabIndex = 43;
+            this.Write_GBox.TabStop = false;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.BackColor = System.Drawing.Color.Gainsboro;
+            this.groupBox4.Controls.Add(this.Wrt_devnum);
+            this.groupBox4.Controls.Add(this.Drv_status);
+            this.groupBox4.Controls.Add(this.W_limit);
+            this.groupBox4.Controls.Add(this.ADJ_RPM);
+            this.groupBox4.Controls.Add(this.W_num);
+            this.groupBox4.Controls.Add(this.WParallel);
+            this.groupBox4.Controls.Add(this.W_override);
+            this.groupBox4.Controls.Add(this.W_start);
+            this.groupBox4.Controls.Add(this.W_end);
+            this.groupBox4.Location = new System.Drawing.Point(6, 17);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(509, 197);
+            this.groupBox4.TabIndex = 48;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Device Settings";
+            // 
+            // Wrt_devnum
+            // 
+            this.Wrt_devnum.AutoSize = true;
+            this.Wrt_devnum.Location = new System.Drawing.Point(8, 32);
+            this.Wrt_devnum.Name = "Wrt_devnum";
+            this.Wrt_devnum.Size = new System.Drawing.Size(80, 25);
+            this.Wrt_devnum.TabIndex = 74;
+            this.Wrt_devnum.Text = "Drive #";
+            // 
+            // Drv_status
+            // 
+            this.Drv_status.Location = new System.Drawing.Point(7, 143);
+            this.Drv_status.Name = "Drv_status";
+            this.Drv_status.Size = new System.Drawing.Size(92, 35);
+            this.Drv_status.TabIndex = 30;
+            this.Drv_status.Text = "Status";
+            this.Drv_status.UseVisualStyleBackColor = true;
+            this.Drv_status.Click += new System.EventHandler(this.Drv_status_Click);
+            // 
+            // W_limit
+            // 
+            this.W_limit.AutoSize = true;
+            this.W_limit.Location = new System.Drawing.Point(202, 28);
+            this.W_limit.Name = "W_limit";
+            this.W_limit.Size = new System.Drawing.Size(193, 29);
+            this.W_limit.TabIndex = 29;
+            this.W_limit.Text = "Limit (Track 40)";
+            this.W_limit.UseVisualStyleBackColor = true;
+            // 
+            // ADJ_RPM
+            // 
+            this.ADJ_RPM.Location = new System.Drawing.Point(124, 143);
+            this.ADJ_RPM.Name = "ADJ_RPM";
+            this.ADJ_RPM.Size = new System.Drawing.Size(146, 36);
+            this.ADJ_RPM.TabIndex = 73;
+            this.ADJ_RPM.Text = "Adjust RPM";
+            this.ADJ_RPM.UseVisualStyleBackColor = true;
+            this.ADJ_RPM.Click += new System.EventHandler(this.ADJ_RPM_Click);
+            // 
+            // W_num
+            // 
+            this.W_num.Location = new System.Drawing.Point(106, 28);
+            this.W_num.Maximum = new decimal(new int[] {
+            11,
+            0,
+            0,
+            0});
+            this.W_num.Minimum = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.W_num.Name = "W_num";
+            this.W_num.Size = new System.Drawing.Size(73, 31);
+            this.W_num.TabIndex = 23;
+            this.W_num.Value = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            // 
+            // WParallel
+            // 
+            this.WParallel.AutoSize = true;
+            this.WParallel.Location = new System.Drawing.Point(7, 105);
+            this.WParallel.Name = "WParallel";
+            this.WParallel.Size = new System.Drawing.Size(358, 29);
+            this.WParallel.TabIndex = 22;
+            this.WParallel.Text = "Use parallel Transfer (1571 only)";
+            this.WParallel.UseVisualStyleBackColor = true;
+            // 
+            // W_override
+            // 
+            this.W_override.AutoSize = true;
+            this.W_override.Location = new System.Drawing.Point(6, 65);
+            this.W_override.Name = "W_override";
+            this.W_override.Size = new System.Drawing.Size(309, 29);
+            this.W_override.TabIndex = 25;
+            this.W_override.Text = "Override (Start) (End) Track";
+            this.W_override.UseVisualStyleBackColor = true;
+            this.W_override.CheckedChanged += new System.EventHandler(this.W_override_CheckedChanged);
+            // 
+            // W_start
+            // 
+            this.W_start.Location = new System.Drawing.Point(342, 64);
+            this.W_start.Maximum = new decimal(new int[] {
+            41,
+            0,
+            0,
+            0});
+            this.W_start.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.W_start.Name = "W_start";
+            this.W_start.Size = new System.Drawing.Size(74, 31);
+            this.W_start.TabIndex = 26;
+            this.W_start.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.W_start.ValueChanged += new System.EventHandler(this.W_start_ValueChanged);
+            // 
+            // W_end
+            // 
+            this.W_end.Location = new System.Drawing.Point(422, 64);
+            this.W_end.Maximum = new decimal(new int[] {
+            41,
+            0,
+            0,
+            0});
+            this.W_end.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.W_end.Name = "W_end";
+            this.W_end.Size = new System.Drawing.Size(75, 31);
+            this.W_end.TabIndex = 27;
+            this.W_end.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.W_end.ValueChanged += new System.EventHandler(this.W_end_ValueChanged);
+            // 
+            // Write_Start
+            // 
+            this.Write_Start.Location = new System.Drawing.Point(7, 261);
+            this.Write_Start.Name = "Write_Start";
+            this.Write_Start.Size = new System.Drawing.Size(146, 37);
+            this.Write_Start.TabIndex = 7;
+            this.Write_Start.Text = "Write Disk";
+            this.Write_Start.UseVisualStyleBackColor = true;
+            this.Write_Start.Click += new System.EventHandler(this.Write_Start_Click);
+            // 
+            // W_verb
+            // 
+            this.W_verb.AutoSize = true;
+            this.W_verb.Location = new System.Drawing.Point(10, 226);
+            this.W_verb.Name = "W_verb";
+            this.W_verb.Size = new System.Drawing.Size(124, 29);
+            this.W_verb.TabIndex = 52;
+            this.W_verb.Text = "Verbose";
+            this.W_verb.UseVisualStyleBackColor = true;
+            // 
+            // WAdv
+            // 
+            this.WAdv.AutoSize = true;
+            this.WAdv.Location = new System.Drawing.Point(223, 226);
+            this.WAdv.Name = "WAdv";
+            this.WAdv.Size = new System.Drawing.Size(293, 29);
+            this.WAdv.TabIndex = 72;
+            this.WAdv.Text = "Enable Advanced Options";
+            this.WAdv.UseVisualStyleBackColor = true;
+            this.WAdv.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
+            // 
+            // Zero_Disk
+            // 
+            this.Zero_Disk.Location = new System.Drawing.Point(339, 261);
+            this.Zero_Disk.Name = "Zero_Disk";
+            this.Zero_Disk.Size = new System.Drawing.Size(173, 35);
+            this.Zero_Disk.TabIndex = 62;
+            this.Zero_Disk.Text = "Unformat Disk";
+            this.Zero_Disk.UseVisualStyleBackColor = true;
+            this.Zero_Disk.Click += new System.EventHandler(this.Zero_Disk_Click);
+            // 
+            // W_advopts
+            // 
+            this.W_advopts.Controls.Add(this.W_cap);
+            this.W_advopts.Controls.Add(this.W_capmar);
+            this.W_advopts.Controls.Add(this.W_autobad);
+            this.W_advopts.Controls.Add(this.W_agg);
+            this.W_advopts.Controls.Add(this.W_aggcr);
+            this.W_advopts.Controls.Add(this.W_tgap);
+            this.W_advopts.Controls.Add(this.W_timedalign);
+            this.W_advopts.Controls.Add(this.W_rpm);
+            this.W_advopts.Controls.Add(this.W_gapmatch);
+            this.W_advopts.Controls.Add(this.W_capacity);
+            this.W_advopts.Controls.Add(this.Wrpm);
+            this.W_advopts.Controls.Add(this.W_gapreduce);
+            this.W_advopts.Controls.Add(this.W_skew);
+            this.W_advopts.Controls.Add(this.W_gcrrunred);
+            this.W_advopts.Controls.Add(this.W_tskew);
+            this.W_advopts.Controls.Add(this.W_syncred);
+            this.W_advopts.Controls.Add(this.W_align);
+            this.W_advopts.Controls.Add(this.WTA);
+            this.W_advopts.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.W_advopts.Location = new System.Drawing.Point(535, 17);
+            this.W_advopts.Name = "W_advopts";
+            this.W_advopts.Size = new System.Drawing.Size(911, 284);
+            this.W_advopts.TabIndex = 71;
+            this.W_advopts.TabStop = false;
+            this.W_advopts.Text = "Advanced Options";
+            // 
+            // W_cap
+            // 
+            this.W_cap.Location = new System.Drawing.Point(770, 167);
+            this.W_cap.Maximum = new decimal(new int[] {
+            512,
+            0,
+            0,
+            0});
+            this.W_cap.Name = "W_cap";
+            this.W_cap.Size = new System.Drawing.Size(120, 31);
+            this.W_cap.TabIndex = 77;
+            // 
+            // W_capmar
+            // 
+            this.W_capmar.AutoSize = true;
+            this.W_capmar.Location = new System.Drawing.Point(409, 168);
+            this.W_capmar.Name = "W_capmar";
+            this.W_capmar.Size = new System.Drawing.Size(330, 29);
+            this.W_capmar.TabIndex = 76;
+            this.W_capmar.Text = "Change extra capacity margin";
+            this.W_capmar.UseVisualStyleBackColor = true;
+            this.W_capmar.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
+            // 
+            // W_autobad
+            // 
+            this.W_autobad.AutoSize = true;
+            this.W_autobad.Location = new System.Drawing.Point(7, 164);
+            this.W_autobad.Name = "W_autobad";
+            this.W_autobad.Size = new System.Drawing.Size(361, 29);
+            this.W_autobad.TabIndex = 75;
+            this.W_autobad.Text = "Disable auto bad GCR simulation";
+            this.W_autobad.UseVisualStyleBackColor = true;
+            this.W_autobad.CheckedChanged += new System.EventHandler(this.W_autobad_CheckedChanged);
+            // 
+            // W_agg
+            // 
+            this.W_agg.Location = new System.Drawing.Point(770, 63);
+            this.W_agg.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.W_agg.Name = "W_agg";
+            this.W_agg.Size = new System.Drawing.Size(120, 31);
+            this.W_agg.TabIndex = 74;
+            // 
+            // W_aggcr
+            // 
+            this.W_aggcr.AutoSize = true;
+            this.W_aggcr.Location = new System.Drawing.Point(409, 65);
+            this.W_aggcr.Name = "W_aggcr";
+            this.W_aggcr.Size = new System.Drawing.Size(348, 29);
+            this.W_aggcr.TabIndex = 73;
+            this.W_aggcr.Text = "Aggressive bad GCR simulation";
+            this.W_aggcr.UseVisualStyleBackColor = true;
+            this.W_aggcr.CheckedChanged += new System.EventHandler(this.W_aggcr_CheckedChanged);
+            // 
+            // W_tgap
+            // 
+            this.W_tgap.Location = new System.Drawing.Point(770, 97);
+            this.W_tgap.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.W_tgap.Name = "W_tgap";
+            this.W_tgap.Size = new System.Drawing.Size(120, 31);
+            this.W_tgap.TabIndex = 72;
+            this.W_tgap.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // W_timedalign
+            // 
+            this.W_timedalign.AutoSize = true;
+            this.W_timedalign.Location = new System.Drawing.Point(7, 199);
+            this.W_timedalign.Name = "W_timedalign";
+            this.W_timedalign.Size = new System.Drawing.Size(381, 29);
+            this.W_timedalign.TabIndex = 53;
+            this.W_timedalign.Text = "Enable timer based track alignment";
+            this.W_timedalign.UseVisualStyleBackColor = true;
+            // 
+            // W_rpm
+            // 
+            this.W_rpm.Location = new System.Drawing.Point(770, 131);
+            this.W_rpm.Maximum = new decimal(new int[] {
+            340,
+            0,
+            0,
+            0});
+            this.W_rpm.Minimum = new decimal(new int[] {
+            260,
+            0,
+            0,
+            0});
+            this.W_rpm.Name = "W_rpm";
+            this.W_rpm.Size = new System.Drawing.Size(120, 31);
+            this.W_rpm.TabIndex = 70;
+            this.W_rpm.Value = new decimal(new int[] {
+            260,
+            0,
+            0,
+            0});
+            // 
+            // W_gapmatch
+            // 
+            this.W_gapmatch.AutoSize = true;
+            this.W_gapmatch.Location = new System.Drawing.Point(409, 99);
+            this.W_gapmatch.Name = "W_gapmatch";
+            this.W_gapmatch.Size = new System.Drawing.Size(301, 29);
+            this.W_gapmatch.TabIndex = 71;
+            this.W_gapmatch.Text = "Alternate gap match length";
+            this.W_gapmatch.UseVisualStyleBackColor = true;
+            this.W_gapmatch.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
+            // 
+            // W_capacity
+            // 
+            this.W_capacity.AutoSize = true;
+            this.W_capacity.Location = new System.Drawing.Point(7, 30);
+            this.W_capacity.Name = "W_capacity";
+            this.W_capacity.Size = new System.Drawing.Size(361, 29);
+            this.W_capacity.TabIndex = 49;
+            this.W_capacity.Text = "Disable auto capacity adjustment";
+            this.W_capacity.UseVisualStyleBackColor = true;
+            // 
+            // Wrpm
+            // 
+            this.Wrpm.AutoSize = true;
+            this.Wrpm.Location = new System.Drawing.Point(409, 133);
+            this.Wrpm.Name = "Wrpm";
+            this.Wrpm.Size = new System.Drawing.Size(333, 29);
+            this.Wrpm.TabIndex = 69;
+            this.Wrpm.Text = "Simulate track capacity (RPM)";
+            this.Wrpm.UseVisualStyleBackColor = true;
+            this.Wrpm.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
+            // 
+            // W_gapreduce
+            // 
+            this.W_gapreduce.AutoSize = true;
+            this.W_gapreduce.Location = new System.Drawing.Point(6, 63);
+            this.W_gapreduce.Name = "W_gapreduce";
+            this.W_gapreduce.Size = new System.Drawing.Size(248, 29);
+            this.W_gapreduce.TabIndex = 50;
+            this.W_gapreduce.Text = "Enable gap reduction";
+            this.W_gapreduce.UseVisualStyleBackColor = true;
+            // 
+            // W_skew
+            // 
+            this.W_skew.AutoSize = true;
+            this.W_skew.Location = new System.Drawing.Point(409, 30);
+            this.W_skew.Name = "W_skew";
+            this.W_skew.Size = new System.Drawing.Size(156, 29);
+            this.W_skew.TabIndex = 68;
+            this.W_skew.Text = "Track Skew";
+            this.W_skew.UseVisualStyleBackColor = true;
+            this.W_skew.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
+            // 
+            // W_gcrrunred
+            // 
+            this.W_gcrrunred.AutoSize = true;
+            this.W_gcrrunred.Location = new System.Drawing.Point(7, 97);
+            this.W_gcrrunred.Name = "W_gcrrunred";
+            this.W_gcrrunred.Size = new System.Drawing.Size(266, 29);
+            this.W_gcrrunred.TabIndex = 51;
+            this.W_gcrrunred.Text = "Bad GCR run reduction";
+            this.W_gcrrunred.UseVisualStyleBackColor = true;
+            // 
+            // W_tskew
+            // 
+            this.W_tskew.Location = new System.Drawing.Point(770, 28);
+            this.W_tskew.Maximum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
+            this.W_tskew.Name = "W_tskew";
+            this.W_tskew.Size = new System.Drawing.Size(120, 31);
+            this.W_tskew.TabIndex = 67;
+            // 
+            // W_syncred
+            // 
+            this.W_syncred.AutoSize = true;
+            this.W_syncred.Location = new System.Drawing.Point(7, 131);
+            this.W_syncred.Name = "W_syncred";
+            this.W_syncred.Size = new System.Drawing.Size(310, 29);
+            this.W_syncred.TabIndex = 54;
+            this.W_syncred.Text = "Disable auto sync reduction";
+            this.W_syncred.UseVisualStyleBackColor = true;
+            // 
+            // W_align
+            // 
+            this.W_align.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.W_align.FormattingEnabled = true;
+            this.W_align.Location = new System.Drawing.Point(409, 232);
+            this.W_align.Name = "W_align";
+            this.W_align.Size = new System.Drawing.Size(348, 33);
+            this.W_align.TabIndex = 66;
+            // 
+            // WTA
+            // 
+            this.WTA.AutoSize = true;
+            this.WTA.Location = new System.Drawing.Point(7, 236);
+            this.WTA.Name = "WTA";
+            this.WTA.Size = new System.Drawing.Size(309, 29);
+            this.WTA.TabIndex = 65;
+            this.WTA.Text = "Alternative track alignments";
+            this.WTA.UseVisualStyleBackColor = true;
+            this.WTA.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
             // 
             // GB_NewDisk
             // 
@@ -2562,7 +3442,7 @@
             this.GB_NewDisk.Controls.Add(this.label20);
             this.GB_NewDisk.Controls.Add(this.ND_id);
             this.GB_NewDisk.Controls.Add(this.ND_name);
-            this.GB_NewDisk.Location = new System.Drawing.Point(2213, 149);
+            this.GB_NewDisk.Location = new System.Drawing.Point(2625, 53);
             this.GB_NewDisk.Name = "GB_NewDisk";
             this.GB_NewDisk.Size = new System.Drawing.Size(417, 276);
             this.GB_NewDisk.TabIndex = 38;
@@ -2642,11 +3522,78 @@
             this.ND_name.TabIndex = 0;
             this.ND_name.Text = "NEW DISK";
             // 
+            // CSTfmt
+            // 
+            this.CSTfmt.AutoSize = true;
+            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
+            this.CSTfmt.Location = new System.Drawing.Point(20, 284);
+            this.CSTfmt.Name = "CSTfmt";
+            this.CSTfmt.NewText = "";
+            this.CSTfmt.RotateAngle = 0;
+            this.CSTfmt.Size = new System.Drawing.Size(177, 29);
+            this.CSTfmt.TabIndex = 12;
+            this.CSTfmt.Text = "Custom Format";
+            // 
+            // ErrorBlk
+            // 
+            this.ErrorBlk.AutoSize = true;
+            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
+            this.ErrorBlk.Location = new System.Drawing.Point(20, 488);
+            this.ErrorBlk.Name = "ErrorBlk";
+            this.ErrorBlk.NewText = "";
+            this.ErrorBlk.RotateAngle = 0;
+            this.ErrorBlk.Size = new System.Drawing.Size(133, 29);
+            this.ErrorBlk.TabIndex = 11;
+            this.ErrorBlk.Text = "Block Error";
+            // 
+            // AllocBlk
+            // 
+            this.AllocBlk.AutoSize = true;
+            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
+            this.AllocBlk.Location = new System.Drawing.Point(18, 655);
+            this.AllocBlk.Name = "AllocBlk";
+            this.AllocBlk.NewText = "";
+            this.AllocBlk.RotateAngle = 0;
+            this.AllocBlk.Size = new System.Drawing.Size(179, 29);
+            this.AllocBlk.TabIndex = 10;
+            this.AllocBlk.Text = "Allocated Block";
+            // 
+            // FreeBlk
+            // 
+            this.FreeBlk.AutoSize = true;
+            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
+            this.FreeBlk.Location = new System.Drawing.Point(18, 871);
+            this.FreeBlk.Name = "FreeBlk";
+            this.FreeBlk.NewText = "";
+            this.FreeBlk.RotateAngle = 0;
+            this.FreeBlk.Size = new System.Drawing.Size(130, 29);
+            this.FreeBlk.TabIndex = 9;
+            this.FreeBlk.Text = "Free Block";
+            // 
+            // track_label
+            // 
+            this.track_label.AutoSize = true;
+            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.track_label.Location = new System.Drawing.Point(2, 82);
+            this.track_label.Name = "track_label";
+            this.track_label.NewText = null;
+            this.track_label.RotateAngle = 0;
+            this.track_label.Size = new System.Drawing.Size(215, 37);
+            this.track_label.TabIndex = 0;
+            this.track_label.Text = "customLabel1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2622, 1412);
+            this.ClientSize = new System.Drawing.Size(3725, 1412);
+            this.Controls.Add(this.Write_GBox);
+            this.Controls.Add(this.Read_GBox);
             this.Controls.Add(this.Options_Box);
             this.Controls.Add(this.GB_NewDisk);
             this.Controls.Add(this.panel1);
@@ -2728,6 +3675,31 @@
             this.menuStrip1.PerformLayout();
             this.Options_Box.ResumeLayout(false);
             this.Options_Box.PerformLayout();
+            this.Read_GBox.ResumeLayout(false);
+            this.Read_GBox.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Dev_num)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.S_track)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.E_track)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.R_Retry)).EndInit();
+            this.R_adv.ResumeLayout(false);
+            this.R_adv.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.R_tgap)).EndInit();
+            this.Write_GBox.ResumeLayout(false);
+            this.Write_GBox.PerformLayout();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.W_num)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_start)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_end)).EndInit();
+            this.W_advopts.ResumeLayout(false);
+            this.W_advopts.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.W_cap)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_agg)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_tgap)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_rpm)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.W_tskew)).EndInit();
             this.GB_NewDisk.ResumeLayout(false);
             this.GB_NewDisk.PerformLayout();
             this.ResumeLayout(false);
@@ -2925,5 +3897,76 @@
         private System.Windows.Forms.Button CBD_Cancel;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.GroupBox Options_Box;
+        private System.Windows.Forms.ToolStripMenuItem recentMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem nibToolsMenu;
+        private System.Windows.Forms.ToolStripMenuItem NibReadImage;
+        private System.Windows.Forms.ToolStripMenuItem NibWriteImage;
+        private System.Windows.Forms.ToolStripSeparator NibSeparator;
+        private System.Windows.Forms.ToolStripMenuItem configurePathToNibtoolsToolStripMenuItem;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.GroupBox Read_GBox;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.CheckBox R_limit;
+        private System.Windows.Forms.NumericUpDown Dev_num;
+        private System.Windows.Forms.CheckBox Parallel;
+        private System.Windows.Forms.CheckBox T_override;
+        private System.Windows.Forms.NumericUpDown S_track;
+        private System.Windows.Forms.NumericUpDown E_track;
+        private System.Windows.Forms.Button Read_Start;
+        private System.Windows.Forms.NumericUpDown R_Retry;
+        private System.Windows.Forms.CheckBox R_verb;
+        private System.Windows.Forms.CheckBox Retry;
+        private System.Windows.Forms.CheckBox R_advanced;
+        private System.Windows.Forms.GroupBox R_adv;
+        private System.Windows.Forms.CheckBox R_halftracks;
+        private System.Windows.Forms.CheckBox DR_killer;
+        private System.Windows.Forms.CheckBox FD_density;
+        private System.Windows.Forms.NumericUpDown R_tgap;
+        private System.Windows.Forms.CheckBox ET_matching;
+        private System.Windows.Forms.CheckBox Read_tgap;
+        private System.Windows.Forms.CheckBox II_mode;
+        private System.Windows.Forms.CheckBox EP_tests;
+        private System.Windows.Forms.CheckBox U_sensor;
+        private System.Windows.Forms.CheckBox U_alignment;
+        private System.Windows.Forms.CheckBox U_bitrate;
+        private System.Windows.Forms.CheckBox U_test;
+        private System.Windows.Forms.CheckBox IHS;
+        private System.Windows.Forms.Label Drive_Num;
+        private System.Windows.Forms.GroupBox Write_GBox;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.Button Drv_status;
+        private System.Windows.Forms.CheckBox W_limit;
+        private System.Windows.Forms.NumericUpDown W_num;
+        private System.Windows.Forms.CheckBox W_override;
+        private System.Windows.Forms.NumericUpDown W_start;
+        private System.Windows.Forms.NumericUpDown W_end;
+        private System.Windows.Forms.Button Write_Start;
+        private System.Windows.Forms.Button ADJ_RPM;
+        private System.Windows.Forms.CheckBox W_verb;
+        private System.Windows.Forms.CheckBox WAdv;
+        private System.Windows.Forms.Button Zero_Disk;
+        private System.Windows.Forms.GroupBox W_advopts;
+        private System.Windows.Forms.NumericUpDown W_cap;
+        private System.Windows.Forms.CheckBox W_capmar;
+        private System.Windows.Forms.CheckBox W_autobad;
+        private System.Windows.Forms.NumericUpDown W_agg;
+        private System.Windows.Forms.CheckBox W_aggcr;
+        private System.Windows.Forms.NumericUpDown W_tgap;
+        private System.Windows.Forms.CheckBox W_timedalign;
+        private System.Windows.Forms.NumericUpDown W_rpm;
+        private System.Windows.Forms.CheckBox W_gapmatch;
+        private System.Windows.Forms.CheckBox W_capacity;
+        private System.Windows.Forms.CheckBox Wrpm;
+        private System.Windows.Forms.CheckBox W_gapreduce;
+        private System.Windows.Forms.CheckBox W_skew;
+        private System.Windows.Forms.CheckBox W_gcrrunred;
+        private System.Windows.Forms.NumericUpDown W_tskew;
+        private System.Windows.Forms.CheckBox W_syncred;
+        private System.Windows.Forms.ComboBox W_align;
+        private System.Windows.Forms.CheckBox WTA;
+        private System.Windows.Forms.Label Wrt_devnum;
+        private System.Windows.Forms.CheckBox No_Warn;
+        private System.Windows.Forms.CheckBox WParallel;
     }
 }
