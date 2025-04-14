@@ -149,6 +149,7 @@
     <None Include="Properties\cyan.bin" />
     <None Include="Properties\fload.bin" />
     <None Include="Properties\msvcrt.bin" />
+    <None Include="Properties\objects.bin" />
     <None Include="Properties\rak1.bin" />
     <None Include="Properties\rlnk.bin" />
     <None Include="Properties\Settings.settings">

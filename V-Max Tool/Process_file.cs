@@ -357,7 +357,8 @@ namespace V_Max_Tool
                             if (ht > 17 && ht < 35)
                             {
                                 var d = Get_Density(NDS.Track_Length[i] >> 3);
-                                if ((ht < 18 && d != 0) || (ht < 25 && d != 1) || (ht < 31 && d != 2) || (ht < 43 && d != 3))
+                                //if ((ht < 18 && d != 0) || (ht < 25 && d != 1) || (ht < 31 && d != 2) || (ht < 43 && d != 3))
+                                if ((ht >= 31 && d != 3) || (ht >= 25 && ht < 31 && d != 2) || (ht >= 18 && ht < 25 && d != 1) || (ht >= 0 && ht < 18 && d != 0))
                                     cust_dens = true;
                             }
                             v2 |= NDS.cbm[i] == 2;
@@ -366,7 +367,8 @@ namespace V_Max_Tool
                         if (!batch && NDS.Track_Length[i] > 6000 && (NDS.Track_Length[i] >> 3) < 8100 && NDS.cbm[i] >= 0 && NDS.cbm[i] != secF.Length - 1)
                         {
                             var d = Get_Density(NDS.Track_Length[i] >> 3);
-                            string e = ((ht >= 31 && d != 3) || (ht >= 25 && d != 2) || (ht >= 18 && d != 1) || (ht < 18 && d != 0)) ? " [!]" : "";
+                            string e = "";
+                            if ((ht >= 31 && d != 3) || (ht >= 25 && ht < 31 && d != 2) || (ht >= 18 && ht < 25 && d != 1) || (ht >= 0 && ht < 18 && d != 0)) e = " [!]";
                             color = colorMap.TryGetValue(NDS.cbm[i], out Color c) ? c : Color.Black; // Default color if not found
                             sf.Items.Add(new LineColor { Color = color, Text = $"{secF[NDS.cbm[i]]}{Fat}" });
                             sl.Items.Add((NDS.Track_Length[i] >> 3).ToString("N0"));

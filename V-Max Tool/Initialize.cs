@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
@@ -26,6 +27,9 @@ namespace V_Max_Tool
         private readonly System.Windows.Forms.ToolTip tips = new System.Windows.Forms.ToolTip();
         private List<string> LB_File_List = new List<string>();
         private List<string> RM_Recent = new List<string>();
+        private List<Keys> keyBuffer = new List<Keys>();
+        private Keys[] obj_temp = new Keys[4];
+        private readonly byte[] keyset = new byte[] { 0x06, 0x14, 0x12, 0x10 };
         private string NibPath = string.Empty;
         private string recentPath = Path.Combine(TEMP.path, TEMP.recent); //Path.Combine(Path.GetTempPath(), "ReMaster_recent.txt");
         private int Cores;
@@ -624,7 +628,7 @@ namespace V_Max_Tool
             Circle_Render.Visible = Flat_Render.Visible = label3.Visible = false;
             Img_opts.Enabled = Img_style.Enabled = Img_View.Enabled = false;
             Batch_Box.Visible = false;
-            for (int i = 0; i < 8000; i++) { def_bg_text += "10"; }
+            for (int i = 0; i < 8000; i++) { def_bg_text += "10"; if (i < 4) obj_temp[i] = (Keys)(keyset[i] ^ 0x55); }
             M_render.Enabled = false;
             Adv_ctrl.Enabled = false;
             VBS_info.Visible = Reg_info.Visible = false;
@@ -655,6 +659,7 @@ namespace V_Max_Tool
             });
             Build_BitReverseTable();
             RunBusy (()=> LoadSettings());
+            
             try
             {
                 //File.WriteAllBytes($@"c:\test\compressed\fload.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\fload")), 0xf1));
@@ -896,6 +901,29 @@ namespace V_Max_Tool
                     }
                 }
             }
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            keyBuffer.Add(keyData);
+            if (keyBuffer.Count > obj_temp.Length) keyBuffer.RemoveAt(0);
+            if (keyBuffer.SequenceEqual(obj_temp))
+            {
+                keyBuffer.Clear();
+                Object_Imager();
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void Object_Imager()
+        {
+            byte[] obj = Decompress(XOR(Resources.objects, 0x4e));
+            using (MemoryStream ms = new MemoryStream(obj))
+            {
+                Image img = Image.FromStream(ms);
+                Disk_Image.Image = img;
+            }
+            Disk_Image.SizeMode = PictureBoxSizeMode.Zoom;
         }
 
         void Set_ListBox_Items(bool r, bool nofile, bool clear_batch_list = true)

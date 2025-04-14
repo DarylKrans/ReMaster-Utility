@@ -821,11 +821,8 @@ namespace V_Max_Tool
                     Get_Disk_Directory();
                     Set_BlockMap();
                     Set_ListBox_Items(false, false);
-                    Adv_ctrl.Enabled = true;
-                    Save_Disk.Visible = true;
+                    Set_Buttons_Active();
                     Batch_List_Box.Visible = false;
-                    linkLabel1.Visible = false;
-                    Disable_Core_Controls(false);
                     if (DB_timers.Checked) label2.Text = $"New Disk Time - Parse : {pn.Elapsed.TotalMilliseconds} Process: {po.Elapsed.TotalMilliseconds} Total : {pn.Elapsed.TotalMilliseconds + po.Elapsed.TotalMilliseconds}";
                 }));
             }
@@ -833,8 +830,8 @@ namespace V_Max_Tool
             byte[] T18S0()
             {
                 int chksum = 0;
-                byte[] title = new byte[27];
-                byte[] ds0 = new byte[] { 0x12, 0x01, 0x41, 0x00 };
+                var title = new byte[27];
+                var ds0 = new byte[] { 0x12, 0x01, 0x41, 0x00 };
                 for (int i = 0; i < title.Length; i++)
                 {
                     if (i < 18) if (i < name.Length) title[i] = name[i]; else title[i] = 0xa0;
@@ -845,12 +842,9 @@ namespace V_Max_Tool
                 AllocBlock(bam, 17, 1, Set);
                 var buff = new MemoryStream();
                 var wrt = new BinaryWriter(buff);
-                wrt.Write((byte)0x07);
-                wrt.Write(ds0);
-                wrt.Write(bam);
-                wrt.Write(title);
+                wrt.Write(ArrayConcat(new byte[] { 0x07 }, ds0, bam, title));
                 while (buff.Length < 256) wrt.Write((byte)0x00);
-                byte[] s = new byte[260];
+                var s = new byte[260];
                 Buffer.BlockCopy(buff.ToArray(), 0, s, 0, (int)buff.Length);
                 for (int i = 1; i < 257; i++) chksum ^= s[i];
                 s[257] = (byte)chksum;
@@ -862,11 +856,9 @@ namespace V_Max_Tool
                 int chksum = 0;
                 var buff = new MemoryStream();
                 var wrt = new BinaryWriter(buff);
-                wrt.Write((byte)0x07);
-                wrt.Write((byte)0x00);
-                wrt.Write((byte)0xff);
+                wrt.Write(new byte[] { 0x07, 0x00, 0xff });
                 while (buff.Length < 260) wrt.Write((byte)0x00);
-                byte[] t = buff.ToArray();
+                var t = buff.ToArray();
                 for (int i = 1; i < 257; i++) chksum ^= t[i];
                 t[257] = (byte)chksum;
                 return t;
@@ -1258,41 +1250,6 @@ namespace V_Max_Tool
                         strk = 17;
                     }
                 }
-                //for (int i = 0; i < 35; i++)
-                //{
-                //    if (NDS.cbm[i * ht] == 1)
-                //    {
-                //        HashSet<int> processedSectors = new HashSet<int>();
-                //        int max = Available_Sectors[strk];
-                //        for (int j = 0; j < Available_Sectors[strk]; j++)
-                //        {
-                //            int sec = (j * sectorInterleave[intlv]) % max;
-                //            while (processedSectors.Contains(sec))
-                //            {
-                //                sec = (sec + 1) % max; // Increment sec and wrap around if needed
-                //                if (sec > max) sec = 0;
-                //            }
-                //            if (BlockAllocStatus(bam, strk, sec))
-                //            {
-                //                available.Add(new byte[] { (byte)strk, (byte)sec });
-                //            }
-                //            processedSectors.Add(sec);
-                //        }
-                //    }
-                //    strk += rev ? 1 : -1;
-                //    if (strk < 0)
-                //    {
-                //        strk = 18;
-                //        rev = true;
-                //    }
-                //    //if (strk < 0)
-                //    //{
-                //    //    strk = 16;
-                //    //    rev = false;
-                //    //}
-                //    //if (i == 34 && extra_sectors) strk = 17;
-                //    if (strk > 34 && extra_sectors) strk = 17;
-                //}
             }
             if (available.Count > 0)
             {
@@ -1500,29 +1457,7 @@ namespace V_Max_Tool
                 }
                 return (null, false, -1);
             }
-
-            //(bool, int) Check_BlockSync_ByteLevel(byte[] data)
-            //{
-            //    int ffCount = 0;
-            //    for (int i = 0; i < data.Length; i++)
-            //    {
-            //        if (data[i] == 0xFF)
-            //        {
-            //            ffCount++;
-            //            if (ffCount > 3)
-            //            {
-            //                while (i < data.Length)
-            //                {
-            //                    if (i > 0 && data[i] == 0x55 && data[i - 1] == 0xFF) return (true, i << 3);
-            //                    i++;
-            //                }
-            //            }
-            //        }
-            //        else ffCount = 0;
-            //    }
-            //    return (false, 0);
-            //}
-
+            
             (bool, int) Check_BlockSync_BitLevel()
             {
                 if (pos + (blk_snc) < source.Length)

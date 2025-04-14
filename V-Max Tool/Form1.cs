@@ -95,7 +95,7 @@ namespace V_Max_Tool
         public Form1()
         {
             InitializeComponent();
-            this.Text = $"Re-Master {ver}";
+            this.Text = $"ReMaster {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
             // debugging buttons -- comment next line to enable debugging buttons
@@ -457,17 +457,12 @@ namespace V_Max_Tool
                         Set_ListBox_Items(false, false);
                         Get_Disk_Directory();
                         Set_BlockMap();
-                        linkLabel1.Visible = false;
-                        Save_Disk.Visible = true;
                         Source.Visible = Output.Visible = true;
                         label1.Text = $"{fname}{fext}";
                         M_render.Enabled = true;
-                        Adv_ctrl.Enabled = true;
+                        Set_Buttons_Active();
                         Blk_pan.Enabled = true;
-                        Disable_Core_Controls(false);
-                        saveAsToolStripMenuItem.Enabled = true;
                         AddRecentFile(file);
-                        NibWriteImage.Enabled = true;
                     }
                     catch (Exception ex)
                     {
@@ -537,6 +532,16 @@ namespace V_Max_Tool
                 }));
             }
 
+        }
+
+        void Set_Buttons_Active()
+        {
+            Adv_ctrl.Enabled = true;
+            Save_Disk.Visible = true;
+            linkLabel1.Visible = false;
+            Disable_Core_Controls(false);
+            saveAsToolStripMenuItem.Enabled = true;
+            NibWriteImage.Enabled = true;
         }
 
         private void Drag_Enter(object sender, DragEventArgs e)
