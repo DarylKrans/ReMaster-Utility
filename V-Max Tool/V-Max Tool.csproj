@@ -173,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\About.txt" />
+    <None Include="Properties\disk4.jpg" />
     <Content Include="tool.ico" />
   </ItemGroup>
   <ItemGroup>

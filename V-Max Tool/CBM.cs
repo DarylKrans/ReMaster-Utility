@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -145,7 +146,6 @@ namespace V_Max_Tool
             List<string> headers = new List<string>();
             int[] s_pos = new int[22];
             byte[] d = new byte[4];
-            //var h = "";
             var sect = 0;
             Compare(pos);
             while (pos < source.Length - 32)
@@ -172,7 +172,7 @@ namespace V_Max_Tool
                     data_end = (density[density_map[trk]] + 80) << 3;
                     dont_adj = false;
                 }
-                else data_end = pos;
+                else data_end = source.Length; // pos;
                 if (!start_found) data_start = s_pos[0];
                 sectors = list.Count;
                 if (!batch)
@@ -183,7 +183,7 @@ namespace V_Max_Tool
                     }
                     catch { }
                 }
-                headers.Add($"{data_start} {data_end} {start_found} {end_found} {sectors}");
+                headers.Add($"data start ({data_start >> 3}) data end ({data_end >> 3}) <- assumed since no repeat sector was found in the NIB track.");
             }
             var len = (data_end - data_start);
             if (!batch && !cbm && err.Count > 0)
@@ -256,16 +256,19 @@ namespace V_Max_Tool
                             }
                             if (checksums)
                             {
-                                if (cbm) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                if (cbm)
+                                {
+                                    s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                    if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
+                                }
                                 else
                                 {
                                     s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
                                     if (!s_cksm) err.Add($"{sect}");
                                 }
-
                             }
                             if (!batch) headers.Add($"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
-                                $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])})");
+                                $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])}) Track Position ({pos >> 3})");
                         }
                         else
                         {
@@ -275,7 +278,6 @@ namespace V_Max_Tool
                                 if (dec_hdr[2] == 0x00) sz = "*";
                                 decoded_header = Hex_Val(dec_hdr);
                                 h_cksm = Check_Header(dec_hdr);
-                                //if (checksums) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
                                 if (checksums)
                                 {
                                     if (cbm) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
@@ -285,8 +287,8 @@ namespace V_Max_Tool
                                 if (!batch)
                                 {
                                     headers[0] = $"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
-                                        $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])})";
-                                    headers.Add($"pos {p / 8} ** repeat ** {Hex_Val(d)}");
+                                        $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])}) Track Position ({data_start >> 3})";
+                                    headers.Add($"pos {p / 8} ** repeat ** Sector ({(Decode_CBM_GCR(Bit2Byte(source, pos, 5 << 3)))[2]})");
                                 }
                                 if (data_start == 0) data_end = pos;
                                 else data_end = pos;
@@ -398,7 +400,7 @@ namespace V_Max_Tool
                 {
                     syncCount++;
                     //if (syncCount == 12) sync = true;
-                    if (syncCount == 10) sync = true;
+                    if (syncCount == 12) sync = true;
                 }
                 else
                 {
@@ -460,15 +462,13 @@ namespace V_Max_Tool
 
         byte[] Replace_CBM_Sector(byte[] data, int sector, byte[] new_sector, byte[] padding = null, int pos = 0)
         {
-            if (new_sector.Length == 256)
-                new_sector = Build_Sector(new_sector);
+            if (new_sector.Length == 256) new_sector = Build_Sector(new_sector);
 
             BitArray source = new BitArray(Flip_Endian(data));
             BitArray sec = new BitArray(Flip_Endian(new_sector));
             BitArray pad = padding != null ? new BitArray(Flip_Endian(padding)) : new BitArray(0);
 
-            //int pos = 0;
-            const int sectorDataLength = 325 * 8;
+            const int sectorDataLength = 325 << 3;
             bool sector_found = false;
             bool sync = false;
             bool sector_marker;// = false;
@@ -521,47 +521,32 @@ namespace V_Max_Tool
 
             void ReplaceSector(int startPos, BitArray sectorBits, BitArray paddingBits, BitArray sourceBits)
             {
-                for (int i = 0; i < sectorBits.Count; i++)
-                    sourceBits[startPos + i] = sectorBits[i];
-
+                for (int i = 0; i < sectorBits.Count; i++) sourceBits[startPos + i] = sectorBits[i];
                 if (paddingBits.Length > 0)
                 {
                     startPos += sectorBits.Length;
-                    for (int i = 0; i < paddingBits.Count; i++)
-                        sourceBits[startPos + i] = paddingBits[i];
+                    for (int i = 0; i < paddingBits.Count; i++) sourceBits[startPos + i] = paddingBits[i];
                 }
             }
         }
 
         byte[] Build_Sector(byte[] sect, bool badChecksum = false)
         {
-
+            if (sect == null) return null;
             int checksum = 0;
-            for (int i = 0; i < sect.Length; i++)
-                checksum ^= sect[i];
+            for (int i = 0; i < sect.Length; i++) checksum ^= sect[i];
             if (badChecksum) checksum = Flip_Endian(new byte[] { (byte)checksum })[0];
-
-            using (MemoryStream buffer = new MemoryStream())
-            {
-                using (BinaryWriter writer = new BinaryWriter(buffer))
-                {
-                    writer.Write((byte)0x07);
-                    writer.Write(sect);
-                    writer.Write((byte)checksum);
-                    writer.Write((byte)0x00);
-                    writer.Write((byte)0x00);
-                }
-                return Encode_CBM_GCR(buffer.ToArray());
-            }
+            return Encode_CBM_GCR(ArrayConcat(new byte[] { 0x07 }, sect, new byte[] { (byte)checksum, 0x00, 0x00 }));
         }
 
-        (bool, int, byte[], bool) Find_Sector(BitArray source, int sector, int pos = -1, bool bit_pos = false)
+        (bool found, int header_pos, int block_pos, byte[] ID, bool checksum) Find_Sector(BitArray source, int sector, int pos = -1, bool bit_pos = false)
         {
             if (pos < 0) pos = 0;
             byte[] dID;
             bool sector_found;
             bool cksm = false;
-            (sector_found, dID, cksm) = Compare();
+            int block_pos;// = 0;
+            (sector_found, dID, cksm, block_pos) = Compare();
             if (!sector_found)
             {
                 bool sync = false;
@@ -578,7 +563,7 @@ namespace V_Max_Tool
                     {
                         if (sync)
                         {
-                            (sector_found, dID, cksm) = Compare();
+                            (sector_found, dID, cksm, block_pos) = Compare();
                             if (sector_found) break;
                         }
                         sync = false;
@@ -587,11 +572,12 @@ namespace V_Max_Tool
                     pos++;
                 }
             }
-            if (bit_pos) return sector_found ? (true, pos, dID, cksm) : (false, -1, null, cksm);
-            return sector_found ? (true, pos / 8, dID, cksm) : (false, -1, null, cksm);
+            if (bit_pos) return sector_found ? (true, pos, block_pos, dID, cksm) : (false, -1, -1, null, cksm);
+            return sector_found ? (true, pos >> 3, block_pos >> 3, dID, cksm) : (false, -1, -1, null, cksm);
 
-            (bool, byte[], bool) Compare()
+            (bool, byte[], bool, int) Compare()
             {
+                int blk_pos = -1;
                 int cl = 10;
                 if (pos + (cl << 3) < source.Length)
                 {
@@ -606,12 +592,31 @@ namespace V_Max_Tool
                         Buffer.BlockCopy(g, 4, ID, 0, 2);
                         if (g[3] > 0 && g[3] < 43 && g[2] == sector)
                         {
-                            return (true, ID, cksm);
+                            try
+                            {
+                                int snc2 = 0;
+                                for (int k = pos; k < pos + (80 << 3); k++)
+                                {
+                                    if (source[k]) snc2++;
+                                    else
+                                    {
+                                        if (snc2 > 10 && Bit2Byte(source, k, 8)[0] == 0x55)
+                                        {
+                                            var blkdata = Decode_CBM_GCR(Bit2Byte(source, k, 5 << 3));
+                                            if (blkdata[0] == 0x07) blk_pos = k;
+                                        }
+                                        snc2 = 0;
+                                    }
+                                }
+                            }
+                            catch { }
+                            return (true, ID, cksm, blk_pos);
                         }
-                        pos += (320 << 3);
+                        //pos += (320 << 3);
+                        pos += (300 << 3);
                     }
                 }
-                return (false, null, cksm);
+                return (false, null, cksm, blk_pos);
             }
         }
 
@@ -762,9 +767,8 @@ namespace V_Max_Tool
         void Create_Blank_Disk()
         {
             Invoke(new Action(() => Disable_Core_Controls(true)));
-            if (BD_name.Text == "") BD_name.Text = "BLANK DISK";
-            if (BD_id.Text == "") BD_id.Text = "00 2A";
-            byte[] name = Encoding.ASCII.GetBytes($"{BD_name.Text.ToUpper()}");
+            if (BD_id.Text == "") BD_id.Text = "  ";
+            var name = AsciiToPetscii(BD_name.Text, true);
             fname = BD_name.Text;
             tracks = Convert.ToInt32(BD_tracks.Value);
             sl.DataSource = null;
@@ -773,33 +777,26 @@ namespace V_Max_Tool
             Track_Info.Items.Clear();
             Set_Arrays(tracks);
             Set_ListBox_Items(true, false);
-            byte[] id = Encoding.ASCII.GetBytes(BD_id.Text.ToUpper());
-            byte[] Disk_ID = new byte[] { id[1], id[0], 0x0f, 0x0f };
-            byte[] sync = new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff };
-            byte[] dir_s0 = Encode_CBM_GCR(T18S0());
-            byte[] dir_s1 = Encode_CBM_GCR(T18S1());
-            byte[] blank = Encode_CBM_GCR(Create_Empty_Sector());
+            var id = AsciiToPetscii(BD_id.Text, true);
+            var Disk_ID = new byte[] { id[1], id[0], 0x0f, 0x0f };
+            var sync = FastArray.Init(5, 0xff);
+            var dir_s0 = Encode_CBM_GCR(T18S0());
+            var dir_s1 = Encode_CBM_GCR(T18S1());
+            var blank = Encode_CBM_GCR(Create_Empty_Sector());
 
             for (int i = 0; i < Convert.ToInt32(BD_tracks.Value); i++)
             {
-                byte[] gap = SetSectorGap(sector_gap_length[i]);
+                var gap = SetSectorGap(sector_gap_length[i]);
                 MemoryStream buffer = new MemoryStream();
                 BinaryWriter write = new BinaryWriter(buffer);
                 for (int j = 0; j < Available_Sectors[i]; j++)
                 {
-                    bool w = true;
-                    write.Write(sync);
-                    write.Write(Build_BlockHeader(i + 1, j, Disk_ID));
-                    write.Write(gap);
-                    write.Write(sync);
-                    if (i == 17 && j == 0) { write.Write(dir_s0); w = false; }
-                    if (i == 17 && j == 1) { write.Write(dir_s1); w = false; }
-                    if (w) write.Write(blank);
-                    write.Write(gap);
+                    var block_header = Build_BlockHeader(i + 1, j, Disk_ID);
+                    write.Write(ArrayConcat(sync, block_header, gap, sync, (i == 17 && j < 2) ? j == 1 ? dir_s1 : dir_s0 : blank, gap));
                 }
                 int rem = (int)(density[density_map[i]] - buffer.Length);
                 if (rem > 0) write.Write(FastArray.Init(rem, cbm_gap));
-                byte[] nt = buffer.ToArray();
+                var nt = buffer.ToArray();
                 Set_Dest_Arrays(nt, i);
                 NDS.Track_Data[i] = new byte[8192];
                 Buffer.BlockCopy(NDA.Track_Data[i], 0, NDS.Track_Data[i], 0, 8192);
@@ -837,50 +834,56 @@ namespace V_Max_Tool
                     if (i < 18) if (i < name.Length) title[i] = name[i]; else title[i] = 0xa0;
                     else if (i - 18 < id.Length) title[i] = id[i - 18]; else title[i] = 0xa0;
                 }
-                byte[] bam = Create_BAM();
+                var bam = Create_BAM();
                 AllocBlock(bam, 17, 0, Set);
                 AllocBlock(bam, 17, 1, Set);
-                var buff = new MemoryStream();
-                var wrt = new BinaryWriter(buff);
-                wrt.Write(ArrayConcat(new byte[] { 0x07 }, ds0, bam, title));
-                while (buff.Length < 256) wrt.Write((byte)0x00);
-                var s = new byte[260];
-                Buffer.BlockCopy(buff.ToArray(), 0, s, 0, (int)buff.Length);
-                for (int i = 1; i < 257; i++) chksum ^= s[i];
-                s[257] = (byte)chksum;
-                return s;
+                using (MemoryStream buff = new MemoryStream())
+                using (BinaryWriter wrt = new BinaryWriter(buff))
+                {
+                    wrt.Write(ArrayConcat(new byte[] { 0x07 }, ds0, bam, title));
+                    while (buff.Length < 256) wrt.Write((byte)0x00);
+                    var s = new byte[260];
+                    Buffer.BlockCopy(buff.ToArray(), 0, s, 0, (int)buff.Length);
+                    for (int i = 1; i < 257; i++) chksum ^= s[i];
+                    s[257] = (byte)chksum;
+                    return s;
+                }
             }
 
             byte[] T18S1()
             {
                 int chksum = 0;
-                var buff = new MemoryStream();
-                var wrt = new BinaryWriter(buff);
-                wrt.Write(new byte[] { 0x07, 0x00, 0xff });
-                while (buff.Length < 260) wrt.Write((byte)0x00);
-                var t = buff.ToArray();
-                for (int i = 1; i < 257; i++) chksum ^= t[i];
-                t[257] = (byte)chksum;
-                return t;
+                using (MemoryStream buff = new MemoryStream())
+                using (BinaryWriter wrt = new BinaryWriter(buff))
+                {
+                    wrt.Write(new byte[] { 0x07, 0x00, 0xff });
+                    while (buff.Length < 260) wrt.Write((byte)0x00);
+                    var t = buff.ToArray();
+                    for (int i = 1; i < 257; i++) chksum ^= t[i];
+                    t[257] = (byte)chksum;
+                    return t;
+                }
             }
 
             byte[] Create_BAM()
             {
-                var buff = new MemoryStream();
-                var wrt = new BinaryWriter(buff);
-                byte[] bf = new byte[35];
-                byte[][] used_sectors = new byte[35][];
-                BitArray us = new BitArray(24);
-                for (int i = 0; i < 35; i++)
+                using (MemoryStream buff = new MemoryStream())
+                using (BinaryWriter wrt = new BinaryWriter(buff))
                 {
-                    bf[i] = Available_Sectors[i];
-                    used_sectors[i] = new byte[3];
-                    for (int j = 0; j < Available_Sectors[i]; j++) us[j] = true;
-                    used_sectors[i] = Flip_Endian(Bit2Byte(us));
-                    wrt.Write(bf[i]);
-                    wrt.Write(used_sectors[i]);
+                    var bf = new byte[35];
+                    var used_sectors = new byte[35][];
+                    BitArray us = new BitArray(24);
+                    for (int i = 0; i < 35; i++)
+                    {
+                        bf[i] = Available_Sectors[i];
+                        used_sectors[i] = new byte[3];
+                        for (int j = 0; j < Available_Sectors[i]; j++) us[j] = true;
+                        used_sectors[i] = Flip_Endian(Bit2Byte(us));
+                        wrt.Write(bf[i]);
+                        wrt.Write(used_sectors[i]);
+                    }
+                    return buff.ToArray();
                 }
-                return buff.ToArray();
             }
         }
 
@@ -954,18 +957,18 @@ namespace V_Max_Tool
                 {
                     int validSectors = Available_Sectors[trk];
                     int sectors = NDS.sectors[i] < validSectors ? validSectors : NDS.sectors[i];
+
                     int[] c = new int[] { 2, 3, 4, 5, 6 };
                     bool alt = (NDS.cbm.Any(x => c.Any()));
                     int start = trk == 17 || alt ? 0 : NDS.D_Start[i];
-                    byte[] data = trk == 17 || alt ? new byte[NDG.Track_Data[i].Length] : new byte[MAX_TRACK_SIZE];
-                    Buffer.BlockCopy(trk == 17 || alt ? NDG.Track_Data[i] : NDS.Track_Data[i], 0, data, 0, data.Length);
-                    BitArray tk = new BitArray(Flip_Endian(trk == 17 ? NDG.Track_Data[i] : NDS.Track_Data[i]));
+                    BitArray tk = new BitArray(Flip_Endian(trk == 17 || alt ? NDG.Track_Data[i] : NDS.Track_Data[i]));
+
                     for (int j = 0; j < 21; j++)
                     {
                         if (j < sectors)
                         {
                             bool valid = j < Available_Sectors[trk];
-                            (_, int errorCode, _) = GetSectorWithErrorCode(data, j, true, null, tk, start);
+                            (_, int errorCode, _) = GetSectorWithErrorCode(null, j, true, null, tk, start);
                             bool error = errorCode > 1;
                             bool available = BlockAllocStatus(bam, trk, j);
                             usedsec = !available ? "Block Allocated (Used)" : "Block Available (Free)";
@@ -1457,7 +1460,7 @@ namespace V_Max_Tool
                 }
                 return (null, false, -1);
             }
-            
+
             (bool, int) Check_BlockSync_BitLevel()
             {
                 if (pos + (blk_snc) < source.Length)
@@ -1497,6 +1500,93 @@ namespace V_Max_Tool
                     pos += sectorDataLength;
                 }
                 return false;
+            }
+        }
+
+        void Repair_CBM_Checksums()
+        {
+            int errors; // = 0;
+            ErrorList = new ConcurrentBag<string>();
+            ScanForErrors();
+            if (ErrorList.Count > 0)
+            {
+                errors = ErrorList.Count;
+                Attempt_Repair();
+            }
+            else
+            {
+                var t = "Image is Clean!";
+                var s = "No errors found!";
+                using (Message_Center center = new Message_Center(this)) // center message box
+                {
+                    DialogResult result = MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+
+            void ScanForErrors()
+            {
+                bool head_cksm; // = false;
+                bool sec_cksm; // = false;
+                bool found; // = false;
+                int pos; // = 0
+                for (int track = 0; track < tracks; track++)
+                {
+                    if (NDS.cbm[track] == 1)
+                    {
+                        var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                        int tk = tracks > 42 ? (track >> 1) + 1 : track + 1;
+                        int avail = NDS.sectors[track] > Available_Sectors[tk] ? NDS.sectors[track] : Available_Sectors[tk];
+                        for (int j = 0; j < avail; j++)
+                        {
+                            (found, pos, _, _, head_cksm) = Find_Sector(source, j, 0, true);
+                            if (found)
+                            {
+                                (sec_cksm) = Decode_CBM_Sector(null, j, true, source, pos).checksum;
+                                if (!head_cksm || !sec_cksm) ErrorList.Add($"Checksum failed on track {tk} sector {j}");
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Attempt_Repair()
+            {
+                bool fix = false;
+                List<string> list = new List<string>(ErrorList);
+                var s = Sort_Errors(list);
+                s += "\n Would you like to (attempt) repairing?";
+
+                using (Message_Center center = new Message_Center(this)) // center message box
+                {
+                    var t = "Errors found!";
+                    DialogResult result = MessageBox.Show(s, t, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (result == DialogResult.Yes)
+                    {
+                        fix = true;
+                        Fix_Errors();
+                    }
+                }
+                if (fix)
+                {
+                    ErrorList = new ConcurrentBag<string>();
+                    ScanForErrors();
+                    string t;
+                    if (ErrorList.Count < 1)
+                    {
+                        s = "Sector checksums successfully repaired!";
+                        t = "Success!!";
+                    }
+                    else
+                    {
+                        s = "Image repair failed!";
+                        t = "Failed!";
+                    }
+                    using (Message_Center center = new Message_Center(this)) // center message box
+                    {
+                        DialogResult result = MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    if (errors > ErrorList.Count) Set_BlockMap();
+                }
             }
         }
     }

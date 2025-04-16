@@ -68,7 +68,7 @@ namespace V_Max_Tool
             {
                 for (sector = 2; sector < 19; sector++)
                 {
-                    (f, pos, _, _) = Find_Sector(source, sector);
+                    (f, pos, _, _, _) = Find_Sector(source, sector);
                     if (f)
                     {
                         rw = 0;
@@ -216,7 +216,7 @@ namespace V_Max_Tool
         (byte[], bool) Cyan_t32_GCR_Fix(byte[] data)
         {
             BitArray s = new BitArray(Flip_Endian(data));
-            (bool exists, _, _, _) = Find_Sector(s, 1, 0, true);
+            (bool exists, _, _, _, _) = Find_Sector(s, 1, 0, true);
             if (exists)
             {
                 (byte[] new_sec, _) = Decode_CBM_Sector(data, 1, false, s);
@@ -359,37 +359,24 @@ namespace V_Max_Tool
             }
             if (pad > density[0] - 100) return new byte[0];
 
-            if (nb > 6200)
+            if (nb > 6200) // 6200
             {
-                const int clen = 64;
+                const int clen = 192;
                 int d_end = dataLength;
                 byte[] compare = new byte[clen];
                 Buffer.BlockCopy(data, dataLength - clen, compare, 0, clen);
 
                 for (int i = 0; i < dataLength - clen; i++)
                 {
-                    if (Match(data, compare, i, clen))
+                    if (MatchSeq(data, compare, i))
                     {
                         int newLength = d_end - (i + clen);
                         if (newLength > 6000)
                         {
                             byte[] temp = new byte[newLength];
                             Buffer.BlockCopy(data, i + clen, temp, 0, newLength);
-
-                            int snc = 0;
-                            for (int j = 0; j < newLength; j++)
-                            {
-                                if (temp[j] == 0xff) snc++;
-                                else
-                                {
-                                    if (snc > 3)
-                                    {
-                                        temp = Rotate_Left(temp, j - snc);
-                                        break;
-                                    }
-                                    snc = 0;
-                                }
-                            }
+                            int snc = FindLongestRun(temp, 0xff);
+                            if (snc > 0) temp = Rotate_Left(temp, snc);
                             return temp;
                         }
                         else
@@ -421,7 +408,7 @@ namespace V_Max_Tool
                 }
                 if (spos > 0) data = Rotate_Left(data, spos);
 
-                int actual_data = (Check_Valid_Data(data, true));
+                int actual_data = Check_Valid_Data(data, true);
                 byte[] temp = new byte[Check_Valid_Data(data, false, true) < 1000 ? density[2] : density[3]];
                 Buffer.BlockCopy(data, 0, temp, 0, temp.Length);
                 if (actual_data > 500) temp = Remove_Weak_Bits(temp, true);
@@ -429,15 +416,6 @@ namespace V_Max_Tool
                 return temp;
             }
             return data;
-
-            bool Match(byte[] source, byte[] compare, int startIndex, int length)
-            {
-                for (int j = 0; j < length; j++)
-                {
-                    if (source[startIndex + j] != compare[j]) return false;
-                }
-                return true;
-            }
 
             int Check_Valid_Data(byte[] array, bool include_Padding = false, bool only_blank = false)
             {

@@ -13,6 +13,7 @@ namespace V_Max_Tool
         readonly string n_read = "nibread.exe";
         readonly string n_writ = "nibwrite.exe";
         readonly string a_rpm = "rpm1541.exe";
+        readonly string cbmctrl = $@"c:\program files\opencbm\cbmctrl.exe";
         readonly string[] trk_aln = { "Automatic", "Longest run of unformatted data", "Longest gap", "Longest sync", "Sector 0", "Raw Data" };
         readonly string[] ProHand = { "V-Max! (v3)", "V-Max! (v2) Cinemaware", "GMA/Secruispeed (T38/T39)", "Rainbow Arts/Magic Bytes (T36)",
                                       "Rapidlok", "Vorpal (newer) EPYX", "Pirateslayer/Buster" };
@@ -29,7 +30,6 @@ namespace V_Max_Tool
             R_tgap.Value = 7;
             S_track.Value = 1;
             E_track.Value = 41;
-
         }
 
         void Init_Write_Options()
@@ -38,7 +38,7 @@ namespace V_Max_Tool
             Write_GBox.Location = new System.Drawing.Point(0, 0);
             NibWriteImage.Enabled = false;
             rpm = File.Exists($@"{NibPath}\{a_rpm}".Replace(@"\\", @"\"));
-            Drv_status.Visible = File.Exists($@"c:\program files\opencbm\cbmctrl.exe");
+            Drv_status.Visible = File.Exists(cbmctrl);
 
             W_prot.DataSource = ProHand;
             W_prot.Enabled = WP.Checked;
@@ -244,10 +244,10 @@ namespace V_Max_Tool
                 CreateNoWindow = false,
 
             };
-            if (System.Environment.OSVersion.Version.Major >= 6)
-            {
-                procStartInfo.Verb = "runas";
-            }
+            //if (System.Environment.OSVersion.Version.Major >= 6)
+            //{
+            //    procStartInfo.Verb = "runas";
+            //}
             Process process = new Process
             {
                 StartInfo = procStartInfo
@@ -262,9 +262,9 @@ namespace V_Max_Tool
 
         void Reset_Zoom()
         {
-            if (File.Exists($@"c:\program files\opencbm\cbmctrl.exe"))
+            if (File.Exists(cbmctrl))
             {
-                var exe = $@"c:\program files\opencbm\cbmctrl.exe";
+                var exe = cbmctrl;
                 var args = $"status {W_num.Value}";
                 RunCommand(exe, args, string.Empty, false, true);
             }

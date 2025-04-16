@@ -973,7 +973,7 @@ namespace V_Max_Tool
                 BitArray source = new BitArray(Flip_Endian(temp));
                 int pos = 0;
                 bool sec = false;
-                (sec, pos, _, _) = Find_Sector(source, 0);
+                (sec, pos, _, _, _) = Find_Sector(source, 0);
                 if (pos > 5)
                 {
                     pos -= 1;
@@ -1247,19 +1247,34 @@ namespace V_Max_Tool
             void Process_NDOS(int trk)
             {
                 byte[] temp1 = new byte[NDG.Track_Data[trk].Length];
-                byte[] temp = new byte[0];
                 Buffer.BlockCopy(NDG.Track_Data[trk], 0, temp1, 0, temp1.Length);
-                (int pos, int longest) = Longest_Run(temp1, new byte[] { 0x55, 0xaa });
-                temp1 = longest > 5 ? Rotate_Left(temp1, pos + longest) : temp1;
-                int d = Get_Density(temp1.Length);
-                if (temp1.Length > density[d])
+                int snc = 0;
+                for (int i = 0; i < 100; i++)
                 {
-                    temp = new byte[density[d]];
-                    Buffer.BlockCopy(temp1, 0, temp, 0, temp.Length);
-                    Set_Dest_Arrays(temp, trk);
+                    if (temp1[i] == 0xff) snc++;
+                    else
+                    {
+                        if (snc > 20)
+                        {
+                            Set_Dest_Arrays(temp1, trk);
+                            break;
+                        }
+                        snc = 0;
+                    }
                 }
-                else Set_Dest_Arrays(temp1, trk);
-                // nothing to do
+                if (snc < 20)
+                {
+                    byte[] temp = new byte[0];
+                    (int pos, int longest) = Longest_Run(temp1, new byte[] { 0x55, 0xaa });
+                    temp1 = longest > 5 ? Rotate_Left(temp1, pos + longest) : temp1;
+                    int d = Get_Density(temp1.Length);
+                    if (temp1.Length > density[d])
+                    {
+                        temp = new byte[density[d]];
+                        Buffer.BlockCopy(temp1, 0, temp, 0, temp.Length);
+                        Set_Dest_Arrays(temp, trk);
+                    }
+                }
             }
         }
 
@@ -2041,6 +2056,7 @@ namespace V_Max_Tool
             {
                 switch (NDS.cbm[i])
                 {
+                    case 1: if (CBM_Fix.Checked) FixCBM(i); break;
                     case 5: FixVPL(i); break;
                     case 10: FixMPS(i); break;
                 }
@@ -2050,14 +2066,14 @@ namespace V_Max_Tool
 
             void FixVPL(int track)
             {
-                BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                 bool rewrite = false;
                 for (int j = 0; j < NDS.sectors[track]; j++)
                 {
                     (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
                     if (!cksm)
                     {
-                        BitArray newsec = Encode_Vorpal_GCR(sector, true, isone);
+                        var newsec = Encode_Vorpal_GCR(sector, true, isone);
                         for (int k = 0; k < newsec.Length; k++)
                         {
                             source[pos + k] = newsec[k];
@@ -2070,7 +2086,7 @@ namespace V_Max_Tool
 
             void FixMPS(int track)
             {
-                BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                 bool rewrite = false;
                 for (int j = 0; j < NDS.sectors[track]; j++)
                 {
@@ -2082,16 +2098,72 @@ namespace V_Max_Tool
                         byte[] dec = Decode_CBM_GCR(sector);
                         if (dec != null && (dec.Length == 268 || dec.Length == 260) && (start == 9 || start == 1) && (end == 257 || end == 266))
                         {
-                            int chksm = 0;
-                            for (int k = start; k < end; k++) chksm ^= dec[k];
-                            dec[end] = (byte)chksm;
-                            BitArray newsec = new BitArray(Flip_Endian(Encode_CBM_GCR(dec)));
+                            var newsec = Fix_Checksum(dec, start, end);
                             for (int k = 0; k < newsec.Length; k++) source[pos + k] = newsec[k];
                         }
                         rewrite = true;
                     }
                 }
                 if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
+            }
+
+            void FixCBM(int track)
+            {
+                int tk = tracks > 42 ? (track / 2) + 1 : track + 1;
+                var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                bool rewrite = false;
+                int avail = NDS.sectors[track] > Available_Sectors[tk] ? NDS.sectors[track] : Available_Sectors[tk];
+                for (int j = 0; j < avail; j++)
+                {
+                    (bool found, int pos, int blk_pos, _, bool head_chksum) = Find_Sector(source, j, 0, true);
+                    if (found && (pos >= 0 && pos + (10 << 3) < source.Length) && !head_chksum)
+                    {
+                        var header = Decode_CBM_GCR(Bit2Byte(source, pos, 10 << 3));
+                        if (header[2] == j && header[3] == tk)
+                        {
+                            int csm = 0;
+                            for (int k = 2; k < 6; k++) csm ^= header[k];
+                            header[1] = (byte)csm;
+                            var newheader = new BitArray(Flip_Endian(Encode_CBM_GCR(header)));
+                            for (int k = 0; k < newheader.Length; k++) source[pos + k] = newheader[k];
+                            rewrite = true;
+
+                        }
+                    }
+
+                    if (found && blk_pos >= 0)
+                    {
+                        bool checksum = Decode_CBM_Sector(null, j, true, source, pos).checksum;
+                        if (!checksum)
+                        {
+                            try
+                            {
+                                var secdata = Decode_CBM_GCR(Bit2Byte(source, blk_pos, 325 << 3));
+                                if (secdata != null && secdata.Length == 260 && secdata[0] == 0x07)
+                                {
+                                    var newsec = Fix_Checksum(secdata, 1, 257);
+                                    for (int k = 0; k < newsec.Length; k++) source[blk_pos + k] = newsec[k];
+                                    rewrite = true;
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                }
+                if (rewrite)
+                {
+                    Set_Dest_Arrays(Bit2Byte(source), track);
+                    if (NDA.Track_Data[track] != null) Buffer.BlockCopy(NDA.Track_Data[track], 0, NDS.Track_Data[track], 0, 8192);
+                }
+
+            }
+
+            BitArray Fix_Checksum(byte[] sec, int start, int end)
+            {
+                int chksm = 0;
+                for (int k = start; k < end; k++) chksm ^= sec[k];
+                sec[end] = (byte)chksm;
+                return new BitArray(Flip_Endian(Encode_CBM_GCR(sec)));
             }
         }
     }

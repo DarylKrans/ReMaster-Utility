@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace V_Max_Tool
 {
@@ -66,16 +68,14 @@ namespace V_Max_Tool
         {
             int snc_cnt = 0;
             int sectors = 0;
-            List<int> secpos = new List<int>();
             int skip = 160 << 3; /// Sets the # of bits to skip when a sector sync is found
             for (int k = 0; k < source.Length; k++)
             {
                 if (source[k]) snc_cnt++;
-                if (!source[k])
+                else //(!source[k])
                 {
                     if (snc_cnt == 8)
                     {
-                        secpos.Add(k + 7);
                         if (k + skip < source.Count) k += skip;
                         else break;
                         sectors++;
@@ -88,35 +88,32 @@ namespace V_Max_Tool
 
         byte[] Rebuild_Vorpal(byte[] data, int trk, int leadptn = 0)
         {
-            int last_sector = 1312; /// # of bytes to read when last sector found
-            byte[] output = new byte[0];
+            var last_sector = 1312; /// # of bytes to read when last sector found
+            var output = new byte[0];
             int offset;
-            int d = 0;
-            int snc_cnt = 0;
-            int cur_sec = 0;
+            var d = 0;
+            var snc_cnt = 0;
+            var cur_sec = 0;
             int tlen = data.Length;
             if (VPL_auto_adj.Checked || VPL_rb.Checked) d = VPL_Density(tlen);
-            int tstart = 0;
-            int tend = 0;
-            BitArray source = new BitArray(Flip_Endian(data));
-            BitArray comp = new BitArray(Flip_Endian(vpl_s0));
-            BitArray cmp = new BitArray(vpl_s0.Length * 8);
+            var tstart = 0;
+            var tend = 0;
+            var source = new BitArray(Flip_Endian(data));
+            var comp = new BitArray(Flip_Endian(vpl_s0));
+            var cmp = new BitArray(vpl_s0.Length * 8);
             int sectors = Get_VPL_Sectors(source);
-            byte[] ssp = { 0x33 };
-            byte[] lead_in = new byte[0];
-            byte endbyte = leadptn == 1 ? (byte)0x55 : (leadptn == 2 ? (byte)0xAA : (byte)0xb5);
-            if (leadptn == 0) lead_in = new byte[] { 0xd5, 0x35, 0x4d, 0x53, 0x54 };
-            if (leadptn == 1)
+            var ssp = new byte[] { 0x33 };
+            var lead_in = new byte[0];
+            var endbyte = leadptn == 1 ? (byte)0x55 : (leadptn == 2 ? (byte)0xAA : (byte)0xb5);
+            switch (leadptn)
             {
-                lead_in = FastArray.Init(5, 0x55);
-            }
-            if (leadptn == 2)
-            {
-                lead_in = FastArray.Init(5, 0xaa);
+                case 0: lead_in = new byte[] { 0xd5, 0x35, 0x4d, 0x53, 0x54 }; break;
+                case 1: lead_in = FastArray.Init(5, 0x55); break;
+                case 2: lead_in = FastArray.Init(5, 0xaa); break;
             }
             output = new byte[tlen];
             if (!VPL_only_sectors.Checked) Write_Lead(100);
-            BitArray output_bits = new BitArray(Flip_Endian(output));
+            var output_bits = new BitArray(Flip_Endian(output));
             for (int k = 0; k < source.Length - comp.Count; k++)
             {
                 for (int j = 0; j < cmp.Count; j++) cmp[j] = source[k + j];
@@ -144,10 +141,10 @@ namespace V_Max_Tool
             if (VPL_lead.Checked) offset = Convert.ToInt32(Lead_In.Value) << 3;
             if (VPL_only_sectors.Checked)
             {
-                int asize = (tend - tstart + 7) >> 3;
-                int size = sectors > 44 ? 7728 : density[d];
-                int tsize = size > density[d] ? size : density[d];
-                int offset_adj = (tsize - asize) / 2;
+                var asize = (tend - tstart + 7) >> 3;
+                var size = sectors > 44 ? 7728 : density[d];
+                var tsize = size > density[d] ? size : density[d];
+                var offset_adj = (tsize - asize) / 2;
                 offset = offset_adj >= 60 ? 60 << 3 : offset_adj << 3;
                 output = new byte[tsize];
                 Write_Lead(offset + 5);
@@ -173,8 +170,8 @@ namespace V_Max_Tool
                 Write_Lead(offset + 5);
                 if (VPL_presync.Checked) Add_Pre_Sync();
                 output_bits = new BitArray(Flip_Endian(output));
-                int os = 0;
-                int ts = 0;
+                var os = 0;
+                var ts = 0;
                 if (!output_bits[offset - 1] && !output_bits[offset - 2]) ts += 2;
                 offset += os; tstart += ts;
             }
@@ -183,11 +180,11 @@ namespace V_Max_Tool
                 for (int i = 0; i < tend - tstart; i++) output_bits[offset + i] = source[tstart + i];
             }
             catch { }
-            int total_size = offset + (tend - tstart);
-            int leadout_len = (((output.Length << 3) - total_size) >> 3);
-            byte[] leadout = FastArray.Init(leadout_len, endbyte);
+            var total_size = offset + (tend - tstart);
+            var leadout_len = (((output.Length << 3) - total_size) >> 3);
+            var leadout = FastArray.Init(leadout_len, endbyte);
             if (leadptn == 0) leadout[leadout.Length - 1] = 0xbd;
-            BitArray leadout_bits = new BitArray(Flip_Endian(leadout));
+            var leadout_bits = new BitArray(Flip_Endian(leadout));
             for (int i = 0; i < leadout_bits.Length; i++)
             {
                 output_bits[total_size + i] = leadout_bits[i];
@@ -224,38 +221,27 @@ namespace V_Max_Tool
             }
         }
 
-        (byte[] data, bool checksum, bool isone, int Position) Decode_Vorpal(BitArray source, int sector = -1, bool dec = true, int bytes = -1)
+        (byte[] data, bool checksum, bool isone, int Position) Decode_Vorpal(BitArray source, int sector = -1, bool dec = true)
         {
             int snc_cnt = 0, psec = 0, sub = dec ? 0 : 8 * 5;
-            BitArray sec_data = new BitArray(dec ? (162 * 8) : (bytes == -1 ? 162 * 8 : bytes * 8));
+            int inc = 162 << 3;
             for (int k = 0; k < source.Length; k++)
             {
-                if (source[k])
-                    snc_cnt++;
-                if (!source[k])
+                if (source[k]) snc_cnt++;
+                else
                 {
                     if (snc_cnt == 8)
                     {
                         int dep = k + 7;
-
-                        if (psec == sector)
+                        if (psec++ == sector && dep + 1290 < source.Length)
                         {
-                            try
-                            {
-                                for (int i = 0; i < sec_data.Length; i++)
-                                {
-                                    sec_data[i] = source[dep + i];
-                                }
-                                bool isone = source[dep + 1290];
-                                byte[] decoded = Decode_Vorpal_GCR(Bit2Byte(sec_data));
-                                bool pass = GetVorpal_Checksum(decoded, Bit2Byte(sec_data, 160 * 8));
-                                // get more red-pepper flakes
-                                return dec ? (decoded, pass, isone, dep) : (Bit2Byte(sec_data), pass, isone, dep);
-                            }
-                            catch { }
+                            var sec_data = Bit2Byte(source, dep, inc);
+                            var decoded = Decode_Vorpal_GCR(sec_data);
+                            bool isone = source[dep + 1290];
+                            bool pass = GetVorpal_Checksum(decoded, CopyArray(sec_data, 160));
+                            return dec ? (decoded, pass, isone, dep) : (sec_data, pass, isone, dep);
                         }
-                        psec++;
-                        k += sec_data.Length - sub;
+                        k += inc - sub;
                     }
                     snc_cnt = 0;
                 }
@@ -422,55 +408,57 @@ namespace V_Max_Tool
                 BitArray isRealend = new BitArray(compare_len << 3);
                 bool leadF = false;
                 int leadin = 0, l = position - 18;
-                byte[] pre_sync = Bit2Byte(source, position - 18, 8);
 
-                if (pre_sync[0] == 0x33)
+                /// ----- Removing the check for stander Vorpal presync byte '00110011' allows "patched" vorpal images to work now -----
+                //byte[] pre_sync = Bit2Byte(source, position - 18, 8);
+                //if (pre_sync[0] == 0x33)
+                //{
+                /// --------------------------------------------------------------------------------------------------------------------
+
+                bool equal = false;
+                while (!equal)
                 {
-                    bool equal = false;
+                    l -= leadIn_std.Length;
+                    lead_len += leadIn_std.Length;
 
-                    while (!equal)
+                    if (l < 0)
                     {
-                        l -= leadIn_std.Length;
-                        lead_len += leadIn_std.Length;
+                        l = 0;
+                        break;
+                    }
 
-                        if (l < 0)
+                    bool a = false, b = false;
+                    lead_in = new BitArray(leadIn_std.Length);
+
+                    for (int i = 0; i < lead_in.Length; i++)
+                        lead_in[i] = source[l + i];
+
+                    a = ((BitArray)leadIn_std.Clone()).Xor(lead_in).OfType<bool>().All(e => !e);
+                    b = ((BitArray)leadIn_alt.Clone()).Xor(lead_in).OfType<bool>().All(e => !e);
+                    equal = !a && !b;
+                }
+
+                if (l != 0)
+                {
+                    byte[] te;
+
+                    var u = l;
+
+                    for (int i = 0; i < 32; i++)
+                    {
+                        te = Flip_Endian(Bit2Byte(source, u - i, 8));
+
+                        if (te?.Length > 0 && te[0] == 0xbd)
                         {
-                            l = 0;
+                            l = u - (i + 1);
                             break;
                         }
-
-                        bool a = false, b = false;
-                        lead_in = new BitArray(leadIn_std.Length);
-
-                        for (int i = 0; i < lead_in.Length; i++)
-                            lead_in[i] = source[l + i];
-
-                        a = ((BitArray)leadIn_std.Clone()).Xor(lead_in).OfType<bool>().All(e => !e);
-                        b = ((BitArray)leadIn_alt.Clone()).Xor(lead_in).OfType<bool>().All(e => !e);
-                        equal = !a && !b;
                     }
-
-                    if (l != 0)
-                    {
-                        byte[] te;
-
-                        var u = l;
-
-                        for (int i = 0; i < 32; i++)
-                        {
-                            te = Flip_Endian(Bit2Byte(source, u - i, 8));
-
-                            if (te?.Length > 0 && te[0] == 0xbd)
-                            {
-                                l = u - (i + 1);
-                                break;
-                            }
-                        }
-                    }
-
-                    leadin = l + leadIn_std.Count - 1;
-                    isRealend = BitCopy(source, l, 16 << 3);
                 }
+
+                leadin = l + leadIn_std.Count - 1;
+                isRealend = BitCopy(source, l, 16 << 3);
+                //}
 
                 if (leadin + (max_track_size << 3) < source.Length)
                 {
@@ -494,9 +482,7 @@ namespace V_Max_Tool
                         q++;
                     }
                 }
-
                 leadF = true;
-
                 return (leadF, leadin);
             }
         }

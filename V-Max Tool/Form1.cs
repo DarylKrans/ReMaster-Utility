@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -17,7 +18,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private readonly string ver = " v1.12";
+        private readonly string ver = " v1.13";
         private readonly string fix = "_ReMaster";
         private readonly string mod = "_ReMaster"; // _(modified)";
         private readonly string vorp = "_ReMaster"; //(aligned)";
@@ -27,12 +28,12 @@ namespace V_Max_Tool
         private readonly int[] vpl_density = { 7750, 6950, 6585, 6255 }; // <- Vorpal densities used to be more accurate to original disk-reads
         private readonly int[] vpl_defaults = { 7750, 6950, 6585, 6255 };
         private readonly int[] density = new int[4];
-        private bool error = false;
-        private bool cancel = false;
         private bool busy = false;
+        private bool cancel = false;
+        private bool error = false;
+        private bool batch = false;
         private bool nib_error = false;
         private bool g64_error = false;
-        private bool batch = false;
         private bool exitConfirmed = false;
         private string nib_err_msg;
         private string g64_err_msg;
@@ -49,7 +50,7 @@ namespace V_Max_Tool
         private int fat_trk = -1;
         System.Windows.Forms.Panel lastHoveredButton = null;
 
-        Form Blank_Disk = new Form
+        readonly Form Blank_Disk = new Form
         {
             Text = "Create Blank Disk",
             MinimizeBox = false,
@@ -59,7 +60,7 @@ namespace V_Max_Tool
             StartPosition = FormStartPosition.Manual
         };
 
-        Form Options = new Form
+        readonly Form Options = new Form
         {
             Text = "Options",
             MinimizeBox = false,
@@ -70,7 +71,7 @@ namespace V_Max_Tool
             AutoScaleMode = AutoScaleMode.Font
         };
 
-        Form ReadNib = new Form
+        readonly Form ReadNib = new Form
         {
             Text = "Read Image From Disk",
             MinimizeBox = false,
@@ -143,9 +144,7 @@ namespace V_Max_Tool
                 sl.DataSource = null;
                 out_size.DataSource = null;
             }
-
         }
-
 
         void Process_New_Image(string file)
         {
@@ -403,12 +402,6 @@ namespace V_Max_Tool
                     MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     error = true;
                 }
-                //List<string> e = new List<string>();
-                //for (int i = 0; i < tracks; i++)
-                //{
-                //    e.Add($"track {i} format {NDS.cbm[i]} length {NDS.Track_Length[i]}");
-                //}
-                //File.WriteAllLines($@"c:\test\error list.txt", e.ToArray());
             }
             GC.Collect();
             if (!error && !supported.Any(s => s == fext.ToLower()))
@@ -471,56 +464,17 @@ namespace V_Max_Tool
                             using (Message_Center center = new Message_Center(this)) // center message box
                             {
                                 string t = "Something went wrong!";
-
                                 string s = ex.Message;
-                                //s = "Image is corrupt and cannot be opened";
                                 MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             }
-                            //List<string> e = new List<string>();
-                            //for (int i = 0; i < tracks; i++)
-                            //{
-                            //    e.Add($"track {i + 1} format {secF[NDS.cbm[i]]} length {NDS.Track_Length[i]}");
-                            //}
-                            //File.WriteAllLines($@"c:\test\error list.txt", e.ToArray());
                             Reset_to_Defaults();
                         }
                     }
                     if (!batch && ErrorList.Count > 0)
                     {
                         bool norepair = (NDS.cbm.Any(x => x == 6)); // || NDS.cbm.Any(x => x ==10));
-                        string s = "";// "- The following error(s) were found -\n\n";
                         List<string> list = new List<string>(ErrorList);
-                        var sorted = list.Select(srt =>
-                        {
-                            // Extract track and sector using a simple pattern match
-                            var match = System.Text.RegularExpressions.Regex.Match(s, @"track (\d+) sector (\d+)");
-                            if (match.Success)
-                            {
-                                return new
-                                {
-                                    Original = srt,
-                                    Track = int.Parse(match.Groups[1].Value),
-                                    Sector = int.Parse(match.Groups[2].Value)
-                                };
-                            }
-                            else
-                            {
-                                // If it doesn't match the expected format, assign default values so it stays at the end
-                                return new
-                                {
-                                    Original = srt,
-                                    Track = int.MinValue,
-                                    Sector = int.MinValue
-                                };
-                            }
-                        })
-                        .OrderBy(x => x.Track)
-                        .ThenBy(x => x.Sector)
-                        .Select(x => x.Original)
-                        .ToList();
-                        list.Reverse();
-
-                        foreach (string err in list) { s += $"{err}\n"; }
+                        var s = Sort_Errors(list);
                         s += norepair ? "\nThis image cannot be repaired (yet)\nOutput image may not work" : "\n Would you like to (attempt) repairing?";
                         using (Message_Center center = new Message_Center(this)) // center message box
                         {
@@ -1197,7 +1151,7 @@ namespace V_Max_Tool
             Export_File(end_track);
         }
 
-        private void createBlankDiskToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CreateBlankDiskToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
             Blank_Disk.Location = new Point(
@@ -1279,11 +1233,21 @@ namespace V_Max_Tool
                 using (Message_Center center = new Message_Center(this))
                 {
                     string message = "With this enabled, you will not be prompted before\nreading or writing a disk image!\n\n" +
-                        "I am not responsible for any lost data\nplease make sure your important disks (originals)\n" +
-                        "or ANYTHING you don't want destroyed is write-protected.";
+                                     "I am not responsible for any lost data\nplease make sure your important disks (originals)\n" +
+                                     "or ANYTHING you don't want destroyed is write-protected.";
                     string title = "Proceed with caution!";
                     MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
+            }
+        }
+
+        private void CBM_Fix_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!busy && !batch && CBM_Fix.Checked)
+            {
+                ErrorList = new ConcurrentBag<string>();
+                Repair_CBM_Checksums();
+                CBM_Fix.Checked = false;
             }
         }
     }

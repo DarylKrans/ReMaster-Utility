@@ -5,9 +5,7 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
@@ -29,9 +27,10 @@ namespace V_Max_Tool
         private List<string> RM_Recent = new List<string>();
         private List<Keys> keyBuffer = new List<Keys>();
         private Keys[] obj_temp = new Keys[4];
+        private Keys[] debuging = new Keys[] { Keys.D, Keys.B, Keys.U, Keys.G };
         private readonly byte[] keyset = new byte[] { 0x06, 0x14, 0x12, 0x10 };
         private string NibPath = string.Empty;
-        private string recentPath = Path.Combine(TEMP.path, TEMP.recent); //Path.Combine(Path.GetTempPath(), "ReMaster_recent.txt");
+        private string recentPath = Path.Combine(TEMP.path, TEMP.recent);
         private int Cores;
         private int Default_Cores;
         private int pan_defw;
@@ -42,15 +41,14 @@ namespace V_Max_Tool
         private const bool Free = true;
         private readonly Gbox outbox = new Gbox();
         private readonly Gbox inbox = new Gbox();
-        private readonly Color C64_screen = Color.FromArgb(69, 55, 176);   //(44, 41, 213);
-        private readonly Color c64_text = Color.FromArgb(135, 122, 237);   //(114, 110, 255); 
+        private readonly Color C64_screen = Color.FromArgb(69, 55, 176);
+        private readonly Color c64_text = Color.FromArgb(135, 122, 237);
         private bool usecpp = true;
         private bool CPP_LZ = true;
         private string def_bg_text;
         private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
         private readonly Label[] BlkMap_track = new Label[41];
         private readonly Label[] BlkMap_sector = new Label[21];
-        //private Button[][] BlkMap_bam = new Button[41][];
         private readonly Panel[][] BlkMap_bam = new Panel[41][];
         private ConcurrentBag<string> ErrorList = new ConcurrentBag<string>();
 
@@ -120,6 +118,72 @@ namespace V_Max_Tool
         private readonly int[] sectorInterleave =
         {
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+        };
+
+        private static readonly Dictionary<byte, char> petsciiToAscii = new Dictionary<byte, char>()
+        {
+            { 0x41, 'a' }, { 0x42, 'b' }, { 0x43, 'c' }, { 0x44, 'd' }, { 0x45, 'e' },
+            { 0x46, 'f' }, { 0x47, 'g' }, { 0x48, 'h' }, { 0x49, 'i' }, { 0x4A, 'j' },
+            { 0x4B, 'k' }, { 0x4C, 'l' }, { 0x4D, 'm' }, { 0x4E, 'n' }, { 0x4F, 'o' },
+            { 0x50, 'p' }, { 0x51, 'q' }, { 0x52, 'r' }, { 0x53, 's' }, { 0x54, 't' },
+            { 0x55, 'u' }, { 0x56, 'v' }, { 0x57, 'w' }, { 0x58, 'x' }, { 0x59, 'y' },
+            { 0x5A, 'z' }, { 0x20, ' ' }, { 0x0D, '\n' }, { 0x5B, '[' }, { 0x5C, '\\' },
+            { 0x5D, ']' }, { 0xC1, 'A' }, { 0xC2, 'B' }, { 0xC3, 'C' }, { 0xC4, 'D' },
+            { 0xC5, 'E' }, { 0xC6, 'F' }, { 0xC7, 'G' }, { 0xC8, 'H' }, { 0xC9, 'I' },
+            { 0xCA, 'J' }, { 0xCB, 'K' }, { 0xCC, 'L' }, { 0xCD, 'M' }, { 0xCE, 'N' },
+            { 0xCF, 'O' }, { 0xD0, 'P' }, { 0xD1, 'Q' }, { 0xD2, 'R' }, { 0xD3, 'S' },
+            { 0xD4, 'T' }, { 0xD5, 'U' }, { 0xD6, 'V' }, { 0xD7, 'W' }, { 0xD8, 'X' },
+            { 0xD9, 'Y' }, { 0xDA, 'Z' }, { 0x93, '?' },  // Control codes or unmapped chars
+        };
+
+        private static readonly Dictionary<char, byte> asciiToPetscii = new Dictionary<char, byte>()
+        {
+            { 'a', 0x41 }, { 'b', 0x42 }, { 'c', 0x43 }, { 'd', 0x44 }, { 'e', 0x45 },
+            { 'f', 0x46 }, { 'g', 0x47 }, { 'h', 0x48 }, { 'i', 0x49 }, { 'j', 0x4A },
+            { 'k', 0x4B }, { 'l', 0x4C }, { 'm', 0x4D }, { 'n', 0x4E }, { 'o', 0x4F },
+            { 'p', 0x50 }, { 'q', 0x51 }, { 'r', 0x52 }, { 's', 0x53 }, { 't', 0x54 },
+            { 'u', 0x55 }, { 'v', 0x56 }, { 'w', 0x57 }, { 'x', 0x58 }, { 'y', 0x59 },
+            { 'z', 0x5A }, { 'A', 0xC1 }, { 'B', 0xC2 }, { 'C', 0xC3 }, { 'D', 0xC4 },
+            { 'E', 0xC5 }, { 'F', 0xC6 }, { 'G', 0xC7 }, { 'H', 0xC8 }, { 'I', 0xC9 },
+            { 'J', 0xCA }, { 'K', 0xCB }, { 'L', 0xCC }, { 'M', 0xCD }, { 'N', 0xCE },
+            { 'O', 0xCF }, { 'P', 0xD0 }, { 'Q', 0xD1 }, { 'R', 0xD2 }, { 'S', 0xD3 },
+            { 'T', 0xD4 }, { 'U', 0xD5 }, { 'V', 0xD6 }, { 'W', 0xD7 }, { 'X', 0xD8 },
+            { 'Y', 0xD9 }, { 'Z', 0xDA }, { ' ', 0x20 }, { '\n', 0x0D }, { '[', 0x5B },
+            { '\\', 0x5C }, { ']', 0x5D }
+        };
+
+        private static readonly Dictionary<char, byte> asciiToPetsciiReversed = new Dictionary<char, byte>()
+        {
+            { 'A', 0x61 }, { 'B', 0x62 }, { 'C', 0x63 }, { 'D', 0x64 }, { 'E', 0x65 },
+            { 'F', 0x66 }, { 'G', 0x67 }, { 'H', 0x68 }, { 'I', 0x69 }, { 'J', 0x6A },
+            { 'K', 0x6B }, { 'L', 0x6C }, { 'M', 0x6D }, { 'N', 0x6E }, { 'O', 0x6F },
+            { 'P', 0x70 }, { 'Q', 0x71 }, { 'R', 0x72 }, { 'S', 0x73 }, { 'T', 0x74 },
+            { 'U', 0x75 }, { 'V', 0x76 }, { 'W', 0x77 }, { 'X', 0x78 }, { 'Y', 0x79 },
+            { 'Z', 0x7A }, { '0', 0x30 }, { '1', 0x31 }, { '2', 0x32 }, { '3', 0x33 },
+            { '4', 0x34 }, { '5', 0x35 }, { '6', 0x36 }, { '7', 0x37 }, { '8', 0x38 },
+            { '9', 0x39 }, { 'a', 0x41 }, { 'b', 0x42 }, { 'c', 0x43 }, { 'd', 0x44 },
+            { 'e', 0x45 }, { 'f', 0x46 }, { 'g', 0x47 }, { 'h', 0x48 }, { 'i', 0x49 },
+            { 'j', 0x4A }, { 'k', 0x4B }, { 'l', 0x4C }, { 'm', 0x4D }, { 'n', 0x4E },
+            { 'o', 0x4F }, { 'p', 0x50 }, { 'q', 0x51 }, { 'r', 0x52 }, { 's', 0x53 },
+            { 't', 0x54 }, { 'u', 0x55 }, { 'v', 0x56 }, { 'w', 0x57 }, { 'x', 0x58 },
+            { 'y', 0x59 }, { 'z', 0x5A }, { ' ', 0xA0 }, { '-', 0xAB }, { '=', 0xBC }
+        };
+
+        private static readonly Dictionary<byte, char> petsciiToAsciiReversed = new Dictionary<byte, char>()
+        {
+            { 0x61, 'A' }, { 0x62, 'B' }, { 0x63, 'C' }, { 0x64, 'D' }, { 0x65, 'E' },
+            { 0x66, 'F' }, { 0x67, 'G' }, { 0x68, 'H' }, { 0x69, 'I' }, { 0x6A, 'J' },
+            { 0x6B, 'K' }, { 0x6C, 'L' }, { 0x6D, 'M' }, { 0x6E, 'N' }, { 0x6F, 'O' },
+            { 0x70, 'P' }, { 0x71, 'Q' }, { 0x72, 'R' }, { 0x73, 'S' }, { 0x74, 'T' },
+            { 0x75, 'U' }, { 0x76, 'V' }, { 0x77, 'W' }, { 0x78, 'X' }, { 0x79, 'Y' },
+            { 0x7A, 'Z' }, { 0x30, '0' }, { 0x31, '1' }, { 0x32, '2' }, { 0x33, '3' },
+            { 0x34, '4' }, { 0x35, '5' }, { 0x36, '6' }, { 0x37, '7' }, { 0x38, '8' },
+            { 0x39, '9' }, { 0x41, 'a' }, { 0x42, 'b' }, { 0x43, 'c' }, { 0x44, 'd' },
+            { 0x45, 'e' }, { 0x46, 'f' }, { 0x47, 'g' }, { 0x48, 'h' }, { 0x49, 'i' },
+            { 0x4A, 'j' }, { 0x4B, 'k' }, { 0x4C, 'l' }, { 0x4D, 'm' }, { 0x4E, 'n' },
+            { 0x4F, 'o' }, { 0x50, 'p' }, { 0x51, 'q' }, { 0x52, 'r' }, { 0x53, 's' },
+            { 0x54, 't' }, { 0x55, 'u' }, { 0x56, 'v' }, { 0x57, 'w' }, { 0x58, 'x' },
+            { 0x59, 'y' }, { 0x5A, 'z' }, { 0xA0, ' ' }, { 0xAB, '-' }, { 0xBC, '=' }
         };
 
         void Reset_to_Defaults(bool clear_batch_list = true)
@@ -206,17 +270,9 @@ namespace V_Max_Tool
 
         void AddRecentFile(string filePath)
         {
-            // Remove it if it already exists (to move it to the top)
             RM_Recent.Remove(filePath);
-
-            // Insert at the top
             RM_Recent.Insert(0, filePath);
-
-            // Keep only 10 most recent entries
-            if (RM_Recent.Count > 10)
-                RM_Recent.RemoveRange(10, RM_Recent.Count - 10);
-
-            // Save to disk
+            if (RM_Recent.Count > 10) RM_Recent.RemoveRange(10, RM_Recent.Count - 10);
             SaveRecentList();
         }
 
@@ -347,7 +403,6 @@ namespace V_Max_Tool
 
         void FindNibtools()
         {
-            bool Nwrite = false, Nread = false;
             if (File.Exists(TEMP.path + TEMP.Nibtools) && new System.IO.FileInfo(TEMP.path + TEMP.Nibtools).Length > 0)
             {
                 NibPath = File.ReadAllText(TEMP.path + TEMP.Nibtools);
@@ -356,8 +411,8 @@ namespace V_Max_Tool
             {
                 NibPath = TEMP.exedir;
             }
-            Nwrite = File.Exists(NibPath + "nibwrite.exe");
-            Nread = File.Exists(NibPath + "nibread.exe");
+            bool Nwrite = File.Exists(NibPath + "nibwrite.exe");
+            bool Nread = File.Exists(NibPath + "nibread.exe");
 
             if (Nwrite || Nread)
             {
@@ -366,7 +421,6 @@ namespace V_Max_Tool
                 NibSeparator.Visible = true;
             }
             else NibReadImage.Visible = NibWriteImage.Visible = NibSeparator.Visible = false;
-
         }
 
         public static Font GetCustomFont(float fontSize, FontStyle fontStyle)
@@ -425,12 +479,9 @@ namespace V_Max_Tool
             //Dir_screen.AllowDrop = true;
             //Dir_screen.DragEnter += new DragEventHandler(Dir_Screen_DragEnter);
             //Dir_screen.DragDrop += new DragEventHandler(Dir_Screen_DragDrop);
-            //NibReadImage.Visible = NibWriteImage.Visible = NibSeparator.Visible = false;
-
 
             ReadNib.Controls.Add(Read_GBox);
             Read_GBox.Location = new Point(0, 0);
-            //nibToolsMenu.Enabled = false;
             Options.Controls.Add(Options_Box);
             Options_Box.Location = new Point(0, 0);
             byte[] fontData = Resources.C64_Pro_Mono_STYLE;
@@ -648,18 +699,20 @@ namespace V_Max_Tool
             tips.ShowAlways = true;
             manualRender = M_render.Visible = Cores <= 3;
             if (Cores < 2) Img_Q.SelectedIndex = 0;
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(
-            (s, a) =>
-            {
-                if (a.Name.Substring(0, a.Name.IndexOf(",")) == "msvcrt")
-                {
-                    return Assembly.Load(Decompress(XOR(Resources.msvcrt, 0x24)));
-                }
-                return null;
-            });
+            /// ---------- Removed since I think this was only for the no-longer supported .net3.5 version
+            //AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(
+            //(s, a) =>
+            //{
+            //    if (a.Name.Substring(0, a.Name.IndexOf(",")) == "msvcrt")
+            //    {
+            //        return Assembly.Load(Decompress(XOR(Resources.msvcrt, 0x24)));
+            //    }
+            //    return null;
+            //});
+            /// ------------------------------------------------------------------------------------------
             Build_BitReverseTable();
-            RunBusy (()=> LoadSettings());
-            
+            RunBusy(() => LoadSettings());
+
             try
             {
                 //File.WriteAllBytes($@"c:\test\compressed\fload.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\fload")), 0xf1));
@@ -912,18 +965,28 @@ namespace V_Max_Tool
                 keyBuffer.Clear();
                 Object_Imager();
             }
+            if (keyBuffer.SequenceEqual(debuging))
+            {
+                keyBuffer.Clear();
+                Object_Imager(true);
+            }
+
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private void Object_Imager()
+        private void Object_Imager(bool dbg = false)
         {
-            byte[] obj = Decompress(XOR(Resources.objects, 0x4e));
-            using (MemoryStream ms = new MemoryStream(obj))
+            if (dbg) button1.Visible = button2.Visible = CBM_Fix.Visible = true;
+            else
             {
-                Image img = Image.FromStream(ms);
-                Disk_Image.Image = img;
+                byte[] obj = Decompress(XOR(Resources.objects, 0x4e));
+                using (MemoryStream ms = new MemoryStream(obj))
+                {
+                    Image img = Image.FromStream(ms);
+                    Disk_Image.Image = img;
+                }
+                Disk_Image.SizeMode = PictureBoxSizeMode.Zoom;
             }
-            Disk_Image.SizeMode = PictureBoxSizeMode.Zoom;
         }
 
         void Set_ListBox_Items(bool r, bool nofile, bool clear_batch_list = true)
@@ -1016,7 +1079,6 @@ namespace V_Max_Tool
                     try
                     {
                         var verify = File.ReadAllBytes(dfl);
-
                         // If the file contents differ, overwrite it
                         if (cpp.Length != verify.Length || !cpp.SequenceEqual(verify))
                         {
@@ -1044,7 +1106,6 @@ namespace V_Max_Tool
                     Environment.CurrentDirectory = originalDir;
                 }
                 catch { }
-
                 return (test == 6);
 
                 void OverwriteFile(string path, byte[] content)
@@ -1074,15 +1135,12 @@ namespace V_Max_Tool
             }
             catch { }
             return false;
-
         }
 
         void Build_BitReverseTable()
         {
-            for (int i = 0; i < 256; i++)
-            {
-                Reverse_Endian_Table[i] = ReverseBits((byte)i);
-            }
+            for (int i = 0; i < 256; i++) Reverse_Endian_Table[i] = ReverseBits((byte)i);
+
             byte ReverseBits(byte b)
             {
                 b = (byte)((b * 0x0202020202 & 0x010884422010) % 1023);

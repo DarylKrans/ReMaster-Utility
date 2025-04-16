@@ -200,7 +200,7 @@ namespace V_Max_Tool
         public static extern int TestLoaded();
     }
 
-    
+
 
     public class CustomCheckedListBox : CheckedListBox
     {
@@ -540,7 +540,7 @@ namespace V_Max_Tool
         public static byte[] Init(int size, byte value)
         {
             if (size < 0) size = 0;
-            byte[] temp = new byte[size];
+            var temp = new byte[size];
             GCHandle gch = GCHandle.Alloc(temp, GCHandleType.Pinned);
             MemSet(gch.AddrOfPinnedObject(), value, temp.Length);
             gch.Free();

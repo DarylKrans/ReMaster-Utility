@@ -14,24 +14,12 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-
         void RunBusy(Action action)
         {
             busy = true;
             action();
             busy = false;
         }
-
-        //public static string AssemblyDirectory
-        //{
-        //    get
-        //    {
-        //        string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-        //        UriBuilder uri = new UriBuilder(codeBase);
-        //        string path = Uri.UnescapeDataString(uri.Path);
-        //        return $@"{Path.GetDirectoryName(path)}\".Replace(@"\\" , @"\");
-        //    }
-        //}
 
         string Get_DirectoryFileType(byte b)
         {
@@ -305,8 +293,6 @@ namespace V_Max_Tool
                 if (tl.Count > 0) return tl.Max() >> 3 < 8000;
                 return false;
             }
-
-
         }
 
         void SwapDensities(bool update = false)
@@ -323,7 +309,6 @@ namespace V_Max_Tool
         public static byte[] Compress(byte[] data)
         {
             MemoryStream output = new MemoryStream();
-            //using (DeflateStream dstream = new DeflateStream(output, CompressionMode.Compress)) // .net 3.5
             using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal)) // .net 4.x
             {
                 dstream.Write(data, 0, data.Length);
@@ -733,13 +718,39 @@ namespace V_Max_Tool
             return weak;
         }
 
+        int FindLongestRun(byte[] data, byte value)
+        {
+            int current = 0;
+            int run = 0;
+            int pos = 0;
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] == value) current++;
+                else
+                {
+                    if (current > run)
+                    {
+                        run = current;
+                        pos = i - run;
+                    }
+                    current = 0;
+                }
+            }
+            if (current > run)
+            {
+                run = current;
+                pos = data.Length - run;
+            }
+            return pos;
+        }
+
         (byte[], int, int) GetSectorWithErrorCode(byte[] data, int sector, bool decode, byte[] ID = null, BitArray source = null, int position = 0)
         {
             source = source ?? new BitArray(Flip_Endian(data));
             ID = ID ?? GetDiskID(true);
             var error = 1;
-            (bool valid, int pos, byte[] id, bool hdr_cksm) = Find_Sector(source, sector, position, true);
-            if (valid)
+            (bool valid, int pos, _, byte[] id, bool hdr_cksm) = Find_Sector(source, sector, position, true);
+            if (valid && pos >= 0)
             {
                 (byte[] sec_data, bool chksum) = Decode_CBM_Sector(data, sector, true, source, pos);
                 error = !chksum ? 5 : error;
@@ -749,8 +760,7 @@ namespace V_Max_Tool
                 if (!decode) (sec_data, _) = Decode_CBM_Sector(data, sector, false, source, pos);
                 return (sec_data, error, pos);
             }
-            else error = 2;
-            error = (!hdr_cksm) ? 9 : error;
+            error = (!hdr_cksm) ? 9 : 2;
             return (null, error, -1);
         }
 
@@ -760,7 +770,7 @@ namespace V_Max_Tool
             if (NDS.cbm[dirtrack] == 1 && NDS.Track_Data[dirtrack] != null)
             {
                 var temp = new BitArray(Flip_Endian(NDS.Track_Data[dirtrack]));
-                (_, _, var dID, _) = Find_Sector(temp, 0);
+                (_, _, _, var dID, _) = Find_Sector(temp, 0);
                 if (dID != null)
                 {
                     var ID = new byte[2];
@@ -1127,23 +1137,10 @@ namespace V_Max_Tool
 
         byte[] Create_Empty_Sector(byte fill = 0x01)
         {
+            var filling = ArrayConcat(new byte[] { 0x4b }, FastArray.Init(255, fill));
             int chksum = 0;
-            var buff = new MemoryStream();
-            var wrt = new BinaryWriter(buff);
-            wrt.Write((byte)0x07);
-            wrt.Write((byte)0x4b);
-            chksum ^= 0x4b;
-            while (buff.Length < 260)
-            {
-                if (buff.Length < 257)
-                {
-                    wrt.Write((byte)fill);
-                    chksum ^= 1;
-                }
-                if (buff.Length == 257) wrt.Write((byte)chksum);
-                if (buff.Length > 257) wrt.Write(((byte)0x00));
-            }
-            return buff.ToArray();
+            foreach (byte b in filling) chksum ^= b;
+            return ArrayConcat(new byte[] { 0x07 }, filling, new byte[] { (byte)chksum, 0x00, 0x00 });
         }
 
         byte[] SetSectorGap(int len)
@@ -1151,9 +1148,6 @@ namespace V_Max_Tool
             byte[] gap = FastArray.Init(len, cbm_gap);
             if (cbm_gap == 0x55) gap[gap.Length - 1] = 0x56;
             return gap;
-            //byte[] gap = new byte[len];
-            //gap = Encode_CBM_GCR(gap);
-            //return gap;
         }
 
         byte[] Build_BlockHeader(int track, int sector, byte[] ID, bool badChecksum = false, bool ID_Mismatch = false)
@@ -1271,58 +1265,82 @@ namespace V_Max_Tool
             }
         }
 
-        public static List<(byte[] pattern, int count)> GetTopPatterns(byte[] data, int patternLength, int topN = 5)
+        string Sort_Errors(List<string> list, int max_len = 15)
         {
-            if (data == null || data.Length < patternLength)
-                return new List<(byte[] pattern, int count)>();
-
-            List<(byte[] pattern, int count)> results = new List<(byte[] pattern, int count)>();
-            List<(byte[] pattern, int count)> pool = new List<(byte[] pattern, int count)>();
-
-            for (int i = 0; i <= data.Length - patternLength; i++)
+            var s = "";
+            var sorted = list.Select(srt =>
             {
-                byte[] current = new byte[patternLength];
-                Array.Copy(data, i, current, 0, patternLength);
-
-                bool merged = false;
-
-                for (int j = 0; j < pool.Count; j++)
+                // Extract track and sector using a simple pattern match
+                var match = System.Text.RegularExpressions.Regex.Match(s, @"track (\d+) sector (\d+)");
+                if (match.Success)
                 {
-                    if (IsSimilar(pool[j].pattern, current, patternLength))
+                    return new
                     {
-                        pool[j] = (pool[j].pattern, pool[j].count + 1);
-                        merged = true;
-                        i += patternLength;
-                        break;
-                    }
+                        Original = srt,
+                        Track = int.Parse(match.Groups[1].Value),
+                        Sector = int.Parse(match.Groups[2].Value)
+                    };
                 }
-
-                if (!merged)
+                else
                 {
-                    pool.Add((current, 1));
+                    // If it doesn't match the expected format, assign default values so it stays at the end
+                    return new
+                    {
+                        Original = srt,
+                        Track = int.MinValue,
+                        Sector = int.MinValue
+                    };
                 }
-            }
-
-            return pool
-                .OrderByDescending(p => p.count)
-                .Take(topN)
-                .ToList();
-        }
-
-        private static bool IsSimilar(byte[] a, byte[] b, int len)
-        {
-            if (a.Length != b.Length) return false;
-            int diffCount = 0;
-            for (int i = 0; i < a.Length; i++)
+            })
+                        .OrderBy(x => x.Track)
+                        .ThenBy(x => x.Sector)
+                        .Select(x => x.Original)
+                        .ToList();
+            list.Reverse();
+            var errorslist = 0;
+            foreach (string err in list)
             {
-                if (a[i] != b[i])
+                s += $"{err}\n";
+                if (errorslist++ > max_len)
                 {
-                    diffCount++;
-                    if (diffCount > len - 1) return false;
-                }
+                    s += $"\n{list.Count - errorslist} more errors found.\n";
+                    break;
+                };
             }
-            return true;
+            return s;
         }
 
+        static byte[] AsciiToPetscii(string asciiName, bool reverse = false)
+        {
+            List<byte> petsciiName = new List<byte>();
+            var lookupTable = reverse ? asciiToPetsciiReversed : asciiToPetscii;
+
+            foreach (char asciiChar in asciiName)
+            {
+                // Use the selected lookup table and default to the ASCII char if not found
+                petsciiName.Add(lookupTable.TryGetValue(asciiChar, out byte petsciiChar) ? petsciiChar : (byte)asciiChar);
+            }
+            return petsciiName.ToArray();
+        }
+
+        static string PetsciiToAscii(byte[] petsciiName, bool reverse = false)
+        {
+            StringBuilder asciiName = new StringBuilder();
+            var lookupTable = reverse ? petsciiToAsciiReversed : petsciiToAscii;
+
+            foreach (byte petsciiChar in petsciiName)
+            {
+                // Use the selected lookup table and fallback to the byte cast if not found
+                asciiName.Append(lookupTable.TryGetValue(petsciiChar, out char asciiChar)
+                    ? asciiChar.ToString()
+                    : SwapCase($"{(char)petsciiChar}"));
+            }
+            return asciiName.ToString();
+        }
+
+        static string SwapCase(string input)
+        {
+            return new string(input.Select(c => char.IsUpper(c) ? char.ToLower(c) : char.ToUpper(c)).ToArray());
+        }
     }
 }
