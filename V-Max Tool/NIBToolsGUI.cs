@@ -10,12 +10,12 @@ namespace V_Max_Tool
 
     public partial class Form1 : Form
     {
-        readonly string n_read = "nibread.exe";
-        readonly string n_writ = "nibwrite.exe";
-        readonly string a_rpm = "rpm1541.exe";
-        readonly string cbmctrl = $@"c:\program files\opencbm\cbmctrl.exe";
-        readonly string[] trk_aln = { "Automatic", "Longest run of unformatted data", "Longest gap", "Longest sync", "Sector 0", "Raw Data" };
-        readonly string[] ProHand = { "V-Max! (v3)", "V-Max! (v2) Cinemaware", "GMA/Secruispeed (T38/T39)", "Rainbow Arts/Magic Bytes (T36)",
+        private readonly static string n_read = "nibread.exe";
+        private readonly static string n_writ = "nibwrite.exe";
+        private readonly static string a_rpm = "rpm1541.exe";
+        private readonly static string cbmctrl = $@"c:\program files\opencbm\cbmctrl.exe";
+        private readonly static string[] trk_aln = { "Automatic", "Longest run of unformatted data", "Longest gap", "Longest sync", "Sector 0", "Raw Data" };
+        private readonly static string[] ProHand = { "V-Max! (v3)", "V-Max! (v2) Cinemaware", "GMA/Secruispeed (T38/T39)", "Rainbow Arts/Magic Bytes (T36)",
                                       "Rapidlok", "Vorpal (newer) EPYX", "Pirateslayer/Buster" };
         static bool zero = false;
         static bool rpm = false;
@@ -156,11 +156,10 @@ namespace V_Max_Tool
         void Write_DiskImage(bool erase = false)
         {
             string args = " ";
-            string f;
             BuildArgs();
             var exe = "\"" + $@"{NibPath}\{n_writ}".Replace(@"\\", @"\") + "\"";
-            if (!zero) f = args + "\"" + $"{TEMP.path}temp_write.g64" + "\""; else f = args + "-u ";
-            zero = false; // Zero_Disk.Enabled = true;
+            var f = (!zero) ? args + "\"" + $"{TEMP.path}temp_write.g64" + "\"" : args + "-u ";
+            zero = false;
             Zero_Disk.Enabled = Write_Start.Enabled = !zero;
             ProcessStartInfo procStartInfo = new ProcessStartInfo("cmd.exe", $"/c \"{exe} {f}" + "\"")
             {
@@ -182,8 +181,9 @@ namespace V_Max_Tool
             catch { }
             if (!erase) WriteNib.Close();
 
-            void BuildArgs()
+            string BuildArgs()
             {
+
                 if (W_num.Value != 8) args += $"-D{W_num.Value} ";
                 if (W_override.Checked) args += $"-S{W_start.Value} -E{W_end.Value} ";
                 if (WParallel.Checked) args += "-P ";
@@ -230,6 +230,7 @@ namespace V_Max_Tool
                     if (W_timedalign.Checked) args += $"-t ";
                     if (W_capmar.Checked) args += $"-m{W_cap.Value} ";
                 }
+                return args;
             }
         }
 
@@ -244,10 +245,6 @@ namespace V_Max_Tool
                 CreateNoWindow = false,
 
             };
-            //if (System.Environment.OSVersion.Version.Major >= 6)
-            //{
-            //    procStartInfo.Verb = "runas";
-            //}
             Process process = new Process
             {
                 StartInfo = procStartInfo

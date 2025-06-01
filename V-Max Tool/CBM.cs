@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -66,8 +65,8 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
         //readonly bool write_dir = false;
-        private readonly byte[] sz = { 0x52, 0xc0, 0x0f, 0xfc };
-        private readonly byte cbm_gap = 0x55;
+        private static readonly byte[] sz = { 0x52, 0xc0, 0x0f, 0xfc };
+        private static readonly byte cbm_gap = 0x55;
         int SelectionLength = 0;
 
         byte[] Rebuild_CBM(byte[] data, int sectors, byte[] Disk_ID, int t_density, int trk, int start, bool cyan = false)
@@ -386,7 +385,7 @@ namespace V_Max_Tool
         {
             if (source == null) source = new BitArray(Flip_Endian(data));
 
-            const int sectorDataLength = 325 * 8;
+            const int sectorDataLength = 325 << 3;
             byte[] tmp = null;
             bool sectorFound = false;
             bool sectorMarker = false;
@@ -441,7 +440,7 @@ namespace V_Max_Tool
                 return (decodedSector, isValid);
             }
 
-            bool CompareSectorMarker()
+            bool CompareSectorMarker(bool skip = true)
             {
                 int checkLength = decode ? 5 : 10;
                 byte[] header = Bit2Byte(source, pos, checkLength * 8);
@@ -454,7 +453,7 @@ namespace V_Max_Tool
                         sectorFound = true;
                         return true;
                     }
-                    pos += sectorDataLength;
+                    //pos += sectorDataLength;
                 }
                 return false;
             }
@@ -620,8 +619,10 @@ namespace V_Max_Tool
             }
         }
 
-        void Get_Disk_Directory()
+        //void Get_Disk_Directory()
+        string Get_Disk_Directory(byte[] t18 = null)
         {
+            bool keepgoing = t18 == null;
             string ret = "Disk Directory ID : n/a";
             var buff = new MemoryStream();
             var wrt = new BinaryWriter(buff);
@@ -644,97 +645,117 @@ namespace V_Max_Tool
                 track = (halftrack / 2) + 1;
             }
 
-            if (NDS.cbm[halftrack] == 1)
+            //if (NDS.cbm[halftrack] == 1)
+            if (t18 == null && NDS.cbm[halftrack] == 1)
             {
-                List<string> list = new List<string>();
-                byte[] nextSector = new byte[] { (byte)track, 0x00 };
-                byte[] lastSector = new byte[2];
-                int tnum = Convert.ToInt32(nextSector[0]);
-                int snum = Convert.ToInt32(nextSector[1]);
-                while ((tnum != 0 && tnum < 42) && !list.Any(x => x == Hex_Val(nextSector)))
-                {
-                    list.Add(Hex_Val(nextSector));
-                    if (snum < 22 && !(tnum == 18 && snum == 0)) d_sec.Add(Hex_Val(nextSector).Replace("-", ""));
-                    Buffer.BlockCopy(nextSector, 0, lastSector, 0, 2);
-                    byte[] temp = new byte[0];
-                    try
-                    {
-                        (temp, _) = Decode_CBM_Sector(NDG.Track_Data[halftrack], Convert.ToInt32(nextSector[1]), true);
-                        if (temp.Length > 0)
-                        {
-                            Buffer.BlockCopy(temp, 0, nextSector, 0, nextSector.Length);
-                            tnum = Convert.ToInt32(nextSector[0]);
-                            snum = Convert.ToInt32(nextSector[1]);
+                t18 = new byte[NDG.Track_Data[halftrack].Length];
+                Buffer.BlockCopy(NDG.Track_Data[halftrack], 0, t18, 0, t18.Length);
+            }
 
-                            if (tracks <= 42) halftrack = tnum - 1;
-                            else halftrack = (tnum - 1) * 2;
-                            wrt.Write(temp);
-                        }
-                        else
+            List<string> list = new List<string>();
+            byte[] nextSector = new byte[] { (byte)track, 0x00 };
+            byte[] lastSector = new byte[2];
+            int tnum = Convert.ToInt32(nextSector[0]);
+            int snum = Convert.ToInt32(nextSector[1]);
+            while ((tnum != 0 && tnum < 42) && !list.Any(x => x == Hex_Val(nextSector)))
+            {
+                if (tnum != 18)
+                {
+                    if (keepgoing)
+                    {
+                        t18 = new byte[NDG.Track_Data[halftrack].Length];
+                        Buffer.BlockCopy(NDG.Track_Data[halftrack], 0, t18, 0, t18.Length);
+                    }
+                    else break;
+                }
+                list.Add(Hex_Val(nextSector));
+                if (snum < 22 && !(tnum == 18 && snum == 0)) d_sec.Add(Hex_Val(nextSector).Replace("-", ""));
+                Buffer.BlockCopy(nextSector, 0, lastSector, 0, 2);
+                byte[] temp = new byte[0];
+                try
+                {
+                    //(temp, _) = Decode_CBM_Sector(NDG.Track_Data[halftrack], Convert.ToInt32(nextSector[1]), true);
+                    (temp, _) = Decode_CBM_Sector(t18, Convert.ToInt32(nextSector[1]), true);
+                    if (temp.Length > 0)
+                    {
+                        Buffer.BlockCopy(temp, 0, nextSector, 0, nextSector.Length);
+                        tnum = Convert.ToInt32(nextSector[0]);
+                        snum = Convert.ToInt32(nextSector[1]);
+
+                        if (tracks <= 42) halftrack = tnum - 1;
+                        else halftrack = (tnum - 1) * 2;
+                        wrt.Write(temp);
+
+                    }
+                    else
+                    {
+                        ret = "Error processing directory!";
+                        break;
+                    }
+                }
+                catch { }
+
+            }
+
+            if (buff.Length != 0)
+            {
+                try
+                {
+                    if (buff.Length < 257)
+                    {
+                        byte[] temp;
+                        //(temp, _) = Decode_CBM_Sector(NDG.Track_Data[halftrack], 1, true);
+                        (temp, _) = Decode_CBM_Sector(t18, 1, true);
+                        wrt.Write(temp);
+                    }
+                }
+                catch { }
+
+                byte[] directory = buff.ToArray();
+
+                if (directory.Length >= 256)
+                {
+                    for (int i = 0; i < 35; i++)
+                    {
+                        if (i != 17)
+                            blocksFree += directory[4 + (i * 4)];
+                    }
+
+                    ret = $"0 \"";
+                    SelectionLength = 0;
+                    for (int i = 0; i < 23; i++)
+                    {
+                        if (directory[144 + i] != 0x00)
                         {
-                            ret = "Error processing directory!";
-                            break;
+                            if (i != 16) ret += Encoding.ASCII.GetString(directory, 144 + i, 1).Replace('?', ' ');
+                            else ret += "\"";
+                            SelectionLength = ret.Length - 2;
                         }
                     }
-                    catch { }
                 }
 
-                if (buff.Length != 0)
+                if (directory.Length > 256)
                 {
-                    try
+                    for (int i = 1; i < directory.Length / 256; i++)
                     {
-                        if (buff.Length < 257)
+                        byte[] file = new byte[32];
+                        for (int j = 0; j < 8; j++)
                         {
-                            byte[] temp;
-                            (temp, _) = Decode_CBM_Sector(NDG.Track_Data[halftrack], 1, true);
-                            wrt.Write(temp);
-                        }
-                    }
-                    catch { }
-
-                    byte[] directory = buff.ToArray();
-
-                    if (directory.Length >= 256)
-                    {
-                        for (int i = 0; i < 35; i++)
-                        {
-                            if (i != 17)
-                                blocksFree += directory[4 + (i * 4)];
-                        }
-
-                        ret = $"0 \"";
-                        SelectionLength = 0;
-                        for (int i = 0; i < 23; i++)
-                        {
-                            if (directory[144 + i] != 0x00)
+                            Buffer.BlockCopy(directory, 256 * i + (j * 32), file, 0, file.Length);
+                            if (file[2] != 0x00)
                             {
-                                if (i != 16) ret += Encoding.ASCII.GetString(directory, 144 + i, 1).Replace('?', ' ');
-                                else ret += "\"";
-                                SelectionLength = ret.Length - 2;
+                                DiskDir.Entries++;
+                                file[0] = 0x00; file[1] = 0x00;
+                                d_files.Add(Hex_Val(file).Replace("-", ""));
+                                string sz = Get_FileName(file);
+                                filename.Add($"{sz}");
+                                ret += $"\n{sz}";
                             }
                         }
                     }
-
-                    if (directory.Length > 256)
+                    ret += $"\n{blocksFree} BLOCKS FREE.";
+                    if (keepgoing)
                     {
-                        for (int i = 1; i < directory.Length / 256; i++)
-                        {
-                            byte[] file = new byte[32];
-                            for (int j = 0; j < 8; j++)
-                            {
-                                Buffer.BlockCopy(directory, 256 * i + (j * 32), file, 0, file.Length);
-                                if (file[2] != 0x00)
-                                {
-                                    DiskDir.Entries++;
-                                    file[0] = 0x00; file[1] = 0x00;
-                                    d_files.Add(Hex_Val(file).Replace("-", ""));
-                                    string sz = Get_FileName(file);
-                                    filename.Add($"{sz}");
-                                    ret += $"\n{sz}";
-                                }
-                            }
-                        }
-                        ret += $"\n{blocksFree} BLOCKS FREE.";
                         DiskDir.Entry = new byte[DiskDir.Entries][];
                         d_temp = new byte[DiskDir.Entries][];
                         DiskDir.Sectors = new byte[d_sec.Count][];
@@ -754,7 +775,11 @@ namespace V_Max_Tool
                     }
                 }
             }
+            return ret;
+        }
 
+        void Set_Dir(string ret)
+        {
             if (ret.Length > 0)
             {
                 Dir_screen.Text = ret;
@@ -815,7 +840,8 @@ namespace V_Max_Tool
                 Invoke(new Action(() =>
                 {
                     Stopwatch po = Process_Nib_Data(true, false, false, false, true);
-                    Get_Disk_Directory();
+                    //string ret = Get_Disk_Directory();
+                    Set_Dir(Get_Disk_Directory());
                     Set_BlockMap();
                     Set_ListBox_Items(false, false);
                     Set_Buttons_Active();
@@ -907,7 +933,7 @@ namespace V_Max_Tool
 
         bool BlockAllocStatus(byte[] bam, int track, int sector)
         {
-            if (track < 35 && sector < Available_Sectors[track])
+            if (bam != null && track < 35 && sector < Available_Sectors[track])
             {
                 int getbyte = (sector / 8) + 1;
                 int getbit = sector % 8;
@@ -941,74 +967,6 @@ namespace V_Max_Tool
                 Set_Dest_Arrays(temp, dirtrack);
                 Buffer.BlockCopy(NDA.Track_Data[dirtrack], 0, NDS.Track_Data[dirtrack], 0, MAX_TRACK_SIZE);
             }
-        }
-
-        void Set_BlockMap()
-        {
-            Blk_pan.Visible = false;
-            ResetAllBlocks();
-            byte[] bam = GetBam();
-            bool vbam = bam != null;
-            string usedsec = string.Empty;
-            for (int i = 0; i < tracks; i++)
-            {
-                int trk = tracks > 42 ? (i / 2) : i;
-                if (NDS.cbm[i] == 1)
-                {
-                    int validSectors = Available_Sectors[trk];
-                    int sectors = NDS.sectors[i] < validSectors ? validSectors : NDS.sectors[i];
-
-                    int[] c = new int[] { 2, 3, 4, 5, 6 };
-                    bool alt = (NDS.cbm.Any(x => c.Any()));
-                    int start = trk == 17 || alt ? 0 : NDS.D_Start[i];
-                    BitArray tk = new BitArray(Flip_Endian(trk == 17 || alt ? NDG.Track_Data[i] : NDS.Track_Data[i]));
-
-                    for (int j = 0; j < 21; j++)
-                    {
-                        if (j < sectors)
-                        {
-                            bool valid = j < Available_Sectors[trk];
-                            (_, int errorCode, _) = GetSectorWithErrorCode(null, j, true, null, tk, start);
-                            bool error = errorCode > 1;
-                            bool available = BlockAllocStatus(bam, trk, j);
-                            usedsec = !available ? "Block Allocated (Used)" : "Block Available (Free)";
-                            usedsec += (error ? $"\nError {c1541error[errorCode]}" : string.Empty);
-                            Color color = Color.FromArgb(valid && trk < 35 ? 255 : 100, error ? 200 : 30, error ? 30 : !available ? 200 : 75, 30);
-                            BlkMap_bam[trk][j].BackColor = color;
-                            tips.SetToolTip(BlkMap_bam[trk][j], $"Track {trk + 1} Sector {j + 1}\n{usedsec}" + (errorCode == 1 ? $"\n{ErrorCodes[errorCode]}" : ""));
-                            BlkMap_bam[trk][j].Visible = true;
-                        }
-                        else
-                        {
-                            Color color = Color.FromArgb(30, 100, 100, 100);
-                            tips.SetToolTip(BlkMap_bam[trk][j], string.Empty);
-                            BlkMap_bam[trk][j].BackColor = color;
-                            BlkMap_bam[trk][j].Visible = true;
-                        }
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        var fmt = NDS.cbm[i];
-                        if (fmt < secF.Length - 1 && NDG.Track_Data[i] != null)
-                        {
-                            int sec = Sectors_by_density[Get_Density(NDG.Track_Data[i].Length)];
-                            for (int j = 0; j < 21; j++)
-                            {
-                                Color color = fmt < 2 || fmt == secF.Length - 1 || j >= sec ? Color.FromArgb(30, 100, 100, 100) : Color.FromArgb(200, 100, 30, 100);
-                                BlkMap_bam[trk][j].Visible = true;
-                                BlkMap_bam[trk][j].BackColor = color;
-                                tips.SetToolTip(BlkMap_bam[trk][j], (fmt > 0 && fmt < secF.Length - 1) ? j < sec ? $"Track {trk + 1} {secF[NDS.cbm[i]]}" : string.Empty : string.Empty);
-                            }
-                        }
-                    }
-                    catch { }
-                }
-                if (tracks > 42) i++;
-            }
-            Blk_pan.Visible = true;
         }
 
         void AddFileToDisk(byte[] prg, string filename, byte[] bam, byte[][] freesec)
@@ -1367,7 +1325,7 @@ namespace V_Max_Tool
                 Clear_Out_Items();
                 Process_Nib_Data(true, false, false, true);
                 Default_Dir_Screen();
-                Get_Disk_Directory();
+                Set_Dir(Get_Disk_Directory());
                 Set_BlockMap();
                 linkLabel1.Visible = false;
                 Save_Disk.Visible = true;

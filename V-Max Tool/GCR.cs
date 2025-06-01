@@ -11,7 +11,7 @@ namespace V_Max_Tool
         ///  ------------------ CBM standard GCR Encode/Decode routines --------------------- 
         /// </summary>
 
-        private readonly byte[] GCR_encode =
+        private static readonly byte[] GCR_encode =
         {
             0x0a, 0x0b, 0x12, 0x13,
             0x0e, 0x0f, 0x16, 0x17,
@@ -20,7 +20,7 @@ namespace V_Max_Tool
         };
 
 
-        private readonly byte[] GCR_decode_high =
+        private static readonly byte[] GCR_decode_high =
         {
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0x80, 0x00, 0x10, 0xff, 0xc0, 0x40, 0x50,
@@ -28,7 +28,7 @@ namespace V_Max_Tool
             0xff, 0x90, 0xa0, 0xb0, 0xff, 0xd0, 0xe0, 0xff
         };
 
-        private readonly byte[] GCR_decode_low =
+        private static readonly byte[] GCR_decode_low =
         {
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0x08, 0x00, 0x01, 0xff, 0x0c, 0x04, 0x05,
@@ -98,7 +98,7 @@ namespace V_Max_Tool
             0x1A, 0x1B, 0x1D, 0x1E
         };
 
-        private readonly byte[] VPL_decode_low =
+        private static readonly byte[] VPL_decode_low =
         {
             0xff, 0xff, 0xff, 0xff, 0xff, 0x0e, 0x0f, 0xff,
             0xff, 0x00, 0x01, 0x02, 0x05, 0x03, 0x04, 0x05,
@@ -106,7 +106,7 @@ namespace V_Max_Tool
             0xff, 0x0b, 0x0c, 0x0d, 0xff, 0x0e, 0x0f, 0xff,
         };
 
-        private readonly byte[] VPL_decode_high =
+        private static readonly byte[] VPL_decode_high =
         {
             0xff, 0xff, 0xff, 0xff, 0xff, 0xe0, 0xf0, 0xff,
             0xff, 0x00, 0x10, 0x20, 0x50, 0x30, 0x40, 0x50,
@@ -173,7 +173,7 @@ namespace V_Max_Tool
         ///  ------------------ RapidLok GCR Encode/Decode routines --------------------- 
         /// </summary>
 
-        private readonly byte[] RapidLok_Decode_Low =
+        private static readonly byte[] RapidLok_Decode_Low =
         {
             0x0f, 0x07, 0x0d, 0x05,
             0x0b, 0x03, 0x09, 0x01,
@@ -181,7 +181,7 @@ namespace V_Max_Tool
             0x0a, 0x02, 0x08, 0x00
         };
 
-        private readonly byte[] RapidLok_Decode_High =
+        private static readonly byte[] RapidLok_Decode_High =
         {
             0xf0, 0x70, 0xd0, 0x50,
             0xb0, 0x30, 0x90, 0x10,

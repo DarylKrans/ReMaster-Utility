@@ -9,16 +9,16 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        private readonly byte[] RLok = new byte[] { 0xff, 0xff, 0x55, 0x7b }; /// Pattern used to detect if a track is RapidLok protected
-        private readonly byte[] RLok1 = new byte[] { 0x75, 0x90, 0x09 }; /// Pattern used to detect if a track is RapidLok protected
-        private readonly byte[] RLok_7b = new byte[] { 0x55, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b };
-        private readonly byte[,][] rl6_t18s3 = new byte[5, 2][];
-        private readonly byte[,][] rl6_t18s6 = new byte[1, 2][];
-        private readonly byte[,][] rl2_t18s9 = new byte[2, 2][];
-        private readonly byte[,][] rl1_t18s9 = new byte[2, 2][];
-        private readonly byte[] rl_nkey = new byte[54];
-        private readonly int[] rl_7b = new int[35];
-        private bool Replace_RapidLok_Key = false;
+        private static readonly byte[] RLok = new byte[] { 0xff, 0xff, 0x55, 0x7b }; /// Pattern used to detect if a track is RapidLok protected
+        private static readonly byte[] RLok1 = new byte[] { 0x75, 0x90, 0x09 }; /// Pattern used to detect if a track is RapidLok protected
+        private static readonly byte[] RLok_7b = new byte[] { 0x55, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b };
+        private static readonly byte[,][] rl6_t18s3 = new byte[5, 2][];
+        private static readonly byte[,][] rl6_t18s6 = new byte[1, 2][];
+        private static readonly byte[,][] rl2_t18s9 = new byte[2, 2][];
+        private static readonly byte[,][] rl1_t18s9 = new byte[2, 2][];
+        private static readonly byte[] rl_nkey = new byte[54];
+        private static readonly int[] rl_7b = new int[35];
+        private static bool Replace_RapidLok_Key = false;
 
         string RL_Remove_Protection()
         {

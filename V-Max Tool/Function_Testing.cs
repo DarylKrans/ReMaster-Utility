@@ -9,14 +9,19 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        private static readonly object fileLock = new object();
+
         private void Button2_Click(object sender, EventArgs e)
         {
             //Test_RLD();
             //Test_GetFmt();
             //Make_G64("file", tracks);
+
+            //BuildDB();
+            OpenDB_Windows();
         }
 
-
+        /// ------------------------------------------------------------------------------------------------ ///
 
         void Test_GetFmt()
         {

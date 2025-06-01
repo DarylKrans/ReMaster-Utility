@@ -61,6 +61,16 @@ namespace ReMaster_Utility.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap _lock {
+            get {
+                object obj = ResourceManager.GetObject("_lock", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil Calibri;}}
         ///{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
         ///\pard\sl240\slmult1\f0\fs22\lang9 Programmed by Daryl Krans (2023\f1\endash 2025) No rights reserved.\par

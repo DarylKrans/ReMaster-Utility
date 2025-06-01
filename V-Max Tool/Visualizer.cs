@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -65,7 +66,7 @@ namespace V_Max_Tool
             if (!interpolate)
             {
                 flat_large = new Bitmap(8224, (42 * 14) - 16);
-                Bitmap t = new Bitmap(flat_large.Width, flat_large.Height);
+                var t = new Bitmap(flat_large.Width, flat_large.Height);
                 int actualTracks = 0, processedTracks = 0;
 
                 // Count valid tracks
@@ -263,11 +264,12 @@ namespace V_Max_Tool
 
         private Bitmap Draw_Track(Bitmap bmp, int maxHeight, byte[] trackData, int track, int start, int end, int trackFormat, byte[] v2info, int densityIndex, bool write, int[] v)
         {
-            int trackHeight = (maxHeight / 42) - 4;
-            int segmentHeight = (maxHeight - 16) / 42;
-            int c = (track % 2);
-            int sb = 0;
-            int skip = tracks > 42 ? 2 : 1;
+            Stopwatch sw = Stopwatch.StartNew();
+            var trackHeight = (maxHeight / 42) - 4;
+            var segmentHeight = (maxHeight - 16) / 42;
+            var c = (track % 2);
+            var sb = 0;
+            var skip = tracks > 42 ? 2 : 1;
             float div = (c == 0 || trackFormat == 4) ? 1.0f : 1.7f;
             bool v2 = false, v5 = false;
 
@@ -275,35 +277,32 @@ namespace V_Max_Tool
             Pen pen = new Pen(Color.Empty, 1);
 
             // Precompute commonly used values
-            int segmentYOffset = track * segmentHeight;
-            int xOffset = 32;
-
+            var segmentYOffset = track * segmentHeight;
+            var xOffset = 32;
+            var imgskp = track * skip;
+            var didx = density[densityIndex];
             // Use graphics object once
             using (var graphics = Graphics.FromImage(bmp))
             {
+                graphics.CompositingQuality = CompositingQuality.HighSpeed;
+                graphics.SmoothingMode = SmoothingMode.None;
                 for (int i = 0; i < trackData.Length; i++)
                 {
                     byte data = trackData[i];
-
                     if (trackFormat == 6 && data == 0x7b) sb++;
                     else sb = 0;
-
-                    bool inDensityRange = i <= density[densityIndex];
+                    bool inDensityRange = i <= didx;
                     bool inMargins = i > start && i < end;
-
                     // Use the Get_Color method to determine the color
-                    (Color color, bool newV2, bool newV5) = Get_Color(data, v2info, track * skip, i, densityIndex, trackFormat, v2, v5, sb, true);
-
+                    (Color color, bool newV2, bool newV5) = Get_Color(data, v2info, imgskp, i, densityIndex, trackFormat, v2, v5, sb, true);
                     // Apply division modifier outside the loop if possible or cache results
                     pen.Color = ApplyDivisionModifier(color, div);
                     v2 = newV2;
                     v5 = newV5;
-
                     // Draw the line segment
                     int x1 = i + xOffset, y1 = segmentYOffset, x2 = i + xOffset, y2 = trackHeight + segmentYOffset;
                     graphics.DrawLine(pen, x1, y1, x2, y2);
                 }
-
                 // Cache Font and Brush objects
                 Font font = new Font("Ariel", 11);
                 Brush brush = trk_brush[c];
@@ -311,11 +310,12 @@ namespace V_Max_Tool
                 // Use the precomputed values for Add_Text method
                 Add_Text(bmp, $"{track + 1}", Color.FromArgb(0, 40, 40, 40), brush, font, 0, -5 + (track * 13), 60, 17 * track);
             }
-
+            sw.Stop();
+            //Invoke(new Action(() => Text = sw.Elapsed.TotalMilliseconds.ToString()));
             return bmp;
         }
 
-        private (Color, bool, bool) Get_Color(byte d, byte[] v2info, int track, int position, int density, int trackFmt, bool v2, bool v5, int sb, bool flat = false)
+        private (Color, bool, bool) Get_Color(byte d, byte[] v2info, int track, int position, int Density, int trackFmt, bool v2, bool v5, int sb, bool flat = false)
         {
             Color col;
             int dd = d >> 1;
@@ -349,11 +349,11 @@ namespace V_Max_Tool
                 Color backupColor = col;
                 if (!flat) col = Color.FromArgb(dd, dd, dd);
                 else col = Color.FromArgb(d >> 1, 0, 0);
-                if (position <= this.density[density])
+                if (position <= density[Density])
                 {
                     col = vm_reverse ? backupColor : Color.FromArgb(30, d, 30);
                 }
-                else if (position > this.density[density] && position < this.density[density] + 5)
+                else if (position > density[Density] && position < density[Density] + 5)
                 {
                     col = Color.FromArgb(d, d, 30);
                 }
@@ -363,7 +363,7 @@ namespace V_Max_Tool
             if (v2 && d == v2info[1]) v2 = false;
             if (Show_sec.Checked && ((trackFmt == 3 && d == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
 
-            if (trackFmt == 5 && Show_sec.Checked && position <= this.density[density])
+            if (trackFmt == 5 && Show_sec.Checked && position <= density[Density])
             {
                 if (NDS.cbm_sector[track].Any(x => x == position)) v5 = !v5;
                 col = v5 ? Color.FromArgb(dd, dd, dd) : col;

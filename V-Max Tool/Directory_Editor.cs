@@ -11,16 +11,16 @@ namespace V_Max_Tool
 
     public partial class Form1 : Form
     {
-        private int dragIndex = -1;
-        private bool isDragging = false;
-        private Point dragStartPoint;
-        private Timer scrollTimer;
-        private string[] f_temp = new string[0];
-        private byte[][] d_temp = new byte[0][];
-        private int dropIndex = -1;
-        private readonly string dir_def = "0 \"DRAG NIB/G64 TO \"START\n664 BLOCKS FREE.";
-        private readonly byte[] Reverse_Endian_Table = new byte[256];
-        private readonly CustomCheckedListBox Dir_Box = new CustomCheckedListBox();
+        private static int dragIndex = -1;
+        private static bool isDragging = false;
+        private static Point dragStartPoint;
+        private static Timer scrollTimer;
+        private static string[] f_temp = new string[0];
+        private static byte[][] d_temp = new byte[0][];
+        private static int dropIndex = -1;
+        private static readonly string dir_def = "0 \"DRAG NIB/G64 TO \"START\n664 BLOCKS FREE.";
+        private static readonly byte[] Reverse_Endian_Table = new byte[256];
+        private static readonly CustomCheckedListBox Dir_Box = new CustomCheckedListBox();
 
         void Update_Dir_Items()
         {
@@ -206,7 +206,7 @@ namespace V_Max_Tool
                 //Clear_Out_Items();
                 //Process_Nib_Data(true, false, false, true);
                 Default_Dir_Screen();
-                Get_Disk_Directory();
+                Set_Dir(Get_Disk_Directory());
             }
             catch { }
         }

@@ -14,45 +14,47 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        private Thread Draw;
-        private Thread circ;  // Thread for drawing circle disk image
-        private Thread flat;  // Thread for drawing flat tracks image
-        private Thread check_alive;
-        private Thread Worker_Main;
-        private Thread Worker_Alt;
-        private Thread[] Job;
-        private Semaphore Task_Limit = new Semaphore(3, 3);
-        private readonly System.Windows.Forms.ToolTip tips = new System.Windows.Forms.ToolTip();
-        private List<string> LB_File_List = new List<string>();
-        private List<string> RM_Recent = new List<string>();
-        private List<Keys> keyBuffer = new List<Keys>();
-        private Keys[] obj_temp = new Keys[4];
-        private Keys[] debuging = new Keys[] { Keys.D, Keys.B, Keys.U, Keys.G };
-        private readonly byte[] keyset = new byte[] { 0x06, 0x14, 0x12, 0x10 };
-        private string NibPath = string.Empty;
-        private string recentPath = Path.Combine(TEMP.path, TEMP.recent);
-        private int Cores;
-        private int Default_Cores;
-        private int pan_defw;
-        private int pan_defh;
-        private bool manualRender;
-        private bool DontThread = false;
+        private static Thread Draw;
+        private static Thread circ;  // Thread for drawing circle disk image
+        private static Thread flat;  // Thread for drawing flat tracks image
+        private static Thread check_alive;
+        private static Thread Worker_Main;
+        private static Thread Worker_Alt;
+        private static Thread[] Job;
+        private static Semaphore Task_Limit = new Semaphore(3, 3);
+        private static readonly System.Windows.Forms.ToolTip tips = new System.Windows.Forms.ToolTip();
+        private static List<string> LB_File_List = new List<string>();
+        private static List<string> RM_Recent = new List<string>();
+        private static List<Keys> keyBuffer = new List<Keys>();
+        private static Keys[] obj_temp = new Keys[4];
+        private static Keys[] debuging = new Keys[] { Keys.D, Keys.B, Keys.U, Keys.G };
+        private static readonly byte[] keyset = new byte[] { 0x06, 0x14, 0x12, 0x10 };
+        private static string NibPath = string.Empty;
+        private static string recentPath = Path.Combine(TEMP.path, TEMP.recent);
+        private static int Cores;
+        private static int Default_Cores;
+        private static int pan_defw;
+        private static int pan_defh;
+        private static bool manualRender;
+        private static bool DontThread = false;
+        private static readonly Gbox outbox = new Gbox();
+        private static readonly Gbox inbox = new Gbox();
+        private static readonly Color C64_screen = Color.FromArgb(69, 55, 176);
+        private static readonly Color c64_text = Color.FromArgb(135, 122, 237);
+        private static bool usecpp = true;
+        private static bool CPP_LZ = true;
+        private static string def_bg_text;
+        private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
+        //private static readonly Label[] BlkMap_track = new Label[41];
+        //private static readonly Label[] BlkMap_sector = new Label[21];
+        //private static readonly Panel[][] BlkMap_bam = new Panel[41][];
+        ////private static readonly TaggedRectangle[][] BlkMap_bam = new TaggedRectangle[41][];
+        //private List<BlockMapInfo> blockMap = new List<BlockMapInfo>();
+        private static ConcurrentBag<string> ErrorList = new ConcurrentBag<string>();
         private const bool Set = false;
         private const bool Free = true;
-        private readonly Gbox outbox = new Gbox();
-        private readonly Gbox inbox = new Gbox();
-        private readonly Color C64_screen = Color.FromArgb(69, 55, 176);
-        private readonly Color c64_text = Color.FromArgb(135, 122, 237);
-        private bool usecpp = true;
-        private bool CPP_LZ = true;
-        private string def_bg_text;
-        private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
-        private readonly Label[] BlkMap_track = new Label[41];
-        private readonly Label[] BlkMap_sector = new Label[21];
-        private readonly Panel[][] BlkMap_bam = new Panel[41][];
-        private ConcurrentBag<string> ErrorList = new ConcurrentBag<string>();
 
-        private readonly byte[] sector_gap_length =
+        private static readonly byte[] sector_gap_length =
         {
             10, 10, 10, 10, 10, 10, 10, 10, 10, 10,	/*  1 - 10 */
         	10, 10, 10, 10, 10, 10, 10, 14, 14, 14,	/* 11 - 20 */
@@ -61,12 +63,12 @@ namespace V_Max_Tool
         	8, 8, 8, 8, 8, 8, 8		        		/* 36 - 42 (non-standard) */
         };
 
-        private readonly byte[] sector_gap_density =
+        private static readonly byte[] sector_gap_density =
         {
             10, 14, 11, 8
         };
 
-        private readonly byte[] Available_Sectors =
+        private static readonly byte[] Available_Sectors =
         {
             21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
             19, 19, 19, 19, 19, 19, 19,
@@ -75,7 +77,7 @@ namespace V_Max_Tool
 
         };
 
-        private readonly byte[] density_map =
+        private static readonly byte[] density_map =
         {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
         	0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	/* 11 - 20 */
@@ -84,9 +86,9 @@ namespace V_Max_Tool
         	3, 3, 3, 3, 3, 3, 3				/* 36 - 42 (non-standard) */
         };
 
-        private readonly int[] Sectors_by_density = { 21, 19, 18, 17 };
+        private static readonly int[] Sectors_by_density = { 21, 19, 18, 17 };
 
-        private readonly string[] ErrorCodes =
+        private static readonly string[] ErrorCodes =
         {
             "null",
             "Sector OK",            // 01
@@ -99,7 +101,7 @@ namespace V_Max_Tool
             "ID mismatch"           // 0b (11)
         };
 
-        private readonly string[] c1541error =
+        private static readonly string[] c1541error =
         {
             "",
             "0, Sector OK",
@@ -115,7 +117,7 @@ namespace V_Max_Tool
             "29, Disk ID mismatch"
         };
 
-        private readonly int[] sectorInterleave =
+        private static readonly int[] sectorInterleave =
         {
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
         };
@@ -453,6 +455,8 @@ namespace V_Max_Tool
             V2_Add_Sync.Checked = V2_Auto_Adj.Checked;
         }
 
+
+
         void Default_Dir_Screen()
         {
             Dir_screen.Clear();
@@ -472,6 +476,7 @@ namespace V_Max_Tool
             /// Remove Create Blank Disk and Directory Editor functions
             CBD_box.Visible = false;
             Dir_Edit.Visible = false;
+            //dbView.Visible = false;
             label19.Visible = label18.Visible = Sec_Interleave.Visible = CBD_box.Visible;
             Dir_screen.Top = CBD_box.Visible ? Dir_screen.Top : 0;
             Dir_screen.Height = tabPage3.Height;
@@ -492,6 +497,7 @@ namespace V_Max_Tool
             Init_Read_Options();
             Init_Write_Options();
             LoadRecentList();
+            Setup_Database_Window();
 
             if (!usecpp) CPP_tog.Enabled = false;
             saveAsToolStripMenuItem.Enabled = false;
@@ -853,106 +859,6 @@ namespace V_Max_Tool
                 tips.SetToolTip(DB_force, "Will perform auto-adjust on standard CBM-Formatted tracks, ignoring special\n"
                     + "conditions that some copy protections rely on to pass the protection.\n\n Sometimes these conditions are falsely identified."
                     + " select this option to FORCE adjusting of these tracks");
-            }
-
-            void BlockMap_Setup()
-            {
-                track_label.Text = "";
-                track_label.AutoSize = false;
-                track_label.NewText = "Track";
-                track_label.ForeColor = Color.White;
-                track_label.RotateAngle = -90;
-
-                FreeBlk.Text = "";
-                FreeBlk.AutoSize = false;
-                FreeBlk.NewText = "Free Block";
-                FreeBlk.ForeColor = Color.FromArgb(30, 125, 30);
-                FreeBlk.RotateAngle = -90;
-
-                AllocBlk.Text = "";
-                AllocBlk.AutoSize = false;
-                AllocBlk.NewText = "Allocated Block";
-                AllocBlk.ForeColor = Color.FromArgb(30, 200, 30);
-                AllocBlk.RotateAngle = -90;
-
-                ErrorBlk.Text = "";
-                ErrorBlk.AutoSize = false;
-                ErrorBlk.NewText = "Block Error";
-                ErrorBlk.ForeColor = Color.Red;
-                ErrorBlk.RotateAngle = -90;
-
-                CSTfmt.Text = "";
-                CSTfmt.AutoSize = false;
-                CSTfmt.NewText = "Custom Format";
-                CSTfmt.ForeColor = Color.MediumOrchid;
-                CSTfmt.RotateAngle = -90;
-
-                // set Track # labels in Block Map
-                int left = 25;
-                int top = 27;
-                int inc = 15;
-                for (int i = 0; i < 41; i++)
-                {
-                    string spc = i < 9 ? " " : string.Empty;
-                    BlkMap_track[i] = new Label();
-                    BlkMap_Panel.Controls.Add(this.BlkMap_track[i]);
-                    BlkMap_track[i].AutoSize = true;
-                    BlkMap_track[i].Font = new Font("Courier New", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
-                    BlkMap_track[i].ForeColor = Color.DarkGray;
-                    BlkMap_track[i].Location = new Point(left, top + (inc * i));
-                    BlkMap_track[i].Size = new Size(26, 27);
-                    BlkMap_track[i].TabIndex = 4;
-                    BlkMap_track[i].Text = $"{spc}{i + 1}";
-                    BlkMap_track[i].Visible = true;
-                    BlkMap_track[i].BringToFront();
-                    Blk_pan.Height = 3 + inc + (inc * i);
-                }
-                // set Sector # labels in Block Map
-                left = 50;
-                top = 6;
-                int spacing = 24;
-                for (int i = 0; i < 21; i++)
-                {
-                    string spc = i < 9 ? " " : string.Empty;
-                    BlkMap_sector[i] = new Label();
-                    this.BlkMap_Panel.Controls.Add(BlkMap_sector[i]);
-                    BlkMap_sector[i].AutoSize = true;
-                    BlkMap_sector[i].Font = new Font("Courier New", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
-                    BlkMap_sector[i].ForeColor = Color.DarkGray;
-                    BlkMap_sector[i].Location = new Point(left - (i < 9 ? 5 : 0) + (spacing * i), top);
-                    BlkMap_sector[i].Size = new Size(26, 27);
-                    BlkMap_sector[i].TabIndex = 4;
-                    BlkMap_sector[i].Text = $"{spc}{i + 1}";
-                    BlkMap_sector[i].BringToFront();
-                    Blk_pan.Width = spacing + (spacing * i) + 2;
-                }
-                // set BAM buttons in Block Map
-                int w_spc = 24;
-                int h_spc = 15;
-                top = 3;
-                left = 2;
-                int active = 200;
-                int inactive = 40;
-                for (int i = 0; i < 41; i++)
-                {
-                    BlkMap_bam[i] = new Panel[21];
-                    for (int j = 0; j < 21; j++)
-                    {
-                        bool valid = (j < Available_Sectors[i] && i < 35);
-                        BlkMap_bam[i][j] = new Panel();
-                        Blk_pan.Controls.Add(BlkMap_bam[i][j]);
-                        BlkMap_bam[i][j].Location = new Point(left + (w_spc * j), top + (h_spc * i));
-                        BlkMap_bam[i][j].Size = new Size(20, 12);
-                        BlkMap_bam[i][j].TabIndex = 0;
-                        BlkMap_bam[i][j].BackColor = Color.FromArgb(valid ? active : inactive, 30, 200, 30);
-                        BlkMap_bam[i][j].BringToFront();
-                        BlkMap_bam[i][j].Visible = false;
-                        BlkMap_bam[i][j].MouseEnter += Panel_MouseEnter;
-                        BlkMap_bam[i][j].MouseLeave += Button_MouseLeave;
-                        BlkMap_bam[i][j].MouseClick += Panel_MouseClick;
-                        BlkMap_bam[i][j].Tag = new { Track = i, Sector = j };
-                    }
-                }
             }
         }
 

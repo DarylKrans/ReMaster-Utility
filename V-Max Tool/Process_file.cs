@@ -15,29 +15,29 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        private bool v2cc = false;
-        private bool v2aa = false;
-        private bool v3cc = false;
-        private bool v3aa = false;
-        private bool rad = false;
-        private int radsec = 0;
-        private string fname = "";
-        private string fext = "";
-        private string fnappend = "";
-        private int tracks = 0;
-        private bool displayed = false;
-        private bool loader_fixed = false;
-        private byte[] nib_header = new byte[256];
-        private byte[] g64_header = new byte[684];
-        private readonly byte[][] vm_ldr_ptn = new byte[10][];
-        private readonly string[] supported = { ".nib", ".g64", ".d64", ".nbz", ".z64" }; // Supported file extensions list
+        private static bool v2cc = false;
+        private static bool v2aa = false;
+        private static bool v3cc = false;
+        private static bool v3aa = false;
+        private static bool rad = false;
+        private static int radsec = 0;
+        private static string fname = "";
+        private static string fext = "";
+        private static string fnappend = "";
+        private static int tracks = 0;
+        private static bool displayed = false;
+        private static bool loader_fixed = false;
+        private static byte[] nib_header = new byte[256];
+        private static byte[] g64_header = new byte[684];
+        private static readonly byte[][] vm_ldr_ptn = new byte[10][];
+        private static readonly string[] supported = { ".nib", ".g64", ".d64", ".nbz", ".z64" }; // Supported file extensions list
         /// vsec = the CBM sector header values & against byte[] sz
-        private readonly string[] valid_cbm = { "52-40-05-28", "52-40-05-2C", "52-40-05-48", "52-40-05-4C", "52-40-05-38", "52-40-05-3C", "52-40-05-58", "52-40-05-5C",
+        private static readonly string[] valid_cbm = { "52-40-05-28", "52-40-05-2C", "52-40-05-48", "52-40-05-4C", "52-40-05-38", "52-40-05-3C", "52-40-05-58", "52-40-05-5C",
             "52-40-05-24", "52-40-05-64", "52-40-05-68", "52-40-05-6C", "52-40-05-34", "52-40-05-74", "52-40-05-78", "52-40-05-54", "52-40-05-A8",
             "52-40-05-AC", "52-40-05-C8", "52-40-05-CC", "52-40-05-B8" };
         /// vmax = the block header values of V-Max v2 sectors (non-CBM sectors)
-        private readonly string[] secF = { "Non-DOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "RapidLok", "RL-Key", "EA", "RA/MB", "Microprose", "GMA", "Unformatted" };
-        private int[] jt = new int[42];
+        private static readonly string[] secF = { "Non-DOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "RapidLok", "RL-Key", "EA", "RA/MB", "Microprose", "GMA", "Unformatted" };
+        private static int[] jt = new int[42];
         const int MAX_TRACK_SIZE = 8192;
         const int SAMPLE_SIZE = 1024;
 
@@ -903,13 +903,6 @@ namespace V_Max_Tool
                 if (!busy) Data_Viewer();
             }
             //sw.Stop(); // stop here to get process time with data population times
-            //panel1.ResumeLayout();
-            //Track_Info.ResumeLayout();    
-
-            //File.WriteAllBytes($@"c:\Replace_RapidLok_Key\rl_key.bin", NDS.Loader);
-            //byte[] rltrks = new byte[tracks];
-            //for (int i = 0; i < tracks; i++) rltrks[i] = (byte)NDS.Header_Len[i];
-            //File.WriteAllBytes($@"c:\Replace_RapidLok_Key\7b_sec.bin", rltrks);
             return sw;
 
             void Process_Track(int trk, bool acbm, bool av2, bool cv2, bool av3, bool cv3, bool avp, int vplead, bool fix, bool sol, bool rvb, bool cmb, bool s_sec, bool cyn, int c_trk) //, bool swp)
@@ -952,7 +945,6 @@ namespace V_Max_Tool
 
                 void Do_Work()
                 {
-
                     Process_Track(track, cbmadj, v2adj, v2cust, v3adj, v3cust, vpadj, vorpal_lead, fl, sl, rb_vm, cbm, short_sector, cyan, cyan_track);
                 }
             }
@@ -1344,7 +1336,7 @@ namespace V_Max_Tool
                         if (cbm > 6 || (tk > 38 && cbm > 0)) return 1;
                         if ((tk == 20 && vmax_v2 >= 20) || (tk != 20 && vmax_v2 > 5)) return 2;
                         if (vmax_v3 > 5) return 3;
-                        if (vorpal > 20) return 5;
+                        if (vorpal > 30) return 5;
                         if (rapidlok > 5) return 6;
                         if (microprose > 4) return 10;
                     }
@@ -1652,7 +1644,7 @@ namespace V_Max_Tool
                     if (DV_dec.Checked)
                     {
                         int[] known_formats = new int[] { 1, 5, 6, 10 };
-                        if (NDS.cbm[i] == 1) Disp_CBM(i, trk, false);
+                        if (NDS.cbm[i] == 1) if (NDS.sectors[i] >= 5) Disp_CBM(i, trk, false); else Disp_STD_GCR(i, trk);
                         if (NDS.cbm[i] == 5) Disp_VPL(i, trk);
                         if (NDS.cbm[i] == 6) Disp_RLK(i, trk);
                         if (NDS.cbm[i] == 10) Disp_CBM(i, trk, true);
@@ -1675,8 +1667,6 @@ namespace V_Max_Tool
                 GC.Collect();
                 View_Jump();
                 Data_Box.Visible = true;
-                //if (DV_dec.Checked) File.WriteAllBytes($@"c:\Replace_RapidLok_Key\{fname}_Decoded.bin", buffer.ToArray());
-
             }));
 
             void Disp_STD_GCR(int t, double track)
@@ -1691,7 +1681,7 @@ namespace V_Max_Tool
                     if (s[i]) snc++;
                     else
                     {
-                        if (snc > 16)
+                        if (snc >= 10)
                         {
                             sec++;
                         }
@@ -1908,45 +1898,50 @@ namespace V_Max_Tool
                         {
                             if (mps) (temp[i], valid_checksum[i], _) = Decode_MicroProse_Sector(tdata, i);
                             else (temp[i], valid_checksum[i]) = Decode_CBM_Sector(NDG.Track_Data[t], i, true, tdata);
-                            total += temp[i].Length;
+                            if (temp[i] != null) total += temp[i].Length;
                         }
+
                         if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({total}) bytes\n\n");
                         for (int i = 0; i < NDS.sectors[t]; i++)
                         {
-                            StringBuilder temp2 = new StringBuilder();
-                            string ck = "";
-                            if (valid_checksum[i]) ck = "Checksum OK"; else ck = "Checksum Failed!";
-                            if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {temp[i].Length} {ck}\n\n");
-                            if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(temp[i])));
-                            if (VS_hex.Checked)
+                            if (temp[i]?.Length != null)
                             {
-                                for (int j = 0; j < temp[i].Length / hex; j++)
+                                StringBuilder temp2 = new StringBuilder();
+                                string ck = "";
+                                if (valid_checksum[i]) ck = "Checksum OK"; else ck = "Checksum Failed!";
+                                if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {temp[i].Length} {ck}\n\n");
+                                if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(temp[i])));
+                                if (VS_hex.Checked)
                                 {
-                                    temp2.Append(Append_Hex(temp[i], j * hex, hex));
+                                    for (int j = 0; j < temp[i].Length / hex; j++)
+                                    {
+                                        temp2.Append(Append_Hex(temp[i], j * hex, hex));
+                                    }
+                                    var y = (temp[i].Length / hex) * hex;
+                                    if (y < temp[i].Length)
+                                    {
+                                        temp2.Append(Append_Hex(temp[i], y, temp[i].Length - y, hex));
+                                    }
+                                    db_Text.Append(temp2);
                                 }
-                                var y = (temp[i].Length / hex) * hex;
-                                if (y < temp[i].Length)
+                                if (VS_bin.Checked)
                                 {
-                                    temp2.Append(Append_Hex(temp[i], y, temp[i].Length - y, hex));
+                                    for (int j = 0; j < temp[i].Length / bin; j++)
+                                    {
+                                        temp2.Append(Append_Bin(temp[i], j * bin, bin));
+                                    }
+                                    var y = (temp[i].Length / bin) * bin;
+                                    if (y < temp[i].Length)
+                                    {
+                                        temp2.Append(Append_Bin(temp[i], y, temp[i].Length - y, bin));
+                                    }
+                                    db_Text.Append(temp2);
                                 }
-                                db_Text.Append(temp2);
+                                write.Write(temp[i]);
                             }
-                            if (VS_bin.Checked)
-                            {
-                                for (int j = 0; j < temp[i].Length / bin; j++)
-                                {
-                                    temp2.Append(Append_Bin(temp[i], j * bin, bin));
-                                }
-                                var y = (temp[i].Length / bin) * bin;
-                                if (y < temp[i].Length)
-                                {
-                                    temp2.Append(Append_Bin(temp[i], y, temp[i].Length - y, bin));
-                                }
-                                db_Text.Append(temp2);
-                            }
-                            write.Write(temp[i]);
                         }
                     }
+
                     catch { }
                 }
             }

@@ -42,7 +42,7 @@ namespace V_Max_Tool
             return fileType;
         }
 
-        string Get_DirectoryFileName(byte[] file, bool onlyname = false)
+        static string Get_DirectoryFileName(byte[] file, bool onlyname = false)
         {
             bool eof = false;
             string fName = "\"";
@@ -66,7 +66,7 @@ namespace V_Max_Tool
             return fName.Replace('?', '-');
         }
 
-        byte[] LZcompress(byte[] inputData)
+        static byte[] LZcompress(byte[] inputData)
         {
             if (inputData == null || inputData.Length == 0)
                 throw new ArgumentException("Input data cannot be null or empty.");
@@ -163,19 +163,19 @@ namespace V_Max_Tool
             Protected_Tracks.Visible = (vmx > 0 || vpl > 0 || rlk > 0 || mps > 0);
         }
 
-        void ResetAllBlocks()
-        {
-            foreach (var row in BlkMap_bam)
-            {
-                foreach (var button in row)
-                {
-                    {
-                        tips.SetToolTip(button, string.Empty);
-                        button.BackColor = Color.FromArgb(30, 100, 100, 100);
-                    }
-                }
-            }
-        }
+        //void ResetAllBlocks()
+        //{
+        //    foreach (var row in BlkMap_bam)
+        //    {
+        //        foreach (var button in row)
+        //        {
+        //            {
+        //                tips.SetToolTip(button, string.Empty);
+        //                button.BackColor = Color.FromArgb(30, 100, 100, 100);
+        //            }
+        //        }
+        //    }
+        //}
 
         (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, int) Set_Adjust_Options(bool rb_vm, bool cynldr = false)
         {

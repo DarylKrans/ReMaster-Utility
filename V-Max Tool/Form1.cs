@@ -17,37 +17,37 @@ namespace V_Max_Tool
     public partial class Form1 : Form
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
-        private bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private readonly string ver = " v1.13";
-        private readonly string fix = "_ReMaster";
-        private readonly string mod = "_ReMaster"; // _(modified)";
-        private readonly string vorp = "_ReMaster"; //(aligned)";
-        private readonly byte loader_padding = 0x55;
-        private readonly int[] CBM_Standard_Density = { 7692, 7142, 6666, 6250 }; // <- density zone capacity accoriding to CBM specifications
-        private readonly int[] ReMaster_Adjusted_Density = { 7672, 7122, 6646, 6230 }; // <- adjusted capacity to account for minor RPM variation higher than 300
-        private readonly int[] vpl_density = { 7750, 6950, 6585, 6255 }; // <- Vorpal densities used to be more accurate to original disk-reads
-        private readonly int[] vpl_defaults = { 7750, 6950, 6585, 6255 };
+        private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
+        private static readonly string ver = " v1.15";
+        private static readonly string fix = "_ReMaster";
+        private static readonly string mod = "_ReMaster"; // _(modified)";
+        private static readonly string vorp = "_ReMaster"; //(aligned)";
+        private static readonly byte loader_padding = 0x55;
+        private static readonly int[] CBM_Standard_Density = { 7692, 7142, 6666, 6250 }; // <- density zone capacity accoriding to CBM specifications
+        private static readonly int[] ReMaster_Adjusted_Density = { 7672, 7122, 6646, 6230 }; // <- adjusted capacity to account for minor RPM variation higher than 300
+        private static readonly int[] vpl_density = { 7750, 6950, 6585, 6255 }; // <- Vorpal densities used to be more accurate to original disk-reads
+        private static readonly int[] vpl_defaults = { 7750, 6950, 6585, 6255 };
         private readonly int[] density = new int[4];
-        private bool busy = false;
-        private bool cancel = false;
-        private bool error = false;
-        private bool batch = false;
-        private bool nib_error = false;
-        private bool g64_error = false;
-        private bool exitConfirmed = false;
-        private string nib_err_msg;
-        private string g64_err_msg;
-        private byte[] rak1 = new byte[0];
-        private byte[] cldr_id = new byte[0];
-        private byte[] v2ldrcbm = new byte[0];
-        private byte[] v24e64pal = new byte[0];
-        private byte[] v26446ntsc = new byte[0];
-        private byte[] v2644entsc = new byte[0];
-        private byte[] fastloader = new byte[0];
-        private readonly int fldOffset = 184;
-        private readonly int min_t_len = 6000;
-        private int end_track = -1;
-        private int fat_trk = -1;
+        private static bool busy = false;
+        private static bool cancel = false;
+        private static bool error = false;
+        private static bool batch = false;
+        private static bool nib_error = false;
+        private static bool g64_error = false;
+        private static bool exitConfirmed = false;
+        private static string nib_err_msg;
+        private static string g64_err_msg;
+        private static byte[] rak1 = new byte[0];
+        private static byte[] cldr_id = new byte[0];
+        private static byte[] v2ldrcbm = new byte[0];
+        private static byte[] v24e64pal = new byte[0];
+        private static byte[] v26446ntsc = new byte[0];
+        private static byte[] v2644entsc = new byte[0];
+        private static byte[] fastloader = new byte[0];
+        private static readonly int fldOffset = 184;
+        private static readonly int min_t_len = 6000;
+        private static int end_track = -1;
+        private static int fat_trk = -1;
         System.Windows.Forms.Panel lastHoveredButton = null;
 
         readonly Form Blank_Disk = new Form
@@ -91,6 +91,18 @@ namespace V_Max_Tool
             Size = new Size(350, 200),
             StartPosition = FormStartPosition.Manual,
             AutoScaleMode = AutoScaleMode.Font
+        };
+
+        Form BrowseDB = new Form
+        {
+            Text = "Browse ReMaster Image Database",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            Size = new Size(900, 600), // 800
+            StartPosition = FormStartPosition.Manual,
+            AutoScaleMode = AutoScaleMode.Font,
+            KeyPreview = true
         };
 
         public Form1()
@@ -326,35 +338,38 @@ namespace V_Max_Tool
                     byte[] nodata = FastArray.Init(325, cbm_gap);
                     for (int i = 0; i < tracks; i++)
                     {
-                        MemoryStream buffer = new MemoryStream();
-                        BinaryWriter write = new BinaryWriter(buffer);
+
                         NDS.Track_Data[i] = FastArray.Init(MAX_TRACK_SIZE, 0x00);
                         int tsec = Available_Sectors[i];
                         int len = density[density_map[i]];
                         byte[] gap = SetSectorGap(sector_gap_length[i]);
-                        for (int j = 0; j < tsec; j++)
+                        using (MemoryStream buffer = new MemoryStream())
+                        using (BinaryWriter write = new BinaryWriter(buffer))
                         {
-                            bool isHeaderMissing = codes[psec] == 2;
-                            bool isDataMissing = codes[psec] == 4;
-                            bool badDataChecksum = codes[psec] == 5;
-                            //bool badHeaderChecksum = codes[psec] == 7;
-                            bool badHeaderChecksum = codes[psec] == 9;
-                            //bool idMismatch = codes[psec] == 8;
-                            bool idMismatch = codes[psec] == 11;
+                            for (int j = 0; j < tsec; j++)
+                            {
+                                bool isHeaderMissing = codes[psec] == 2;
+                                bool isDataMissing = codes[psec] == 4;
+                                bool badDataChecksum = codes[psec] == 5;
+                                //bool badHeaderChecksum = codes[psec] == 7;
+                                bool badHeaderChecksum = codes[psec] == 9;
+                                //bool idMismatch = codes[psec] == 8;
+                                bool idMismatch = codes[psec] == 11;
 
-                            write.Write(isHeaderMissing ? nosync : sync);
-                            write.Write(isHeaderMissing ? noheader : Build_BlockHeader(i + 1, j, idMismatch ? ID_MisMatch : ID, badHeaderChecksum));
-                            write.Write(gap);
-                            write.Write(isDataMissing ? nosync : sync);
-                            write.Write(isDataMissing ? nodata : Build_Sector(secdata[psec], badDataChecksum));
-                            write.Write(gap);
-                            psec++;
+                                write.Write(isHeaderMissing ? nosync : sync);
+                                write.Write(isHeaderMissing ? noheader : Build_BlockHeader(i + 1, j, idMismatch ? ID_MisMatch : ID, badHeaderChecksum));
+                                write.Write(gap);
+                                write.Write(isDataMissing ? nosync : sync);
+                                write.Write(isDataMissing ? nodata : Build_Sector(secdata[psec], badDataChecksum));
+                                write.Write(gap);
+                                psec++;
+                            }
+                            int dif = len - (int)buffer.Length;
+                            if (dif > 0) write.Write(FastArray.Init(dif, 0x55));
+                            byte[] temp = buffer.ToArray();
+                            Buffer.BlockCopy(temp, 0, NDS.Track_Data[i], 0, temp.Length);
+                            Buffer.BlockCopy(temp, 0, NDS.Track_Data[i], temp.Length, MAX_TRACK_SIZE - temp.Length);
                         }
-                        int dif = len - (int)buffer.Length;
-                        if (dif > 0) write.Write(FastArray.Init(dif, 0x55));
-                        byte[] temp = buffer.ToArray();
-                        Buffer.BlockCopy(temp, 0, NDS.Track_Data[i], 0, temp.Length);
-                        Buffer.BlockCopy(temp, 0, NDS.Track_Data[i], temp.Length, MAX_TRACK_SIZE - temp.Length);
                     }
                     var lab = $"Total Tracks ({tracks}), {l}";
                     Process(true, lab);
@@ -430,7 +445,9 @@ namespace V_Max_Tool
             }
         }
 
-        void Do_work(string file)
+
+
+        void Do_work(string file, bool recent = true)
         {
             Stopwatch parse = new Stopwatch();
             Stopwatch proc = new Stopwatch();
@@ -448,14 +465,14 @@ namespace V_Max_Tool
                         proc = Process_Nib_Data(true, false, true);
                         if (DB_timers.Checked) Invoke(new Action(() => label2.Text = $"Parse time : {parse.Elapsed.TotalMilliseconds} ms, Process time : {proc.Elapsed.TotalMilliseconds} ms, Total {parse.Elapsed.TotalMilliseconds + proc.Elapsed.TotalMilliseconds} ms"));
                         Set_ListBox_Items(false, false);
-                        Get_Disk_Directory();
+                        Set_Dir(Get_Disk_Directory());
                         Set_BlockMap();
                         Source.Visible = Output.Visible = true;
                         label1.Text = $"{fname}{fext}";
                         M_render.Enabled = true;
                         Set_Buttons_Active();
                         Blk_pan.Enabled = true;
-                        AddRecentFile(file);
+                        if (recent) AddRecentFile(file);
                     }
                     catch (Exception ex)
                     {
@@ -985,61 +1002,6 @@ namespace V_Max_Tool
         private void Density_Range_CheckedChanged(object sender, EventArgs e)
         {
             SwapDensities(tracks > 0 && !NDS.cbm.Any(x => x == 5));
-        }
-
-        void Panel_MouseEnter(object sender, EventArgs e)
-        {
-            lastHoveredButton = sender as System.Windows.Forms.Panel;
-            tips.Show(tips.GetToolTip(lastHoveredButton), lastHoveredButton, lastHoveredButton.Width, lastHoveredButton.Height);
-        }
-
-        void Button_MouseLeave(object sender, EventArgs e)
-        {
-            if (lastHoveredButton == sender)
-            {
-                tips.Hide(lastHoveredButton);
-                lastHoveredButton = null;
-            }
-        }
-
-        private void Panel_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right)
-            {
-                if (sender is Panel clickedPanel && clickedPanel.Tag != null)
-                {
-                    // Retrieve the track and sector from the Tag property
-                    var tag = (dynamic)clickedPanel.Tag;
-                    int track = tag.Track;
-                    int sector = tag.Sector;
-                    int actualTrack = tracks > 42 ? track << 1 : track;
-                    if (NDS.cbm[actualTrack] == 1 && (track < 35 && sector < Available_Sectors[track]))
-                    {
-                        Color used = Color.FromArgb(255, 30, 200, 30);
-                        Color avail = Color.FromArgb(255, 30, 75, 30);
-                        byte[] bam = GetBam();
-                        if (bam != null)
-                        {
-                            bool status = !BlockAllocStatus(bam, track, sector);
-                            AllocBlock(bam, track, sector, !BlockAllocStatus(bam, track, sector));
-                            BlkMap_bam[track][sector].BackColor = status ? avail : used;
-                            string text = tips.GetToolTip(BlkMap_bam[track][sector]);
-
-                            if (text.Contains("Block Allocated (Used)"))
-                            {
-                                tips.SetToolTip(BlkMap_bam[track][sector], text.Replace("Block Allocated (Used)", "Block Available (Free)"));
-                            }
-                            else if (text.Contains("Block Available (Free)"))
-                            {
-                                tips.SetToolTip(BlkMap_bam[track][sector], text.Replace("Block Available (Free)", "Block Allocated (Used)"));
-                            }
-                            UpdateBam(bam);
-                            Default_Dir_Screen();
-                            Get_Disk_Directory();
-                        }
-                    }
-                }
-            }
         }
 
         private void Dir_Screen_DragEnter(object sender, DragEventArgs e)

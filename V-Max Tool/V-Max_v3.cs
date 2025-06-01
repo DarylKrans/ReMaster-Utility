@@ -10,11 +10,11 @@ namespace V_Max_Tool
     {
         /// V-Max v3 sync and header variables for "Rebuild tracks" options
         //private readonly byte[] v3_sector_sync = { 0x5b, 0xff };  // change the sync marker placed before sector headers (0x57, 0xff known working)
-        private readonly byte[] v3_sector_sync = { 0x7f, 0xff };  // change the sync marker placed before sector headers (0x57, 0xff known working)
-        private readonly int v3_min_header = 3;             // adjust the minimum length of the sector header (0x49) bytes
-        private readonly int v3_max_header = 8; //12;            // adjust the maximum length of the sector header (0x49) bytes
-        private readonly byte[] vm3_pos_sync = { 0x57, 0x5b, 0x5f, 0x7f, 0xff };
-        private readonly byte[] v3a = { 0x49, 0x49, 0x49, 0xee };
+        private static readonly byte[] v3_sector_sync = { 0x7f, 0xff };  // change the sync marker placed before sector headers (0x57, 0xff known working)
+        private static readonly int v3_min_header = 3;             // adjust the minimum length of the sector header (0x49) bytes
+        private static readonly int v3_max_header = 8; //12;            // adjust the maximum length of the sector header (0x49) bytes
+        private static readonly byte[] vm3_pos_sync = { 0x57, 0x5b, 0x5f, 0x7f, 0xff };
+        private static readonly byte[] v3a = { 0x49, 0x49, 0x49, 0xee };
 
         void V3_Auto_Adjust()
         {
@@ -96,8 +96,8 @@ namespace V_Max_Tool
             byte filler = 0xff;
             int sync = v3_sector_sync.Length;
             byte gap = 0x55;
-            List<int> s_st = new List<int>();
-            List<string> hdr_ID = new List<string>();
+            var s_st = new List<int>();
+            var hdr_ID = new List<string>();
             byte[] comp = new byte[3];
             byte[] track_ID = new byte[] { 0x7f };
             if (trk % 2 == 1 && !Disk_ID.All(x => x == 0))
@@ -183,19 +183,21 @@ namespace V_Max_Tool
             Buffer.BlockCopy(v3_sector_sync, 0, sec_header, 0, sync);
 
             /// Start rebuilding the track
-            var buff = new MemoryStream();
-            var wrt = new BinaryWriter(buff);
-            for (int i = 0; i < sectors; i++)
+            using (var buff = new MemoryStream())
+            using (var wrt = new BinaryWriter(buff))
             {
-                wrt.Write(sec_header);
-                wrt.Write(sec_data?[index++]);
-                index = index == sectors ? 0 : index;
+                for (int i = 0; i < sectors; i++)
+                {
+                    wrt.Write(sec_header);
+                    wrt.Write(sec_data?[index++]);
+                    index = index == sectors ? 0 : index;
+                }
+                wrt.Write(track_ID);
+                if (fill > 0) wrt.Write(FastArray.Init(fill, filler));
+                int remaining = (density[d] - (int)buff.Position);
+                if (remaining > 0) wrt.Write(FastArray.Init(remaining, gap));
+                return buff.ToArray();
             }
-            wrt.Write(track_ID);
-            if (fill > 0) wrt.Write(FastArray.Init(fill, filler));
-            int remaining = (density[d] - (int)buff.Position);
-            if (remaining > 0) wrt.Write(FastArray.Init(remaining, gap));
-            return buff.ToArray();
         }
 
         (string[], int, int, int, int, int, int, int) Get_vmv3_track_length(byte[] data, int trk)
@@ -353,51 +355,53 @@ namespace V_Max_Tool
             byte[] bdata = new byte[data_end - data_start];
             Buffer.BlockCopy(data, data_start, bdata, 0, data_end - data_start);
             bdata = Rotate_Left(bdata, ((sector_zero >> 3) - (data_start >> 3)) - 2);
-            var buffer = new MemoryStream();
-            var write = new BinaryWriter(buffer);
             int spos = 0;
             int cust = (int)V3_hlen.Value;
             int cur_sec = 0;
-            while (spos < bdata.Length)
+            using (var buffer = new MemoryStream())
+            using (var write = new BinaryWriter(buffer))
             {
-                if (spos + 2 < bdata.Length && bdata[spos + 2] == 0x49)
+                while (spos < bdata.Length)
                 {
-                    try
+                    if (spos + 2 < bdata.Length && bdata[spos + 2] == 0x49)
                     {
-                        if (MatchSeq(bdata, new byte[] { 0x49, 0x49 }, spos + 2))
+                        try
                         {
-                            var a = 0;
-                            while (bdata[spos + a] != 0x49)
+                            if (MatchSeq(bdata, new byte[] { 0x49, 0x49 }, spos + 2))
                             {
-                                if (!vm3_pos_sync.Any(s => s == bdata[spos + a])) write.Write(bdata[spos + a]);
-                                a++;
+                                var a = 0;
+                                while (bdata[spos + a] != 0x49)
+                                {
+                                    if (!vm3_pos_sync.Any(s => s == bdata[spos + a])) write.Write(bdata[spos + a]);
+                                    a++;
+                                }
+                                var b = 0;
+                                while (spos + (a + b) < bdata.Length && bdata[spos + (a + b)] == 0x49) b++;
+                                spos += (a + b);
+                                if (b < 15 && V3_Custom.Checked) b = cust;
+                                if (cur_sec < sectors) write.Write(v3_sector_sync);
+                                cur_sec++;
+                                for (int i = 0; i < b; i++) write.Write((byte)0x49);
                             }
-                            var b = 0;
-                            while (spos + (a + b) < bdata.Length && bdata[spos + (a + b)] == 0x49) b++;
-                            spos += (a + b);
-                            if (b < 15 && V3_Custom.Checked) b = cust;
-                            if (cur_sec < sectors) write.Write(v3_sector_sync);
-                            cur_sec++;
-                            for (int i = 0; i < b; i++) write.Write((byte)0x49);
                         }
+                        catch { }
                     }
-                    catch { }
+                    if (spos < bdata.Length) write.Write(bdata[spos]);
+                    spos++;
                 }
-                if (spos < bdata.Length) write.Write(bdata[spos]);
-                spos++;
-            }
-            var temp = buffer.ToArray();
-            int pos = 0;
-            while (pos < temp.Length - 1)
-            {
-                if (temp[pos] == 0x49 && temp[pos + 1] == 0x49)
+                var temp = buffer.ToArray();
+                int pos = 0;
+                while (pos < temp.Length - 1)
                 {
-                    pos -= 2; break;
+                    if (temp[pos] == 0x49 && temp[pos + 1] == 0x49)
+                    {
+                        pos -= 2; break;
+                    }
+                    pos++;
                 }
-                pos++;
+                temp = Rotate_Left(temp, pos);
+                return (temp, (int)buffer.Length << 3, 0);
             }
-            temp = Rotate_Left(temp, pos);
-            return (temp, (int)buffer.Length << 3, 0);
         }
     }
 }

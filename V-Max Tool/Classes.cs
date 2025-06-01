@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -11,15 +14,14 @@ using System.Windows.Forms.VisualStyles;
 
 namespace V_Max_Tool
 {
-
     public static class TEMP
     {
-
         public static string path = $@"{Path.GetTempPath()}\remaster\".Replace(@"\\", @"\");
         public static string dll = "cpp_extf.dll";
         public static string Nibtools = "nibpath.txt";
         public static string recent = "recent.files";
         public static string settings = $"{path}setting.txt";
+        public static string dbPath = $@"c:\test\img.db";
 
         public static string exedir = AssemblyDirectory;
 
@@ -35,6 +37,7 @@ namespace V_Max_Tool
         }
         //public static readonly string path = $@"{Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location)}\cpp_extf.dll".Replace(@"\\", @"\");
     }
+
     public static class NDS  // Global variables for Nib file source data
     {
         public static byte[][] Track_Data = new byte[0][];
@@ -170,21 +173,21 @@ namespace V_Max_Tool
         }
     }
 
-    class FunctionLoader
-    {
-        [DllImport("Kernel32.dll")]
-        private static extern IntPtr LoadLibrary(string path);
-
-        [DllImport("Kernel32.dll")]
-        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-        public static Delegate LoadFunction<T>(string dllPath, string functionName)
-        {
-            var hModule = LoadLibrary(dllPath);
-            var functionAddress = GetProcAddress(hModule, functionName);
-            return Marshal.GetDelegateForFunctionPointer(functionAddress, typeof(T));
-        }
-    }
+    //class FunctionLoader
+    //{
+    //    [DllImport("Kernel32.dll")]
+    //    private static extern IntPtr LoadLibrary(string path);
+    //
+    //    [DllImport("Kernel32.dll")]
+    //    private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+    //
+    //    public static Delegate LoadFunction<T>(string dllPath, string functionName)
+    //    {
+    //        var hModule = LoadLibrary(dllPath);
+    //        var functionAddress = GetProcAddress(hModule, functionName);
+    //        return Marshal.GetDelegateForFunctionPointer(functionAddress, typeof(T));
+    //    }
+    //}
 
     public class NativeMethods
     {
@@ -200,7 +203,395 @@ namespace V_Max_Tool
         public static extern int TestLoaded();
     }
 
+    public class DiskInfo
+    {
+        public const int NAME_SIZE = 64;
+        public const int ENTRY_SIZE = 111;
+        public int DiskRegion;
+        public byte[] dHash;
+        public uint crc32;
+        public long Offset;
+        public int cSize;
+        public int dSize;
+        public DateTime Timestamp;
+        public byte Side;
+        public bool Locked;
+        public byte Protection;
+        public int Year;
+        public string Title;
+        public short PreviewLen;
+        public ushort pCRC;
+        public int Index;
+        public string DirPreview;
 
+        public static DiskInfo FromEntry(byte[] data)
+        {
+            if (data.Length != ENTRY_SIZE)
+                throw new ArgumentException($"Invalid entry size. Must be {ENTRY_SIZE} bytes.");
+
+            int index = 0;
+            DiskInfo info = DecodeMeta(data[index++], data[index++]);
+            info.Offset = BitConverter.ToInt64(data, index); index += 8;
+            info.cSize = BitConverter.ToInt32(data, index); index += 4;
+            info.dSize = BitConverter.ToInt32(data, index); index += 4;
+            info.Timestamp = DecodeTimestamp(BitConverter.ToUInt32(data, index)); index += 4;
+            info.dHash = new byte[16];
+            Buffer.BlockCopy(data, index, info.dHash, 0, 16); index += 16;
+            info.crc32 = BitConverter.ToUInt32(data, index); index += 4;
+            info.PreviewLen = BitConverter.ToInt16(data, index); index += 2;
+            info.pCRC = BitConverter.ToUInt16(data, index); index += 2;
+            info.Year = data[index++] + 1970;
+            info.Title = Encoding.ASCII.GetString(data, index, NAME_SIZE).TrimEnd('\0');
+            return info;
+        }
+
+        public byte[] ToEntry()
+        {
+            List<byte> bytes = new List<byte>();
+            bytes.AddRange(new byte[] { EncodeMeta(), Protection });
+            bytes.AddRange(BitConverter.GetBytes(Offset));
+            bytes.AddRange(BitConverter.GetBytes(cSize));
+            bytes.AddRange(BitConverter.GetBytes(dSize));
+            bytes.AddRange(BitConverter.GetBytes(EncodeTimestamp(Timestamp)));
+            bytes.AddRange(dHash ?? FastArray.Init(16, 0));
+            bytes.AddRange(BitConverter.GetBytes(crc32));
+            bytes.AddRange(BitConverter.GetBytes(PreviewLen));
+            bytes.AddRange(BitConverter.GetBytes(pCRC));
+            bytes.AddRange(new byte[] { (byte)(Year - 1970) });
+            byte[] titleBytes = Encoding.ASCII.GetBytes(Title ?? "");
+            Array.Resize(ref titleBytes, NAME_SIZE); // pad with 0s
+            bytes.AddRange(titleBytes);
+            return bytes.ToArray();
+        }
+
+        public byte EncodeMeta()
+        {
+            byte value = (byte)(((byte)DiskRegion & 0b11) << 6);
+            value |= (byte)((Side & 0b11111) << 1);
+            value |= (byte)(Locked ? 1 : 0);
+            return value;
+        }
+
+        public static DiskInfo DecodeMeta(byte meta, byte protection)
+        {
+            return new DiskInfo
+            {
+                DiskRegion = (meta >> 6) & 0b11,
+                Side = (byte)((meta >> 1) & 0b11111),
+                Locked = (meta & 1) != 0,
+                Protection = protection
+            };
+        }
+
+        public static uint EncodeTimestamp(DateTime dt)
+        {
+            uint year = (uint)(dt.Year - 1980);
+            uint month = (uint)dt.Month;
+            uint day = (uint)dt.Day;
+            uint hour = (uint)dt.Hour;
+            uint minute = (uint)dt.Minute;
+            uint second = (uint)(dt.Second / 2); // stored in 2-second increments
+
+            return (year << 25) | (month << 21) | (day << 16) |
+                   (hour << 11) | (minute << 5) | second;
+        }
+
+        public static DateTime DecodeTimestamp(uint ts)
+        {
+            int year = 1980 + (int)((ts >> 25) & 0x7F);
+            int month = (int)((ts >> 21) & 0x0F);
+            int day = (int)((ts >> 16) & 0x1F);
+            int hour = (int)((ts >> 11) & 0x1F);
+            int minute = (int)((ts >> 5) & 0x3F);
+            int second = (int)((ts & 0x1F) * 2);
+
+            return new DateTime(year, month, day, hour, minute, second);
+        }
+    }
+
+    public class AccessDatabase : IDisposable
+    {
+        private readonly object streamLock = new object();
+        public long Offset;
+        public ushort Entries;
+        public bool Valid;
+        public FileStream Stream;
+        private readonly int headerOffset = 6;
+        private readonly string na = "Stream is not available";
+        private readonly string ro = "Stream is ReadOnly";
+        public enum Mode { Read, Write }
+
+        public AccessDatabase ReadOnly(string path)
+        {
+            return Open(path, Mode.Read);
+        }
+
+        public AccessDatabase ReadWrite(string path)
+        {
+            return Open(path, Mode.Write);
+        }
+
+        private AccessDatabase Open(string path, Mode mode)
+        {
+            if (File.Exists(path) && new FileInfo(path).Length >= 16)
+            {
+                Stream = new FileStream(path, FileMode.Open, mode == Mode.Write
+                    ? FileAccess.ReadWrite : FileAccess.Read, FileShare.Read);
+                byte[] header = new byte[16];
+                Stream.Seek(0, SeekOrigin.Begin);
+                Stream.Read(header, 0, 16);
+                if (Encoding.ASCII.GetString(header, 0, 6) == "SageDB")
+                {
+                    Entries = BitConverter.ToUInt16(header, 6);
+                    Offset = BitConverter.ToInt64(header, 8);
+                    Valid = Entries >= 0 && Offset <= Stream.Length && Offset + (Entries * DiskInfo.ENTRY_SIZE) <= Stream.Length;
+                }
+            }
+            return this;
+        }
+
+        public AccessDatabase Create(string path)
+        {
+            if (File.Exists(path)) throw new Exception("File already exists");
+            ushort e = 0; long o = 16;
+            File.WriteAllBytes(path, ArrayConcat(Encoding.ASCII.GetBytes("SageDB")
+                , BitConverter.GetBytes(e), BitConverter.GetBytes(o)));
+            return Open(path, Mode.Write);
+        }
+
+        public void UpdateHeader()
+        {
+            //lock (streamLock)
+            {
+                Seek(headerOffset);
+                Write(ArrayConcat(BitConverter.GetBytes(Entries), BitConverter.GetBytes(Offset)));
+            }
+        }
+
+        public void WriteDirectory(byte[] directory)
+        {
+            //lock (streamLock)
+            {
+                if (directory == null) throw new ArgumentNullException(nameof(directory), "Directory can't be null!");
+                if (directory.Length % DiskInfo.ENTRY_SIZE != 0)
+                    throw new ArgumentException("Directory length must be divisible by entry size.", nameof(directory));
+                if (Entries * DiskInfo.ENTRY_SIZE != directory.Length)
+                    throw new ArgumentException("Directory length does not match the expected number of entries.", nameof(directory));
+                Seek(Offset);
+                Write(directory);
+            }
+        }
+
+        public DiskInfo GetDirectoryEntry(int index)
+        {
+            //lock (streamLock)
+            {
+                if (index < 0 || index >= Entries) throw new Exception($"Index outside bounds of the array {index} of 0 - {Entries}");
+                Seek(Offset + (index * DiskInfo.ENTRY_SIZE));
+                return DiskInfo.FromEntry(Read(DiskInfo.ENTRY_SIZE));
+            }
+        }
+
+        public byte[] GetImageData(DiskInfo ent)
+        {
+            //lock (streamLock)
+            {
+                if (ent != null)
+                {
+                    Seek(ent.Offset);
+                    byte[] data = Read(ent.cSize);
+                    return data;
+                }
+                return null;
+            }
+        }
+
+        public byte[] GetPreviewData(DiskInfo ent)
+        {
+            //lock (streamLock)
+            {
+                if (ent != null)
+                {
+                    Seek(ent.Offset + ent.cSize);
+                    var preview = Read(ent.PreviewLen);
+                    return preview;
+                }
+                return null;
+            }
+        }
+
+        public void Seek(long offset)
+        {
+            if (!Valid || Stream == null) throw new Exception(na);
+            if (Stream.CanSeek) Stream.Seek(offset, SeekOrigin.Begin); else throw new Exception("Stream can't locate position");
+        }
+
+        public void Write(byte[] data)
+        {
+            if (!Valid || Stream == null) throw new Exception(na);
+            if (Stream.CanWrite) Stream.Write(data, 0, data.Length); else throw new Exception(ro);
+        }
+
+        public byte[] Read(long Length)
+        {
+            if (!Valid || Stream == null) throw new Exception(na);
+            try
+            {
+                var data = new byte[Length];
+                if (Stream.CanRead) Stream.Read(data, 0, data.Length); else throw new Exception("Error reading file.");
+                return data;
+            }
+            catch { }
+            return null;
+        }
+
+        static byte[] ArrayConcat(params byte[][] arrays)
+        {
+            var totalLength = arrays.Sum(a => a.Length);
+            var result = new byte[totalLength];
+            var offset = 0;
+            foreach (var array in arrays)
+            {
+                Buffer.BlockCopy(array, 0, result, offset, array.Length);
+                offset += array.Length;
+            }
+            return result;
+        }
+
+        public void Close()
+        {
+            Stream?.Close();
+            Stream = null;
+            Valid = false;
+        }
+
+        public void Dispose()
+        {
+            Stream?.Close();
+            Stream = null;
+            Valid = false;
+        }
+    }
+
+    public static class Checksum
+    {
+        private static readonly uint[] Table;
+
+        static Checksum()
+        {
+            Table = new uint[256];
+            const uint Polynomial = 0xEDB88320;
+            for (uint i = 0; i < Table.Length; ++i)
+            {
+                uint crc = i;
+                for (int j = 0; j < 8; ++j)
+                    crc = (crc & 1) != 0 ? (Polynomial ^ (crc >> 1)) : (crc >> 1);
+                Table[i] = crc;
+            }
+        }
+
+        public static ushort CRC16(Stream stream, long offset, int length)
+        {
+            const int bufferSize = 4096;
+            byte[] buffer = new byte[bufferSize];
+            ushort crc = 0xFFFF;
+
+            stream.Seek(offset, SeekOrigin.Begin);
+            int remaining = length;
+
+            while (remaining > 0)
+            {
+                int toRead = Math.Min(bufferSize, remaining);
+                int bytesRead = stream.Read(buffer, 0, toRead);
+                if (bytesRead == 0) break; // End of stream before expected length
+
+                for (int i = 0; i < bytesRead; i++)
+                {
+                    crc ^= (ushort)(buffer[i] << 8);
+                    for (int j = 0; j < 8; j++)
+                    {
+                        if ((crc & 0x8000) != 0)
+                            crc = (ushort)((crc << 1) ^ 0x1021); // Standard CRC16-CCITT polynomial
+                        else
+                            crc <<= 1;
+                    }
+                }
+
+                remaining -= bytesRead;
+            }
+
+            return crc;
+        }
+
+        public static uint CRC32(Stream stream, long offset, int length)
+        {
+            const int bufferSize = 4096;
+            byte[] buffer = new byte[bufferSize];
+            uint crc = 0xFFFFFFFF;
+            stream.Seek(offset, SeekOrigin.Begin);
+            int remaining = length;
+
+            while (remaining > 0)
+            {
+                int toRead = Math.Min(bufferSize, remaining);
+                int bytesRead = stream.Read(buffer, 0, toRead);
+                if (bytesRead == 0) break; // End of stream before expected length
+
+                for (int i = 0; i < bytesRead; i++)
+                {
+                    byte index = (byte)((crc ^ buffer[i]) & 0xFF);
+                    crc = (crc >> 8) ^ Table[index];
+                }
+                remaining -= bytesRead;
+            }
+            return ~crc;
+        }
+
+        public static ushort CRC16(byte[] data)
+        {
+            const ushort polynomial = 0x1021;
+            ushort crc = 0xFFFF;
+            if (data == null) return crc;
+
+            foreach (byte b in data)
+            {
+                crc ^= (ushort)(b << 8);
+                for (int i = 0; i < 8; i++)
+                {
+                    crc = (crc & 0x8000) != 0 ? (ushort)((crc << 1) ^ polynomial) : (ushort)(crc << 1);
+                }
+            }
+            return crc;
+        }
+
+        public static uint CRC32(byte[] bytes)
+        {
+            uint crc = 0xFFFFFFFF;
+            foreach (byte b in bytes)
+            {
+                byte index = (byte)((crc ^ b) & 0xFF);
+                crc = (crc >> 8) ^ Table[index];
+            }
+            return ~crc;
+        }
+
+        public static byte[] MD5(byte[] data)
+        {
+            using (MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                return md5.ComputeHash(data);
+            }
+        }
+    }
+
+    public class DoubleBufferedListView : ListView
+    {
+        public DoubleBufferedListView()
+        {
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
+            this.UpdateStyles();
+        }
+    }
 
     public class CustomCheckedListBox : CheckedListBox
     {
@@ -486,15 +877,6 @@ namespace V_Max_Tool
             Bits[index] = col;
         }
 
-        public Color GetPixel(int x, int y)
-        {
-            int index = x + (y * Width);
-            int col = Bits[index];
-            Color result = Color.FromArgb(col);
-
-            return result;
-        }
-
         public void Dispose()
         {
             if (Disposed) return;
@@ -545,6 +927,56 @@ namespace V_Max_Tool
             MemSet(gch.AddrOfPinnedObject(), value, temp.Length);
             gch.Free();
             return temp;
+        }
+    }
+
+    public class TaggedRectangle
+    {
+        public Rectangle Rect { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public (int Track, int Sector) Tag { get; set; }
+
+        // Constructor to create TaggedRectangle with individual x, y, width, and height
+        public TaggedRectangle(int x, int y, int width, int height, int track, int sector)
+        {
+            X = x;
+            Y = y;
+            Width = width;
+            Height = height;
+            Rect = new Rectangle(x, y, width, height);
+            Tag = (track, sector);
+        }
+
+        // Contains method to check if a point is within the Rect
+        public bool Contains(Point point)
+        {
+            return Rect.Contains(point);
+        }
+    }
+
+    class BlockMapInfo
+    {
+        public TaggedRectangle Rect { get; set; }
+        public int Track { get; set; }
+        public int Sector { get; set; }
+        public Color Color { get; set; }
+        public string Tip { get; set; }
+
+        public BlockMapInfo(TaggedRectangle rect, int track, int sector, Color color, string tip)
+        {
+            Rect = rect;
+            Track = track;
+            Sector = sector;
+            Color = color;
+            Tip = tip;
+        }
+
+        public bool Contains(Point point)
+        {
+            return Rect.Contains(point);
         }
     }
 }
