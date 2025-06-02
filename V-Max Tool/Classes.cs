@@ -203,84 +203,120 @@ namespace V_Max_Tool
         public static extern int TestLoaded();
     }
 
+    public class Tag
+    {
+        public int Index { get; set; } = -1;
+        public string Notes { get; set; } = string.Empty;
+    }
+
+    //public class ItemTag
+    //{
+    //    public int Index { get; set; }
+    //    public string Notes { get; set; }
+    //}
+
     public class DiskInfo
     {
         public const int NAME_SIZE = 64;
-        public const int ENTRY_SIZE = 111;
-        public int DiskRegion;
-        public byte[] dHash;
-        public uint crc32;
-        public long Offset;
-        public int cSize;
-        public int dSize;
-        public DateTime Timestamp;
-        public byte Side;
+        public const int NOTES_SIZE = 128;
+        public const int ENTRY_SIZE = 256;
+
+        public string Title;
+        public bool Marked;
         public bool Locked;
+        public bool Source;
+        public int Extension; // 0 = .nib, 1 = .nbz, 2 = .g64
+        public int Region;
+        public bool Favorite;
+
+        public int Side;
         public byte Protection;
         public int Year;
-        public string Title;
-        public short PreviewLen;
-        public ushort pCRC;
-        public int Index;
+
+        public long Offset;
+        public int CompressedLength;
+        public int DecompressedLength;
+        public short PreviewLength;
+
+        public uint crc32;
+        public ushort crc16;
+        public byte[] rawHash = new byte[16];
+        public byte[] secHash = new byte[16];
+        public DateTime Timestamp;
+
+        public string Notes; // padded with 0s
+        public int Index; // Not stored in the meta!
         public string DirPreview;
 
         public static DiskInfo FromEntry(byte[] data)
         {
-            if (data.Length != ENTRY_SIZE)
-                throw new ArgumentException($"Invalid entry size. Must be {ENTRY_SIZE} bytes.");
+            if (data == null || data.Length != ENTRY_SIZE)
+                throw new ArgumentException("Entry data is too short.");
 
+            DiskInfo disk = new DiskInfo();
             int index = 0;
-            DiskInfo info = DecodeMeta(data[index++], data[index++]);
-            info.Offset = BitConverter.ToInt64(data, index); index += 8;
-            info.cSize = BitConverter.ToInt32(data, index); index += 4;
-            info.dSize = BitConverter.ToInt32(data, index); index += 4;
-            info.Timestamp = DecodeTimestamp(BitConverter.ToUInt32(data, index)); index += 4;
-            info.dHash = new byte[16];
-            Buffer.BlockCopy(data, index, info.dHash, 0, 16); index += 16;
-            info.crc32 = BitConverter.ToUInt32(data, index); index += 4;
-            info.PreviewLen = BitConverter.ToInt16(data, index); index += 2;
-            info.pCRC = BitConverter.ToUInt16(data, index); index += 2;
-            info.Year = data[index++] + 1970;
-            info.Title = Encoding.ASCII.GetString(data, index, NAME_SIZE).TrimEnd('\0');
-            return info;
+            disk.Title = Encoding.ASCII.GetString(data, index, 64).TrimEnd('\0'); index += 64;
+            DecodeBits_1(disk, data[index++], data[index++], data[index++], data[index++]);
+            disk.Offset = BitConverter.ToInt64(data, index); index += 8;
+            disk.CompressedLength = BitConverter.ToInt32(data, index); index += 4;
+            disk.DecompressedLength = BitConverter.ToInt32(data, index); index += 4;
+            disk.PreviewLength = BitConverter.ToInt16(data, index); index += 2;
+            disk.crc32 = BitConverter.ToUInt32(data, index); index += 4;
+            disk.crc16 = BitConverter.ToUInt16(data, index); index += 2;
+            disk.rawHash = new byte[16];
+            Buffer.BlockCopy(data, index, disk.rawHash, 0, 16); index += 16;
+            disk.secHash = new byte[16];
+            Buffer.BlockCopy(data, index, disk.secHash, 0, 16); index += 16;
+            disk.Notes = Encoding.ASCII.GetString(data, index, 128).TrimEnd('\0'); index += 128;
+            disk.Timestamp = DecodeTimestamp(BitConverter.ToUInt32(data, index));
+            return disk;
         }
 
         public byte[] ToEntry()
         {
             List<byte> bytes = new List<byte>();
-            bytes.AddRange(new byte[] { EncodeMeta(), Protection });
-            bytes.AddRange(BitConverter.GetBytes(Offset));
-            bytes.AddRange(BitConverter.GetBytes(cSize));
-            bytes.AddRange(BitConverter.GetBytes(dSize));
-            bytes.AddRange(BitConverter.GetBytes(EncodeTimestamp(Timestamp)));
-            bytes.AddRange(dHash ?? FastArray.Init(16, 0));
-            bytes.AddRange(BitConverter.GetBytes(crc32));
-            bytes.AddRange(BitConverter.GetBytes(PreviewLen));
-            bytes.AddRange(BitConverter.GetBytes(pCRC));
-            bytes.AddRange(new byte[] { (byte)(Year - 1970) });
-            byte[] titleBytes = Encoding.ASCII.GetBytes(Title ?? "");
+            var titleBytes = Encoding.ASCII.GetBytes(Title ?? "");
+            var notesBytes = Encoding.ASCII.GetBytes(Notes ?? "");
             Array.Resize(ref titleBytes, NAME_SIZE); // pad with 0s
+            Array.Resize(ref notesBytes, NOTES_SIZE); // pad with 0s
             bytes.AddRange(titleBytes);
+            bytes.AddRange(new byte[] { EncodeBits_1(), (byte)Side, (byte)Protection, (byte)(Year - 1970) });
+            bytes.AddRange(BitConverter.GetBytes(Offset));
+            bytes.AddRange(BitConverter.GetBytes(CompressedLength));
+            bytes.AddRange(BitConverter.GetBytes(DecompressedLength));
+            bytes.AddRange(BitConverter.GetBytes(PreviewLength));
+            bytes.AddRange(BitConverter.GetBytes(crc32));
+            bytes.AddRange(BitConverter.GetBytes(crc16));
+            bytes.AddRange(rawHash ?? FastArray.Init(16, 0));
+            bytes.AddRange(secHash ?? FastArray.Init(16, 0));
+            bytes.AddRange(notesBytes);
+            bytes.AddRange(BitConverter.GetBytes(EncodeTimestamp(Timestamp)));
             return bytes.ToArray();
         }
 
-        public byte EncodeMeta()
+        public byte EncodeBits_1()
         {
-            byte value = (byte)(((byte)DiskRegion & 0b11) << 6);
-            value |= (byte)((Side & 0b11111) << 1);
-            value |= (byte)(Locked ? 1 : 0);
-            return value;
+            byte meta = 0;
+            if (Marked) meta |= 1 << 7;
+            if (Locked) meta |= 1 << 6;
+            if (Source) meta |= 1 << 5;
+            meta |= (byte)((Extension & 0b11) << 3);
+            meta |= (byte)((Region & 0b11) << 1);
+            if (Favorite) meta |= 1;
+            return meta;
         }
 
-        public static DiskInfo DecodeMeta(byte meta, byte protection)
+        static void DecodeBits_1(DiskInfo disk, byte meta, byte side, byte protection, byte year)
         {
-            return new DiskInfo
-            {
-                DiskRegion = (meta >> 6) & 0b11,
-                Side = (byte)((meta >> 1) & 0b11111),
-                Locked = (meta & 1) != 0,
-                Protection = protection
-            };
+            disk.Marked = (meta & (1 << 7)) != 0;
+            disk.Locked = (meta & (1 << 6)) != 0;
+            disk.Source = (meta & (1 << 5)) != 0;
+            disk.Extension = (meta >> 3) & 0b11;
+            disk.Region = (meta >> 1) & 0b11;
+            disk.Favorite = (meta & 1) != 0;
+            disk.Side = (side & 0x1f); // 0b00011111);
+            disk.Protection = protection;
+            disk.Year = year + 1970;
         }
 
         public static uint EncodeTimestamp(DateTime dt)
@@ -361,63 +397,48 @@ namespace V_Max_Tool
 
         public void UpdateHeader()
         {
-            //lock (streamLock)
-            {
-                Seek(headerOffset);
-                Write(ArrayConcat(BitConverter.GetBytes(Entries), BitConverter.GetBytes(Offset)));
-            }
+            Seek(headerOffset);
+            Write(ArrayConcat(BitConverter.GetBytes(Entries), BitConverter.GetBytes(Offset)));
         }
 
         public void WriteDirectory(byte[] directory)
         {
-            //lock (streamLock)
-            {
-                if (directory == null) throw new ArgumentNullException(nameof(directory), "Directory can't be null!");
-                if (directory.Length % DiskInfo.ENTRY_SIZE != 0)
-                    throw new ArgumentException("Directory length must be divisible by entry size.", nameof(directory));
-                if (Entries * DiskInfo.ENTRY_SIZE != directory.Length)
-                    throw new ArgumentException("Directory length does not match the expected number of entries.", nameof(directory));
-                Seek(Offset);
-                Write(directory);
-            }
+            if (directory == null) throw new ArgumentNullException(nameof(directory), "Directory can't be null!");
+            if (directory.Length % DiskInfo.ENTRY_SIZE != 0)
+                throw new ArgumentException("Directory length must be divisible by entry size.", nameof(directory));
+            if (Entries * DiskInfo.ENTRY_SIZE != directory.Length)
+                throw new ArgumentException("Directory length does not match the expected number of entries.", nameof(directory));
+            Seek(Offset);
+            Write(directory);
         }
 
         public DiskInfo GetDirectoryEntry(int index)
         {
-            //lock (streamLock)
-            {
-                if (index < 0 || index >= Entries) throw new Exception($"Index outside bounds of the array {index} of 0 - {Entries}");
-                Seek(Offset + (index * DiskInfo.ENTRY_SIZE));
-                return DiskInfo.FromEntry(Read(DiskInfo.ENTRY_SIZE));
-            }
+            if (index < 0 || index >= Entries) throw new Exception($"Index outside bounds of the array {index} of 0 - {Entries}");
+            Seek(Offset + (index * DiskInfo.ENTRY_SIZE));
+            return DiskInfo.FromEntry(Read(DiskInfo.ENTRY_SIZE));
         }
 
         public byte[] GetImageData(DiskInfo ent)
         {
-            //lock (streamLock)
+            if (ent != null)
             {
-                if (ent != null)
-                {
-                    Seek(ent.Offset);
-                    byte[] data = Read(ent.cSize);
-                    return data;
-                }
-                return null;
+                Seek(ent.Offset);
+                byte[] data = Read(ent.CompressedLength);
+                return data;
             }
+            return null;
         }
 
         public byte[] GetPreviewData(DiskInfo ent)
         {
-            //lock (streamLock)
+            if (ent != null)
             {
-                if (ent != null)
-                {
-                    Seek(ent.Offset + ent.cSize);
-                    var preview = Read(ent.PreviewLen);
-                    return preview;
-                }
-                return null;
+                Seek(ent.Offset + ent.CompressedLength);
+                var preview = Read(ent.PreviewLength);
+                return preview;
             }
+            return null;
         }
 
         public void Seek(long offset)
@@ -977,6 +998,34 @@ namespace V_Max_Tool
         public bool Contains(Point point)
         {
             return Rect.Contains(point);
+        }
+    }
+
+    public class CustomBufferedPanel : Panel
+    {
+        public Color BorderColor { get; set; } = Color.Black;
+        public override Color BackColor { get; set; } = Color.Black;
+        public int BorderThickness { get; set; } = 2;
+
+        public CustomBufferedPanel()
+        {
+            DoubleBuffered = true;
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            using (Pen borderPen = new Pen(BorderColor, BorderThickness))
+            {
+                base.OnPaintBackground(e);
+                Brush brush = new SolidBrush(BackColor);
+                Rectangle rect = new Rectangle(
+                    BorderThickness / 2,
+                    BorderThickness / 2,
+                    this.Width - BorderThickness,
+                    this.Height - BorderThickness);
+                Rectangle back = new Rectangle(0, 0, Width, Height);
+                e.Graphics.DrawRectangle(borderPen, rect);
+            }
         }
     }
 }

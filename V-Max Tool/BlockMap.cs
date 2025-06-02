@@ -92,7 +92,7 @@ namespace V_Max_Tool
             }
             // set BAM buttons in Block Map
 
-            var spcacing = 4;
+            var spcacing = 2;
             var ht = (Blk_pan.Height / 41) - spcacing;
             var wt = (Blk_pan.Width / 21) - spcacing;
             top = 3;
@@ -146,11 +146,12 @@ namespace V_Max_Tool
                             (_, int errorCode, _) = GetSectorWithErrorCode(null, j, true, null, tk, start);
                             bool error = errorCode > 1;
                             bool available = BlockAllocStatus(bam, trk, j);
-                            usedsec = !available ? "Block Allocated (Used)" : "Block Available (Free)";
+                            usedsec = trk > 34 || !valid ? "* outside BAM range" : !available ? "Block Allocated (Used)" : "Block Available (Free)";
                             usedsec += (error ? $"\nError {c1541error[errorCode]}" : string.Empty);
-                            Color color = Color.FromArgb(valid && trk < 35 ? 255 : 100, error ? 200 : 30, error ? 30 : !available ? 200 : 75, 30);
+                            Color color = Color.FromArgb(valid && trk < 35 ? 255 : 130, error ? 200 : 30, error ? 30 : !available ? 200 : 75, 30);
                             blockMap[index].Color = color;
-                            blockMap[index].Tip = $"Track {trk + 1} Sector {j + 1}\n{usedsec}" + (errorCode == 1 ? $"\n{ErrorCodes[errorCode]}" : "");
+                            blockMap[index].Tip = $"Track {trk + 1} Sector {j + 1}" + (usedsec != "" ? $"\n{usedsec}" : "")
+                                + (errorCode == 1 ? $"\n{ErrorCodes[errorCode]}" : "");
                         }
                         else
                         {
@@ -269,7 +270,7 @@ namespace V_Max_Tool
             if (index != hoveredIndex) // New rectangle hovered
             {
                 hoveredIndex = index;
-                if (index >= 0)
+                if (index >= 0 && blockMap[index].Tip != string.Empty)
                 {
                     try
                     {
@@ -279,6 +280,7 @@ namespace V_Max_Tool
                     }
                     catch { }
                 }
+                else tips.Hide(Blk_pan);
             }
         }
 

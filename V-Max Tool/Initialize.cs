@@ -45,12 +45,9 @@ namespace V_Max_Tool
         private static bool CPP_LZ = true;
         private static string def_bg_text;
         private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
-        //private static readonly Label[] BlkMap_track = new Label[41];
-        //private static readonly Label[] BlkMap_sector = new Label[21];
-        //private static readonly Panel[][] BlkMap_bam = new Panel[41][];
-        ////private static readonly TaggedRectangle[][] BlkMap_bam = new TaggedRectangle[41][];
-        //private List<BlockMapInfo> blockMap = new List<BlockMapInfo>();
         private static ConcurrentBag<string> ErrorList = new ConcurrentBag<string>();
+        private static FontFamily customFontFamily;
+        //private static Font customFont; // = GetCustomFont(12.0f, FontStyle.Regular);
         private const bool Set = false;
         private const bool Free = true;
 
@@ -476,7 +473,6 @@ namespace V_Max_Tool
             /// Remove Create Blank Disk and Directory Editor functions
             CBD_box.Visible = false;
             Dir_Edit.Visible = false;
-            //dbView.Visible = false;
             label19.Visible = label18.Visible = Sec_Interleave.Visible = CBD_box.Visible;
             Dir_screen.Top = CBD_box.Visible ? Dir_screen.Top : 0;
             Dir_screen.Height = tabPage3.Height;
@@ -489,8 +485,7 @@ namespace V_Max_Tool
             Read_GBox.Location = new Point(0, 0);
             Options.Controls.Add(Options_Box);
             Options_Box.Location = new Point(0, 0);
-            byte[] fontData = Resources.C64_Pro_Mono_STYLE;
-            FontFamily customFontFamily = LoadFontFromResource(fontData);
+            customFontFamily = LoadFontFromResource(Resources.C64_Pro_Mono_STYLE);
             Font customFont = GetCustomFont(12.0f, FontStyle.Regular);
             usecpp = Load_Dll();
             FindNibtools();
@@ -705,16 +700,6 @@ namespace V_Max_Tool
             tips.ShowAlways = true;
             manualRender = M_render.Visible = Cores <= 3;
             if (Cores < 2) Img_Q.SelectedIndex = 0;
-            /// ---------- Removed since I think this was only for the no-longer supported .net3.5 version
-            //AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(
-            //(s, a) =>
-            //{
-            //    if (a.Name.Substring(0, a.Name.IndexOf(",")) == "msvcrt")
-            //    {
-            //        return Assembly.Load(Decompress(XOR(Resources.msvcrt, 0x24)));
-            //    }
-            //    return null;
-            //});
             /// ------------------------------------------------------------------------------------------
             Build_BitReverseTable();
             RunBusy(() => LoadSettings());

@@ -152,6 +152,7 @@ namespace V_Max_Tool
             PVbox.ForeColor = c64_text;
             PVbox.Location = new Point(BrowseDB.Width - 17, 0);
             PVbox.Height = BrowseDB.Height - 38;
+            PVbox.Font = new Font(DirFont.Families[0], 7.875f, FontStyle.Regular);
             PVbox.BringToFront();
             PVbox.Visible = false;
             dbSearch.BringToFront();
@@ -189,20 +190,22 @@ namespace V_Max_Tool
                     UpdateList(RegionFilter(filteredList), true);
                 };
 
-                dbView.KeyDown += (s, e) =>
+                //dbView.KeyDown += (s, e) =>
+                dbView.KeyUp += (s, e) =>
                 {
+                    var keys = new Keys[] { Keys.Up, Keys.Down, Keys.PageUp, Keys.PageDown };
                     if (e.KeyData == Keys.Enter && dbView.SelectedItems.Count == 1)
                     {
-                        var idx = (int)dbView.SelectedItems[0].Tag;
+                        var idx = ((Tag)dbView.SelectedItems[0].Tag).Index;// (int)dbView.SelectedItems[0].Tag;
                         if (idx >= 0) Import_Image_From_Database(idx);
                     }
 
-                    if (e.KeyData == Keys.Down || e.KeyData == Keys.Up)
+                    if (keys.Contains(e.KeyData))
                     {
                         if (dbView.SelectedItems.Count > 0)
                         {
                             var selectedItem = dbView.SelectedItems[0];
-                            if (selectedItem?.Tag != null) UpdatePreview((int)selectedItem.Tag);
+                            if (selectedItem?.Tag != null) UpdatePreview(((Tag)selectedItem.Tag).Index);
                         }
                     }
                 };
@@ -224,8 +227,7 @@ namespace V_Max_Tool
                                     dbView.SelectedItems.Clear();
                                     item.Selected = true;
                                 }
-
-                                bool Locked = disk[(int)item.Tag].Locked /* your logic here */;
+                                bool Locked = disk[((Tag)item.Tag).Index].Locked;
                                 dbMenu.Items.Add(Locked ? unlockItem : lockItem);
                                 if (!Locked)
                                 {
@@ -322,9 +324,9 @@ namespace V_Max_Tool
                         dbView.BeginUpdate();
                         foreach (ListViewItem currentItem in dbView.SelectedItems)
                         {
-                            var item = (int)currentItem.Tag;
-                            disk[item].Locked = lockfile; // true;
-                            selected.Add(item);
+                            var index = ((Tag)currentItem.Tag).Index;
+                            disk[index].Locked = lockfile; // true;
+                            selected.Add(index);
                             currentItem.SubItems[0].Text = lockfile ? " " : "";
                         }
                         dbView.EndUpdate();
@@ -465,10 +467,10 @@ namespace V_Max_Tool
                         for (int i = 0; i < dataBase.Entries; i++)
                         {
                             disk[i] = dataBase.GetDirectoryEntry(i);
-                            if (disk[i].PreviewLen > 0)
+                            if (disk[i].PreviewLength > 0)
                             {
                                 var preview = dataBase.GetPreviewData(disk[i]);
-                                if (disk[i].pCRC == Checksum.CRC16(preview)) disk[i].DirPreview = Encoding.ASCII.GetString(Decompress(preview));
+                                if (disk[i].crc16 == Checksum.CRC16(preview)) disk[i].DirPreview = Encoding.ASCII.GetString(Decompress(preview));
                             }
                             disk[i].Index = i;
                         }
@@ -488,7 +490,7 @@ namespace V_Max_Tool
         {
             if (regionSort > 0)
             {
-                var filtered = sortedList.Where(d => d.DiskRegion == regionSort);
+                var filtered = sortedList.Where(d => d.Region == regionSort);
                 return filtered.ToList();
             }
             return sortedList;
@@ -513,31 +515,17 @@ namespace V_Max_Tool
                 item.SubItems.Add(disk.Title);                                  // Title
                 item.SubItems.Add($"{disk.Side + 1}");                          // Side
                 item.SubItems.Add(disk.Year > 1970 ? $"{disk.Year}" : "");    // Year
-                item.SubItems.Add($"{getRegion[disk.DiskRegion]}");             // Region
+                item.SubItems.Add($"{getRegion[disk.Region]}");             // Region
                 //item.SubItems.Add($"{secF[disk.Protection]}");                  // Protection
                 item.SubItems.Add($"{Prot[disk.Protection]}");                  // Protection
                 //item.SubItems.Add($"{disk.cSize:N0}");                          // Compressed size
                 //item.SubItems.Add($"{disk.dSize:N0}");                          // Decompressed size
                 item.SubItems.Add($"{disk.Timestamp}");                         // Timestamp
                 dbView.Items.Add(item);
-                item.Tag = disk.Index;
+                item.Tag = new Tag { Index = disk.Index, Notes = disk.Notes };
             }
             dbView.EndUpdate();
             BrowseDB.Text = $"Browse ReMaster Image Database ({dbView.Items.Count}/{disk?.Length})";
-        }
-
-        void UpdateViewItem(int index, int diskIndex)
-        {
-            ListViewItem item = new ListViewItem(disk[diskIndex].Locked ? " " : "");   // Locked
-            item.SubItems.Add(disk[diskIndex].Title);                                  // Title
-            item.SubItems.Add($"{disk[diskIndex].Side + 1}");                          // Side
-            item.SubItems.Add(disk[diskIndex].Year > 1970 ? $"{disk[diskIndex].Year}" : "");    // Year
-            item.SubItems.Add($"{getRegion[disk[diskIndex].DiskRegion]}");             // Region
-            item.SubItems.Add($"{Prot[disk[diskIndex].Protection]}");                  // Protection
-            item.SubItems.Add($"{disk[diskIndex].Timestamp}");                         // Timestamp
-            item.Tag = disk[diskIndex].Index;
-            dbView.Items[index] = item;
-
         }
 
         string Get_Name(string input)
@@ -565,11 +553,11 @@ namespace V_Max_Tool
                 if (dataBase.Valid)
                 {
                     dataBase.Seek(disk[entry].Offset);
-                    var cmp = dataBase.Read(disk[entry].cSize);
+                    var cmp = dataBase.Read(disk[entry].CompressedLength);
                     if (Checksum.CRC32(cmp) == disk[entry].crc32)
                     {
                         byte[] dec = Decompress(cmp);
-                        if (Match(Checksum.MD5(dec), disk[entry].dHash)) return dec;
+                        if (Match(Checksum.MD5(dec), disk[entry].rawHash)) return dec;
                     }
                 }
             }
@@ -637,13 +625,13 @@ namespace V_Max_Tool
                     int sub = (verify.Entries / 200) << 1;
                     for (int i = 0; i < verify.Entries; i++)
                     {
-                        if (ShowProgress && i % sub == 0) Invoke(new Action(() => dbProg.Maximum -= 1));
+                        if (sub > 0 && ShowProgress && i % sub == 0) Invoke(new Action(() => dbProg.Maximum -= 1));
                         try
                         {
                             var ent = verify.GetDirectoryEntry(i);
                             var data = verify.GetImageData(ent);
                             var preview = verify.GetPreviewData(ent);
-                            if (Checksum.CRC32(data) != ent.crc32 || Checksum.CRC16(preview) != ent.pCRC) failed++;
+                            if (Checksum.CRC32(data) != ent.crc32 || Checksum.CRC16(preview) != ent.crc16) failed++;
                         }
                         catch { failed++; }
                     }
@@ -693,22 +681,22 @@ namespace V_Max_Tool
                                 DiskInfo info = new DiskInfo
                                 {
                                     Offset = dataBase.Offset,
-                                    dHash = Checksum.MD5(dec),
+                                    rawHash = Checksum.MD5(dec),
                                     crc32 = Checksum.CRC32(cmp),
                                     Locked = dataBase.Offset % 2 == 0,
-                                    dSize = dec.Length,
-                                    cSize = cmp.Length,
-                                    PreviewLen = (short)preview.Length,
-                                    pCRC = Checksum.CRC16(preview),
+                                    DecompressedLength = dec.Length,
+                                    CompressedLength = cmp.Length,
+                                    PreviewLength = (short)preview.Length,
+                                    crc16 = Checksum.CRC16(preview),
                                     Timestamp = DateTime.Now,
                                     Year = Get_Year(f),
                                     Title = Get_Name(Path.GetFileNameWithoutExtension(f.Replace("_", " "))),
                                     Protection = Get_Protection(f),
-                                    DiskRegion = Get_Region(f, pv),
+                                    Region = Get_Region(f, pv),
                                     Side = (byte)Get_DiskSide(f),
                                 };
                                 write.Write(info.ToEntry());
-                                dataBase.Offset += info.cSize + info.PreviewLen;
+                                dataBase.Offset += info.CompressedLength + info.PreviewLength;
                                 Text = $"{ttl} ({dataBase.Entries++}/{file.Length})";
 
                             }
@@ -889,14 +877,14 @@ namespace V_Max_Tool
                 if (searchText.Length > 0)
                 {
                     sortedList = sortAscending
-                        ? disk.Where(d => d.Title.ToLower().Contains(searchText)).OrderBy(d => d.cSize).ToList()
-                        : disk.Where(d => d.Title.ToLower().Contains(searchText)).OrderByDescending(d => d.cSize).ToList();
+                        ? disk.Where(d => d.Title.ToLower().Contains(searchText)).OrderBy(d => d.CompressedLength).ToList()
+                        : disk.Where(d => d.Title.ToLower().Contains(searchText)).OrderByDescending(d => d.CompressedLength).ToList();
                 }
                 else
                 {
                     sortedList = sortAscending
-                        ? disk.OrderBy(d => d.cSize).ToList()
-                        : disk.OrderByDescending(d => d.cSize).ToList();
+                        ? disk.OrderBy(d => d.CompressedLength).ToList()
+                        : disk.OrderByDescending(d => d.CompressedLength).ToList();
                 }
             }
 
@@ -948,7 +936,7 @@ namespace V_Max_Tool
                 HashSet<int> indicesToShow = new HashSet<int>(); // Final list of all indexes to display
                 foreach (DiskInfo d in disk)
                 {
-                    string hash = Encoding.ASCII.GetString(d.dHash);
+                    string hash = Encoding.ASCII.GetString(d.rawHash);
                     if (!seenHashes.Add(hash))
                     {
                         // This is a duplicate
@@ -966,13 +954,12 @@ namespace V_Max_Tool
                 if (show && dupeIdx.Count > 0)
                 {
                     var sortedList = sortAscending
-                        ? list.OrderBy(d => Encoding.ASCII.GetString(d.dHash)).ThenBy(d => d.Title).ToList()
-                        : list.OrderByDescending(d => Encoding.ASCII.GetString(d.dHash)).ThenByDescending(d => d.Title).ToList();
+                        ? list.OrderBy(d => Encoding.ASCII.GetString(d.rawHash)).ThenBy(d => d.Title).ToList()
+                        : list.OrderByDescending(d => Encoding.ASCII.GetString(d.rawHash)).ThenByDescending(d => d.Title).ToList();
                     UpdateList(sortedList);
-                    if (select) foreach (ListViewItem l in dbView.Items) if (dupeIdx.Contains((int)l.Tag)) l.Selected = true;
+                    if (select) foreach (ListViewItem l in dbView.Items) if (dupeIdx.Contains(((Tag)l.Tag).Index)) l.Selected = true;
                 }
                 sw.Stop();
-                //Text = sw.Elapsed.TotalMilliseconds.ToString();
             }
             return dupeIdx.ToArray(); // return list of file indexes to remove
         }
@@ -1105,13 +1092,12 @@ namespace V_Max_Tool
 
         private void DbView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            //Text = CheckForDuplicates(true, true).Length.ToString();
             ListViewHitTestInfo hit = dbView.HitTest(e.Location);
             if (e.Button == MouseButtons.Left)
             {
                 if (hit.Item != null)
                 {
-                    if (hit.Item?.Tag != null) Import_Image_From_Database((int)hit.Item.Tag);
+                    if (hit.Item?.Tag != null) Import_Image_From_Database(((Tag)hit.Item.Tag).Index);
                 }
             }
         }
@@ -1128,7 +1114,7 @@ namespace V_Max_Tool
                     dbLastHoveredItem = index;
                     dbView.Invalidate(); // Redraw to apply new hover effect
                     lastHoverUpdate = DateTime.Now;
-                    if (info.Item?.Tag != null) UpdatePreview((int)info.Item.Tag);
+                    if (info.Item?.Tag != null) UpdatePreview(((Tag)info.Item.Tag).Index);
                 }
             }
             catch { }
