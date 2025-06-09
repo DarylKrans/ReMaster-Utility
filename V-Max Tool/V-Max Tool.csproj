@@ -197,6 +197,8 @@
     <None Include="Properties\wwee.png" />
     <None Include="Properties\recover.png" />
     <None Include="Properties\RecoverH.png" />
+    <None Include="Properties\greenChk.png" />
+    <None Include="Properties\redX.png" />
     <Content Include="tool.ico" />
   </ItemGroup>
   <ItemGroup>

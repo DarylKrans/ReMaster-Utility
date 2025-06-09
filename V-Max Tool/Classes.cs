@@ -222,6 +222,11 @@ namespace V_Max_Tool
             { 0, string.Empty }, { 1, "working" }, { 2, "works (with errors)" }, { 3, "not working" }
         };
 
+        public Dictionary<int, string> imgRegion = new Dictionary<int, string>
+        {
+            { 0, string.Empty }, { 1, "NTSC" }, { 2, "PAL" }, { 3, "Any" }
+        };
+
         public const int NAME_SIZE = 64;    // 64
         public const int NOTES_SIZE = 128;  // 128
         public const int ENTRY_SIZE = 256;
@@ -388,7 +393,7 @@ namespace V_Max_Tool
 
     public class AccessDatabase : IDisposable
     {
-        private readonly object streamLock = new object();
+        //private readonly object streamLock = new object();
         public long Offset;
         public ushort Entries;
         public bool Valid;

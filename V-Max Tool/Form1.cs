@@ -117,6 +117,18 @@ namespace V_Max_Tool
             KeyPreview = true
         };
 
+        Form EditNotes = new Form
+        {
+            Text = "Edit Notes",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            Size = new Size(350, 200), // 800
+            StartPosition = FormStartPosition.Manual,
+            AutoScaleMode = AutoScaleMode.Font,
+            KeyPreview = true
+        };
+
         public Form1()
         {
             InitializeComponent();

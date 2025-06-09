@@ -148,6 +148,16 @@ namespace ReMaster_Utility.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap greenChk {
+            get {
+                object obj = ResourceManager.GetObject("greenChk", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap notes {
             get {
                 object obj = ResourceManager.GetObject("notes", resourceCulture);
@@ -241,6 +251,16 @@ namespace ReMaster_Utility.Properties {
         internal static System.Drawing.Bitmap recoverH {
             get {
                 object obj = ResourceManager.GetObject("recoverH", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap redX {
+            get {
+                object obj = ResourceManager.GetObject("redX", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

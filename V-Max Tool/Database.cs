@@ -45,6 +45,9 @@ namespace V_Max_Tool
         private int dbLastHoveredItem = -1;
         bool sortAscending = true;
         bool ShowProgress = false;
+        bool editing = false;
+        int currentEditIndex = -1;
+        string lastNotes = string.Empty;
         private bool lastIconHoverState = false;
         private DateTime lastHoverUpdate = DateTime.MinValue;
         private readonly TimeSpan hoverDelay = TimeSpan.FromMilliseconds(10); // tweak as needed
@@ -75,10 +78,26 @@ namespace V_Max_Tool
         ToolStripMenuItem recoverItem = new ToolStripMenuItem("Recover");
         ToolStripMenuItem purgeItem = new ToolStripMenuItem("Purge All Items");
 
-
         DoubleBufferedListView dbView = new DoubleBufferedListView();
         DoubleBufferedListView dbRemv = new DoubleBufferedListView();
+
+        Panel editPan = new Panel();
+        TextBox editTitle = new TextBox();
+        NumericUpDown dSide = new NumericUpDown();
+        NumericUpDown dYear = new NumericUpDown();
+        ComboBox dRegn = new ComboBox();
+        ComboBox dProt = new ComboBox();
+        Button dOK = new Button();
+        Button dCancel = new Button();
+        Button dAddNotes = new Button();
+        RichTextBox dNotes = new RichTextBox();
+        Button nOK = new Button();
+        Button nCancel = new Button();
+        string NotesChange = string.Empty;
+        bool changeNotes = false;
+
         private System.Windows.Forms.ToolTip dbTooltip = new System.Windows.Forms.ToolTip();
+
 
         // database icon placement
 
@@ -132,8 +151,18 @@ namespace V_Max_Tool
             BackColor = Color.LightGray,
         };
 
+        void SetDBContextItems()
+        {
+            browseDBmenu.Enabled = disk.Length - dbRemoved.Count > 0;
+            recoverDBmenu.Visible = rebuildDBmenu.Visible = toolStripSeparator5.Visible = dbRemoved.Count > 0;
+        }
+
         void Setup_Database_Window()
         {
+            ReadDB(false, false);
+            dbRemoved = disk != null && disk.Length > 0 ? disk.Where(d => d.Marked).Select(d => d.Index).ToList() : new List<int>();
+            SetDBContextItems();
+            databaseToolStripMenuItem.Visible = disk.Length > 0;
 
             icons.ImageSize = new Size(20, 20);
             icons.Images.Add("lock", Resources._lock);      // lock icon
@@ -148,6 +177,8 @@ namespace V_Max_Tool
             icons.Images.Add("wwe", Resources.wwe);         // works, with errors icon
             icons.Images.Add("recover", Resources.recover);         // recover
             icons.Images.Add("recoverH", Resources.recoverH);         // recover Hovered
+            icons.Images.Add("redX", Resources.redX);         // recover
+            icons.Images.Add("grnChk", Resources.greenChk);         // recover Hovered
             dbView.OwnerDraw = true;
             dbView.View = View.Details; // Enables column mode
             dbView.FullRowSelect = true;
@@ -165,6 +196,141 @@ namespace V_Max_Tool
             dbView.Columns.Add("Region", 80, HorizontalAlignment.Center);
             dbView.Columns.Add("Protection", 100, HorizontalAlignment.Center);
             dbView.Columns.Add("Date Added", 130, HorizontalAlignment.Center);
+
+            dSide.Width = dbView.Columns[3].Width;
+            dSide.Left = 450 + 24;
+            dSide.Maximum = 32;
+            dSide.Minimum = 0;
+            dYear.Width = dbView.Columns[4].Width;
+            dYear.Left = 450 + 24 + 35;
+            dYear.Minimum = 1970;
+            dYear.Maximum = dYear.Minimum + 127;
+            dRegn.Width = dbView.Columns[5].Width;
+            dRegn.Left = dYear.Left + dYear.Width;
+            dRegn.DropDownStyle = ComboBoxStyle.DropDownList;
+            dRegn.DataSource = new string[] { "( n/a )", "NTSC", "PAL" };
+            dProt.Left = dRegn.Left + dRegn.Width;
+            dProt.DropDownStyle = ComboBoxStyle.DropDownList;
+            List<string> list = new List<string>();
+            for (int p = 0; p < Prot.Count; p++) list.Add(Prot[p]);
+            dProt.DataSource = list;
+            editTitle.Width = dbView.Columns[1].Width - 70;
+            editTitle.Top = 0;
+            editTitle.Left = 2;
+            editTitle.MaxLength = DiskInfo.NAME_SIZE;
+            editPan.Controls.Add(editTitle);
+            editPan.Controls.Add(dSide);
+            editPan.Controls.Add(dYear);
+            editPan.Controls.Add(dRegn);
+            editPan.Controls.Add(dProt);
+            editPan.Controls.Add(dOK);
+            editPan.Controls.Add(dCancel);
+            editPan.Controls.Add(dAddNotes);
+            editPan.Height = 18;
+            editPan.Width = dbView.Columns.Cast<ColumnHeader>().Sum(c => c.Width) - 24;
+            editPan.Visible = editing;
+            dCancel.Size = new Size(24, 24);
+            dCancel.Left = GetColumnX(dbView, 2) - 24;
+            dCancel.BackgroundImage = icons.Images["redX"];
+            dOK.Left = dCancel.Left - 28;
+            dOK.BackgroundImage = icons.Images["grnChk"];
+            dOK.Size = new Size(24, 24);
+            dAddNotes.Left = dProt.Left + dProt.Width + 2;
+            dAddNotes.Width = editPan.Width - dAddNotes.Left;
+            dAddNotes.Height = editPan.Height;
+            dAddNotes.Text = "Edit Notes";
+            dNotes.Width = EditNotes.Width - 20;
+            dNotes.Height = EditNotes.Height - 90;
+            dNotes.Location = new Point(2, 2);
+            dNotes.MaxLength = DiskInfo.NOTES_SIZE;
+            EditNotes.Controls.Add(dNotes);
+            EditNotes.Controls.Add(nOK);
+            EditNotes.Controls.Add(nCancel);
+            nOK.Dock = DockStyle.Bottom;
+            nOK.Text = "OK";
+            nCancel.Text = "Cancel";
+            nCancel.Dock = DockStyle.Bottom;
+            nCancel.Click += (s, e) =>
+            {
+                dNotes.Clear();
+                NotesChange = string.Empty;
+                changeNotes = false;
+                EditNotes.Close();
+            };
+            nOK.Click += (s, e) =>
+            {
+                NotesChange = dNotes.Text.Length > 0 ? SanitizeRichText(dNotes) : string.Empty;
+                changeNotes = true;
+                EditNotes.Close();
+            };
+
+            dAddNotes.BackColor = Color.LightGreen;
+            BrowseDB.Controls.Add(editPan);
+            dOK.Click += (s, e) =>
+            {
+                if (currentEditIndex >= 0 && currentEditIndex < disk.Length)
+                {
+                    int selectedIndex = dbView.SelectedItems[0].Index;
+                    disk[currentEditIndex].Title = editTitle.Text.Length <= DiskInfo.NAME_SIZE ? editTitle.Text : disk[currentEditIndex].Title;
+                    disk[currentEditIndex].Side = (int)dSide.Value - 1;
+                    disk[currentEditIndex].Region = dRegn.SelectedIndex;
+                    disk[currentEditIndex].Year = (int)dYear.Value;
+                    disk[currentEditIndex].Protection = (byte)dProt.SelectedIndex;
+                    if (changeNotes) disk[currentEditIndex].Notes = NotesChange;
+                    UpdateDBDirectory(new int[] { currentEditIndex });
+                    int lastidx = GetLastVisibleIndex(dbView);
+                    ReadDB(true, false);
+                    ScrollToIndex(dbView, lastidx);
+                }
+                editPan.Visible = false;
+                dbView.Enabled = true;
+                editing = false;
+                currentEditIndex = -1;
+            };
+            dCancel.Click += (s, e) =>
+            {
+                editPan.Visible = false;
+                dbView.Enabled = true;
+                editing = false;
+                currentEditIndex = -1;
+            };
+            dOK.MouseMove += (s, e) =>
+            {
+                var x = e.Location.X + 32; var y = e.Location.Y;
+                dbTooltip.Show("Apply Changes", dOK, x, y);
+            };
+            dOK.MouseLeave += (s, e) => dbTooltip.Hide(dOK);
+            dCancel.MouseMove += (s, e) =>
+            {
+                var x = e.Location.X + 32; var y = e.Location.Y;
+                dbTooltip.Show("Cancel and discard changes", dCancel, x, y);
+            };
+            dCancel.MouseLeave += (s, e) => dbTooltip.Hide(dCancel);
+
+            int GetColumnX(ListView listView, int columnIndex)
+            {
+                int x = 0;
+                for (int i = 0; i < columnIndex; i++)
+                {
+                    x += listView.Columns[i].Width;
+                }
+                return x;
+            }
+            dAddNotes.Click += (s, e) =>
+            {
+                EditNotes.Location = new Point(
+                    this.Location.X + ((this.Width - EditNotes.Width) / 2),
+                    this.Location.Y + (this.Height - EditNotes.Height) / 2);
+                dNotes.Text = disk[(int)dbView.SelectedItems[0].Tag].Notes ;
+                dNotes.SelectionStart = dNotes.TextLength;
+                dNotes.SelectionLength = 0;
+                EditNotes.Text = $"Edit Notes ({dNotes.Text.Length}/{DiskInfo.NOTES_SIZE})";
+                dNotes.ScrollToCaret();
+                dNotes.Focus();
+                changeNotes = false;
+                EditNotes.ShowDialog(this);
+            };
+            dNotes.TextChanged += new System.EventHandler(this.Dnotes_TextChanged);
 
             dbRemv.OwnerDraw = true;
             dbRemv.View = View.Details; // Enables column mode
@@ -205,130 +371,30 @@ namespace V_Max_Tool
                             if (dataBase.Valid)
                             {
                                 foreach (int index in update)
-                                try
-                                {
-                                    disk[index] = dataBase.GetDirectoryEntry(index);
-                                    disk[index].Index = index;
-                                }
-                                catch { }
+                                    try
+                                    {
+                                        disk[index] = dataBase.GetDirectoryEntry(index);
+                                        disk[index].Index = index;
+                                    }
+                                    catch { }
                             }
                         }
                         dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
+                        int lastidx = GetLastVisibleIndex(dbRemv);
                         UpdateRemoveListView();
-                        if (dbRemoved.Count == 0) RecoverDB.Close();
+                        if (dbRemoved.Count == 0) RecoverDB?.Close();
+                        else ScrollToIndex(dbRemv, lastidx);
                     }
                 }
             };
-            purgeItem.Click += (s, e) =>
-            {
-                if (ShowPurgeConfirmation("make it so!"))
-                {
-                    dbRemv.Enabled = false;
-                    ShowProgress = disk.Length > 250;
-                    if (ShowProgress)
-                    {
-                        RecoverDB.Controls.Add(dbProg);
-                        dbProg.BringToFront();
-                        dbProg.Value = 0;
-                        dbProg.Maximum = 100 * 100;
-                        dbProg.Value = dbProg.Maximum / 100;
-                    }
-                    Task.Run(delegate
-                    {
-                        if (!Remove_Items_From_Database())
-                        {
-                            Invoke(new Action(() =>
-                            {
-                                using (Message_Center ignore = new Message_Center(this))
-                                {
-                                    MessageBox.Show("No changes were made.", "An error occured!"
-                                        , MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                }
-                            }));
-                        }
-                        Invoke(new Action(() =>
-                        {
-                            if (ShowProgress)
-                            {
-                                dbProg.SendToBack();
-                                ShowProgress = false;
-                                BrowseDB.Controls.Add(dbProg);
-                            }
-                            dbRemv.Enabled = true;
-                            ReadDB(true, false);
-                            dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
-                            UpdateRemoveListView();
-                            if (dbRemoved.Count == 0) RecoverDB.Close();
-                        }));
-                    });
-                }
-
-
-                bool ShowPurgeConfirmation(string requiredWord)
-                {
-                    Form confirmForm = new Form()
-                    {
-                        Width = 400,
-                        Height = 180,
-                        Text = "Confirm Purge",
-                        FormBorderStyle = FormBorderStyle.FixedDialog,
-                        StartPosition = FormStartPosition.CenterParent,
-                        MaximizeBox = false,
-                        MinimizeBox = false,
-                    };
-
-                    Label label = new Label()
-                    {
-                        Text = $"This will permanently remove *ALL* items in this list.\nType \"{requiredWord}\" to confirm:",
-                        Dock = DockStyle.Top,
-                        Height = 60,
-                        TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)))
-                    };
-
-                    TextBox inputBox = new TextBox()
-                    {
-                        //Dock = DockStyle.Fill,
-                        Top = (confirmForm.Height - 70) / 2,
-                        Left = (confirmForm.Width - 200) / 2,
-                        Margin = new Padding(10),
-                        Width = 200,
-                    };
-
-                    Button confirmBtn = new Button()
-                    {
-                        Text = "Confirm",
-                        Dock = DockStyle.Bottom,
-                        Enabled = false,
-                    };
-
-                    Button cancelBtn = new Button()
-                    {
-                        Text = "Cancel",
-                        Dock = DockStyle.Bottom,
-                    };
-
-                    confirmBtn.Click += (ss, ee) => confirmForm.DialogResult = DialogResult.OK;
-                    cancelBtn.Click += (ss, ee) => confirmForm.DialogResult = DialogResult.Cancel;
-
-                    inputBox.TextChanged += (ss, ee) =>
-                    {
-                        confirmBtn.Enabled = inputBox.Text.Equals(requiredWord, StringComparison.OrdinalIgnoreCase);
-                    };
-
-                    confirmForm.Controls.Add(cancelBtn);
-                    confirmForm.Controls.Add(confirmBtn);
-                    confirmForm.Controls.Add(inputBox);
-                    confirmForm.Controls.Add(label);
-                    return confirmForm.ShowDialog() == DialogResult.OK;
-                }
-            };
+            purgeItem.Click += (s, e) => PurgeItems_Click(s);
 
             int tWidth = dbRemv.Columns.Cast<ColumnHeader>().Sum(c => c.Width);
             RecoverDB.Controls.Add(dbRemv);
             dbRemv.Scrollable = true;
             dbRemv.Location = new Point(0, 0);
             dbRemv.Width = tWidth + 22;
+            RecoverDB.Controls.Add(dbRemv);
             RecoverDB.Width = dbRemv.Width + 17; // RecoverDB.Width + 22;
             dbRemv.Height = RecoverDB.Height - 38 - dbRemv.Top; //BrowseDB.Height;
             dbRemv.DrawColumnHeader += DbView_DrawColumnHeader;
@@ -387,6 +453,7 @@ namespace V_Max_Tool
                     string path = opn.SelectedPath;
                     if (path != null && Directory.Exists(path)) BuildDB(path);
                 };
+
                 recoverDBmenu.Click += (s, e) =>
                 {
                     if (disk == null || disk.Length < 1) ReadDB(true, false);
@@ -399,6 +466,7 @@ namespace V_Max_Tool
                         RecoverDB.ShowDialog(this);
                     }
                 };
+                rebuildDBmenu.Click += (s, e) => PurgeItems_Click(s);
 
                 for (int i = 0; i < dbSep.Length; i++)
                 {
@@ -426,12 +494,7 @@ namespace V_Max_Tool
                         {
                             int index = (int)hit.Item.Tag;
                             int subItemIndex = hit.Item.SubItems.IndexOf(hit.SubItem);
-                            if (subItemIndex == 2 && !disk[index].Locked)
-                            {
-                                Text = $"Image {disk[index].Title}, column {subItemIndex}";
-                                // add code to handle the Edit feature here //
-                            }
-                            string clickedText = hit.SubItem.Text;
+                            if (subItemIndex == 2 && !disk[index].Locked) EditItemHandler(index);
                         }
                     }
                 };
@@ -466,8 +529,10 @@ namespace V_Max_Tool
                                         }
                                     }
                                     dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
+                                    int lastidx = GetLastVisibleIndex(dbRemv);
                                     UpdateRemoveListView();
-                                    if (dbRemoved.Count == 0) RecoverDB.Close();
+                                    if (dbRemoved.Count == 0) RecoverDB?.Close();
+                                    else ScrollToIndex(dbRemv, lastidx);
                                 }
                             }
                         }
@@ -546,9 +611,22 @@ namespace V_Max_Tool
                 lockItem.Click += (s, e) => LockFile(s);
                 favItem.Click += (s, e) => Favorite(s);
                 unfavItem.Click += (s, e) => Favorite(s);
+                editItem.Click += (s, e) =>
+                {
+                    if (dbView.SelectedItems.Count == 1)
+                    {
+                        int index = (int)dbView.SelectedItems[0].Tag;
+                        if(index >=0 && index < disk.Length && !disk[index].Locked) EditItemHandler(index);
+                    }
+                    if (dbView.SelectedItems.Count > 1)
+                    {
+                        Text = "Fuck off!, too many items (translation : you still need to add this functionality)";
+                    }
+                };
 
                 removeItem.Click += (s, e) =>
                 {
+                    int lastidx = GetLastVisibleIndex(dbView);
                     List<int> remove = new List<int>();
                     foreach (ListViewItem item in dbView.SelectedItems)
                     {
@@ -563,6 +641,8 @@ namespace V_Max_Tool
                         RemoveEntries(remove.ToArray(), title, message);
                     }
                     else RemoveEntries(remove.ToArray());
+                    if (disk.Length != 0) ScrollToIndex(dbView, lastidx);
+                    SetDBContextItems();
                 };
 
                 dupeItem.Click += (s, e) =>
@@ -572,7 +652,9 @@ namespace V_Max_Tool
                     {
                         string message = $"({dupes.Length}) Duplicates found!\nWould you like to remove them?";
                         string title = "Duplicates found!";
+                        int lastidx = GetLastVisibleIndex(dbView);
                         RemoveEntries(dupes, title, message);
+                        if (disk.Length != 0) ScrollToIndex(dbView, lastidx);
                     }
                     else
                     {
@@ -581,6 +663,79 @@ namespace V_Max_Tool
                     }
                 };
             }
+        }
+
+        int GetLastVisibleIndex(ListView lv)
+        {
+            int lastVisibleIndex = -1;
+            for (int i = lv.TopItem.Index; i < lv.Items.Count; i++)
+            {
+                var rect = lv.GetItemRect(i);
+                if (rect.Bottom <= lv.ClientSize.Height)
+                {
+                    lastVisibleIndex = i;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return lastVisibleIndex;
+        }
+
+        void ScrollToIndex(ListView lv, int lastVisibleIndex)
+        {
+            if (lv.Items.Count == 0) return;
+            lv.BeginUpdate();
+            if (lastVisibleIndex >= 0 && lastVisibleIndex < lv.Items.Count)
+            {
+                int itemHeight = lv.GetItemRect(0).Height;
+                if (itemHeight > 0)
+                {
+                    int visibleCount = lv.ClientSize.Height / itemHeight;
+                    int topIndex = lastVisibleIndex - visibleCount + 2;
+                    if (topIndex < 0) topIndex = 0;
+                    if (topIndex < lv.Items.Count)
+                    {
+                        lv.TopItem = lv.Items[topIndex];
+                    }
+                }
+            }
+
+            if (currentEditIndex >= 0 && currentEditIndex < lv.Items.Count)
+            {
+                lv.Items[currentEditIndex].Selected = true;
+                lv.Items[currentEditIndex].Focused = true;
+            }
+            lv.EndUpdate();
+            lv.Invalidate();
+        }
+
+        void EditItemHandler(int index)
+        {
+            if (index >= 0 && index < disk.Length)
+            {
+                editing = true;
+                currentEditIndex = index;
+                var itemBounds = dbView.SelectedItems[0].Bounds;
+                int x = dbView.Left + itemBounds.Left + 24;
+                int y = dbView.Top + itemBounds.Top + 3;
+                editPan.Top = y;
+                editPan.Left = x;
+                editPan.BringToFront();
+                editPan.Visible = true;
+                var idx = (int)dbView.SelectedItems[0].Tag;
+                editTitle.Text = disk[idx].Title;
+                dSide.Value = disk[idx].Side + 1;
+                dYear.Value = disk[idx].Year;
+                dRegn.SelectedIndex = disk[idx].Region;
+                dProt.SelectedIndex = disk[idx].Protection;
+                dNotes.Text = disk[idx].Notes;
+                dbTooltip.Hide(dbView);
+                editTitle.Focus();
+                dbView.Enabled = false;
+            }
+            else currentEditIndex = -1;
         }
 
         void UpdateRemoveListView()
@@ -602,7 +757,15 @@ namespace V_Max_Tool
                 dbRemv.Items.Add(item);
             }
             dbRemv.EndUpdate();
+            SetDBContextItems();
             RecoverDB.Text = $"Browse images deleted from database ({dbRemv.Items.Count})";
+        }
+
+        void CloseRecoverWindow()
+        {
+            dbRemv.Visible = false;
+            this.Controls.Add(dbRemv);
+            RecoverDB?.Close();
         }
 
         void OpenDB_Windows()
@@ -611,7 +774,10 @@ namespace V_Max_Tool
                     this.Location.X + ((this.Width - BrowseDB.Width) / 2),
                     this.Location.Y + (this.Height - BrowseDB.Height) / 2);
             dbView.Items.Clear();
-            Task.Run(delegate { if (disk == null || disk.Length == 0 || dbView.Items.Count == 0) ReadDB(); });
+            Task.Run(delegate
+            {
+                if (disk == null || disk.Length == 0 || dbView.Items.Count == 0) ReadDB();
+            });
             Thread.Sleep(150);
             BrowseDB.ShowDialog(this);
         }
@@ -625,6 +791,15 @@ namespace V_Max_Tool
                 if (disk?.Length == dbRemoved.Count) ShowMessage();
             }
             else ShowMessage();
+            if (dbSearch.Text.Length > 0)
+            {
+                var text = dbSearch.Text;
+                Invoke(new Action(() =>
+                {
+                    dbSearch.Text = string.Empty;
+                    dbSearch.Text = text;
+                }));
+            }
 
             void ShowMessage()
             {
@@ -833,6 +1008,7 @@ namespace V_Max_Tool
                     }
                 }
             }
+
             if (UpdateList) UpdatedbView();
         }
 
@@ -1346,6 +1522,20 @@ namespace V_Max_Tool
             PVbox.SelectionColor = C64_screen;
         }
 
+        string SanitizeRichText(RichTextBox rtb)
+        {
+            var sb = new StringBuilder();
+            foreach (char c in rtb.Text)
+            {
+                if (char.IsLetterOrDigit(c) || @" ,.?<>-=!@#$%^&*()':;+`~\".Contains(c))
+                    sb.Append(c);
+                else if (c == '\n' || c == '\r')
+                    sb.Append('\n'); // Normalize all line breaks to \n
+                                     // else skip the character
+            }
+            return sb.ToString();
+        }
+
         int[] CheckForDuplicates(bool show = false, bool select = false)
         {
             List<int> dupeIdx = new List<int>();
@@ -1553,7 +1743,7 @@ namespace V_Max_Tool
                 {
                     var lv = (ListView)sender;
                     Point cursorPos = lv.PointToClient(Cursor.Position);
-                    ListViewHitTestInfo hit = lv.HitTest(cursorPos);
+                    //ListViewHitTestInfo hit = lv.HitTest(cursorPos);
                     Rectangle subItemBounds = e.SubItem.Bounds;
                     // Define the icon's bounds: 16x16 size, positioned 20px from the right edge
                     Rectangle iconBounds = new Rectangle(subItemBounds.Right - note,
@@ -1705,6 +1895,35 @@ namespace V_Max_Tool
                     else BrowseDB.Width -= PVbox.Width;
                 }
             }
+            if (editing && e.KeyData == Keys.Escape)
+            {
+                editing = false;
+                dbView.Enabled = true;
+                editPan.Visible = false; // SendToBack();
+                dbView.Focus();
+            }
+        }
+
+        private void Dnotes_TextChanged(object sender, EventArgs e)
+        {
+            if (!busy)
+            {
+                string f = SanitizeRichText(dNotes);
+                byte[] t = Encoding.ASCII.GetBytes(f);
+                if (t.Length > 128)
+                {
+                    busy = true;
+                    dNotes.Text = lastNotes;
+                    dNotes.SelectionStart = dNotes.TextLength;
+                    dNotes.SelectionLength = 0;
+                    dNotes.ScrollToCaret();
+                    busy = false;
+                    f = SanitizeRichText(dNotes);
+                    t = Encoding.ASCII.GetBytes(f);
+                }
+                else lastNotes = f;
+                EditNotes.Text = $"Edit Notes ({t.Length}/{DiskInfo.NOTES_SIZE})";
+            }
         }
 
         private void DbView_ColumnClick(object sender, ColumnClickEventArgs e)
@@ -1732,6 +1951,114 @@ namespace V_Max_Tool
                 sort?.Abort();
                 sort = new Thread(() => SortList(column, searchText));
                 sort.Start();
+            }
+        }
+
+        private void PurgeItems_Click(object sender)
+        {
+            try
+            {
+                if (ShowPurgeConfirmation("make it so!"))
+                {
+                    dbRemv.Enabled = false;
+                    ShowProgress = disk.Length > 250;
+                    if (ShowProgress)
+                    {
+                        if (sender == purgeItem) RecoverDB.Controls.Add(dbProg);
+                        if (sender == rebuildDBmenu) this.Controls.Add(dbProg);
+                        dbProg.BringToFront();
+                        dbProg.Value = 0;
+                        dbProg.Maximum = 100 * 100;
+                        dbProg.Value = dbProg.Maximum / 100;
+                    }
+                    Task.Run(delegate
+                    {
+                        if (!Remove_Items_From_Database())
+                        {
+                            Invoke(new Action(() =>
+                            {
+                                using (Message_Center ignore = new Message_Center(this))
+                                {
+                                    MessageBox.Show("No changes were made.", "An error occured!"
+                                        , MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                }
+                            }));
+                        }
+                        Invoke(new Action(() =>
+                        {
+                            if (ShowProgress)
+                            {
+                                dbProg.SendToBack();
+                                ShowProgress = false;
+                                BrowseDB.Controls.Add(dbProg);
+                            }
+                            dbRemv.Enabled = true;
+                            ReadDB(true, false);
+                            dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
+                            UpdateRemoveListView();
+                            if (sender == purgeItem && dbRemoved.Count == 0) RecoverDB?.Close();
+                        }));
+                    });
+                }
+            }
+            catch { }
+            bool ShowPurgeConfirmation(string requiredWord)
+            {
+                Form confirmForm = new Form()
+                {
+                    Width = 400,
+                    Height = 180,
+                    Text = "Confirm Purge",
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    StartPosition = FormStartPosition.CenterParent,
+                    MaximizeBox = false,
+                    MinimizeBox = false,
+                };
+
+                Label label = new Label()
+                {
+                    Text = $"This will permanently remove *ALL* items in this list.\nType \"{requiredWord}\" to confirm:",
+                    Dock = DockStyle.Top,
+                    Height = 60,
+                    TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)))
+                };
+
+                TextBox inputBox = new TextBox()
+                {
+                    //Dock = DockStyle.Fill,
+                    Top = (confirmForm.Height - 70) / 2,
+                    Left = (confirmForm.Width - 200) / 2,
+                    Margin = new Padding(10),
+                    Width = 200,
+                };
+
+                Button confirmBtn = new Button()
+                {
+                    Text = "Confirm",
+                    Dock = DockStyle.Bottom,
+                    Enabled = false,
+                };
+
+                Button cancelBtn = new Button()
+                {
+                    Text = "Cancel",
+                    Dock = DockStyle.Bottom,
+                };
+
+                confirmBtn.Click += (ss, ee) => confirmForm.DialogResult = DialogResult.OK;
+                cancelBtn.Click += (ss, ee) => confirmForm.DialogResult = DialogResult.Cancel;
+
+                inputBox.TextChanged += (ss, ee) =>
+                {
+                    confirmBtn.Enabled = inputBox.Text.Equals(requiredWord, StringComparison.OrdinalIgnoreCase);
+                };
+
+                confirmForm.Controls.Add(cancelBtn);
+                confirmForm.Controls.Add(confirmBtn);
+                confirmForm.Controls.Add(inputBox);
+                confirmForm.Controls.Add(label);
+                return confirmForm.ShowDialog() == DialogResult.OK;
             }
         }
     }
