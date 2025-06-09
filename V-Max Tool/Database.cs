@@ -56,7 +56,6 @@ namespace V_Max_Tool
         private int bdbW = 0;
         private int regionSort = 0;
         private int lastSortedColumn = -1;
-        //private int dbRemoved = 0;
         List<int> dbRemoved = new List<int>();
         private int RegionColumn;
         private int[] skipColumns;
@@ -95,15 +94,12 @@ namespace V_Max_Tool
         Button nCancel = new Button();
         string NotesChange = string.Empty;
         bool changeNotes = false;
-
-        private System.Windows.Forms.ToolTip dbTooltip = new System.Windows.Forms.ToolTip();
-
-
         // database icon placement
-
         int fav = 2 * 20;
         int note = 1 * 20;
         int stat = 1 * 20;
+
+        private System.Windows.Forms.ToolTip dbTooltip = new System.Windows.Forms.ToolTip();
 
         private readonly Dictionary<int, string> Prot = new Dictionary<int, string> {
             { 0, "None" }, { 1, "V-Max" }, { 2, "Vorpal" }, {3, "RapidLok" } , { 4, "Cyan" }, { 5, "GMA/Secruispeed" } , { 6, "RainbowArts" },
@@ -117,7 +113,7 @@ namespace V_Max_Tool
 
         private readonly Dictionary<int, string> getRegion = new Dictionary<int, string>()
         {
-            { 0, "" }, { 1, "NTSC" }, { 2, "PAL" }
+            { 0, string.Empty }, { 1, "NTSC" }, { 2, "PAL" }
         };
 
 
@@ -162,7 +158,7 @@ namespace V_Max_Tool
             ReadDB(false, false);
             dbRemoved = disk != null && disk.Length > 0 ? disk.Where(d => d.Marked).Select(d => d.Index).ToList() : new List<int>();
             SetDBContextItems();
-            databaseToolStripMenuItem.Visible = disk.Length > 0;
+            //databaseToolStripMenuItem.Visible = disk.Length > 0;
 
             icons.ImageSize = new Size(20, 20);
             icons.Images.Add("lock", Resources._lock);      // lock icon
@@ -283,14 +279,14 @@ namespace V_Max_Tool
                     ScrollToIndex(dbView, lastidx);
                 }
                 editPan.Visible = false;
-                dbView.Enabled = true;
+                dbView.Enabled = dbSearch.Enabled = true;
                 editing = false;
                 currentEditIndex = -1;
             };
             dCancel.Click += (s, e) =>
             {
                 editPan.Visible = false;
-                dbView.Enabled = true;
+                dbView.Enabled = dbSearch.Enabled = true;
                 editing = false;
                 currentEditIndex = -1;
             };
@@ -733,7 +729,7 @@ namespace V_Max_Tool
                 dNotes.Text = disk[idx].Notes;
                 dbTooltip.Hide(dbView);
                 editTitle.Focus();
-                dbView.Enabled = false;
+                dbView.Enabled = dbSearch.Enabled = false;
             }
             else currentEditIndex = -1;
         }
@@ -1026,7 +1022,7 @@ namespace V_Max_Tool
         {
             dbView.BeginUpdate();
             dbView.Items.Clear();
-            dbRemoved = new List<int>(); // 0;
+            dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
             if (removeSortFlag)
             {
                 for (int i = 1; i < dbView.Columns.Count; i++)
@@ -1047,11 +1043,9 @@ namespace V_Max_Tool
                     item.SubItems.Add($"{getRegion[disk.Region]}");             // Region
                     item.SubItems.Add($"{Prot[disk.Protection]}");                  // Protection
                     item.SubItems.Add($"{disk.Timestamp}");                         // Timestamp
-                    //item.Tag = new Tag { Index = disk.Index, Notes = disk.Notes };
                     item.Tag = disk.Index;
                     dbView.Items.Add(item);
                 }
-                else dbRemoved.Add(disk.Index); // ++;
             }
             dbView.EndUpdate();
             BrowseDB.Text = $"Browse ReMaster Image Database ({dbView.Items.Count}/{disk?.Length - dbRemoved.Count})";
@@ -1598,8 +1592,8 @@ namespace V_Max_Tool
         {
             bool isSelected = e.Item.Selected;
             bool isHovered = (dbLastHoveredItem == e.ItemIndex);
-            string search = dbSearch.Text.Trim();
-            bool hasSearch = !string.IsNullOrEmpty(search);
+            string search = sender == dbView ? dbSearch.Text.Trim() : string.Empty;
+            bool hasSearch = sender == dbView && !string.IsNullOrEmpty(search);
             string text = e.SubItem.Text;
 
             // Background color logic
@@ -1720,7 +1714,7 @@ namespace V_Max_Tool
                     }
 
 
-                    return;
+                    //return;
                 }
             }
 
@@ -1898,7 +1892,7 @@ namespace V_Max_Tool
             if (editing && e.KeyData == Keys.Escape)
             {
                 editing = false;
-                dbView.Enabled = true;
+                dbView.Enabled = dbSearch.Enabled = true;
                 editPan.Visible = false; // SendToBack();
                 dbView.Focus();
             }
