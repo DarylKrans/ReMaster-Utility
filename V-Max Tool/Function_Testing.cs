@@ -18,7 +18,117 @@ namespace V_Max_Tool
             //Make_G64("file", tracks);
 
             //BuildDB();
-            OpenDB_Windows();
+            //OpenDB_Windows();
+
+            databaseToolStripMenuItem.Visible = true;
+
+
+
+            bool ShowPurgeConfirmation(string requiredWord)
+            {
+                Form confirmForm = new Form()
+                {
+                    Width = 400,
+                    Height = 180,
+                    Text = "Confirm Purge",
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    StartPosition = FormStartPosition.CenterParent,
+                    MaximizeBox = false,
+                    MinimizeBox = false,
+                };
+
+                Label label = new Label()
+                {
+                    Text = $"This will permanently delete all marked items.\nType \"{requiredWord}\" to confirm:",
+                    Dock = DockStyle.Top,
+                    Height = 60,
+                    TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)))
+                };
+
+                TextBox inputBox = new TextBox()
+                {
+                    //Dock = DockStyle.Fill,
+                    Top = (confirmForm.Height - 70) / 2,
+                    Left = (confirmForm.Width - 200) / 2,
+                    Margin = new Padding(10),
+                    Width = 200,
+                };
+
+                Button confirmBtn = new Button()
+                {
+                    Text = "Confirm",
+                    Dock = DockStyle.Bottom,
+                    Enabled = false,
+                };
+
+                Button cancelBtn = new Button()
+                {
+                    Text = "Cancel",
+                    Dock = DockStyle.Bottom,
+                };
+
+                confirmBtn.Click += (s, ee) => confirmForm.DialogResult = DialogResult.OK;
+                cancelBtn.Click += (s, ee) => confirmForm.DialogResult = DialogResult.Cancel;
+
+                inputBox.TextChanged += (s, ee) =>
+                {
+                    confirmBtn.Enabled = inputBox.Text.Equals(requiredWord, StringComparison.OrdinalIgnoreCase);
+                };
+
+                confirmForm.Controls.Add(cancelBtn);
+                confirmForm.Controls.Add(confirmBtn);
+                confirmForm.Controls.Add(inputBox);
+                confirmForm.Controls.Add(label);
+                return confirmForm.ShowDialog() == DialogResult.OK;
+            }
+
+            //var Debuger = new Form
+            //{
+            //    Text = "Debug Window",
+            //    MinimizeBox = false,
+            //    MaximizeBox = false,
+            //    FormBorderStyle = FormBorderStyle.FixedDialog,
+            //    Size = new Size(200, 100), // 800
+            //    StartPosition = FormStartPosition.Manual,
+            //    AutoScaleMode = AutoScaleMode.Font,
+            //    KeyPreview = true,
+            //};
+            ////this.Controls.Add(Debug);
+            //
+            //Button build = new Button
+            //{
+            //    Text = "build db",
+            //    AutoSize = true,
+            //};
+            //Button Open = new Button
+            //{
+            //    Text = "open db",
+            //    AutoSize = true,
+            //};
+            //Debuger.Controls.Add(build);
+            //Debuger.Controls.Add(Open);
+            //build.Location = new Point(10, 20);
+            //Open.Location = new Point(10 + build.Width + 10, 20);
+            //FolderBrowserDialog opn = new FolderBrowserDialog
+            //{
+            //    ShowNewFolderButton = false,
+            //};
+            //
+            //Open.Click += (s, ee) =>
+            //{
+            //    OpenDB_Windows();
+            //};
+            //
+            //build.Click += (s, ee) =>
+            //{
+            //    opn.ShowDialog();
+            //    string path = opn.SelectedPath;
+            //    if (path != null && Directory.Exists(path)) BuildDB(path);
+            //};
+            //
+            //
+            //Debuger.Show();
         }
 
         /// ------------------------------------------------------------------------------------------------ ///

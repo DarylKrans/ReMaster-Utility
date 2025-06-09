@@ -480,6 +480,8 @@ namespace V_Max_Tool
             //Dir_screen.AllowDrop = true;
             //Dir_screen.DragEnter += new DragEventHandler(Dir_Screen_DragEnter);
             //Dir_screen.DragDrop += new DragEventHandler(Dir_Screen_DragDrop);
+            //menuStrip1.Items.Remove("Database");
+            databaseToolStripMenuItem.Visible = false;
 
             ReadNib.Controls.Add(Read_GBox);
             Read_GBox.Location = new Point(0, 0);

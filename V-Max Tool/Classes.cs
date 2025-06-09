@@ -203,11 +203,11 @@ namespace V_Max_Tool
         public static extern int TestLoaded();
     }
 
-    public class Tag
-    {
-        public int Index { get; set; } = -1;
-        public string Notes { get; set; } = string.Empty;
-    }
+    //public class Tag
+    //{
+    //    public int Index { get; set; } = -1;
+    //    public string Notes { get; set; } = string.Empty;
+    //}
 
     //public class ItemTag
     //{
@@ -217,15 +217,21 @@ namespace V_Max_Tool
 
     public class DiskInfo
     {
-        public const int NAME_SIZE = 64;
-        public const int NOTES_SIZE = 128;
+        public Dictionary<int, string> imgStat = new Dictionary<int, string>
+        {
+            { 0, string.Empty }, { 1, "working" }, { 2, "works (with errors)" }, { 3, "not working" }
+        };
+
+        public const int NAME_SIZE = 64;    // 64
+        public const int NOTES_SIZE = 128;  // 128
         public const int ENTRY_SIZE = 256;
 
         public string Title;
         public bool Marked;
         public bool Locked;
         public bool Source;
-        public int Extension; // 0 = .nib, 1 = .nbz, 2 = .g64
+        public int Extension;   // 0 = .nib, 1 = .nbz, 2 = .g64
+        public int Status;      // 0 = (nothing), 1 = working, 2 = works with errors, 3 = not working
         public int Region;
         public bool Favorite;
 
@@ -280,7 +286,9 @@ namespace V_Max_Tool
             Array.Resize(ref titleBytes, NAME_SIZE); // pad with 0s
             Array.Resize(ref notesBytes, NOTES_SIZE); // pad with 0s
             bytes.AddRange(titleBytes);
-            bytes.AddRange(new byte[] { EncodeBits_1(), (byte)Side, (byte)Protection, (byte)(Year - 1970) });
+            //bytes.AddRange(new byte[] { EncodeBits_1(), (byte)Side, (byte)Protection, (byte)(Year - 1970) });
+            (byte meta, byte side, byte year) = EncodeBits_1();
+            bytes.AddRange(new byte[] { (byte)meta, (byte)side, (byte)Protection, (byte)year });
             bytes.AddRange(BitConverter.GetBytes(Offset));
             bytes.AddRange(BitConverter.GetBytes(CompressedLength));
             bytes.AddRange(BitConverter.GetBytes(DecompressedLength));
@@ -294,18 +302,6 @@ namespace V_Max_Tool
             return bytes.ToArray();
         }
 
-        public byte EncodeBits_1()
-        {
-            byte meta = 0;
-            if (Marked) meta |= 1 << 7;
-            if (Locked) meta |= 1 << 6;
-            if (Source) meta |= 1 << 5;
-            meta |= (byte)((Extension & 0b11) << 3);
-            meta |= (byte)((Region & 0b11) << 1);
-            if (Favorite) meta |= 1;
-            return meta;
-        }
-
         static void DecodeBits_1(DiskInfo disk, byte meta, byte side, byte protection, byte year)
         {
             disk.Marked = (meta & (1 << 7)) != 0;
@@ -314,10 +310,55 @@ namespace V_Max_Tool
             disk.Extension = (meta >> 3) & 0b11;
             disk.Region = (meta >> 1) & 0b11;
             disk.Favorite = (meta & 1) != 0;
-            disk.Side = (side & 0x1f); // 0b00011111);
+
+            disk.Side = side & 0b00011111;                // bits 0–4
+            disk.Status = (side >> 5) & 0b11;             // bits 5–6
+
             disk.Protection = protection;
             disk.Year = year + 1970;
         }
+
+        public (byte meta, byte side, byte year) EncodeBits_1()
+        {
+            byte meta = 0;
+            byte side = (byte)(Side & 0b00011111);        // keep only lower 5 bits
+            byte year = (byte)(Year - 1970);
+
+            if (Marked) meta |= 1 << 7;
+            if (Locked) meta |= 1 << 6;
+            if (Source) meta |= 1 << 5;
+            meta |= (byte)((Extension & 0b11) << 3);
+            meta |= (byte)((Region & 0b11) << 1);
+            if (Favorite) meta |= 1;
+
+            side |= (byte)((Status & 0b11) << 5);         // set bits 5–6
+            return (meta, side, year);
+        }
+
+        //public byte EncodeBits_1()
+        //{
+        //    byte meta = 0;
+        //    if (Marked) meta |= 1 << 7;
+        //    if (Locked) meta |= 1 << 6;
+        //    if (Source) meta |= 1 << 5;
+        //    meta |= (byte)((Extension & 0b11) << 3);
+        //    meta |= (byte)((Region & 0b11) << 1);
+        //    if (Favorite) meta |= 1;
+        //    return meta;
+        //}
+        //
+        //static void DecodeBits_1(DiskInfo disk, byte meta, byte side, byte protection, byte year)
+        //{
+        //    disk.Marked = (meta & (1 << 7)) != 0;
+        //    disk.Locked = (meta & (1 << 6)) != 0;
+        //    disk.Source = (meta & (1 << 5)) != 0;
+        //    disk.Extension = (meta >> 3) & 0b11;
+        //    disk.Region = (meta >> 1) & 0b11;
+        //    disk.Favorite = (meta & 1) != 0;
+        //    disk.Side = (side & 0x1f); // 0b00011111);
+        //    disk.Protection = protection;
+        //    disk.Year = year + 1970;
+        //}
 
         public static uint EncodeTimestamp(DateTime dt)
         {
@@ -611,6 +652,25 @@ namespace V_Max_Tool
         {
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
             this.UpdateStyles();
+        }
+
+        public Rectangle GetSubItemBounds(ListViewItem item, int subItemIndex)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            if (subItemIndex >= item.SubItems.Count)
+                throw new ArgumentOutOfRangeException(nameof(subItemIndex));
+
+            Rectangle itemBounds = item.GetBounds(ItemBoundsPortion.Entire);
+
+            int left = itemBounds.Left;
+            for (int i = 0; i < subItemIndex; i++)
+            {
+                left += this.Columns[i].Width;
+            }
+
+            int width = this.Columns[subItemIndex].Width;
+
+            return new Rectangle(left, itemBounds.Top, width, itemBounds.Height);
         }
     }
 

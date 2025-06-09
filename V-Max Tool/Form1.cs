@@ -105,6 +105,18 @@ namespace V_Max_Tool
             KeyPreview = true
         };
 
+        Form RecoverDB = new Form
+        {
+            Text = "Browse images deleted from database",
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            Size = new Size(900, 600), // 800
+            StartPosition = FormStartPosition.Manual,
+            AutoScaleMode = AutoScaleMode.Font,
+            KeyPreview = true
+        };
+
         public Form1()
         {
             InitializeComponent();

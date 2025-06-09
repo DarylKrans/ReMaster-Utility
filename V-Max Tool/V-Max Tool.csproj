@@ -185,6 +185,18 @@
     <None Include="Properties\About.txt" />
     <None Include="Properties\disk4.jpg" />
     <None Include="Properties\lock.png" />
+    <None Include="Properties\notes.png" />
+    <None Include="Properties\pencil.png" />
+    <None Include="Properties\star.png" />
+    <None Include="Properties\bad.png" />
+    <None Include="Properties\notesH.png" />
+    <None Include="Properties\OK.png" />
+    <None Include="Properties\pencilH.png" />
+    <None Include="Properties\wwe.png" />
+    <None Include="Properties\pencilG.png" />
+    <None Include="Properties\wwee.png" />
+    <None Include="Properties\recover.png" />
+    <None Include="Properties\RecoverH.png" />
     <Content Include="tool.ico" />
   </ItemGroup>
   <ItemGroup>

@@ -45,6 +45,7 @@ namespace V_Max_Tool
         private int dbLastHoveredItem = -1;
         bool sortAscending = true;
         bool ShowProgress = false;
+        private bool lastIconHoverState = false;
         private DateTime lastHoverUpdate = DateTime.MinValue;
         private readonly TimeSpan hoverDelay = TimeSpan.FromMilliseconds(10); // tweak as needed
         private DateTime ctrlHold;
@@ -52,6 +53,10 @@ namespace V_Max_Tool
         private int bdbW = 0;
         private int regionSort = 0;
         private int lastSortedColumn = -1;
+        //private int dbRemoved = 0;
+        List<int> dbRemoved = new List<int>();
+        private int RegionColumn;
+        private int[] skipColumns;
         private string lastColumnName = string.Empty;
         DiskInfo[] disk;
         ImageList icons = new ImageList();
@@ -62,7 +67,24 @@ namespace V_Max_Tool
         ToolStripMenuItem removeItem = new ToolStripMenuItem("Remove");
         ToolStripMenuItem editItem = new ToolStripMenuItem("Edit");
         ToolStripMenuItem dupeItem = new ToolStripMenuItem("Check for Duplicates");
+        ToolStripMenuItem favItem = new ToolStripMenuItem("Add to Favorites");
+        ToolStripMenuItem unfavItem = new ToolStripMenuItem("Unfavorite");
         ToolStripSeparator[] dbSep = new ToolStripSeparator[5];
+
+        ContextMenuStrip udMenu = new ContextMenuStrip();
+        ToolStripMenuItem recoverItem = new ToolStripMenuItem("Recover");
+        ToolStripMenuItem purgeItem = new ToolStripMenuItem("Purge All Items");
+
+
+        DoubleBufferedListView dbView = new DoubleBufferedListView();
+        DoubleBufferedListView dbRemv = new DoubleBufferedListView();
+        private System.Windows.Forms.ToolTip dbTooltip = new System.Windows.Forms.ToolTip();
+
+        // database icon placement
+
+        int fav = 2 * 20;
+        int note = 1 * 20;
+        int stat = 1 * 20;
 
         private readonly Dictionary<int, string> Prot = new Dictionary<int, string> {
             { 0, "None" }, { 1, "V-Max" }, { 2, "Vorpal" }, {3, "RapidLok" } , { 4, "Cyan" }, { 5, "GMA/Secruispeed" } , { 6, "RainbowArts" },
@@ -112,9 +134,20 @@ namespace V_Max_Tool
 
         void Setup_Database_Window()
         {
-            icons.ImageSize = new Size(20, 20);
 
-            icons.Images.Add("lock", Resources._lock);
+            icons.ImageSize = new Size(20, 20);
+            icons.Images.Add("lock", Resources._lock);      // lock icon
+            icons.Images.Add("star", Resources.star);       // favorites icon
+            icons.Images.Add("notes", Resources.notes);     // notes icon
+            icons.Images.Add("edit", Resources.pencil);     // edit icon
+            icons.Images.Add("notesH", Resources.notesH);   // notes highlighted icon
+            icons.Images.Add("editH", Resources.pencilH);   // edit highlighted icon
+            icons.Images.Add("editG", Resources.pencilG);   // edit grayed out
+            icons.Images.Add("ok", Resources.OK);           // good image icon
+            icons.Images.Add("bad", Resources.bad);         // bad image icon
+            icons.Images.Add("wwe", Resources.wwe);         // works, with errors icon
+            icons.Images.Add("recover", Resources.recover);         // recover
+            icons.Images.Add("recoverH", Resources.recoverH);         // recover Hovered
             dbView.OwnerDraw = true;
             dbView.View = View.Details; // Enables column mode
             dbView.FullRowSelect = true;
@@ -126,20 +159,201 @@ namespace V_Max_Tool
             dbView.SmallImageList = icons;
             dbView.Columns.Add(" ", 24, HorizontalAlignment.Center); // Lock Column
             dbView.Columns.Add("Title", 450, HorizontalAlignment.Left);
+            dbView.Columns.Add("  ", 24, HorizontalAlignment.Center);
             dbView.Columns.Add("Side", 35, HorizontalAlignment.Center);
             dbView.Columns.Add("Year", 45, HorizontalAlignment.Center);
             dbView.Columns.Add("Region", 80, HorizontalAlignment.Center);
             dbView.Columns.Add("Protection", 100, HorizontalAlignment.Center);
-            //dbView.Columns.Add("Compressed", 80, HorizontalAlignment.Center);
-            //dbView.Columns.Add("Decompressed", 80, HorizontalAlignment.Center);
             dbView.Columns.Add("Date Added", 130, HorizontalAlignment.Center);
 
+            dbRemv.OwnerDraw = true;
+            dbRemv.View = View.Details; // Enables column mode
+            dbRemv.FullRowSelect = true;
+            dbRemv.GridLines = false; // Adds line separators
+            dbRemv.MultiSelect = true;
+            dbRemv.Scrollable = true;
+            dbRemv.HideSelection = false;
+            dbRemv.CheckBoxes = false;
+            dbRemv.SmallImageList = icons;
+            dbRemv.Columns.Add("Entry# ", 50, HorizontalAlignment.Center); // Lock Column
+            dbRemv.Columns.Add("Title", 450, HorizontalAlignment.Left);
+            dbRemv.Columns.Add("  ", 24, HorizontalAlignment.Center);
+            dbRemv.Columns.Add("Side", 35, HorizontalAlignment.Center);
+            dbRemv.Columns.Add("Year", 45, HorizontalAlignment.Center);
+            dbRemv.Columns.Add("Region", 80, HorizontalAlignment.Center);
+            dbRemv.Columns.Add("Protection", 100, HorizontalAlignment.Center);
+            dbRemv.Columns.Add("Date Added", 130, HorizontalAlignment.Center);
+            dbRemv.ContextMenuStrip = udMenu;  //Controls.Add(udMenu);
+            udMenu.Items.Add(recoverItem);
+            udMenu.Items.Add(purgeItem);
+            recoverItem.Click += (s, e) =>
+            {
+                if (dbRemv != null && dbRemv.SelectedItems.Count > 0)
+                {
+                    List<int> update = new List<int>();
+                    foreach (ListViewItem i in dbRemv.SelectedItems)
+                    {
+                        int index = (int)i.Tag;
+                        disk[index].Marked = false;
+                        update.Add(index);
+                    }
+                    if (update.Count > 0)
+                    {
+                        UpdateDBDirectory(update.ToArray());
+                        using (var dataBase = new AccessDatabase().ReadOnly(TEMP.dbPath))
+                        {
+                            if (dataBase.Valid)
+                            {
+                                foreach (int index in update)
+                                try
+                                {
+                                    disk[index] = dataBase.GetDirectoryEntry(index);
+                                    disk[index].Index = index;
+                                }
+                                catch { }
+                            }
+                        }
+                        dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
+                        UpdateRemoveListView();
+                        if (dbRemoved.Count == 0) RecoverDB.Close();
+                    }
+                }
+            };
+            purgeItem.Click += (s, e) =>
+            {
+                if (ShowPurgeConfirmation("make it so!"))
+                {
+                    dbRemv.Enabled = false;
+                    ShowProgress = disk.Length > 250;
+                    if (ShowProgress)
+                    {
+                        RecoverDB.Controls.Add(dbProg);
+                        dbProg.BringToFront();
+                        dbProg.Value = 0;
+                        dbProg.Maximum = 100 * 100;
+                        dbProg.Value = dbProg.Maximum / 100;
+                    }
+                    Task.Run(delegate
+                    {
+                        if (!Remove_Items_From_Database())
+                        {
+                            Invoke(new Action(() =>
+                            {
+                                using (Message_Center ignore = new Message_Center(this))
+                                {
+                                    MessageBox.Show("No changes were made.", "An error occured!"
+                                        , MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                }
+                            }));
+                        }
+                        Invoke(new Action(() =>
+                        {
+                            if (ShowProgress)
+                            {
+                                dbProg.SendToBack();
+                                ShowProgress = false;
+                                BrowseDB.Controls.Add(dbProg);
+                            }
+                            dbRemv.Enabled = true;
+                            ReadDB(true, false);
+                            dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
+                            UpdateRemoveListView();
+                            if (dbRemoved.Count == 0) RecoverDB.Close();
+                        }));
+                    });
+                }
+
+
+                bool ShowPurgeConfirmation(string requiredWord)
+                {
+                    Form confirmForm = new Form()
+                    {
+                        Width = 400,
+                        Height = 180,
+                        Text = "Confirm Purge",
+                        FormBorderStyle = FormBorderStyle.FixedDialog,
+                        StartPosition = FormStartPosition.CenterParent,
+                        MaximizeBox = false,
+                        MinimizeBox = false,
+                    };
+
+                    Label label = new Label()
+                    {
+                        Text = $"This will permanently remove *ALL* items in this list.\nType \"{requiredWord}\" to confirm:",
+                        Dock = DockStyle.Top,
+                        Height = 60,
+                        TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                        Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)))
+                    };
+
+                    TextBox inputBox = new TextBox()
+                    {
+                        //Dock = DockStyle.Fill,
+                        Top = (confirmForm.Height - 70) / 2,
+                        Left = (confirmForm.Width - 200) / 2,
+                        Margin = new Padding(10),
+                        Width = 200,
+                    };
+
+                    Button confirmBtn = new Button()
+                    {
+                        Text = "Confirm",
+                        Dock = DockStyle.Bottom,
+                        Enabled = false,
+                    };
+
+                    Button cancelBtn = new Button()
+                    {
+                        Text = "Cancel",
+                        Dock = DockStyle.Bottom,
+                    };
+
+                    confirmBtn.Click += (ss, ee) => confirmForm.DialogResult = DialogResult.OK;
+                    cancelBtn.Click += (ss, ee) => confirmForm.DialogResult = DialogResult.Cancel;
+
+                    inputBox.TextChanged += (ss, ee) =>
+                    {
+                        confirmBtn.Enabled = inputBox.Text.Equals(requiredWord, StringComparison.OrdinalIgnoreCase);
+                    };
+
+                    confirmForm.Controls.Add(cancelBtn);
+                    confirmForm.Controls.Add(confirmBtn);
+                    confirmForm.Controls.Add(inputBox);
+                    confirmForm.Controls.Add(label);
+                    return confirmForm.ShowDialog() == DialogResult.OK;
+                }
+            };
+
+            int tWidth = dbRemv.Columns.Cast<ColumnHeader>().Sum(c => c.Width);
+            RecoverDB.Controls.Add(dbRemv);
+            dbRemv.Scrollable = true;
+            dbRemv.Location = new Point(0, 0);
+            dbRemv.Width = tWidth + 22;
+            RecoverDB.Width = dbRemv.Width + 17; // RecoverDB.Width + 22;
+            dbRemv.Height = RecoverDB.Height - 38 - dbRemv.Top; //BrowseDB.Height;
+            dbRemv.DrawColumnHeader += DbView_DrawColumnHeader;
+            dbRemv.DrawItem += DbView_DrawItem;
+            dbRemv.DrawSubItem += DbView_DrawSubItem;
+            dbRemv.MouseMove += DbView_MouseMove;
+
+            List<int> skip = new List<int>();
+            for (int i = 0; i < dbView.Columns.Count; i++)
+            {
+                if (dbView.Columns[i].Text.ToLower() == "region") RegionColumn = i;
+                if (dbView.Columns[i].Text == " "
+                    || dbView.Columns[i].Text == "  "
+                    || dbView.Columns[i].Text.ToString().ToLower() == "region"
+                    || dbView.Columns[i].Text.ToString().ToLower() == "side") skip.Add(i);
+            }
+            skipColumns = skip.ToArray();
             int totalWidth = dbView.Columns.Cast<ColumnHeader>().Sum(c => c.Width);
             BrowseDB.Controls.Add(dbView);
             dbView.Scrollable = true;
             dbView.Location = new Point(0, 0);
             dbView.Width = totalWidth + 22;
             dbView.Height = BrowseDB.Height - 38 - dbView.Top; //BrowseDB.Height;
+            dbView.ShowItemToolTips = true;
+
             BrowseDB.Width = dbView.Width + 17;
             bdbW = BrowseDB.Width;
             BrowseDB.Controls.Add(PVbox);
@@ -162,6 +376,30 @@ namespace V_Max_Tool
 
             void Set_Behaviors()
             {
+                browseDBmenu.Click += (s, e) => OpenDB_Windows();
+                addFolderDBmenu.Click += (s, e) =>
+                {
+                    FolderBrowserDialog opn = new FolderBrowserDialog
+                    {
+                        ShowNewFolderButton = false,
+                    };
+                    opn.ShowDialog();
+                    string path = opn.SelectedPath;
+                    if (path != null && Directory.Exists(path)) BuildDB(path);
+                };
+                recoverDBmenu.Click += (s, e) =>
+                {
+                    if (disk == null || disk.Length < 1) ReadDB(true, false);
+                    if (disk != null && dbRemoved.Count > 0 && disk?.Length > 0)
+                    {
+                        RecoverDB.Location = new Point(
+                        this.Location.X + ((this.Width - RecoverDB.Width) / 2),
+                        this.Location.Y + (this.Height - RecoverDB.Height) / 2);
+                        UpdateRemoveListView();
+                        RecoverDB.ShowDialog(this);
+                    }
+                };
+
                 for (int i = 0; i < dbSep.Length; i++)
                 {
                     dbSep[i] = new ToolStripSeparator();
@@ -177,6 +415,65 @@ namespace V_Max_Tool
                 dbView.MouseMove += DbView_MouseMove;
                 dbView.ColumnClick += DbView_ColumnClick;
 
+                dbView.MouseClick += (s, e) =>
+                {
+                    if (e.Button == MouseButtons.Left)
+                    {
+                        ListView lv = (ListView)s;
+                        ListViewHitTestInfo hit = lv.HitTest(e.Location);
+
+                        if (hit.Item != null && hit.SubItem != null)
+                        {
+                            int index = (int)hit.Item.Tag;
+                            int subItemIndex = hit.Item.SubItems.IndexOf(hit.SubItem);
+                            if (subItemIndex == 2 && !disk[index].Locked)
+                            {
+                                Text = $"Image {disk[index].Title}, column {subItemIndex}";
+                                // add code to handle the Edit feature here //
+                            }
+                            string clickedText = hit.SubItem.Text;
+                        }
+                    }
+                };
+
+                dbRemv.MouseClick += (s, e) =>
+                {
+                    if (e.Button == MouseButtons.Left)
+                    {
+                        ListView lv = (ListView)s;
+                        ListViewHitTestInfo hit = lv.HitTest(e.Location);
+
+                        if (hit.Item != null && hit.SubItem != null)
+                        {
+                            int index = (int)hit.Item.Tag;
+                            if (index >= 0 && index < disk.Length)
+                            {
+                                int subItemIndex = hit.Item.SubItems.IndexOf(hit.SubItem);
+                                if (subItemIndex == 2 && !disk[index].Locked)
+                                {
+                                    disk[index].Marked = false;
+                                    UpdateDBDirectory(new int[] { index });
+                                    using (var dataBase = new AccessDatabase().ReadOnly(TEMP.dbPath))
+                                    {
+                                        if (dataBase.Valid)
+                                        {
+                                            try
+                                            {
+                                                disk[index] = dataBase.GetDirectoryEntry(index);
+                                                disk[index].Index = index;
+                                            }
+                                            catch { }
+                                        }
+                                    }
+                                    dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
+                                    UpdateRemoveListView();
+                                    if (dbRemoved.Count == 0) RecoverDB.Close();
+                                }
+                            }
+                        }
+                    }
+                };
+
                 DBsearch.Click += (s, e) =>
                 {
                     dbSearch.Focus();
@@ -190,13 +487,12 @@ namespace V_Max_Tool
                     UpdateList(RegionFilter(filteredList), true);
                 };
 
-                //dbView.KeyDown += (s, e) =>
                 dbView.KeyUp += (s, e) =>
                 {
                     var keys = new Keys[] { Keys.Up, Keys.Down, Keys.PageUp, Keys.PageDown };
                     if (e.KeyData == Keys.Enter && dbView.SelectedItems.Count == 1)
                     {
-                        var idx = ((Tag)dbView.SelectedItems[0].Tag).Index;// (int)dbView.SelectedItems[0].Tag;
+                        var idx = (int)dbView.SelectedItems[0].Tag;
                         if (idx >= 0) Import_Image_From_Database(idx);
                     }
 
@@ -205,7 +501,7 @@ namespace V_Max_Tool
                         if (dbView.SelectedItems.Count > 0)
                         {
                             var selectedItem = dbView.SelectedItems[0];
-                            if (selectedItem?.Tag != null) UpdatePreview(((Tag)selectedItem.Tag).Index);
+                            if (selectedItem?.Tag != null) UpdatePreview((int)selectedItem.Tag);
                         }
                     }
                 };
@@ -221,14 +517,17 @@ namespace V_Max_Tool
                             ListViewItem item = dbView.GetItemAt(e.X, e.Y);
                             if (item != null)
                             {
-                                // Optionally select the item if not already selected
                                 if (!item.Selected)
                                 {
                                     dbView.SelectedItems.Clear();
                                     item.Selected = true;
                                 }
-                                bool Locked = disk[((Tag)item.Tag).Index].Locked;
+                                int idx = (int)item.Tag;
+                                //bool Locked = disk[((Tag)item.Tag).Index].Locked;
+                                bool Locked = disk[idx].Locked;
+                                bool Favorite = disk[idx].Favorite;
                                 dbMenu.Items.Add(Locked ? unlockItem : lockItem);
+                                dbMenu.Items.Add(Favorite ? unfavItem : favItem);
                                 if (!Locked)
                                 {
                                     dbMenu.Items.Add(dbSep[separator++]);
@@ -238,7 +537,6 @@ namespace V_Max_Tool
                                     if (disk.Length > 1) dbMenu.Items.Add(dupeItem);
                                 }
                             }
-                            // Show the context menu at cursor position
                         }
                         dbMenu.Show(dbView, e.Location);
                     }
@@ -246,94 +544,65 @@ namespace V_Max_Tool
 
                 unlockItem.Click += (s, e) => LockFile(s);
                 lockItem.Click += (s, e) => LockFile(s);
+                favItem.Click += (s, e) => Favorite(s);
+                unfavItem.Click += (s, e) => Favorite(s);
+
+                removeItem.Click += (s, e) =>
+                {
+                    List<int> remove = new List<int>();
+                    foreach (ListViewItem item in dbView.SelectedItems)
+                    {
+                        var idx = (int)item.Tag;
+                        //Text = $"{idx} {disk[idx].Title} {disk[idx].Locked}";
+                        remove.Add((int)item.Tag);
+                    }
+                    if (remove.Count > 1)
+                    {
+                        string message = $"Proceed with removal of ({remove.Count}) files?";
+                        string title = "Multiple files selected!";
+                        RemoveEntries(remove.ToArray(), title, message);
+                    }
+                    else RemoveEntries(remove.ToArray());
+                };
+
                 dupeItem.Click += (s, e) =>
                 {
                     int[] dupes = CheckForDuplicates(true, true);
-                    string message = dupes.Length > 0
-                        ? $"({dupes.Length}) Duplicates found!\nWould you like to remove selected them?"
-                        : "No duplicates found!";
-                    string title = dupes.Length > 0 ? "Duplicates found!" : "Congratulations!";
-                    MessageBoxButtons buttons = dupes.Length > 0 ? MessageBoxButtons.YesNo : MessageBoxButtons.OK;
-                    using (Message_Center center = new Message_Center(this))
+                    if (dupes.Length > 0)
                     {
-                        bool ignoreLock = false;
-                        DialogResult result = MessageBox.Show(message, title, buttons, MessageBoxIcon.Information);
-                        if (result == DialogResult.Yes)
-                        {
-                            int locked = 0;
-                            foreach (int i in dupes) if (disk[i].Locked) locked++;
-                            if (locked > 0)
-                            {
-                                title = locked == 1 ? "Image is locked!" : $"({locked}) Images are locked!";
-                                using (Message_Center ignore = new Message_Center(this))
-                                {
-                                    DialogResult res = MessageBox.Show("Ignore locked status and remove anyway?",
-                                        title, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                                    if (res == DialogResult.Yes) ignoreLock = true;
-                                }
-                            }
-                            if (locked != dupes.Length || ignoreLock)
-                            {
-                                Task.Run(delegate
-                                {
-                                    Invoke(new Action(() =>
-                                    {
-                                        dbView.Enabled = dbSearch.Enabled = false;
-                                        ShowProgress = disk.Length > 250;
-                                        if (ShowProgress) dbProg.BringToFront();
-                                        dbProg.Value = 0;
-                                        dbProg.Maximum = 100 * 100;
-                                        dbProg.Value = dbProg.Maximum / 100;
-                                    }));
-                                    if (!Remove_Items_From_Database(dupes, ignoreLock))
-                                    {
-
-                                        Invoke(new Action(() =>
-                                        {
-                                            using (Message_Center ignore = new Message_Center(this))
-                                            {
-                                                MessageBox.Show("No changes were made.", "An error occured!"
-                                                    , MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                            }
-                                        }));
-                                    }
-                                    else
-                                    {
-                                        ReadDB();
-                                        var sortedList = disk.OrderBy(d => d.Title).ToList();
-                                        Invoke(new Action(() => UpdateList(RegionFilter(sortedList), true)));
-                                    }
-                                    Invoke(new Action(() =>
-                                    {
-                                        dbProg.SendToBack();
-                                        dbView.Enabled = dbSearch.Enabled = true;
-                                        ShowProgress = false;
-                                    }));
-                                });
-                            }
-                        }
+                        string message = $"({dupes.Length}) Duplicates found!\nWould you like to remove them?";
+                        string title = "Duplicates found!";
+                        RemoveEntries(dupes, title, message);
+                    }
+                    else
+                    {
+                        using (Message_Center msgs = new Message_Center(this))
+                            MessageBox.Show("No duplicates found!", "Congratulations!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 };
-
-                void LockFile(object s)
-                {
-                    if (dbView.SelectedItems.Count > 0)
-                    {
-                        bool lockfile = s.Equals(lockItem);
-                        List<int> selected = new List<int>();
-                        dbView.BeginUpdate();
-                        foreach (ListViewItem currentItem in dbView.SelectedItems)
-                        {
-                            var index = ((Tag)currentItem.Tag).Index;
-                            disk[index].Locked = lockfile; // true;
-                            selected.Add(index);
-                            currentItem.SubItems[0].Text = lockfile ? " " : "";
-                        }
-                        dbView.EndUpdate();
-                        UpdateDBDirectory(selected.ToArray());
-                    }
-                }
             }
+        }
+
+        void UpdateRemoveListView()
+        {
+            dbRemv.BeginUpdate();
+            dbRemv.Items.Clear();
+            foreach (int i in dbRemoved)
+            {
+                ListViewItem item = new ListViewItem($"{i}");   // Locked
+                item.SubItems.Add(disk[i].Title);                                  // Title
+                item.SubItems.Add(string.Empty);                                  // Title
+                item.SubItems.Add($"{disk[i].Side + 1}");                          // Side
+                item.SubItems.Add(disk[i].Year > 1970 ? $"{disk[i].Year}" : string.Empty);    // Year
+                item.SubItems.Add($"{getRegion[disk[i].Region]}");             // Region
+                item.SubItems.Add($"{Prot[disk[i].Protection]}");                  // Protection
+                item.SubItems.Add($"{disk[i].Timestamp}");                         // Timestamp
+                                                                                   //item.Tag = new Tag { Index = disk.Index, Notes = disk.Notes };
+                item.Tag = i;
+                dbRemv.Items.Add(item);
+            }
+            dbRemv.EndUpdate();
+            RecoverDB.Text = $"Browse images deleted from database ({dbRemv.Items.Count})";
         }
 
         void OpenDB_Windows()
@@ -341,30 +610,33 @@ namespace V_Max_Tool
             BrowseDB.Location = new Point(
                     this.Location.X + ((this.Width - BrowseDB.Width) / 2),
                     this.Location.Y + (this.Height - BrowseDB.Height) / 2);
-            Task.Run(delegate
+            dbView.Items.Clear();
+            Task.Run(delegate { if (disk == null || disk.Length == 0 || dbView.Items.Count == 0) ReadDB(); });
+            Thread.Sleep(150);
+            BrowseDB.ShowDialog(this);
+        }
+
+        void UpdatedbView()
+        {
+            if (disk?.Length > 0)
             {
-                ReadDB();
-                if (disk?.Length > 0)
+                var sortedList = disk.OrderBy(d => d.Title).ToList();
+                Invoke(new Action(() => UpdateList(RegionFilter(sortedList), true)));
+                if (disk?.Length == dbRemoved.Count) ShowMessage();
+            }
+            else ShowMessage();
+
+            void ShowMessage()
+            {
+                Invoke(new Action(() =>
                 {
-                    if (dbView.Items.Count == 0 || dbView.Items.Count != disk.Length)
+                    using (Message_Center center = new Message_Center(this))
                     {
-                        var sortedList = disk.OrderBy(d => d.Title).ToList();
-                        Invoke(new Action(() => UpdateList(RegionFilter(sortedList), true)));
+                        MessageBox.Show("No images in the database", "Database is empty!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
-                    Invoke(new Action(() => BrowseDB.ShowDialog(this)));
-                }
-                else
-                {
-                    Invoke(new Action(() =>
-                    {
-                        using (Message_Center center = new Message_Center(this))
-                        {
-                            MessageBox.Show("No images in the database", "Database is empty!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                    }));
-                }
-            });
-            //BrowseDB.ShowDialog(this);
+                    BrowseDB?.Close();
+                }));
+            }
         }
 
         void UpdateDBDirectory(int[] index)
@@ -391,6 +663,80 @@ namespace V_Max_Tool
                         }
                     }
                 }
+            }
+        }
+
+        void RemoveEntries(int[] indexes, string promptTitle = null, string promptMessage = null)
+        {
+            if (indexes == null || indexes.Length == 0) return;
+
+            bool ignoreLock = false;
+            int locked = indexes.Count(i => disk[i].Locked);
+
+            if (!string.IsNullOrEmpty(promptMessage))
+            {
+                DialogResult result = MessageBox.Show(promptMessage, promptTitle ?? "Confirm Removal",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+
+                if (result == DialogResult.No) return;
+            }
+
+            if (locked > 0)
+            {
+                ignoreLock = PromptRemoveLockedItems(locked);
+                if (!ignoreLock && locked == indexes.Length)
+                    return; // All locked, user didn't confirm override
+            }
+
+            foreach (int i in indexes)
+            {
+                if (!disk[i].Locked || ignoreLock)
+                {
+                    disk[i].Marked = true;
+                    disk[i].Locked = false;
+                    dbRemoved.Add(i); // ++;
+                }
+            }
+
+            UpdateDBDirectory(indexes);
+
+            if (dbRemoved.Count >= 100) PromptRebuildDatabase();
+            ReadDB();
+        }
+
+        void LockFile(object s)
+        {
+            if (dbView.SelectedItems.Count > 0)
+            {
+                bool lockfile = s.Equals(lockItem);
+                List<int> selected = new List<int>();
+                dbView.BeginUpdate();
+                foreach (ListViewItem currentItem in dbView.SelectedItems)
+                {
+                    var index = (int)currentItem.Tag;
+                    disk[index].Locked = lockfile; // true;
+                    selected.Add(index);
+                }
+                dbView.EndUpdate();
+                UpdateDBDirectory(selected.ToArray());
+            }
+        }
+
+        void Favorite(object s)
+        {
+            if (dbView.SelectedItems.Count > 0)
+            {
+                bool fav = s.Equals(favItem);
+                List<int> selected = new List<int>();
+                dbView.BeginUpdate();
+                foreach (ListViewItem currentItem in dbView.SelectedItems)
+                {
+                    var index = (int)currentItem.Tag;
+                    disk[index].Favorite = fav; // true;
+                    selected.Add(index);
+                }
+                dbView.EndUpdate();
+                UpdateDBDirectory(selected.ToArray());
             }
         }
 
@@ -455,7 +801,7 @@ namespace V_Max_Tool
             }
         }
 
-        void ReadDB()
+        void ReadDB(bool UpdateList = true, bool showErrorMSG = true)
         {
             using (var dataBase = new AccessDatabase().ReadOnly(TEMP.dbPath))
             {
@@ -477,13 +823,17 @@ namespace V_Max_Tool
                     }
                     catch (Exception ex)
                     {
-                        error = true;
-                        string title = "Error accessing database.";
-                        string message = ex.Message;
-                        MessageForYouSir(title, message);
+                        if (showErrorMSG)
+                        {
+                            error = true;
+                            string title = "Error accessing database.";
+                            string message = ex.Message;
+                            MessageForYouSir(title, message);
+                        }
                     }
                 }
             }
+            if (UpdateList) UpdatedbView();
         }
 
         List<DiskInfo> RegionFilter(List<DiskInfo> sortedList)
@@ -500,6 +850,7 @@ namespace V_Max_Tool
         {
             dbView.BeginUpdate();
             dbView.Items.Clear();
+            dbRemoved = new List<int>(); // 0;
             if (removeSortFlag)
             {
                 for (int i = 1; i < dbView.Columns.Count; i++)
@@ -508,24 +859,26 @@ namespace V_Max_Tool
                     col.Text = col.Text.Replace(" ↑", "").Replace(" ↓", "");
                 }
             }
-
             foreach (var disk in sorted)
             {
-                ListViewItem item = new ListViewItem(disk.Locked ? " " : "");   // Locked
-                item.SubItems.Add(disk.Title);                                  // Title
-                item.SubItems.Add($"{disk.Side + 1}");                          // Side
-                item.SubItems.Add(disk.Year > 1970 ? $"{disk.Year}" : "");    // Year
-                item.SubItems.Add($"{getRegion[disk.Region]}");             // Region
-                //item.SubItems.Add($"{secF[disk.Protection]}");                  // Protection
-                item.SubItems.Add($"{Prot[disk.Protection]}");                  // Protection
-                //item.SubItems.Add($"{disk.cSize:N0}");                          // Compressed size
-                //item.SubItems.Add($"{disk.dSize:N0}");                          // Decompressed size
-                item.SubItems.Add($"{disk.Timestamp}");                         // Timestamp
-                dbView.Items.Add(item);
-                item.Tag = new Tag { Index = disk.Index, Notes = disk.Notes };
+                if (!disk.Marked)
+                {
+                    ListViewItem item = new ListViewItem(string.Empty);   // Locked
+                    item.SubItems.Add(disk.Title);                                  // Title
+                    item.SubItems.Add(string.Empty);                                  // Title
+                    item.SubItems.Add($"{disk.Side + 1}");                          // Side
+                    item.SubItems.Add(disk.Year > 1970 ? $"{disk.Year}" : string.Empty);    // Year
+                    item.SubItems.Add($"{getRegion[disk.Region]}");             // Region
+                    item.SubItems.Add($"{Prot[disk.Protection]}");                  // Protection
+                    item.SubItems.Add($"{disk.Timestamp}");                         // Timestamp
+                    //item.Tag = new Tag { Index = disk.Index, Notes = disk.Notes };
+                    item.Tag = disk.Index;
+                    dbView.Items.Add(item);
+                }
+                else dbRemoved.Add(disk.Index); // ++;
             }
             dbView.EndUpdate();
-            BrowseDB.Text = $"Browse ReMaster Image Database ({dbView.Items.Count}/{disk?.Length})";
+            BrowseDB.Text = $"Browse ReMaster Image Database ({dbView.Items.Count}/{disk?.Length - dbRemoved.Count})";
         }
 
         string Get_Name(string input)
@@ -550,25 +903,23 @@ namespace V_Max_Tool
         {
             using (var dataBase = new AccessDatabase().ReadOnly(TEMP.dbPath))
             {
-                if (dataBase.Valid)
+                if (dataBase.Valid && (entry >= 0 && entry <= disk.Length))
                 {
-                    dataBase.Seek(disk[entry].Offset);
-                    var cmp = dataBase.Read(disk[entry].CompressedLength);
+                    var cmp = dataBase.GetImageData(disk[entry]);
                     if (Checksum.CRC32(cmp) == disk[entry].crc32)
                     {
                         byte[] dec = Decompress(cmp);
-                        if (Match(Checksum.MD5(dec), disk[entry].rawHash)) return dec;
+                        return (Match(Checksum.MD5(dec), disk[entry].rawHash)) ? dec : null;
                     }
                 }
+                return null;
             }
-            return null;
         }
 
-        bool Remove_Items_From_Database(int[] ItemList, bool IgnoreLockStatus = false)
+        bool Remove_Items_From_Database() //, bool IgnoreLockStatus = false)
         {
-            if (ItemList == null || ItemList.Length == 0) return true;
             string tempPath = $@"c:\test\temp.db";
-            var skip = new HashSet<int>(ItemList);
+            if (File.Exists(tempPath)) File.Delete(tempPath);
             using (var current = new AccessDatabase().ReadOnly(TEMP.dbPath))
             using (var temp = new AccessDatabase().Create(tempPath))
             {
@@ -585,8 +936,7 @@ namespace V_Max_Tool
                             }));
                         }
                         var ent = current.GetDirectoryEntry(i);
-                        bool remove = IgnoreLockStatus || !ent.Locked;
-                        if (!skip.Contains(i) || (skip.Contains(i) && !remove))
+                        if (!ent.Marked)
                         {
                             var data = current.GetImageData(ent);
                             var preview = current.GetPreviewData(ent);
@@ -641,8 +991,13 @@ namespace V_Max_Tool
             }
         }
 
-        void BuildDB()
+        void BuildDB(string rpath)
         {
+            Dictionary<string, int> fileExt = new Dictionary<string, int>
+            {
+                { ".nib", 0 } ,{ ".nbz", 1 }, { ".g64", 2 }
+            };
+            Random rand = new Random();
             var ttl = Text;
             using (var dataBase = !File.Exists(TEMP.dbPath)
                 ? new AccessDatabase().Create(TEMP.dbPath)
@@ -650,7 +1005,7 @@ namespace V_Max_Tool
             {
                 if (dataBase.Valid)
                 {
-                    string rpath = @"c:\test\test2";
+                    //string rpath = @"c:\test\test2";
                     string[] file = Directory.EnumerateFiles(rpath, "*.nib", SearchOption.AllDirectories)
                         .Concat(Directory.EnumerateFiles(rpath, "*.nbz", SearchOption.AllDirectories))
                         .ToArray();
@@ -668,7 +1023,8 @@ namespace V_Max_Tool
                         {
                             try
                             {
-                                var dec = Path.GetExtension(f).ToLower() == ".nib" ? File.ReadAllBytes(f) : LZdecompress(File.ReadAllBytes(f));
+                                var extension = Path.GetExtension(f).ToLower();
+                                var dec = extension == ".nib" ? File.ReadAllBytes(f) : LZdecompress(File.ReadAllBytes(f));
                                 int t = (dec.Length - 256) / 8192 > 42 ? 34 : 17;
                                 var tk = new byte[8192];
                                 var preview = new byte[0];
@@ -678,6 +1034,7 @@ namespace V_Max_Tool
                                 var cmp = Compress(dec);
                                 dataBase.Seek(dataBase.Offset);
                                 dataBase.Write(ArrayConcat(cmp, preview));
+                                var notes = rand.Next(3) == 0 ? Get_Name(Path.GetFileNameWithoutExtension(f.Replace("_", " "))) : string.Empty;
                                 DiskInfo info = new DiskInfo
                                 {
                                     Offset = dataBase.Offset,
@@ -694,10 +1051,15 @@ namespace V_Max_Tool
                                     Protection = Get_Protection(f),
                                     Region = Get_Region(f, pv),
                                     Side = (byte)Get_DiskSide(f),
+                                    Notes = notes, //Get_Name(Path.GetFileNameWithoutExtension(f.Replace("_", " "))),
+                                    Extension = fileExt[extension],
+                                    Favorite = rand.Next(5) == 0,
+                                    Status = rand.Next(4),
                                 };
                                 write.Write(info.ToEntry());
                                 dataBase.Offset += info.CompressedLength + info.PreviewLength;
                                 Text = $"{ttl} ({dataBase.Entries++}/{file.Length})";
+                                //string g = info.imgStat[info.Status];
 
                             }
                             catch { }
@@ -771,6 +1133,65 @@ namespace V_Max_Tool
                     }
                 }
             }
+        }
+
+        void PromptRebuildDatabase() //int[] dupes, bool ignoreLock)
+        {
+            using (Message_Center del = new Message_Center(this))
+            {
+                DialogResult rem = MessageBox.Show("Would you like to permenantly delete entires\nto reclaim space?"
+                    , $"({dbRemoved.Count} Items can be purged)", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (rem == DialogResult.Yes)
+                {
+                    List<int> remove = new List<int>();
+                    foreach (var ent in disk) if (ent.Marked) remove.Add(ent.Index);
+                    dbView.Enabled = dbSearch.Enabled = false;
+                    ShowProgress = disk.Length > 250;
+                    if (ShowProgress) dbProg.BringToFront();
+                    dbProg.Value = 0;
+                    dbProg.Maximum = 100 * 100;
+                    dbProg.Value = dbProg.Maximum / 100;
+                    Task.Run(delegate
+                    {
+                        if (!Remove_Items_From_Database()) //, ignoreLock))
+                        {
+                            Invoke(new Action(() =>
+                            {
+                                using (Message_Center ignore = new Message_Center(this))
+                                {
+                                    MessageBox.Show("No changes were made.", "An error occured!"
+                                        , MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                }
+                            }));
+                        }
+                        else
+                        {
+                            ReadDB();
+                            var sortedList = disk.OrderBy(d => d.Title).ToList();
+                            Invoke(new Action(() => UpdateList(RegionFilter(sortedList), true)));
+                        }
+                        Invoke(new Action(() =>
+                        {
+                            dbProg.SendToBack();
+                            dbView.Enabled = dbSearch.Enabled = true;
+                            ShowProgress = false;
+                        }));
+                    });
+                }
+                else ReadDB();
+            }
+        }
+
+        bool PromptRemoveLockedItems(int locked)
+        {
+            var title = locked == 1 ? "Image is locked!" : $"({locked}) Images are locked!";
+            using (Message_Center ignore = new Message_Center(this))
+            {
+                DialogResult res = MessageBox.Show("Ignore locked status and remove anyway?",
+                    title, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (res == DialogResult.Yes) return true;
+            }
+            return false;
         }
 
         void SortList(string column, string searchText)
@@ -906,7 +1327,7 @@ namespace V_Max_Tool
             Invoke(new Action(() =>
             {
                 UpdateList(RegionFilter(sortedList));
-                dbView.Columns[4].Text = $"Region {getRegion[regionSort]}";
+                dbView.Columns[5].Text = $"Region {getRegion[regionSort]}";
             }));
         }
 
@@ -936,18 +1357,21 @@ namespace V_Max_Tool
                 HashSet<int> indicesToShow = new HashSet<int>(); // Final list of all indexes to display
                 foreach (DiskInfo d in disk)
                 {
-                    string hash = Encoding.ASCII.GetString(d.rawHash);
-                    if (!seenHashes.Add(hash))
+                    if (!d.Marked)
                     {
-                        // This is a duplicate
-                        if (hashMap.TryGetValue(hash, out int originalIndex))
+                        string hash = Encoding.ASCII.GetString(d.rawHash);
+                        if (!seenHashes.Add(hash))
                         {
-                            indicesToShow.Add(originalIndex); // Add the original
+                            // This is a duplicate
+                            if (hashMap.TryGetValue(hash, out int originalIndex))
+                            {
+                                indicesToShow.Add(originalIndex); // Add the original
+                            }
+                            indicesToShow.Add(d.Index); // Add the duplicate
+                            dupeIdx.Add(d.Index);   // Add directory index of file to remove
                         }
-                        indicesToShow.Add(d.Index); // Add the duplicate
-                        dupeIdx.Add(d.Index);   // Add directory index of file to remove
+                        else hashMap[hash] = d.Index; // First time seeing this hash
                     }
-                    else hashMap[hash] = d.Index; // First time seeing this hash
                 }
                 List<DiskInfo> list = new List<DiskInfo>();
                 foreach (int i in indicesToShow) list.Add(disk[i]);
@@ -957,7 +1381,7 @@ namespace V_Max_Tool
                         ? list.OrderBy(d => Encoding.ASCII.GetString(d.rawHash)).ThenBy(d => d.Title).ToList()
                         : list.OrderByDescending(d => Encoding.ASCII.GetString(d.rawHash)).ThenByDescending(d => d.Title).ToList();
                     UpdateList(sortedList);
-                    if (select) foreach (ListViewItem l in dbView.Items) if (dupeIdx.Contains(((Tag)l.Tag).Index)) l.Selected = true;
+                    if (select) foreach (ListViewItem l in dbView.Items) if (dupeIdx.Contains((int)l.Tag)) l.Selected = true;
                 }
                 sw.Stop();
             }
@@ -1019,16 +1443,38 @@ namespace V_Max_Tool
 
             int lockColumnIndex = 0;
             int titleColumnIndex = 1;
+            int editColumnIndex = 2;
 
             if (e.ColumnIndex == lockColumnIndex)
             {
-                bool locked = e.SubItem.Text == " ";
-                if (locked)
+                if (disk[(int)e.Item.Tag].Locked)
                 {
                     int imgX = e.Bounds.X + (e.Bounds.Width - 20) / 2;
                     int imgY = e.Bounds.Y + (e.Bounds.Height - 20) / 2;
                     e.Graphics.DrawImage(icons.Images["lock"], new Rectangle(imgX, imgY, 20, 20));
                 }
+            }
+            //
+            if (e.ColumnIndex == editColumnIndex)
+            {
+                Image icon = null;
+                var lv = (ListView)sender;
+                Point cursorPos = lv.PointToClient(Cursor.Position);
+                ListViewHitTestInfo hit = lv.HitTest(cursorPos);
+                bool Hovered = hit.Item?.Index == e.ItemIndex &&
+                     hit.Item.SubItems.IndexOf(hit.SubItem) == e.ColumnIndex;
+                if (sender == dbView)
+                {
+                    if (!disk[(int)e.Item.Tag].Locked) icon = Hovered ? icons.Images["editH"] : icons.Images["edit"];
+                    else icon = icons.Images["editG"];
+                }
+                if (sender == dbRemv)
+                {
+                    if (disk[(int)e.Item.Tag].Marked) icon = Hovered ? icons.Images["recover"] : icons.Images["recoverH"];
+                }
+                int imgX = e.Bounds.X + (e.Bounds.Width - 20) / 2;
+                int imgY = e.Bounds.Y + (e.Bounds.Height - 20) / 2;
+                e.Graphics.DrawImage(icon, new Rectangle(imgX, imgY, 16, 16));
             }
 
             Rectangle bounds = e.Bounds;
@@ -1082,42 +1528,159 @@ namespace V_Max_Tool
                         string after = text.Substring(start);
                         TextRenderer.DrawText(e.Graphics, after, font, new Point((int)x, (int)y), textColor, flags);
                     }
+
+
                     return;
                 }
             }
 
             // Default draw if no match or no search
             TextRenderer.DrawText(e.Graphics, text, dbView.Font, bounds, textColor, flags);
+
+            if (sender == dbView && e.ColumnIndex == titleColumnIndex)
+            {
+                int imgX;
+                int imgY;
+                var idx = (int)e.Item.Tag;
+                if (disk[idx].Favorite)
+                {
+                    imgX = e.Bounds.X + (e.Bounds.Width - fav);
+                    imgY = e.Bounds.Y + (e.Bounds.Height - 20);
+                    e.Graphics.DrawImage(icons.Images["star"], new Rectangle(imgX, imgY, 16, 16));
+                }
+
+                if (!string.IsNullOrEmpty(disk[idx].Notes))
+                {
+                    var lv = (ListView)sender;
+                    Point cursorPos = lv.PointToClient(Cursor.Position);
+                    ListViewHitTestInfo hit = lv.HitTest(cursorPos);
+                    Rectangle subItemBounds = e.SubItem.Bounds;
+                    // Define the icon's bounds: 16x16 size, positioned 20px from the right edge
+                    Rectangle iconBounds = new Rectangle(subItemBounds.Right - note,
+                        subItemBounds.Top + (subItemBounds.Height - 20) / 2, 20, 20);
+                    Image icon = iconBounds.Contains(cursorPos) ? icons.Images["notesH"] : icons.Images["notes"];
+                    imgX = e.Bounds.X + (e.Bounds.Width - note);
+                    imgY = e.Bounds.Y + (e.Bounds.Height - 20);
+                    e.Graphics.DrawImage(icon, new Rectangle(imgX, imgY, 20, 20));
+                }
+
+                if (disk[idx].Status > 0)
+                {
+                    //int size = disk[idx].Notes?.Length > 0 && disk[idx].Status != 2 ? 14 : 20;
+                    int size = disk[idx].Notes?.Length > 0 ? 10 : 16;
+                    int offset = 0; // size < 20 ? 3 : 0;
+                    imgX = e.Bounds.X + (e.Bounds.Width - stat) + offset;
+                    imgY = e.Bounds.Y + (e.Bounds.Height - 20) + offset;
+                    //if (size < 20) { imgX += 3; imgY += 3; }
+                    Image icon = null;
+                    switch (disk[idx].Status)
+                    {
+                        case 1: icon = icons.Images["ok"]; break;
+                        case 2: icon = icons.Images["wwe"]; break;
+                        case 3: icon = icons.Images["bad"]; break;
+                    }
+                    e.Graphics.DrawImage(icon, new Rectangle(imgX, imgY, size, size));
+                }
+            }
         }
 
         private void DbView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             ListViewHitTestInfo hit = dbView.HitTest(e.Location);
-            if (e.Button == MouseButtons.Left)
+            int subItemIndex = hit.Item.SubItems.IndexOf(hit.SubItem);
+            if (e.Button == MouseButtons.Left && hit.Item != null && subItemIndex != 2)
             {
-                if (hit.Item != null)
-                {
-                    if (hit.Item?.Tag != null) Import_Image_From_Database(((Tag)hit.Item.Tag).Index);
-                }
+                if (hit.Item?.Tag != null) Import_Image_From_Database((int)hit.Item.Tag);
             }
         }
 
         private void DbView_MouseMove(object sender, MouseEventArgs e)
         {
-
-            ListViewHitTestInfo info = dbView.HitTest(e.Location);
-            int index = info.Item?.Index ?? -1;
-            try
+            if (sender == dbView)
             {
-                if (index != dbLastHoveredItem && DateTime.Now - lastHoverUpdate > hoverDelay)
+                ListViewHitTestInfo info = dbView.HitTest(e.Location);
+                try
                 {
-                    dbLastHoveredItem = index;
-                    dbView.Invalidate(); // Redraw to apply new hover effect
-                    lastHoverUpdate = DateTime.Now;
-                    if (info.Item?.Tag != null) UpdatePreview(((Tag)info.Item.Tag).Index);
+                    int index = info.Item?.Index ?? -1;
+                    if (index >= 0 && index < dbView.Items.Count)
+                    {
+                        var idx = (int)info.Item.Tag;
+                        var x = e.Location.X + 32; var y = e.Location.Y;
+                        int subItemIndex = info.Item.SubItems.IndexOf(info.SubItem);
+                        var stats = disk[idx].Status > 0 ? $"{disk[idx].imgStat[disk[idx].Status]}" : string.Empty;
+                        if (subItemIndex == 1) // && disk[idx].Notes != null)
+                        {
+                            Rectangle subItemBounds = dbView.GetSubItemBounds(dbView.Items[index], subItemIndex);
+
+                            // Define the icon's bounds: 16x16 size, positioned 20px from the right edge
+                            Rectangle noteBounds = new Rectangle(subItemBounds.Right - note,
+                                subItemBounds.Top + (subItemBounds.Height - 20) / 2, 20, 20);
+                            Rectangle statBounds = new Rectangle(subItemBounds.Right - stat,
+                            subItemBounds.Top + (subItemBounds.Height - 20) / 2, 20, 20);
+                            Rectangle favBounds = new Rectangle(subItemBounds.Right - fav,
+                            subItemBounds.Top + (subItemBounds.Height - 20) / 2, 20, 20);
+
+                            bool isCurrentlyHovered = noteBounds.Contains(e.X, e.Y);
+                            if (isCurrentlyHovered != lastIconHoverState)
+                            {
+                                lastIconHoverState = isCurrentlyHovered;
+                                dbView.Invalidate(); // only redraw when state changes
+
+                            }
+
+                            var tip = string.Empty;
+
+                            if (stats != string.Empty) tip += $"{stats}\n";
+                            if (!string.IsNullOrEmpty(disk[idx].Notes)) tip += disk[idx].Notes;
+                            //if (disk[idx].Notes.Length > 0) tip += disk[idx].Notes;
+                            if (tip != string.Empty && (noteBounds.Contains(e.X, e.Y) || statBounds.Contains(e.X, e.Y)))
+                                dbTooltip.Show(tip, dbView, x, y);
+                            else if (favBounds.Contains(e.X, e.Y) && disk[idx].Favorite) dbTooltip.Show("Favorite", dbView, x, y);
+                            else dbTooltip.Hide(dbView);
+                        }
+                        else if (subItemIndex == 0 && disk[idx].Locked) dbTooltip.Show("Locked", dbView, x, y);
+                        else if (subItemIndex == 2) dbTooltip.Show(!disk[idx].Locked ? "Edit" : "Unlock to edit", dbView, x, y);
+                        else dbTooltip.Hide(dbView); //dbTooltip.SetToolTip(dbView, null);
+
+                        if (index != dbLastHoveredItem && DateTime.Now - lastHoverUpdate > hoverDelay)
+                        {
+                            dbLastHoveredItem = index;
+                            dbView.Invalidate(); // Redraw to apply new hover effect
+                            dbRemv.Invalidate();
+                            lastHoverUpdate = DateTime.Now;
+                            UpdatePreview(idx);
+                        }
+                    }
                 }
+                catch { }
             }
-            catch { }
+
+            if (sender == dbRemv)
+            {
+                ListViewHitTestInfo info = dbRemv.HitTest(e.Location);
+                try
+                {
+                    int index = info.Item?.Index ?? -1;
+                    if (index >= 0 && index < dbRemv.Items.Count)
+                    {
+                        var idx = (int)info.Item.Tag;
+                        var x = e.Location.X + 32; var y = e.Location.Y;
+                        int subItemIndex = info.Item.SubItems.IndexOf(info.SubItem);
+
+                        if (subItemIndex == 2 && sender == dbRemv) dbTooltip.Show($"Recover {disk[idx].Title}", dbRemv, x, y);
+                        else dbTooltip.Hide(dbRemv); //dbTooltip.SetToolTip(dbView, null);
+
+                        if (index != dbLastHoveredItem && DateTime.Now - lastHoverUpdate > hoverDelay)
+                        {
+                            dbLastHoveredItem = index;
+                            dbRemv.Invalidate();
+                            lastHoverUpdate = DateTime.Now;
+                        }
+                    }
+                }
+                catch { }
+            }
+
         }
 
         private void BrowseDB_KeyDown(object sender, KeyEventArgs e)
@@ -1146,12 +1709,11 @@ namespace V_Max_Tool
 
         private void DbView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            if (e.Column != 4) sortAscending = lastSortedColumn == e.Column ? !sortAscending : sortAscending;
+            if (e.Column != RegionColumn) sortAscending = lastSortedColumn == e.Column ? !sortAscending : sortAscending;
             lastSortedColumn = e.Column;
             string column = dbView.Columns[e.Column].Text.ToLower().ToString();
             lastColumnName = column;
             var searchText = dbSearch.Text.ToLower();
-            int[] skipColumns = new int[] { 0, 2, 4 };
             var appendAscend = " ↑";
             var appendDescend = " ↓";
             for (int i = 1; i < dbView.Columns.Count; i++)
@@ -1165,9 +1727,12 @@ namespace V_Max_Tool
                 var sortSymbol = sortAscending ? appendAscend : appendDescend;
                 dbView.Columns[e.Column].Text += sortSymbol;
             }
-            sort?.Abort();
-            sort = new Thread(() => SortList(column, searchText));
-            sort.Start();
+            if (column != "  ")
+            {
+                sort?.Abort();
+                sort = new Thread(() => SortList(column, searchText));
+                sort.Start();
+            }
         }
     }
 }
