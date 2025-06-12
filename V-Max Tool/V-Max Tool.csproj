@@ -199,6 +199,7 @@
     <None Include="Properties\RecoverH.png" />
     <None Include="Properties\greenChk.png" />
     <None Include="Properties\redX.png" />
+    <None Include="Properties\starU.png" />
     <Content Include="tool.ico" />
   </ItemGroup>
   <ItemGroup>
