@@ -1233,6 +1233,22 @@ namespace V_Max_Tool
             return Color.FromArgb(newA, newR, newG, newB); // Use newA for alpha, or 255 if you don't modify alpha
         }
 
+        Color ApplyMultiplyModifier(Color color, float modifier)
+        {
+            int newR = (int)(color.R * modifier);
+            int newG = (int)(color.G * modifier);
+            int newB = (int)(color.B * modifier);
+            int newA = (int)(color.A); // Include this if you want to modify the alpha channel as well
+
+            // Ensure the new color components are within the valid range (0-255)
+            newR = Math.Max(0, Math.Min(255, newR));
+            newG = Math.Max(0, Math.Min(255, newG));
+            newB = Math.Max(0, Math.Min(255, newB));
+            newA = Math.Max(0, Math.Min(255, newA));
+
+            return Color.FromArgb(newA, newR, newG, newB); // Use newA for alpha, or 255 if you don't modify alpha
+        }
+
         void Check_Before_Draw(bool dontDrawFlat, bool timeout = false)
         {
             if (tracks > 0 && !batch && Adv_ctrl.SelectedTab == Adv_ctrl.TabPages["tabPage2"])

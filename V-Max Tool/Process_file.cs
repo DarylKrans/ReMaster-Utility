@@ -36,7 +36,9 @@ namespace V_Max_Tool
             "52-40-05-24", "52-40-05-64", "52-40-05-68", "52-40-05-6C", "52-40-05-34", "52-40-05-74", "52-40-05-78", "52-40-05-54", "52-40-05-A8",
             "52-40-05-AC", "52-40-05-C8", "52-40-05-CC", "52-40-05-B8" };
         /// vmax = the block header values of V-Max v2 sectors (non-CBM sectors)
-        private static readonly string[] secF = { "Non-DOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "RapidLok", "RL-Key", "EA", "RA/MB", "Microprose", "GMA", "Unformatted" };
+        //private static readonly string[] secF = { "Non-DOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "RapidLok", "RL-Key", "EA", "RA/MB", "Microprose", "GMA", "Unformatted" };
+        private static readonly string[] secF = { "Non-DOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "RapidLok"
+                , "RL-Key", "EA", "RA/MB", "Microprose", "Securispeed", "GMA" ,"Unformatted" };
         private static int[] jt = new int[42];
         const int MAX_TRACK_SIZE = 8192;
         const int SAMPLE_SIZE = 1024;
@@ -274,6 +276,7 @@ namespace V_Max_Tool
             string le = "Length";
             string fm = "Format";
             //string bl = "** Potentially bad loader! **";
+
             if (tracks > 42)
             {
                 halftracks = true;
@@ -485,21 +488,38 @@ namespace V_Max_Tool
 
                         Track_Info.EndUpdate();
                     }
-                    if (!cust_dens) Cust_Density.Text = "Track Densities : Standard"; else Cust_Density.Text = "Track Densities : Custom";
-                    if (v2) NDS.Prot_Method = "Protection : V-Max v2";
-                    if (v3) NDS.Prot_Method = "Protection : V-Max v3";
-                    if (!v2 && !v3 && NDS.cbm.Any(x => x == 4)) NDS.Prot_Method = "Protection: V-Max v2 CBM";
-                    if (!v2 && !v3 && !NDS.cbm.Any(x => x == 4)) NDS.Prot_Method = "Protection: None or CBM exploit";
-                    if (fat) NDS.Prot_Method = "Protection: Fat-Tracks";
-                    if (!v2 && !v3 && NDS.cbm.Any(x => x == 6)) NDS.Prot_Method = "Protection: RapidLok";
-                    if (NDS.cbm.Any(s => s == 5)) NDS.Prot_Method = "Protection: Vorpal";
-                    if (NDS.cbm.Any(x => x == 8)) NDS.Prot_Method = "Protection: (EA) PirateSlayer / Buster";
-                    if (NDS.cbm.Any(x => x == 9)) NDS.Prot_Method = "Protection: Rainbow Arts / Magic Bytes";
-                    if (NDS.cbm.Any(x => x == 10)) NDS.Prot_Method = "Protection: Micro Prose";
-                    if (NDS.cbm.Any(x => x == 11)) NDS.Prot_Method = "Protection: GMA / Securispeed";
+                    if (!cust_dens) Cust_Density.Text = "Track Densities: Standard"; else Cust_Density.Text = "Track Densities: Custom";
+                    //if (v2) NDS.Prot_Method = "Protection: V-Max v2";
+                    //if (v3) NDS.Prot_Method = "Protection: V-Max v3";
+                    //if (!v2 && !v3 && NDS.cbm.Any(x => x == 4)) NDS.Prot_Method = "Protection: V-Max v2 CBM";
+                    //if (!v2 && !v3 && !NDS.cbm.Any(x => x == 4)) NDS.Prot_Method = "Protection: None or CBM exploit";
+                    //if (fat) NDS.Prot_Method = "Protection: Fat-Tracks";
+                    //if (!v2 && !v3 && NDS.cbm.Any(x => x == 6)) NDS.Prot_Method = "Protection: RapidLok";
+                    //if (NDS.cbm.Any(s => s == 5)) NDS.Prot_Method = "Protection: Vorpal";
+                    //if (NDS.cbm.Any(x => x == 8)) NDS.Prot_Method = "Protection: (EA) PirateSlayer / Buster";
+                    //if (NDS.cbm.Any(x => x == 9)) NDS.Prot_Method = "Protection: Rainbow Arts / Magic Bytes";
+                    //if (NDS.cbm.Any(x => x == 10)) NDS.Prot_Method = "Protection: Micro Prose";
+                    //if (NDS.cbm.Any(x => x == 11)) NDS.Prot_Method = "Protection: GMA";
+                    //if (NDS.cbm.Any(x => x == 12)) NDS.Prot_Method = "Protection: Securispeed";
+                    string method = string.Empty;
+                    if (v2) method = "V-Max v2";
+                    if (v3) method = "V-Max v3";
+                    if (!v2 && !v3 && NDS.cbm.Any(x => x == 4)) method = "V-Max v2 CBM";
+                    if (!v2 && !v3 && !NDS.cbm.Any(x => x == 4)) method = "None or CBM exploit";
+                    if (fat) method = "Fat-Tracks";
+                    if (!v2 && !v3 && NDS.cbm.Any(x => x == 6)) method = "RapidLok";
+                    if (NDS.cbm.Any(s => s == 5)) method = "Vorpal";
+                    if (NDS.cbm.Any(x => x == 8)) method = "(EA) PirateSlayer / Buster";
+                    if (NDS.cbm.Any(x => x == 9)) method = "Rainbow Arts / Magic Bytes";
+                    if (NDS.cbm.Any(x => x == 10)) method = "MicroProse";
+                    if (NDS.cbm.Any(x => x == 11)) method = "Securispeed";
+                    if (NDS.cbm.Any(x => x == 12)) method = "GMA";
+                    NDS.Prot_Method = $"Protection: {method}";
                     Update();
                 }));
+
             }
+
             //sw.Stop(); // stop here to get parse time with data population times
             return sw;
 
@@ -731,7 +751,7 @@ namespace V_Max_Tool
                     Set_Dest_Arrays(RA, trk);
                 }
 
-                if (NDS.cbm[trk] == 11)
+                if (NDS.cbm[trk] == 11 || NDS.cbm[trk] == 12)
                 {
                     byte[] GMA = Securispeed(NDS.Track_Data[trk], NDS.Header_Len[trk]);
                     NDS.Track_Length[trk] = GMA.Length << 3;
@@ -1270,7 +1290,7 @@ namespace V_Max_Tool
             }
         }
 
-        int Get_Data_Fmt2(byte[] data, int track) // improved for speed and reliability (needs testing)
+        int Get_Data_Fmt2(byte[] data, int track, bool modNDS = true) // improved for speed and reliability (needs testing)
         {
             if (data == null) return 0;
 
@@ -1343,7 +1363,8 @@ namespace V_Max_Tool
                 }
             }
             // If not enough positive header matches found, double check some specific conditions
-            if (noData) return secF.Length - 1;
+            //if (noData) return secF.Length - 1;
+            if (noData || (!modNDS && weak_bits > 6000)) return secF.Length - 1;
             if (sync_run == source.Count) return 0;   // track is all '0's or all '1's (nothing here, it's blank)
             if (tk == 20 && Check_VMaxLoader()) return 4;       // Checks for specific repeating patterns found on V-Max Loader track (20)
             if (sync_run > 26000 && tk == 36) return 7;         // If it's mostly sync and it's track 36, it's most likely a RapidLok Key track
@@ -1480,7 +1501,7 @@ namespace V_Max_Tool
                         {
                             if (CheckForKey())
                             {
-                                NDS.Header_Len[track] = MatchSeq(data, prt_slay2, i) ? 2 : 1;
+                                if (modNDS) NDS.Header_Len[track] = MatchSeq(data, prt_slay2, i) ? 2 : 1;
                                 return 8;
                             }
                         }
@@ -1488,9 +1509,9 @@ namespace V_Max_Tool
                         if (tk <= 35) continue;
                         // Check for Securispeed (bounds check first)
                         if (i + 1 < dataLength && data[i] == 0xff && data[i + 1] == securispeed[1] &&
-                            MatchSeq(data, securispeed, i) && padding)// return 11;
+                            MatchSeq(data, securispeed, i) && padding)
                         {
-                            NDS.Header_Len[track] = h;
+                            if (modNDS) NDS.Header_Len[track] = h;
                             return 11;
                         }
                         // Check for GMA
@@ -1505,10 +1526,10 @@ namespace V_Max_Tool
                                     break;
                                 }
                             }
-                            if (m && padding)// return 11;
+                            if (m && padding)
                             {
-                                NDS.Header_Len[track] = h;
-                                return 11;
+                                if (modNDS) NDS.Header_Len[track] = h;
+                                return 12;
                             }
                         }
                         // Check for Rainbow Arts
@@ -1521,9 +1542,9 @@ namespace V_Max_Tool
                                 {
                                     sync_count++;
                                 }
-                                if (sync_count >= 108 && sync_count <= 132 && padding) // return 9;
+                                if (sync_count >= 108 && sync_count <= 132 && padding)
                                 {
-                                    NDS.Header_Len[track] = h;
+                                    if (modNDS) NDS.Header_Len[track] = h;
                                     return 9;
                                 }
                             }
@@ -1533,9 +1554,9 @@ namespace V_Max_Tool
                                 while (i + (ptn * rainbowArts_magicBytes.Length) < dataLength &&
                                        MatchSeq(data, rainbowArts_magicBytes, i + (ptn * rainbowArts_magicBytes.Length)))
                                 {
-                                    if (++ptn > 60)// return 9;
+                                    if (++ptn > 60)
                                     {
-                                        NDS.Header_Len[track] = h;
+                                        if (modNDS) NDS.Header_Len[track] = h;
                                         return 9;
                                     }
                                 }
@@ -1550,7 +1571,7 @@ namespace V_Max_Tool
                     {
                         if ((MatchSeq(data, slayer_key1, i) || MatchSeq(data, slayer_key2, i)) && i + 11 < data.Length)
                         {
-                            NDS.v2info[track] = data.Skip(i).Take(12).ToArray();
+                            if (modNDS) NDS.v2info[track] = data.Skip(i).Take(12).ToArray();
                             return true;
                         }
                     }

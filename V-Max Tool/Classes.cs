@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -23,6 +22,8 @@ namespace V_Max_Tool
         public static string recent = "recent.files";
         public static string settings = $"{path}setting.txt";
         public static string dbPath = $@"c:\test\img.db";
+        public static string dbTempDir = $@"c:\test\img.dir";
+        public static string dbTemp = $@"c:\test\dbtemp.tmp";
 
         public static string exedir = AssemblyDirectory;
 
@@ -215,6 +216,30 @@ namespace V_Max_Tool
     //    public int Index { get; set; }
     //    public string Notes { get; set; }
     //}
+
+    public class UndoState
+    {
+        public int[] Indexes { get; private set; }
+        public byte[] Data { get; private set; }
+
+        public UndoState(int[] indexes, byte[] data)
+        {
+            Indexes = indexes;
+            Data = data;
+        }
+    }
+
+    public class RedoState
+    {
+        public int[] Indexes { get; private set; }
+        public byte[] Data { get; private set; }
+
+        public RedoState(int[] indexes, byte[] data)
+        {
+            Indexes = indexes;
+            Data = data;
+        }
+    }
 
     public class DiskInfo
     {
@@ -435,7 +460,7 @@ namespace V_Max_Tool
 
         public AccessDatabase Create(string path)
         {
-            if (File.Exists(path)) throw new Exception("File already exists");
+            if (File.Exists(path)) File.Delete(path); // throw new Exception("File already exists");
             ushort e = 0; long o = 16;
             File.WriteAllBytes(path, ArrayConcat(Encoding.ASCII.GetBytes("SageDB")
                 , BitConverter.GetBytes(e), BitConverter.GetBytes(o)));
@@ -490,7 +515,7 @@ namespace V_Max_Tool
 
         public void Seek(long offset)
         {
-            if (!Valid || Stream == null) throw new Exception(na);
+            //if (!Valid || Stream == null) throw new Exception(na);
             if (Stream.CanSeek) Stream.Seek(offset, SeekOrigin.Begin); else throw new Exception("Stream can't locate position");
         }
 
@@ -498,11 +523,12 @@ namespace V_Max_Tool
         {
             if (!Valid || Stream == null) throw new Exception(na);
             if (Stream.CanWrite) Stream.Write(data, 0, data.Length); else throw new Exception(ro);
+            Stream.Flush();
         }
 
         public byte[] Read(long Length)
         {
-            if (!Valid || Stream == null) throw new Exception(na);
+            //if (!Valid || Stream == null) throw new Exception(na);
             try
             {
                 var data = new byte[Length];

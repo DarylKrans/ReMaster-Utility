@@ -224,6 +224,12 @@
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.Options_Box = new System.Windows.Forms.GroupBox();
+            this.ProtDetectMethod = new System.Windows.Forms.ComboBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.EnableDBMenu = new System.Windows.Forms.CheckBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.No_Warn = new System.Windows.Forms.CheckBox();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.Read_GBox = new System.Windows.Forms.GroupBox();
@@ -290,7 +296,6 @@
             this.W_syncred = new System.Windows.Forms.CheckBox();
             this.W_align = new System.Windows.Forms.ComboBox();
             this.WTA = new System.Windows.Forms.CheckBox();
-            this.PVbox = new System.Windows.Forms.RichTextBox();
             this.GB_NewDisk = new V_Max_Tool.Gbox();
             this.S_Interleave = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
@@ -742,7 +747,7 @@
             // DB_core_override
             // 
             this.DB_core_override.AutoSize = true;
-            this.DB_core_override.Location = new System.Drawing.Point(12, 76);
+            this.DB_core_override.Location = new System.Drawing.Point(17, 111);
             this.DB_core_override.Margin = new System.Windows.Forms.Padding(4);
             this.DB_core_override.Name = "DB_core_override";
             this.DB_core_override.Size = new System.Drawing.Size(170, 29);
@@ -753,7 +758,7 @@
             // 
             // DB_cores
             // 
-            this.DB_cores.Location = new System.Drawing.Point(200, 74);
+            this.DB_cores.Location = new System.Drawing.Point(205, 109);
             this.DB_cores.Margin = new System.Windows.Forms.Padding(4);
             this.DB_cores.Maximum = new decimal(new int[] {
             255,
@@ -778,7 +783,7 @@
             // DB_force
             // 
             this.DB_force.AutoSize = true;
-            this.DB_force.Location = new System.Drawing.Point(12, 186);
+            this.DB_force.Location = new System.Drawing.Point(17, 221);
             this.DB_force.Margin = new System.Windows.Forms.Padding(4);
             this.DB_force.Name = "DB_force";
             this.DB_force.Size = new System.Drawing.Size(631, 29);
@@ -789,7 +794,7 @@
             // Pad_Tracks
             // 
             this.Pad_Tracks.AutoSize = true;
-            this.Pad_Tracks.Location = new System.Drawing.Point(12, 150);
+            this.Pad_Tracks.Location = new System.Drawing.Point(17, 185);
             this.Pad_Tracks.Margin = new System.Windows.Forms.Padding(4);
             this.Pad_Tracks.Name = "Pad_Tracks";
             this.Pad_Tracks.Size = new System.Drawing.Size(463, 29);
@@ -800,7 +805,7 @@
             // CPP_tog
             // 
             this.CPP_tog.AutoSize = true;
-            this.CPP_tog.Location = new System.Drawing.Point(12, 112);
+            this.CPP_tog.Location = new System.Drawing.Point(17, 147);
             this.CPP_tog.Margin = new System.Windows.Forms.Padding(4);
             this.CPP_tog.Name = "CPP_tog";
             this.CPP_tog.Size = new System.Drawing.Size(565, 29);
@@ -812,7 +817,7 @@
             // DB_timers
             // 
             this.DB_timers.AutoSize = true;
-            this.DB_timers.Location = new System.Drawing.Point(12, 39);
+            this.DB_timers.Location = new System.Drawing.Point(17, 74);
             this.DB_timers.Margin = new System.Windows.Forms.Padding(4);
             this.DB_timers.Name = "DB_timers";
             this.DB_timers.Size = new System.Drawing.Size(245, 29);
@@ -2577,7 +2582,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(3725, 42);
+            this.menuStrip1.Size = new System.Drawing.Size(3725, 40);
             this.menuStrip1.TabIndex = 39;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -2593,7 +2598,7 @@
             this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(71, 38);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(71, 36);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // openToolStripMenuItem
@@ -2650,7 +2655,7 @@
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(118, 38);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(118, 36);
             this.optionsToolStripMenuItem.Text = "Options";
             this.optionsToolStripMenuItem.Click += new System.EventHandler(this.OptionsToolStripMenuItem_Click);
             // 
@@ -2662,7 +2667,7 @@
             this.NibSeparator,
             this.configurePathToNibtoolsToolStripMenuItem});
             this.nibToolsMenu.Name = "nibToolsMenu";
-            this.nibToolsMenu.Size = new System.Drawing.Size(124, 38);
+            this.nibToolsMenu.Size = new System.Drawing.Size(124, 36);
             this.nibToolsMenu.Text = "Nibtools";
             // 
             // NibReadImage
@@ -2705,7 +2710,7 @@
             this.recoverDBmenu,
             this.rebuildDBmenu});
             this.databaseToolStripMenuItem.Name = "databaseToolStripMenuItem";
-            this.databaseToolStripMenuItem.Size = new System.Drawing.Size(132, 38);
+            this.databaseToolStripMenuItem.Size = new System.Drawing.Size(132, 36);
             this.databaseToolStripMenuItem.Text = "Database";
             // 
             // browseDBmenu
@@ -2745,7 +2750,7 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(99, 38);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(99, 36);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItem_Click);
             // 
@@ -2756,6 +2761,12 @@
             // Options_Box
             // 
             this.Options_Box.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.Options_Box.Controls.Add(this.ProtDetectMethod);
+            this.Options_Box.Controls.Add(this.label26);
+            this.Options_Box.Controls.Add(this.EnableDBMenu);
+            this.Options_Box.Controls.Add(this.label25);
+            this.Options_Box.Controls.Add(this.label24);
+            this.Options_Box.Controls.Add(this.label5);
             this.Options_Box.Controls.Add(this.No_Warn);
             this.Options_Box.Controls.Add(this.DB_core_override);
             this.Options_Box.Controls.Add(this.DB_timers);
@@ -2765,15 +2776,79 @@
             this.Options_Box.Controls.Add(this.Pad_Tracks);
             this.Options_Box.Location = new System.Drawing.Point(2219, 933);
             this.Options_Box.Name = "Options_Box";
-            this.Options_Box.Size = new System.Drawing.Size(806, 319);
+            this.Options_Box.Size = new System.Drawing.Size(806, 494);
             this.Options_Box.TabIndex = 41;
             this.Options_Box.TabStop = false;
+            // 
+            // ProtDetectMethod
+            // 
+            this.ProtDetectMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ProtDetectMethod.FormattingEnabled = true;
+            this.ProtDetectMethod.Location = new System.Drawing.Point(339, 405);
+            this.ProtDetectMethod.Name = "ProtDetectMethod";
+            this.ProtDetectMethod.Size = new System.Drawing.Size(432, 33);
+            this.ProtDetectMethod.TabIndex = 49;
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(15, 413);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(317, 25);
+            this.label26.TabIndex = 48;
+            this.label26.Text = "Detect Copy Protection Method ";
+            // 
+            // EnableDBMenu
+            // 
+            this.EnableDBMenu.AutoSize = true;
+            this.EnableDBMenu.Checked = true;
+            this.EnableDBMenu.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.EnableDBMenu.Location = new System.Drawing.Point(15, 370);
+            this.EnableDBMenu.Name = "EnableDBMenu";
+            this.EnableDBMenu.Size = new System.Drawing.Size(506, 29);
+            this.EnableDBMenu.TabIndex = 47;
+            this.EnableDBMenu.Text = "Enable Database (collect / sort image collection)";
+            this.EnableDBMenu.UseVisualStyleBackColor = true;
+            this.EnableDBMenu.CheckedChanged += new System.EventHandler(this.EnableDBMenu_CheckedChanged);
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.label25.ForeColor = System.Drawing.Color.DarkBlue;
+            this.label25.Location = new System.Drawing.Point(216, 28);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(318, 25);
+            this.label25.TabIndex = 46;
+            this.label25.Text = "----[ ReMaster Main Options ]----";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.label24.ForeColor = System.Drawing.Color.DarkBlue;
+            this.label24.Location = new System.Drawing.Point(272, 338);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(220, 25);
+            this.label24.TabIndex = 45;
+            this.label24.Text = "----[    Database    ]----";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.label5.ForeColor = System.Drawing.Color.DarkBlue;
+            this.label5.Location = new System.Drawing.Point(243, 268);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(277, 25);
+            this.label5.TabIndex = 44;
+            this.label5.Text = "----[ Nibtools Integration ]----";
             // 
             // No_Warn
             // 
             this.No_Warn.AutoSize = true;
             this.No_Warn.ForeColor = System.Drawing.Color.Brown;
-            this.No_Warn.Location = new System.Drawing.Point(11, 237);
+            this.No_Warn.Location = new System.Drawing.Point(16, 296);
             this.No_Warn.Name = "No_Warn";
             this.No_Warn.Size = new System.Drawing.Size(753, 29);
             this.No_Warn.TabIndex = 43;
@@ -3595,17 +3670,6 @@
             this.WTA.UseVisualStyleBackColor = true;
             this.WTA.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
             // 
-            // PVbox
-            // 
-            this.PVbox.DetectUrls = false;
-            this.PVbox.Font = new System.Drawing.Font("Courier New", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PVbox.Location = new System.Drawing.Point(2254, 53);
-            this.PVbox.Name = "PVbox";
-            this.PVbox.ReadOnly = true;
-            this.PVbox.Size = new System.Drawing.Size(782, 1329);
-            this.PVbox.TabIndex = 45;
-            this.PVbox.Text = "";
-            // 
             // GB_NewDisk
             // 
             this.GB_NewDisk.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
@@ -3702,8 +3766,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(3725, 1412);
-            this.Controls.Add(this.PVbox);
+            this.ClientSize = new System.Drawing.Size(3725, 1616);
             this.Controls.Add(this.Write_GBox);
             this.Controls.Add(this.Read_GBox);
             this.Controls.Add(this.Options_Box);
@@ -4082,7 +4145,6 @@
         private System.Windows.Forms.ComboBox W_prot;
         private System.Windows.Forms.CheckBox WP;
         private System.Windows.Forms.CheckBox CBM_Fix;
-        private System.Windows.Forms.RichTextBox PVbox;
         private CustomBufferedPanel Blk_pan;
         private System.Windows.Forms.ToolStripMenuItem databaseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem browseDBmenu;
@@ -4091,5 +4153,11 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem addFolderDBmenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.CheckBox EnableDBMenu;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.ComboBox ProtDetectMethod;
+        private System.Windows.Forms.Label label26;
     }
 }

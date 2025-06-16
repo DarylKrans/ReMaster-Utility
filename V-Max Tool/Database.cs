@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -47,7 +46,9 @@ namespace V_Max_Tool
         bool sortAscending = true;
         bool ShowProgress = false;
         bool editing = false;
+        bool changesMade = false;
         bool favToggle = false;
+        bool dbCorrupt = false;
         //int currentEditIndex = -1;
         string lastNotes = string.Empty;
         private bool lastIconHoverState = false;
@@ -59,11 +60,19 @@ namespace V_Max_Tool
         private int regionSort = 0;
         private int lastSortedColumn = -1;
         List<int> dbRemoved = new List<int>();
+        private const int MAX_UNDO = 16;
+        List<UndoState> undoStack = new List<UndoState>();
+        List<RedoState> redoStack = new List<RedoState>();
         private int RegionColumn;
         private int[] skipColumns;
         private string lastColumnName = string.Empty;
+        private ListViewItem rightClickedItem = null;
         DiskInfo[] disk;
         ImageList icons = new ImageList();
+        RichTextBox PVbox = new RichTextBox
+        {
+            Font = new Font("Courier New", 12)
+        };
         Thread sort;
         ContextMenuStrip dbMenu = new ContextMenuStrip();
         ToolStripMenuItem lockItem = new ToolStripMenuItem("Lock Image");
@@ -109,10 +118,18 @@ namespace V_Max_Tool
 
         private System.Windows.Forms.ToolTip dbTooltip = new System.Windows.Forms.ToolTip();
 
-        private readonly Dictionary<int, string> Prot = new Dictionary<int, string> {
-            { 0, "None" }, { 1, "V-Max" }, { 2, "Vorpal" }, {3, "RapidLok" } , { 4, "Cyan" }, { 5, "GMA/Secruispeed" } , { 6, "RainbowArts" },
-            { 7, "Radwar" }, { 8, "PirateSlayer" }, { 9, "Fat Tracks" }, { 10, "MicroProse" }, { 11, "Custom" }
+        //private readonly Dictionary<int, string> Prot = new Dictionary<int, string> {
+        //    { 0, string.Empty }, { 1, "V-Max" }, { 2, "Vorpal" }, {3, "RapidLok" } , { 4, "Cyan" }, { 5, "Secruispeed" } , { 6, "RainbowArts" },
+        //    { 7, "Radwar" }, { 8, "PirateSlayer" }, { 9, "Fat Tracks" }, { 10, "MicroProse" }, { 11, "GMA" }, { 12, "Custom" }
+        //};
+
+        private readonly Dictionary<int, string> Prot = new Dictionary<int, string>
+        {
+            { 0, string.Empty }, { 1, "Cyan" }, { 2, "Custom" }, { 3, "Fat Tracks" }, { 4, "GMA" }, { 5, "MicroProse" },
+            { 6, "PirateSlayer" }, { 7, "Radwar" }, { 8, "RainbowArts" }, { 9, "RapidLok" }, { 10, "Secruispeed" },
+            { 11, "V-Max" }, { 12, "V-Max v2" }, { 13, "V-Max v3" }, { 14, "Vorpal" }
         };
+
 
         private readonly Dictionary<string, int> setRegion = new Dictionary<string, int>()
         {
@@ -163,17 +180,35 @@ namespace V_Max_Tool
 
         void SetDBContextItems()
         {
-            browseDBmenu.Enabled = disk?.Length - dbRemoved?.Count > 0;
-            recoverDBmenu.Visible = rebuildDBmenu.Visible = toolStripSeparator5.Visible = dbRemoved?.Count > 0;
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() =>
+                {
+                    browseDBmenu.Enabled = disk?.Length - dbRemoved?.Count > 0;
+                    recoverDBmenu.Visible = rebuildDBmenu.Visible = toolStripSeparator5.Visible = dbRemoved?.Count > 0;
+                }));
+            }
+            else
+            {
+                browseDBmenu.Enabled = disk?.Length - dbRemoved?.Count > 0;
+                recoverDBmenu.Visible = rebuildDBmenu.Visible = toolStripSeparator5.Visible = dbRemoved?.Count > 0;
+            }
         }
 
         void Setup_Database_Window()
         {
-            ReadDB(false, false);
-            dbRemoved = disk != null && disk.Length > 0 ? disk.Where(d => d.Marked).Select(d => d.Index).ToList() : new List<int>();
-            SetDBContextItems();
+            if (databaseToolStripMenuItem.Visible)
+            {
+                ReadDB(false, false);
+                dbRemoved = disk != null && disk?.Length > 0 ? disk.Where(d => d.Marked).Select(d => d.Index).ToList() : new List<int>();
+                SetDBContextItems();
+            }
             bool mClick = false;
             //databaseToolStripMenuItem.Visible = disk.Length > 0;
+            editPan.MouseMove += (s, e) => EditPan_MouseMove(s, e);
+            ProtDetectMethod.Enabled = EnableDBMenu.Checked;
+            //ProtDetectMethod.DataSource = new string[] { "Scan source on add (slower)", "Parse file-name for protection type", "Don't detect"};
+            databaseToolStripMenuItem.Visible = EnableDBMenu.Checked;
 
             icons.ImageSize = new Size(20, 20);
             icons.Images.Add("lock", Resources._lock);      // lock icon
@@ -235,8 +270,8 @@ namespace V_Max_Tool
             dStat.Width = dbView.Columns[7].Width;// - 40;
             dStat.Left = dProt.Left + dProt.Width;
             dStat.DataSource = new string[] { "( n/a )", "Good", "Works (with errors)", "Not working" };
-            List<string> list = new List<string>();
-            for (int p = 0; p < Prot.Count; p++) list.Add(Prot[p]);
+            List<string> list = new List<string> { "Auto-Detect" };
+            for (int p = 0; p < Prot.Count; p++) list.Add(Prot[p] == string.Empty ? "None" : Prot[p]);
             dProt.DataSource = list;
             editTitle.Width = dbView.Columns[1].Width - 70;
             editTitle.Top = 1;
@@ -454,6 +489,7 @@ namespace V_Max_Tool
                                     }
                                     catch { }
                             }
+                            else dataBase.Dispose();
                         }
                         dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
                         int lastidx = GetLastVisibleIndex(dbRemv);
@@ -550,7 +586,10 @@ namespace V_Max_Tool
                             }));
 
 
-                            BuildDB(path);
+                            //BuildDB(path);
+                            Invoke(new Action(() => Worker_Main = new Thread(new ThreadStart(() => BuildDB(path)))));
+                            Worker_Main.Start();
+                            Worker_Main.Join();
                             ReadDB(true, false);
                             Invoke(new Action(() =>
                             {
@@ -592,6 +631,13 @@ namespace V_Max_Tool
                 dbView.MouseDoubleClick += DbView_MouseDoubleClick;
                 dbView.MouseMove += DbView_MouseMove;
                 dbView.ColumnClick += DbView_ColumnClick;
+                dbView.MouseDown += (s, e) =>
+                {
+                    if (e.Button == MouseButtons.Right)
+                    {
+                        rightClickedItem = dbView.GetItemAt(e.X, e.Y);
+                    }
+                };
 
                 dbView.MouseClick += (s, e) =>
                 {
@@ -638,6 +684,7 @@ namespace V_Max_Tool
                                             }
                                             catch { }
                                         }
+                                        else dataBase.Dispose();
                                     }
                                     dbRemoved = disk.Where(d => d.Marked).Select(d => d.Index).ToList();
                                     int lastidx = GetLastVisibleIndex(dbRemv);
@@ -712,7 +759,12 @@ namespace V_Max_Tool
                     }
                     if (dbView.SelectedItems.Count > 1)
                     {
-                        Text = "Fuck off!, too many items (translation : you still need to add this functionality)";
+                        if (rightClickedItem != null)
+                        {
+                            bool anyLocked = AnySelectedItemsLocked();
+                            int index = (int)rightClickedItem.Tag;
+                            if (index >= 0 && index < disk.Length && !disk[index].Locked) EditItemHandler(index, true, anyLocked);
+                        }
                     }
                 };
 
@@ -723,7 +775,6 @@ namespace V_Max_Tool
                     foreach (ListViewItem item in dbView.SelectedItems)
                     {
                         var idx = (int)item.Tag;
-                        //Text = $"{idx} {disk[idx].Title} {disk[idx].Locked}";
                         remove.Add((int)item.Tag);
                     }
                     if (remove.Count > 1)
@@ -804,38 +855,55 @@ namespace V_Max_Tool
             lv.Invalidate();
         }
 
-        void EditItemHandler(int index)
+        bool AnySelectedItemsLocked()
+        {
+            foreach (ListViewItem lv in dbView.SelectedItems)
+            {
+                int index = (int)lv.Tag;
+                if (index >= 0 && index < disk.Length && disk[index].Locked)
+                    return true;
+            }
+            return false;
+        }
+
+        void EditItemHandler(int index, bool multiple = false, bool AnyLockedImages = false)
         {
             if (index >= 0 && index < disk.Length)
             {
                 editing = true;
                 BrowseDB.ControlBox = false;
-                //currentEditIndex = index;
                 var itemBounds = dbView.SelectedItems[0].Bounds;
                 int x = dbView.Left + itemBounds.Left + 24;
                 int y = dbView.Top + itemBounds.Top + 2;
+                if (multiple && rightClickedItem != null)
+                {
+                    itemBounds = rightClickedItem.Bounds;
+                    x = dbView.Left + itemBounds.Left + 24;
+                    y = dbView.Top + itemBounds.Top + 2;
+                    editPan.Location = new Point(x, y);
+                }
                 editPan.Top = y;
                 editPan.Left = x;
                 editPan.BringToFront();
                 editPan.Visible = true;
-                var idx = (int)dbView.SelectedItems[0].Tag;
-                bool locked = disk[idx].Locked;
-                editTitle.Text = disk[idx].Title;
+                var idx = !multiple ? (int)dbView.SelectedItems[0].Tag : (int)rightClickedItem.Tag;
+                bool locked = AnyLockedImages || disk[idx].Locked;
+                editTitle.Text = multiple ? "Multi-select-edit mode, Cannot change name" : disk[idx].Title;
                 dSide.Value = disk[idx].Side + 1;
                 dYear.Value = disk[idx].Year;
                 dRegn.SelectedIndex = disk[idx].Region;
-                dProt.SelectedIndex = disk[idx].Protection;
+                //dProt.SelectedIndex = disk[idx].Protection;
+                dProt.SelectedIndex = disk[idx].Protection + 1;
                 dStat.SelectedIndex = disk[idx].Status;
                 favToggle = disk[idx].Favorite;
                 dFav.BackgroundImage = favToggle ? ResizeIcon("star", 18, 14) : ResizeIcon("starU", 18, 14);
-                editTitle.Enabled = dSide.Enabled = dYear.Enabled = dRegn.Enabled = dProt.Enabled = dAddNotes.Enabled = !locked;
-                //editTitle.Visible = dSide.Visible = dYear.Visible = dRegn.Visible = dProt.Visible = dAddNotes.Visible = !locked;
+                editTitle.Enabled = dAddNotes.Visible = !locked && !multiple && !AnyLockedImages;
+                dSide.Enabled = dYear.Enabled = dRegn.Enabled = dProt.Enabled = !locked && (!multiple || !AnyLockedImages);
                 dNotes.Text = disk[idx].Notes;
                 dbTooltip.Hide(dbView);
                 editTitle.Focus();
                 dbView.Enabled = dbSearch.Enabled = false;
             }
-            //else currentEditIndex = -1;
         }
 
         Image ResizeIcon(string iconName, int width, int height)
@@ -954,6 +1022,7 @@ namespace V_Max_Tool
                                 var entry = disk[i].ToEntry();
                                 if (entry.Length == DiskInfo.ENTRY_SIZE)
                                 {
+                                    UpdateTempDir(i, entry);
                                     long seekidx = dataBase.Offset + (i * DiskInfo.ENTRY_SIZE);
                                     dataBase.Seek(seekidx);
                                     dataBase.Write(entry);
@@ -962,75 +1031,324 @@ namespace V_Max_Tool
                             catch { }
                         }
                     }
+                    else dataBase.Dispose();
                 }
             }
         }
 
-        void UpdateEditedItem()
+        void UpdateTempDir(int index, byte[] entry)
         {
-            bool updateTitle = dbView.SelectedItems.Count == 1;
-            foreach (ListViewItem lv in dbView.SelectedItems)
+            if (File.Exists(TEMP.dbTempDir))
             {
-                var index = (int)lv.Tag;
-                if (index >= 0 && index < disk.Length)
+                using (FileStream tdir = new FileStream(TEMP.dbTempDir, FileMode.Open, FileAccess.Write, FileShare.Read))
                 {
-                    if (!disk[index].Locked)
+                    long length = new System.IO.FileInfo(TEMP.dbTempDir).Length;
+                    if (length % DiskInfo.ENTRY_SIZE == 0 && index * DiskInfo.ENTRY_SIZE < length)
                     {
-                        if (updateTitle) disk[index].Title = editTitle.Text.Length <= DiskInfo.NAME_SIZE
-                                ? editTitle.Text
-                                : disk[index].Title;
-                        disk[index].Side = (int)dSide.Value - 1;
-                        disk[index].Region = dRegn.SelectedIndex;
-                        disk[index].Year = (int)dYear.Value;
-                        disk[index].Protection = (byte)dProt.SelectedIndex;
-                        if (updateTitle && changeNotes) disk[index].Notes = NotesChange;
+                        tdir.Seek(index * DiskInfo.ENTRY_SIZE, SeekOrigin.Begin);
+                        tdir.Write(entry, 0, entry.Length);
+                        tdir.Flush();
                     }
-                    disk[index].Status = dStat.SelectedIndex;
-                    disk[index].Favorite = favToggle;
-                    UpdateDBDirectory(new int[] { index });
-                    UpdateDiskInfoAndListView(index, lv);
                 }
             }
-            int lastidx = GetLastVisibleIndex(dbView);
+        }
+
+        void UndoClick()
+        {
+            if (undoStack.Count > 0)
+            {
+                var undo = undoStack.Count - 1;
+                var entrylist = Decompress(undoStack[undo].Data);
+                var indexes = undoStack[undo].Indexes;
+
+                Dictionary<int, ListViewItem> itemMap = dbView.Items
+                    .Cast<ListViewItem>()
+                    .ToDictionary(item => (int)item.Tag);
+                // Create a Redo option
+                using (MemoryStream buffer = new MemoryStream())
+                using (BinaryWriter writer = new BinaryWriter(buffer))
+                {
+                    foreach (int index in indexes) writer.Write(disk[index].ToEntry());
+                    redoStack.Add(new RedoState(indexes, Compress(buffer.ToArray())));
+                }
+
+                if (entrylist.Length % DiskInfo.ENTRY_SIZE == 0 && (entrylist.Length / DiskInfo.ENTRY_SIZE) == indexes.Length)
+                {
+                    using (MemoryStream buffer = new MemoryStream(entrylist))
+                    {
+                        for (int i = 0; i < indexes.Length; i++)
+                        {
+                            if (indexes[i] < 0 || indexes[i] >= disk.Length || indexes[i] >= dbView.Items.Count)
+                                continue;
+                            var temp = new byte[DiskInfo.ENTRY_SIZE];
+                            buffer.Seek(i * DiskInfo.ENTRY_SIZE, SeekOrigin.Begin);
+                            buffer.Read(temp, 0, temp.Length);
+                            CopyDiskInfoData(DiskInfo.FromEntry(temp), indexes[i]);
+                            if (itemMap.TryGetValue(indexes[i], out var item)) UpdateListView(item, disk[indexes[i]]);
+                        }
+                    }
+                }
+                undoStack.RemoveAt(undo);
+            }
+        }
+
+        void RedoClick()
+        {
+            if (redoStack.Count > 0)
+            {
+                var redo = redoStack.Count - 1;
+                var entrylist = Decompress(redoStack[redo].Data);
+                var indexes = redoStack[redo].Indexes;
+
+                Dictionary<int, ListViewItem> itemMap = dbView.Items
+                    .Cast<ListViewItem>()
+                    .ToDictionary(item => (int)item.Tag);
+                // Create an Undo state before redoing
+                using (MemoryStream buffer = new MemoryStream())
+                using (BinaryWriter writer = new BinaryWriter(buffer))
+                {
+                    foreach (int index in indexes)
+                        writer.Write(disk[index].ToEntry());
+
+                    undoStack.Add(new UndoState(indexes, Compress(buffer.ToArray())));
+                    if (undoStack.Count > MAX_UNDO)
+                        undoStack.RemoveAt(0);
+                }
+
+                if (entrylist.Length % DiskInfo.ENTRY_SIZE == 0 &&
+                    (entrylist.Length / DiskInfo.ENTRY_SIZE) == indexes.Length)
+                {
+                    using (MemoryStream buffer = new MemoryStream(entrylist))
+                    {
+                        for (int i = 0; i < indexes.Length; i++)
+                        {
+                            if (indexes[i] < 0 || indexes[i] >= disk.Length || indexes[i] >= dbView.Items.Count)
+                                continue;
+
+                            var temp = new byte[DiskInfo.ENTRY_SIZE];
+                            buffer.Seek(i * DiskInfo.ENTRY_SIZE, SeekOrigin.Begin);
+                            buffer.Read(temp, 0, temp.Length);
+                            CopyDiskInfoData(DiskInfo.FromEntry(temp), indexes[i]);
+                            if (itemMap.TryGetValue(indexes[i], out var item)) UpdateListView(item, disk[indexes[i]]);
+                        }
+                    }
+                }
+                redoStack.RemoveAt(redo);
+            }
+        }
+
+        void CopyDiskInfoData(DiskInfo source, int index)
+        {
+            if (source == null || disk == null || index < 0 || index >= disk.Length) return;
+            disk[index].Locked = source.Locked;
+            disk[index].Title = source.Title;
+            disk[index].Side = source.Side;
+            disk[index].Region = source.Region;
+            disk[index].Year = source.Year;
+            disk[index].Protection = source.Protection;
+            disk[index].Notes = source.Notes;
+            disk[index].Status = source.Status;
+            disk[index].Favorite = source.Favorite;
+        }
+
+
+        void AddUndoState()
+        {
+            List<int> idx = new List<int>();
+            using (MemoryStream buffer = new MemoryStream())
+            using (BinaryWriter write = new BinaryWriter(buffer))
+            {
+                bool anyChanges = false;
+        
+                foreach (ListViewItem lv in dbView.SelectedItems)
+                {
+                    int index = (int)lv.Tag;
+                    if (index < 0 || index >= disk.Length)
+                        continue;
+        
+                    // Create a copy of current data
+                    byte[] currentEntry = disk[index].ToEntry();
+        
+                    // Compare with last undo state if it exists
+                    if (undoStack.Count > 0)
+                    {
+                        var last = undoStack[undoStack.Count - 1]; 
+                        int matchIdx = Array.IndexOf(last.Indexes, index);
+                        if (matchIdx != -1)
+                        {
+                            var lastData = Decompress(last.Data);
+                            var prevEntry = new byte[DiskInfo.ENTRY_SIZE];
+                            Buffer.BlockCopy(lastData, matchIdx * DiskInfo.ENTRY_SIZE, prevEntry, 0, DiskInfo.ENTRY_SIZE);
+                            if (currentEntry.SequenceEqual(prevEntry))
+                                continue; // no change for this index
+                        }
+                    }
+        
+                    idx.Add(index);
+                    write.Write(currentEntry);
+                    anyChanges = true;
+                }
+        
+                if (anyChanges)
+                {
+                    undoStack.Add(new UndoState(idx.ToArray(), Compress(buffer.ToArray())));
+                    if (undoStack.Count > MAX_UNDO)
+                        undoStack.RemoveAt(0);
+                }
+            }
+        }
+
+        //void AddUndoState()
+        //{
+        //    List<int> idx = new List<int>();
+        //    using (MemoryStream buffer = new MemoryStream())
+        //    using (BinaryWriter write = new BinaryWriter(buffer))
+        //    {
+        //        foreach (ListViewItem lv in dbView.SelectedItems)
+        //        {
+        //            int index = (int)lv.Tag;
+        //            if (index < 0 || index >= disk.Length)
+        //                continue;
+        //            idx.Add(index);
+        //            write.Write(disk[index].ToEntry());
+        //
+        //        }
+        //        undoStack.Add(new UndoState(idx.ToArray(), Compress(buffer.ToArray())));
+        //        if (undoStack.Count > MAX_UNDO) undoStack.RemoveAt(0);
+        //    }
+        //}
+
+        void AddRedoState()
+        {
+            List<int> idx = new List<int>();
+            using (MemoryStream buffer = new MemoryStream())
+            using (BinaryWriter write = new BinaryWriter(buffer))
+            {
+                foreach (ListViewItem lv in dbView.SelectedItems)
+                {
+                    int index = (int)lv.Tag;
+                    if (index < 0 || index >= disk.Length)
+                        continue;
+                    idx.Add(index);
+                    write.Write(disk[index].ToEntry());
+                }
+                redoStack.Add(new RedoState(idx.ToArray(), buffer.ToArray())); // Reuse UndoState structure
+                if (redoStack.Count > MAX_UNDO) redoStack.RemoveAt(0);
+            }
+        }
+
+        void UpdateEditedItem(bool addUndo = true)
+        {
+            int totalItems = dbView.SelectedItems.Count;
+            int currentItem = 0;
+            bool updateTitle = totalItems == 1;
+            bool DetectProt = dProt.SelectedIndex == 0;
+            // Cache control values first
+            string newTitle = updateTitle ? editTitle.Text : null;
+            string newNotes = updateTitle && changeNotes ? NotesChange : null;
+            int newSide = (int)dSide.Value - 1;
+            int newRegion = dRegn.SelectedIndex;
+            int newYear = (int)dYear.Value;
+            byte newProtection = !DetectProt ? (byte)(dProt.SelectedIndex - 1) : (byte)0;
+            int newStatus = dStat.SelectedIndex;
+            bool newFavorite = favToggle;
+            bool progressUpdates = (DetectProt && totalItems > 4) || totalItems > 100;
+            if (progressUpdates)
+            {
+                dbProg.Maximum = 100 * 100;
+                dbProg.Value = 100;
+                dbProg.BringToFront();
+            }
+            List<int> updatedItems = new List<int>();
+            List<ListViewItem> listViewItems = new List<ListViewItem>();
+            if (addUndo) AddUndoState();
+            foreach (ListViewItem lv in dbView.SelectedItems)
+            {
+                int index = (int)lv.Tag;
+                if (index < 0 || index >= disk.Length)
+                    continue;
+
+                if (!disk[index].Locked)
+                {
+                    if (updateTitle)
+                        disk[index].Title = newTitle.Length <= DiskInfo.NAME_SIZE ? newTitle : disk[index].Title;
+
+                    disk[index].Side = newSide;
+                    disk[index].Region = newRegion;
+                    disk[index].Year = newYear;
+                    disk[index].Protection = !DetectProt ? newProtection : GetProtectionType(GetNIBData(index));
+
+                    if (updateTitle && changeNotes) disk[index].Notes = newNotes;
+                }
+                if (progressUpdates && currentItem++ > 0)
+                {
+                    dbProg.Maximum = (int)((double)dbProg.Value / (double)(currentItem + 1) * totalItems);
+                }
+                disk[index].Status = newStatus;
+                disk[index].Favorite = newFavorite;
+
+                updatedItems.Add(index);
+                listViewItems.Add(lv);
+            }
+            dbProg.SendToBack();
+            var indexes = updatedItems.ToArray();
+            UpdateDBDirectory(indexes);
+            dbView.BeginUpdate();
+            UpdateDiskInfoAndListView(indexes, listViewItems.ToArray());
+            dbView.EndUpdate();
+
             BrowseDB.ControlBox = true;
-            //currentEditIndex = -1;
             editing = editPan.Visible = false;
             dbView.Enabled = dbSearch.Enabled = true;
             dbView.Focus();
         }
 
-        void UpdateDiskInfoAndListView(int DiskIndex, ListViewItem lv)
+        void UpdateDiskInfoAndListView(int[] DiskIndex, ListViewItem[] lv)
         {
+            if (lv == null || DiskIndex == null) return;
             try
             {
+                bool showProg = DiskIndex.Length > 100;
+                if (showProg)
+                {
+                    dbProg.Maximum = 100 * 100;
+                    dbProg.Value = 100;
+                    dbProg.BringToFront();
+                }
                 using (AccessDatabase getent = new AccessDatabase().ReadOnly(TEMP.dbPath))
                 {
                     if (getent.Valid)
                     {
-                        var temp = getent.GetDirectoryEntry(DiskIndex);
-                        if (temp != null)
+                        for (int i = 0; i < DiskIndex.Length; i++)
                         {
-                            disk[DiskIndex].Locked = temp.Locked;
-                            disk[DiskIndex].Title = temp.Title;
-                            disk[DiskIndex].Side = temp.Side;
-                            disk[DiskIndex].Region = temp.Region;
-                            disk[DiskIndex].Year = temp.Year;
-                            disk[DiskIndex].Protection = temp.Protection;
-                            disk[DiskIndex].Favorite = temp.Favorite;
-                            disk[DiskIndex].Status = temp.Status;
-                            disk[DiskIndex].Notes = temp.Notes;
+                            var temp = getent.GetDirectoryEntry(DiskIndex[i]);
+                            if (temp != null)
+                            {
+                                CopyDiskInfoData(temp, DiskIndex[i]);
+                                UpdateListView(lv[i], disk[DiskIndex[i]]);
+                            }
+                            if (showProg && i > 1)
+                            {
+                                dbProg.Maximum = (int)((double)dbProg.Value / (double)(i + 1) * DiskIndex.Length);
+                                dbProg.Update();
+                            }
                         }
-                        lv.SubItems[1].Text = disk[DiskIndex].Title;
-                        lv.SubItems[3].Text = $"{disk[DiskIndex].Side + 1}";
-                        lv.SubItems[4].Text = $"{(disk[DiskIndex].Year > 1970 ? $"{disk[DiskIndex].Year}" : string.Empty)}";
-                        lv.SubItems[5].Text = $"{getRegion[disk[DiskIndex].Region]}";
-                        lv.SubItems[6].Text = $"{Prot[disk[DiskIndex].Protection]}";
                     }
+                    else getent.Dispose();
                 }
             }
             catch { }
+            dbProg.SendToBack();
         }
 
+        void UpdateListView(ListViewItem lvi, DiskInfo disk)
+        {
+            lvi.SubItems[1].Text = disk.Title;
+            lvi.SubItems[3].Text = $"{disk.Side + 1}";
+            lvi.SubItems[4].Text = $"{(disk.Year > 1970 ? $"{disk.Year}" : string.Empty)}";
+            lvi.SubItems[5].Text = $"{getRegion[disk.Region]}";
+            lvi.SubItems[6].Text = $"{Prot[disk.Protection]}";
+        }
         void RemoveEntries(int[] indexes, string promptTitle = null, string promptMessage = null)
         {
             if (indexes == null || indexes.Length == 0) return;
@@ -1073,6 +1391,7 @@ namespace V_Max_Tool
         {
             if (dbView.SelectedItems.Count > 0)
             {
+                AddUndoState();
                 bool lockfile = s.Equals(lockItem);
                 List<int> selected = new List<int>();
                 dbView.BeginUpdate();
@@ -1082,8 +1401,8 @@ namespace V_Max_Tool
                     disk[index].Locked = lockfile; // true;
                     selected.Add(index);
                 }
-                dbView.EndUpdate();
                 UpdateDBDirectory(selected.ToArray());
+                dbView.EndUpdate();
             }
         }
 
@@ -1091,6 +1410,7 @@ namespace V_Max_Tool
         {
             if (dbView.SelectedItems.Count > 0)
             {
+                AddUndoState();
                 bool fav = s.Equals(favItem);
                 List<int> selected = new List<int>();
                 dbView.BeginUpdate();
@@ -1100,8 +1420,8 @@ namespace V_Max_Tool
                     disk[index].Favorite = fav; // true;
                     selected.Add(index);
                 }
-                dbView.EndUpdate();
                 UpdateDBDirectory(selected.ToArray());
+                dbView.EndUpdate();
             }
         }
 
@@ -1149,7 +1469,7 @@ namespace V_Max_Tool
                             string t = "Bad Header!";
                             string s = "Image is corrupt and cannot be opened";
                             MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            error = true;
+                            //error = true;
                         }
                     }
                 }
@@ -1170,7 +1490,24 @@ namespace V_Max_Tool
         {
             using (var dataBase = new AccessDatabase().ReadOnly(TEMP.dbPath))
             {
-                if (dataBase.Valid)
+                if ((!dataBase.Valid || dbCorrupt) && showErrorMSG)
+                {
+                    dataBase.Close();
+                    Invoke(new Action(() =>
+                    {
+                        using (Message_Center msg = new Message_Center(this))
+                        {
+                            DialogResult result = MessageBox.Show("Would you like to attempt recovering?",
+                                "Database has been corrupted", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            if (result == DialogResult.Yes)
+                            {
+                                RecoverDatabase();
+                                ReadDB(false, false);
+                            }
+                        }
+                    }));
+                }
+                else
                 {
                     try
                     {
@@ -1190,13 +1527,13 @@ namespace V_Max_Tool
                     {
                         if (showErrorMSG)
                         {
-                            error = true;
+                            //error = true;
+                            dbCorrupt = true;
                             string title = "Error accessing database.";
                             string message = ex.Message;
                             MessageForYouSir(title, message);
                         }
                     }
-
                 }
             }
 
@@ -1277,17 +1614,20 @@ namespace V_Max_Tool
                         return (Match(Checksum.MD5(dec), disk[entry].rawHash)) ? dec : null;
                     }
                 }
+                else dataBase.Dispose();
                 return null;
             }
         }
 
         bool Remove_Items_From_Database() //, bool IgnoreLockStatus = false)
         {
-            string tempPath = $@"c:\test\temp.db";
+            string tempPath = TEMP.dbTemp;
             if (File.Exists(tempPath)) File.Delete(tempPath);
+            byte[] newDir;
             using (var current = new AccessDatabase().ReadOnly(TEMP.dbPath))
             using (var temp = new AccessDatabase().Create(tempPath))
             {
+                ClearStacks();
                 using (MemoryStream buffer = new MemoryStream())
                 using (BinaryWriter write = new BinaryWriter(buffer))
                 {
@@ -1314,7 +1654,8 @@ namespace V_Max_Tool
                         }
                     }
                     temp.UpdateHeader();
-                    temp.WriteDirectory(buffer.ToArray());
+                    newDir = buffer.ToArray();
+                    temp.WriteDirectory(newDir);
                 }
             }
             if (VerifyDBintegrity(tempPath) > 0)
@@ -1324,8 +1665,13 @@ namespace V_Max_Tool
             }
             else
             {
-                File.Replace(tempPath, TEMP.dbPath, destinationBackupFileName: null);
-                return true;
+                try
+                {
+                    File.Replace(tempPath, TEMP.dbPath, destinationBackupFileName: null);
+                    if (newDir != null) File.WriteAllBytes(TEMP.dbTempDir, newDir);
+                    return true;
+                }
+                catch { return false; }
             }
         }
 
@@ -1350,10 +1696,21 @@ namespace V_Max_Tool
                         }
                         catch { failed++; }
                     }
+                    dbCorrupt = failed > 0;
                     return failed;
                 }
-                else return 65536;
+                else
+                {
+                    verify.Dispose();
+                    return 65536;
+                }
             }
+        }
+
+        void ClearStacks()
+        {
+            undoStack.Clear();
+            redoStack.Clear();
         }
 
         void BuildDB(string rpath)
@@ -1362,15 +1719,16 @@ namespace V_Max_Tool
             {
                 { ".nib", 0 } ,{ ".nbz", 1 }, { ".g64", 2 }
             };
-            Random rand = new Random();
+            int detect = ProtDetectMethod.SelectedIndex;
             var ttl = Text;
             using (var dataBase = !File.Exists(TEMP.dbPath)
                 ? new AccessDatabase().Create(TEMP.dbPath)
                 : new AccessDatabase().ReadWrite(TEMP.dbPath))
             {
-                if (dataBase.Valid)
+                if (!dataBase.Valid) dataBase.Dispose();
+                else
                 {
-                    //string rpath = @"c:\test\test2";
+                    ClearStacks();
                     string[] file = Directory.EnumerateFiles(rpath, "*.nib", SearchOption.AllDirectories)
                         .Concat(Directory.EnumerateFiles(rpath, "*.nbz", SearchOption.AllDirectories))
                         .ToArray();
@@ -1384,6 +1742,7 @@ namespace V_Max_Tool
                             var old = dataBase.Read(dataBase.Entries * DiskInfo.ENTRY_SIZE);
                             write.Write(old);
                         }
+                        if (buffer.Length > 0) WriteTempDir(buffer.ToArray(), true);
                         foreach (var f in file)
                         {
                             try
@@ -1399,13 +1758,11 @@ namespace V_Max_Tool
                                 var cmp = Compress(dec);
                                 dataBase.Seek(dataBase.Offset);
                                 dataBase.Write(ArrayConcat(cmp, preview));
-                                var notes = rand.Next(3) == 0 ? Get_Name(Path.GetFileNameWithoutExtension(f.Replace("_", " "))) : string.Empty;
                                 DiskInfo info = new DiskInfo
                                 {
                                     Offset = dataBase.Offset,
                                     rawHash = Checksum.MD5(dec),
                                     crc32 = Checksum.CRC32(cmp),
-                                    Locked = dataBase.Offset % 2 == 0,
                                     DecompressedLength = dec.Length,
                                     CompressedLength = cmp.Length,
                                     PreviewLength = (short)preview.Length,
@@ -1413,15 +1770,19 @@ namespace V_Max_Tool
                                     Timestamp = DateTime.Now,
                                     Year = Get_Year(f),
                                     Title = Get_Name(Path.GetFileNameWithoutExtension(f.Replace("_", " "))),
-                                    Protection = Get_Protection(f),
                                     Region = Get_Region(f, pv),
                                     Side = (byte)Get_DiskSide(f),
-                                    Notes = notes, //Get_Name(Path.GetFileNameWithoutExtension(f.Replace("_", " "))),
                                     Extension = fileExt[extension],
-                                    Favorite = rand.Next(5) == 0,
-                                    Status = rand.Next(4),
                                 };
-                                write.Write(info.ToEntry());
+                                switch (detect)
+                                {
+                                    case 0: info.Protection = GetProtectionType(dec); break;
+                                    case 1: info.Protection = Get_ProtectionFromFileName(Path.GetFileNameWithoutExtension(f)); break;
+                                    case 2: info.Protection = (byte)0; break;
+                                }
+                                var newent = info.ToEntry();
+                                WriteTempDir(newent);
+                                write.Write(newent);
                                 dataBase.Offset += info.CompressedLength + info.PreviewLength;
                                 Invoke(new Action(() =>
                                 {
@@ -1434,7 +1795,6 @@ namespace V_Max_Tool
                             if (cancel) break;
                         }
                         cancel = false;
-                        //Invoke(new Action(()=> Text = ttl));
                         dataBase.WriteDirectory(buffer.ToArray());
                     }
 
@@ -1477,29 +1837,262 @@ namespace V_Max_Tool
                         return 1970;
                     }
 
-                    byte Get_Protection(string f)
+                    byte Get_ProtectionFromFileName(string f)
                     {
                         int prt = -1;
-                        if (f.Contains("vmax2".ToLower())) prt = 1;
-                        if (f.Contains("vmax3".ToLower()) || f.Contains("vmax4".ToLower())) prt = 1;
-                        if (f.Contains("(rl".ToLower())) prt = 6;
-                        if (f.Contains("[ea_".ToLower())) prt = 8;
+                        if (f.Contains("vmax2".ToLower())) prt = 12;
+                        if (f.Contains("vmax3".ToLower()) || f.Contains("vmax4".ToLower())) prt = 13;
+                        if (f.Contains("(rl".ToLower())) prt = 9;
+                        if (f.Contains("[ea_".ToLower())) prt = 6;
+                        if (f.Contains("(cyan".ToLower())) prt = 1;
+                        if (f.Contains("(radwar".ToLower())) prt = 7;
+                        if (f.Contains("[rainbow_arts".ToLower()) || f.Contains("[magic_bytes".ToLower())) prt = 8;
+                        if (f.Contains("(gma".ToLower())) prt = 4;
 
                         if (prt < 0)
                         {
                             var p = Path.GetDirectoryName(f).ToLower();
-                            if (p.Contains("vmax")) prt = 1;
-                            if (p.Contains("vorpal")) prt = 2;
-                            if (p.Contains("rapidlok")) prt = 3;
-                            if (p.Contains("cyan")) prt = 4;
-                            if (p.Contains("securispeed")) prt = 5;
-                            if (p.Contains("rainbow")) prt = 6;
+                            if (p.Contains("vmax")) prt = 11;
+                            if (p.Contains("vorpal")) prt = 14;
+                            if (p.Contains("rapidlok")) prt = 9;
+                            if (p.Contains("cyan")) prt = 1;
+                            if (p.Contains("securispeed")) prt = 10;
+                            if (p.Contains("rainbow")) prt = 8;
                             if (p.Contains("radwar")) prt = 7;
-                            if (p.Contains("fat")) prt = 9;
-                            if (p.Contains("microprose")) prt = 10;
+                            if (p.Contains("fat")) prt = 3;
+                            if (p.Contains("microprose")) prt = 5;
                         }
                         return (byte)(prt < 0 ? 0 : prt);
                     }
+                }
+            }
+
+            void WriteTempDir(byte[] entry, bool overwrite = false)
+            {
+                if (overwrite && File.Exists(TEMP.dbTempDir)) File.Delete(TEMP.dbTempDir);
+                using (FileStream tdir = new FileStream(TEMP.dbTempDir, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read))
+                {
+                    tdir.Seek(0, SeekOrigin.End); // Move to the end for appending
+                    tdir.Write(entry, 0, entry.Length);
+                    tdir.Flush();
+                }
+            }
+        }
+
+        byte GetProtectionType(byte[] nibFile)
+        {
+            if (nibFile == null) return 0;
+            try
+            {
+                int tracks = (nibFile.Length - 256) >> 13;
+                bool ht = tracks > 42;
+                var trkData = new byte[tracks][];
+                int[] fmt = new int[tracks];
+                int[] trkID = new int[tracks];
+                Job = new Thread[tracks];
+                for (int i = 0; i < tracks; i++)
+                {
+                    try
+                    {
+                        trkData[i] = new byte[8192];
+                        Buffer.BlockCopy(nibFile, 256 + (i * 8192), trkData[i], 0, 8192);
+                    }
+                    catch { }
+                }
+                for (int i = 0; i < tracks; i++)
+                {
+                    int x = i;
+                    Task_Limit.WaitOne();
+                    Job[i] = new Thread(new ThreadStart(() =>
+                    {
+                        try
+                        {
+                            fmt[x] = Get_Data_Fmt2(trkData[x], x, false);
+                            if (fmt[x] == 1 || fmt[x] == 10) trkID[x] = CBM_Track_Info(trkData[x], false, x, fmt[x] == 1).Item11;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Get Format failed during nib-parse: {ex.Message}");
+                        }
+                        Task_Limit.Release();
+                    }));
+                    Job[i].Start();
+                    if (ht) fmt[i++] = secF.Length - 1;
+                }
+                foreach (Thread t in Job) t?.Join();
+
+                CheckFormats();
+                int protection = 0;
+                int maxtrack = ht ? 67 : 34;
+                bool vorpal = fmt.Select((val, idx) => new { val, idx }).Count(x => x.val == 5 && x.idx <= maxtrack) > 3;
+                bool rapidlok = fmt.Select((val, idx) => new { val, idx }).Count(x => x.val == 6 && x.idx <= maxtrack) > 5;
+                bool microprose = fmt.Select((val, idx) => new { val, idx }).Count(x => x.val == 10 && x.idx <= maxtrack) > 3;
+                bool custom = (fmt.Select((val, idx) => new { val, idx })
+                    .Count(x => x.val == 0 && x.idx <= maxtrack) - (ht ? maxtrack >> 1 : 0)) > 5;
+                bool vmaxCBM = false;
+                bool vmaxV2 = false;
+                bool vmaxV3 = false;
+                bool fatTracks = false;
+                bool radwar = false;
+                bool deepcheck = !vorpal && !rapidlok && !microprose;
+                if (deepcheck)
+                {
+                    bool halftracks = tracks > 42;
+                    for (int i = 0; i < tracks; i++)
+                    {
+                        if (fmt[i] > 0 && fmt[i] < secF.Length - 1) // && tlen[i] >> 3 > 6000)
+                        {
+                            int halfTrack = ht ? 2 : 1;
+                            int track = ht ? (i / 2) + 1 : i + 1;
+                            if (fmt[i] >= 0 && fmt[i] < secF.Length - 1)
+                            {
+                                vmaxV2 |= fmt[i] == 2;
+                                vmaxV3 |= fmt[i] == 3;
+                            }
+                            if (fmt[i] == 1)
+                            {
+                                halfTrack = ht ? 2 : 1;
+                                try
+                                {
+                                    if (track < 37 && ((track != trkID[i] && track == trkID[i] + 1)
+                                       || (i + halfTrack < trkID.Length && track == trkID[i + halfTrack]))) fatTracks = true;
+                                }
+                                catch { }
+                                if (track == 18)
+                                {
+                                    int[] cbmRange = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+                                    if (cbmRange.All(x => !fmt.Any(y => y == x))) radwar = Radwar(trkData[i]).Item1;
+                                }
+                            }
+                        }
+                    }
+                    var dirTrack = ht ? 34 : 17;
+                    var cyanTrack = ht ? 8 : 4;
+                    var vmloaderTrack = ht ? 38 : 19;
+                    if (vmaxV2) protection = 12;
+                    if (vmaxV3) protection = 13;
+                    if (!(vmaxV2 || vmaxV3) && fmt[dirTrack] == 1)
+                    {
+                        if (fmt[vmloaderTrack] == 4) vmaxCBM = true;
+                        else
+                        {
+                            string s0 = Encoding.ASCII.GetString(Decode_CBM_Sector(trkData[dirTrack], 0, true).data).ToLower();
+                            string s1 = Encoding.ASCII.GetString(Decode_CBM_Sector(trkData[dirTrack], 1, true).data).ToLower();
+                            if ((s0 != null && s0.Contains("v-max")) || (s1 != null && s1.Contains("v-max"))) vmaxCBM = true;
+                        }
+                        protection = vmaxCBM ? 11 : 0;              // V-Max CBM / None
+                    }
+                    if (protection == 0)
+                    {
+                        if (fatTracks) protection = 3;              // Fat Tracks
+                        if (fmt.Any(x => x == 11)) protection = 10; // Securispeed
+                        if (fmt.Any(x => x == 12)) protection = 4;  // GMA
+                        if (fmt.Any(x => x == 9)) protection = 8;   // Rainbow Arts / Magic Bytes
+                        if (fmt[cyanTrack] == 1 && Check_Cyan_Loader(trkData[cyanTrack])) protection = 1;    // Cyan
+                        if (radwar) protection = 7;                 // Radwar
+                    }
+                }
+
+                if (!vmaxCBM && !vmaxV2 && !vmaxV3)
+                {
+                    if (rapidlok) protection = 9;
+                    if (vorpal) protection = 14;
+                    if (microprose) protection = 5;
+                    if (custom) protection = 2;
+                    if (fmt.Any(x => x == 8)) protection = 6;       // EA
+                }
+
+                return (byte)protection;
+
+                bool Check_Cyan_Loader(byte[] trackData)
+                {
+                    byte[] cmp;
+                    cmp = Decode_CBM_Sector(trackData, 5, true).data;
+                    if (cmp == null) return false;
+                    int match = 0;
+                    for (int i = 0; i < cmp.Length; i++) if (cmp[i] == cldr_id[i]) match++;
+                    return match > 240;
+                }
+
+                void CheckFormats()
+                {
+                    int m = Find_Most_Frequent_Format(NDS.cbm);
+                    int[] skip = new int[] { 0, 1, 4, 7, 8, 9, 11, secF.Length - 1 };
+                    if (!(skip.Any(x => x == m)))
+                    {
+                        HashSet<int> ignore = new HashSet<int>();
+                        if (m == 2 || m == 3) ignore.UnionWith(new int[] { 0, 1, 4 });
+                        if (m == 5 || m == 10) ignore.UnionWith(new int[] { 0, 1, secF.Length - 1 });
+                        if (m == 6) ignore.UnionWith(new int[] { 0, 1, 7, secF.Length - 1 });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Get Format failed : {ex.Message}");
+                return 0;
+            }
+        }
+
+        void RecoverDatabase()
+        {
+            if (File.Exists(TEMP.dbPath) && File.Exists(TEMP.dbTempDir))
+            {
+                var tempPath = TEMP.dbTemp;
+                using (FileStream tempdir = new FileStream(TEMP.dbTempDir, FileMode.Open, FileAccess.Read))
+                using (AccessDatabase recover = new AccessDatabase().ReadWrite(TEMP.dbPath))
+                {
+                    int dbEnt = recover.Entries;
+                    long dbOffset = recover.Offset;
+                    long length = new System.IO.FileInfo(TEMP.dbTempDir).Length;
+                    int entries = (length % DiskInfo.ENTRY_SIZE == 0) ? (int)(length / DiskInfo.ENTRY_SIZE) : -1;
+                    if (entries > 0)
+                    {
+                        List<DiskInfo> entList = new List<DiskInfo>();
+                        for (int i = 0; i < entries; i++)
+                        {
+                            tempdir.Seek(i * DiskInfo.ENTRY_SIZE, SeekOrigin.Begin);
+                            byte[] ent = new byte[DiskInfo.ENTRY_SIZE];
+                            tempdir.Read(ent, 0, ent.Length);
+                            if (ent != null) entList.Add(DiskInfo.FromEntry(ent));
+                        }
+                        using (AccessDatabase temp = new AccessDatabase().Create(tempPath))
+                        {
+                            using (MemoryStream buffer = new MemoryStream())
+                            using (BinaryWriter write = new BinaryWriter(buffer))
+                            {
+                                foreach (DiskInfo ent in entList)
+                                {
+                                    var data = recover.GetImageData(ent);
+                                    var preview = recover.GetPreviewData(ent);
+                                    if (data != null && preview != null)
+                                    {
+                                        if (Checksum.CRC32(data) == ent.crc32 && Checksum.CRC16(preview) == ent.crc16)
+                                        {
+                                            ent.Offset = temp.Offset;
+                                            write.Write(ent.ToEntry());
+                                            temp.Seek(temp.Offset);
+                                            temp.Write(ArrayConcat(data, preview));
+                                            temp.Offset += data.Length + preview.Length;
+                                            temp.Entries++;
+                                        }
+                                        else Text = $"Failed Entry {entries}";
+                                    }
+                                    temp.UpdateHeader();
+                                    temp.WriteDirectory(buffer.ToArray());
+                                }
+                            }
+                        }
+                    }
+                }
+                if (VerifyDBintegrity(tempPath) > 0) File.Delete(tempPath);
+                else
+                {
+                    try
+                    {
+                        File.Replace(tempPath, TEMP.dbPath, destinationBackupFileName: null);
+                    }
+                    catch { }
                 }
             }
         }
@@ -1536,12 +2129,16 @@ namespace V_Max_Tool
                         else
                         {
                             ReadDB();
-                            var sortedList = disk.OrderBy(d => d.Title).ToList();
-                            Invoke(new Action(() =>
+                            if (!dbCorrupt)
                             {
-                                UpdateList(RegionFilter(sortedList), true);
-                                SetDBContextItems();
-                            }));
+                                var sortedList = disk.OrderBy(d => d.Title).ToList();
+                                Invoke(new Action(() =>
+                                {
+                                    UpdateList(RegionFilter(sortedList), true);
+                                    SetDBContextItems();
+                                }));
+                            }
+                            else RecoverDatabase();
                         }
                         Invoke(new Action(() =>
                         {
@@ -1791,6 +2388,28 @@ namespace V_Max_Tool
             }
         }
 
+        private void EditPan_MouseMove(object sender, MouseEventArgs e)
+        {
+            Control hovered = editPan.GetChildAtPoint(e.Location);
+            if (hovered != null && !hovered.Enabled)
+            {
+                string tip;
+                bool isMulti = dbView.SelectedItems.Count > 1;
+                bool anyLocked = AnySelectedItemsLocked();
+
+                // Only these fields are disabled *purely* due to multi-edit mode
+                bool multiEditOnlyField = hovered == editTitle || hovered == dAddNotes;
+                if (isMulti)
+                {
+                    if (anyLocked && !multiEditOnlyField) tip = "Multi-edit mode, field disabled\ndue to locked image(s) in selection";
+                    else tip = "Multi-edit mode, field cannot be changed";
+                }
+                else tip = "Image locked, field cannot be changed";
+                dbTooltip.Show(tip, editPan, e.Location.X + 32, e.Location.Y);
+            }
+            else dbTooltip.Hide(editPan);
+        }
+
         private void DbView_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
             int transparency = 80;
@@ -1799,17 +2418,16 @@ namespace V_Max_Tool
             string search = sender == dbView ? dbSearch.Text.Trim() : string.Empty;
             bool hasSearch = sender == dbView && !string.IsNullOrEmpty(search);
             string text = e.SubItem.Text;
-
             // Background color logic
-            Color backColor = isSelected ? (e.ItemIndex % 2 == 0 ? Color.FromArgb(150, 0, 30, 200) : Color.FromArgb(180, 0, 30, 200))
+            Color backColor = isSelected ? (e.ItemIndex % 2 == 0 ? Color.FromArgb(105, 123, 223) : Color.FromArgb(75, 96, 216))
                 : (e.ItemIndex % 2 == 0 ? Color.FromArgb(230, 230, 230) : Color.FromArgb(200, 200, 200));
-            Color HiBack = Color.FromArgb(150, 188, 128, 0);
+            if (editing) backColor = ApplyMultiplyModifier(backColor, 1.1f);
+            Color HiBack = Color.FromArgb(188, 128, 0);
 
             // Text color logic
             Color normalColor = isSelected ? SystemColors.HighlightText : Color.Black;
             Color hoverColor = isSelected ? Color.Yellow : Color.Blue;
-            Color textColor = isHovered ? hoverColor : normalColor;
-            if (editing) textColor = Color.Gray;
+            Color textColor = editing ? Color.Gray : isHovered ? hoverColor : normalColor;
 
             // Fill background
             using (SolidBrush backBrush = new SolidBrush(backColor))
@@ -2120,11 +2738,14 @@ namespace V_Max_Tool
                 }
                 else BrowseDB.Close();
             }
-           
+
             if (e.KeyData == Keys.Enter && !editing)
             {
-                var idx = (int)dbView.SelectedItems[0].Tag;
-                if (idx >= 0) Import_Image_From_Database(idx);
+                if (dbView.SelectedItems.Count > 0)
+                {
+                    var idx = (int)dbView.SelectedItems[0].Tag;
+                    if (idx >= 0) Import_Image_From_Database(idx);
+                }
             }
             if (e.KeyData == Keys.Enter && editing)
             {

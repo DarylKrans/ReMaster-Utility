@@ -365,7 +365,9 @@ namespace V_Max_Tool
                 $"R_limit={R_limit.Checked}",
                 $"W_limit={W_limit.Checked}",
                 $"R_verb={R_verb.Checked}",
-                $"W_verb={W_verb.Checked}"
+                $"W_verb={W_verb.Checked}",
+                $"Enable_DB={EnableDBMenu.Checked}",
+                $"Prot_DetectMethod={ProtDetectMethod.SelectedIndex}"
             };
             File.WriteAllLines(TEMP.settings, lines);
         }
@@ -396,6 +398,8 @@ namespace V_Max_Tool
                     case "W_limit": W_limit.Checked = bool.Parse(value); break;
                     case "R_verb": R_verb.Checked = bool.Parse(value); break;
                     case "W_verb": W_verb.Checked = bool.Parse(value); break;
+                    case "Enable_DB": EnableDBMenu.Checked = bool.Parse(value); break;
+                    case "Prot_DetectMethod": ProtDetectMethod.SelectedIndex = int.Parse(value); break;
                 }
             }
         }
@@ -481,7 +485,7 @@ namespace V_Max_Tool
             //Dir_screen.DragEnter += new DragEventHandler(Dir_Screen_DragEnter);
             //Dir_screen.DragDrop += new DragEventHandler(Dir_Screen_DragDrop);
             //menuStrip1.Items.Remove("Database");
-            databaseToolStripMenuItem.Visible = false;
+            databaseToolStripMenuItem.Visible = databaseToolStripMenuItem.Enabled = false;
 
             ReadNib.Controls.Add(Read_GBox);
             Read_GBox.Location = new Point(0, 0);
@@ -494,7 +498,7 @@ namespace V_Max_Tool
             Init_Read_Options();
             Init_Write_Options();
             LoadRecentList();
-            Setup_Database_Window();
+            //Setup_Database_Window();
 
             if (!usecpp) CPP_tog.Enabled = false;
             saveAsToolStripMenuItem.Enabled = false;
@@ -704,7 +708,12 @@ namespace V_Max_Tool
             if (Cores < 2) Img_Q.SelectedIndex = 0;
             /// ------------------------------------------------------------------------------------------
             Build_BitReverseTable();
+            ProtDetectMethod.DataSource = new string[] { "Scan source on add (slower)", "Parse file-name for protection type", "Don't detect" };
             RunBusy(() => LoadSettings());
+            Setup_Database_Window();
+
+
+            //RecoverDatabase();
 
             try
             {

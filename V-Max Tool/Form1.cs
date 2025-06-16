@@ -1236,5 +1236,16 @@ namespace V_Max_Tool
                 CBM_Fix.Checked = false;
             }
         }
+
+        private void EnableDBMenu_CheckedChanged(object sender, EventArgs e)
+        {
+            ProtDetectMethod.Enabled = databaseToolStripMenuItem.Visible = EnableDBMenu.Checked;
+            if (databaseToolStripMenuItem.Visible)
+            {
+                ReadDB(false, true);
+                dbRemoved = disk != null && disk?.Length > 0 ? disk.Where(d => d.Marked).Select(d => d.Index).ToList() : new List<int>();
+                SetDBContextItems();
+            }
+        }
     }
 }
