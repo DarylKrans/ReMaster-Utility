@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
@@ -137,6 +138,39 @@ namespace V_Max_Tool
             Set_ListBox_Items(true, true);
             // debugging buttons -- comment next line to enable debugging buttons
             button1.Visible = button2.Visible = false;
+            //string[] logLines = File.ReadAllLines($@"c:\test\1.log");
+            //DiskImage result = ParseLogFile(logLines);
+            ////Text = result.HasErrors.ToString();   
+            //if (result.HasErrors)
+            //{
+            //    Console.WriteLine("Image has errors.");
+            //    Console.WriteLine(result.Notes);
+            //    Text = result.Notes;
+            //}
+
+        }
+
+        public DiskImage ParseLogFile(string[] logLines)
+        {
+            DiskImage image = new DiskImage();
+            foreach (string line in logLines)
+            {
+                if (line.Length < 2) continue;
+                string trackPart = line.Substring(0, 2).Trim();
+                if (!int.TryParse(trackPart, out int track)) continue;
+                if (Regex.IsMatch(line, @"\[E(\d{1,2})S(\d{1,2})\]"))
+                {
+                    image.HasErrors = true;
+                    image.ErrorTracks.Add(track);
+                }
+            }
+            if (image.HasErrors)
+            {
+                var sortedTracks = image.ErrorTracks.OrderBy(t => t);
+                var notes = "Errors on Tracks: " + string.Join(", ", sortedTracks);
+                image.Notes = notes.Length > 128 ? notes.Substring(0, 128) : notes;
+            }
+            return image;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)

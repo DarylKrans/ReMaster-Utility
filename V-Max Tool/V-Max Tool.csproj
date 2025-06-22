@@ -200,6 +200,10 @@
     <None Include="Properties\greenChk.png" />
     <None Include="Properties\redX.png" />
     <None Include="Properties\starU.png" />
+    <None Include="Properties\redoG.png" />
+    <None Include="Properties\redoGn.png" />
+    <None Include="Properties\undoG.png" />
+    <None Include="Properties\undoGn.png" />
     <Content Include="tool.ico" />
   </ItemGroup>
   <ItemGroup>

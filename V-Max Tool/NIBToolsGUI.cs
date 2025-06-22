@@ -101,6 +101,10 @@ namespace V_Max_Tool
                         {
                             fname = Path.GetFileNameWithoutExtension(f).Replace("_ReMaster", "");
                             fext = Path.GetExtension(f);
+                            if (EnableDBMenu.Checked)
+                            {
+                                BuildDB(null, new string[] { f }, true);
+                            }
                             ClearInfo();
                             Process_New_Image(f);
                         }

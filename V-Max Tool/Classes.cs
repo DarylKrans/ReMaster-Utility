@@ -84,7 +84,7 @@ namespace V_Max_Tool
         public static bool[] Fat_Track = new bool[0];
     }
 
-    public static class Original  // Global variable for retaining original loader track data
+    public static class Original  // Global variable for retaining original track data
     {
         public static byte[] G = new byte[0];
         public static byte[] A = new byte[0];
@@ -205,18 +205,6 @@ namespace V_Max_Tool
         public static extern int TestLoaded();
     }
 
-    //public class Tag
-    //{
-    //    public int Index { get; set; } = -1;
-    //    public string Notes { get; set; } = string.Empty;
-    //}
-
-    //public class ItemTag
-    //{
-    //    public int Index { get; set; }
-    //    public string Notes { get; set; }
-    //}
-
     public class UndoState
     {
         public int[] Indexes { get; private set; }
@@ -229,17 +217,24 @@ namespace V_Max_Tool
         }
     }
 
-    public class RedoState
+    public class DiskImage
     {
-        public int[] Indexes { get; private set; }
-        public byte[] Data { get; private set; }
-
-        public RedoState(int[] indexes, byte[] data)
-        {
-            Indexes = indexes;
-            Data = data;
-        }
+        public bool HasErrors { get; set; }
+        public string Notes { get; set; }
+        public HashSet<int> ErrorTracks { get; } = new HashSet<int>();
     }
+
+    //public class RedoState
+    //{
+    //    public int[] Indexes { get; private set; }
+    //    public byte[] Data { get; private set; }
+    //
+    //    public RedoState(int[] indexes, byte[] data)
+    //    {
+    //        Indexes = indexes;
+    //        Data = data;
+    //    }
+    //}
 
     public class DiskInfo
     {
@@ -251,6 +246,13 @@ namespace V_Max_Tool
         public Dictionary<int, string> imgRegion = new Dictionary<int, string>
         {
             { 0, string.Empty }, { 1, "NTSC" }, { 2, "PAL" }, { 3, "Any" }
+        };
+
+        public static Dictionary<int, string> Prot = new Dictionary<int, string>
+        {
+            { 0, string.Empty }, { 1, "Cyan" }, { 2, "Custom" }, { 3, "Fat Tracks" }, { 4, "GMA" }, { 5, "MicroProse" },
+            { 6, "PirateSlayer" }, { 7, "Radwar" }, { 8, "RainbowArts" }, { 9, "RapidLok" }, { 10, "Secruispeed" },
+            { 11, "V-Max" }, { 12, "V-Max v2" }, { 13, "V-Max v3" }, { 14, "Vorpal" }
         };
 
         public const int NAME_SIZE = 64;    // 64
@@ -319,7 +321,8 @@ namespace V_Max_Tool
             bytes.AddRange(titleBytes);
             //bytes.AddRange(new byte[] { EncodeBits_1(), (byte)Side, (byte)Protection, (byte)(Year - 1970) });
             (byte meta, byte side, byte year) = EncodeBits_1();
-            bytes.AddRange(new byte[] { (byte)meta, (byte)side, (byte)Protection, (byte)year });
+            //bytes.AddRange(new byte[] { (byte)meta, (byte)side, (byte)Protection, (byte)year });
+            bytes.AddRange(new byte[] { (byte)meta, (byte)side, Protection > Prot.Count ? (byte)0 : (byte)Protection, (byte)year });
             bytes.AddRange(BitConverter.GetBytes(Offset));
             bytes.AddRange(BitConverter.GetBytes(CompressedLength));
             bytes.AddRange(BitConverter.GetBytes(DecompressedLength));
@@ -341,11 +344,9 @@ namespace V_Max_Tool
             disk.Extension = (meta >> 3) & 0b11;
             disk.Region = (meta >> 1) & 0b11;
             disk.Favorite = (meta & 1) != 0;
-
             disk.Side = side & 0b00011111;                // bits 0–4
             disk.Status = (side >> 5) & 0b11;             // bits 5–6
-
-            disk.Protection = protection;
+            disk.Protection = protection >= Prot.Count ? (byte)0 : protection;
             disk.Year = year + 1970;
         }
 
@@ -414,6 +415,23 @@ namespace V_Max_Tool
             int second = (int)((ts & 0x1F) * 2);
 
             return new DateTime(year, month, day, hour, minute, second);
+        }
+
+        public DiskInfo Clone()
+        {
+            return new DiskInfo
+            {
+                Locked = this.Locked,
+                Title = this.Title,
+                Side = this.Side,
+                Region = this.Region,
+                Year = this.Year,
+                Protection = this.Protection,
+                Notes = this.Notes,
+                Status = this.Status,
+                Favorite = this.Favorite,
+                Index = this.Index
+            };
         }
     }
 
@@ -707,31 +725,164 @@ namespace V_Max_Tool
     //    }
     //}
 
+    //public class DoubleBufferedListView : ListView
+    //{
+    //    public DoubleBufferedListView()
+    //    {
+    //        this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
+    //        this.UpdateStyles();
+    //    }
+    //
+    //    public Rectangle GetSubItemBounds(ListViewItem item, int subItemIndex)
+    //    {
+    //        if (item == null) throw new ArgumentNullException(nameof(item));
+    //        if (subItemIndex >= item.SubItems.Count)
+    //            throw new ArgumentOutOfRangeException(nameof(subItemIndex));
+    //
+    //        Rectangle itemBounds = item.GetBounds(ItemBoundsPortion.Entire);
+    //
+    //        int left = itemBounds.Left;
+    //        for (int i = 0; i < subItemIndex; i++)
+    //        {
+    //            left += this.Columns[i].Width;
+    //        }
+    //
+    //        int width = this.Columns[subItemIndex].Width;
+    //
+    //        return new Rectangle(left, itemBounds.Top, width, itemBounds.Height);
+    //    }
+    //}
+
+    //public class DoubleBufferedListView : ListView
+    //{
+    //    public List<Rectangle> vColumns { get; private set; } = new List<Rectangle>();
+    //
+    //    public DoubleBufferedListView()
+    //    {
+    //        this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
+    //        this.UpdateStyles();
+    //    }
+    //
+    //    protected override void OnResize(EventArgs e)
+    //    {
+    //        base.OnResize(e);
+    //        UpdateVirtualColumns();
+    //    }
+    //
+    //    public void UpdateVirtualColumns()
+    //    {
+    //        vColumns.Clear();
+    //        if (Columns.Count == 0) return;
+    //
+    //        int x = 0;
+    //        for (int i = 0; i < Columns.Count; i++)
+    //        {
+    //            int width = Columns[i].Width;
+    //            Rectangle colRect = new Rectangle(x, 0, width, this.ClientSize.Height); // y/height not used for contains-check
+    //            vColumns.Add(colRect);
+    //            x += width;
+    //        }
+    //    }
+    //
+    //    public Rectangle GetSubItemBounds(ListViewItem item, int subItemIndex)
+    //    {
+    //        if (item == null) throw new ArgumentNullException(nameof(item));
+    //        if (subItemIndex >= Columns.Count)
+    //            throw new ArgumentOutOfRangeException(nameof(subItemIndex));
+    //
+    //        Rectangle itemBounds = item.GetBounds(ItemBoundsPortion.Entire);
+    //
+    //        int left = 0;
+    //        for (int i = 0; i < subItemIndex; i++)
+    //        {
+    //            left += Columns[i].Width;
+    //        }
+    //
+    //        int width = Columns[subItemIndex].Width;
+    //        return new Rectangle(left, itemBounds.Top, width, itemBounds.Height);
+    //    }
+    //}
+
+    //public class TopmostTooltip : Form
+    //{
+    //    private Label label;
+    //
+    //    public TopmostTooltip()
+    //    {
+    //        FormBorderStyle = FormBorderStyle.None;
+    //        ShowInTaskbar = false;
+    //        StartPosition = FormStartPosition.Manual;
+    //        BackColor = Color.LightYellow;
+    //        TopMost = true;
+    //        AutoSize = true;
+    //
+    //        label = new Label
+    //        {
+    //            AutoSize = true,
+    //            Font = SystemFonts.DefaultFont,
+    //            Padding = new Padding(6),
+    //            BackColor = Color.LightYellow
+    //        };
+    //        Controls.Add(label);
+    //    }
+    //
+    //    public void ShowTooltip(string text, Point screenLocation)
+    //    {
+    //        label.Text = text;
+    //        Location = screenLocation;
+    //        Show();
+    //        BringToFront();
+    //    }
+    //
+    //    public void HideTooltip()
+    //    {
+    //        Hide();
+    //    }
+    //}
+
     public class DoubleBufferedListView : ListView
     {
+        public int[] vColumns { get; private set; } = new int[0];
+
         public DoubleBufferedListView()
         {
-            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
-            this.UpdateStyles();
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
+            UpdateStyles();
+
+            // Hook up column events
+            this.ColumnWidthChanged += (s, e) => UpdateVirtualColumnWidths();
+            this.HandleCreated += (s, e) => UpdateVirtualColumnWidths();
+        }
+
+        public void UpdateVirtualColumnWidths()
+        {
+            if (this.Columns.Count == 0)
+            {
+                vColumns = Array.Empty<int>();
+                return;
+            }
+
+            vColumns = new int[this.Columns.Count];
+            for (int i = 0; i < this.Columns.Count; i++)
+            {
+                vColumns[i] = this.Columns[i].Width;
+            }
+            this.Invalidate();
         }
 
         public Rectangle GetSubItemBounds(ListViewItem item, int subItemIndex)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            if (subItemIndex >= item.SubItems.Count)
+            if (subItemIndex < 0 || subItemIndex >= vColumns.Length)
                 throw new ArgumentOutOfRangeException(nameof(subItemIndex));
 
             Rectangle itemBounds = item.GetBounds(ItemBoundsPortion.Entire);
+            int x = itemBounds.Left;
 
-            int left = itemBounds.Left;
             for (int i = 0; i < subItemIndex; i++)
-            {
-                left += this.Columns[i].Width;
-            }
+                x += vColumns[i];
 
-            int width = this.Columns[subItemIndex].Width;
-
-            return new Rectangle(left, itemBounds.Top, width, itemBounds.Height);
+            return new Rectangle(x, itemBounds.Top, vColumns[subItemIndex], itemBounds.Height);
         }
     }
 

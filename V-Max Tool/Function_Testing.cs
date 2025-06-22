@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -22,26 +21,26 @@ namespace V_Max_Tool
             //OpenDB_Windows();
 
             databaseToolStripMenuItem.Enabled = true;
-            
-            Thread tempthread = new Thread(new ThreadStart(() =>
-            {
-                while (true)
-                {
-                    Thread.Sleep(20);
-                    Invoke(new Action(() =>
-                    {
-                        Text = $"undo's {undoStack.Count} redo's {redoStack.Count} {DateTime.Now}";
-                        this.Update();
-                    }));
-                }
-            }));
-            tempthread.Start();
+
+            //Thread tempthread = new Thread(new ThreadStart(() =>
+            //{
+            //    while (true)
+            //    {
+            //        Thread.Sleep(20);
+            //        Invoke(new Action(() =>
+            //        {
+            //            Text = $"undo's {undoStack.Count} redo's {redoStack.Count} {DateTime.Now}";
+            //            this.Update();
+            //        }));
+            //    }
+            //}));
+            //tempthread.Start();
 
         }
 
         /// ------------------------------------------------------------------------------------------------ ///
 
-        
+
 
         void Test_GetFmt()
         {
