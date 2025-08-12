@@ -176,6 +176,7 @@
     <None Include="Properties\v2644En.bin" />
     <None Include="Properties\v2cbmla.bin" />
     <None Include="Properties\v2h.bin" />
+    <None Include="Properties\vmctbl.bin" />
     <None Include="Properties\vmv2dt1.bin" />
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +205,7 @@
     <None Include="Properties\redoGn.png" />
     <None Include="Properties\undoG.png" />
     <None Include="Properties\undoGn.png" />
+    <None Include="Properties\diskPreview.png" />
     <Content Include="tool.ico" />
   </ItemGroup>
   <ItemGroup>

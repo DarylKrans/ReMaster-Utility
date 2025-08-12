@@ -163,14 +163,8 @@
             this.Dir_screen = new System.Windows.Forms.RichTextBox();
             this.BlockMap = new System.Windows.Forms.TabPage();
             this.BlkMap_Panel = new System.Windows.Forms.Panel();
-            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
-            this.CSTfmt = new V_Max_Tool.CustomLabel();
-            this.ErrorBlk = new V_Max_Tool.CustomLabel();
-            this.AllocBlk = new V_Max_Tool.CustomLabel();
-            this.FreeBlk = new V_Max_Tool.CustomLabel();
             this.label21 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
-            this.track_label = new V_Max_Tool.CustomLabel();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RPL_Advanced = new System.Windows.Forms.GroupBox();
@@ -296,6 +290,7 @@
             this.W_syncred = new System.Windows.Forms.CheckBox();
             this.W_align = new System.Windows.Forms.ComboBox();
             this.WTA = new System.Windows.Forms.CheckBox();
+            this.ParseLog = new System.Windows.Forms.CheckBox();
             this.GB_NewDisk = new V_Max_Tool.Gbox();
             this.S_Interleave = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
@@ -305,6 +300,12 @@
             this.label20 = new System.Windows.Forms.Label();
             this.ND_id = new System.Windows.Forms.TextBox();
             this.ND_name = new System.Windows.Forms.TextBox();
+            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
+            this.CSTfmt = new V_Max_Tool.CustomLabel();
+            this.ErrorBlk = new V_Max_Tool.CustomLabel();
+            this.AllocBlk = new V_Max_Tool.CustomLabel();
+            this.FreeBlk = new V_Max_Tool.CustomLabel();
+            this.track_label = new V_Max_Tool.CustomLabel();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -2121,67 +2122,6 @@
             this.BlkMap_Panel.Size = new System.Drawing.Size(1135, 1289);
             this.BlkMap_Panel.TabIndex = 0;
             // 
-            // Blk_pan
-            // 
-            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
-            this.Blk_pan.BorderThickness = 2;
-            this.Blk_pan.Location = new System.Drawing.Point(96, 49);
-            this.Blk_pan.Name = "Blk_pan";
-            this.Blk_pan.Size = new System.Drawing.Size(1026, 1101);
-            this.Blk_pan.TabIndex = 2;
-            // 
-            // CSTfmt
-            // 
-            this.CSTfmt.AutoSize = true;
-            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
-            this.CSTfmt.Location = new System.Drawing.Point(20, 284);
-            this.CSTfmt.Name = "CSTfmt";
-            this.CSTfmt.NewText = "";
-            this.CSTfmt.RotateAngle = 0;
-            this.CSTfmt.Size = new System.Drawing.Size(177, 29);
-            this.CSTfmt.TabIndex = 12;
-            this.CSTfmt.Text = "Custom Format";
-            // 
-            // ErrorBlk
-            // 
-            this.ErrorBlk.AutoSize = true;
-            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
-            this.ErrorBlk.Location = new System.Drawing.Point(20, 487);
-            this.ErrorBlk.Name = "ErrorBlk";
-            this.ErrorBlk.NewText = "";
-            this.ErrorBlk.RotateAngle = 0;
-            this.ErrorBlk.Size = new System.Drawing.Size(133, 29);
-            this.ErrorBlk.TabIndex = 11;
-            this.ErrorBlk.Text = "Block Error";
-            // 
-            // AllocBlk
-            // 
-            this.AllocBlk.AutoSize = true;
-            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
-            this.AllocBlk.Location = new System.Drawing.Point(17, 655);
-            this.AllocBlk.Name = "AllocBlk";
-            this.AllocBlk.NewText = "";
-            this.AllocBlk.RotateAngle = 0;
-            this.AllocBlk.Size = new System.Drawing.Size(179, 29);
-            this.AllocBlk.TabIndex = 10;
-            this.AllocBlk.Text = "Allocated Block";
-            // 
-            // FreeBlk
-            // 
-            this.FreeBlk.AutoSize = true;
-            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
-            this.FreeBlk.Location = new System.Drawing.Point(17, 871);
-            this.FreeBlk.Name = "FreeBlk";
-            this.FreeBlk.NewText = "";
-            this.FreeBlk.RotateAngle = 0;
-            this.FreeBlk.Size = new System.Drawing.Size(130, 29);
-            this.FreeBlk.TabIndex = 9;
-            this.FreeBlk.Text = "Free Block";
-            // 
             // label21
             // 
             this.label21.AutoSize = true;
@@ -2203,19 +2143,6 @@
             this.label17.Size = new System.Drawing.Size(93, 31);
             this.label17.TabIndex = 1;
             this.label17.Text = "Sector";
-            // 
-            // track_label
-            // 
-            this.track_label.AutoSize = true;
-            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.track_label.Location = new System.Drawing.Point(2, 82);
-            this.track_label.Name = "track_label";
-            this.track_label.NewText = null;
-            this.track_label.RotateAngle = 0;
-            this.track_label.Size = new System.Drawing.Size(215, 37);
-            this.track_label.TabIndex = 0;
-            this.track_label.Text = "customLabel1";
             // 
             // panel1
             // 
@@ -2761,6 +2688,7 @@
             // Options_Box
             // 
             this.Options_Box.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.Options_Box.Controls.Add(this.ParseLog);
             this.Options_Box.Controls.Add(this.ProtDetectMethod);
             this.Options_Box.Controls.Add(this.label26);
             this.Options_Box.Controls.Add(this.EnableDBMenu);
@@ -2776,7 +2704,7 @@
             this.Options_Box.Controls.Add(this.Pad_Tracks);
             this.Options_Box.Location = new System.Drawing.Point(2219, 933);
             this.Options_Box.Name = "Options_Box";
-            this.Options_Box.Size = new System.Drawing.Size(806, 494);
+            this.Options_Box.Size = new System.Drawing.Size(806, 513);
             this.Options_Box.TabIndex = 41;
             this.Options_Box.TabStop = false;
             // 
@@ -2784,7 +2712,7 @@
             // 
             this.ProtDetectMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ProtDetectMethod.FormattingEnabled = true;
-            this.ProtDetectMethod.Location = new System.Drawing.Point(339, 405);
+            this.ProtDetectMethod.Location = new System.Drawing.Point(337, 439);
             this.ProtDetectMethod.Name = "ProtDetectMethod";
             this.ProtDetectMethod.Size = new System.Drawing.Size(432, 33);
             this.ProtDetectMethod.TabIndex = 49;
@@ -2792,7 +2720,7 @@
             // label26
             // 
             this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(15, 413);
+            this.label26.Location = new System.Drawing.Point(13, 442);
             this.label26.Name = "label26";
             this.label26.Size = new System.Drawing.Size(317, 25);
             this.label26.TabIndex = 48;
@@ -3670,6 +3598,16 @@
             this.WTA.UseVisualStyleBackColor = true;
             this.WTA.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
             // 
+            // ParseLog
+            // 
+            this.ParseLog.AutoSize = true;
+            this.ParseLog.Location = new System.Drawing.Point(15, 405);
+            this.ParseLog.Name = "ParseLog";
+            this.ParseLog.Size = new System.Drawing.Size(585, 29);
+            this.ParseLog.TabIndex = 50;
+            this.ParseLog.Text = "Parse nib.log file (if exists) and notate errors in database";
+            this.ParseLog.UseVisualStyleBackColor = true;
+            // 
             // GB_NewDisk
             // 
             this.GB_NewDisk.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
@@ -3761,6 +3699,80 @@
             this.ND_name.Size = new System.Drawing.Size(280, 31);
             this.ND_name.TabIndex = 0;
             this.ND_name.Text = "NEW DISK";
+            // 
+            // Blk_pan
+            // 
+            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
+            this.Blk_pan.BorderThickness = 2;
+            this.Blk_pan.Location = new System.Drawing.Point(96, 49);
+            this.Blk_pan.Name = "Blk_pan";
+            this.Blk_pan.Size = new System.Drawing.Size(1026, 1101);
+            this.Blk_pan.TabIndex = 2;
+            // 
+            // CSTfmt
+            // 
+            this.CSTfmt.AutoSize = true;
+            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
+            this.CSTfmt.Location = new System.Drawing.Point(20, 284);
+            this.CSTfmt.Name = "CSTfmt";
+            this.CSTfmt.NewText = "";
+            this.CSTfmt.RotateAngle = 0;
+            this.CSTfmt.Size = new System.Drawing.Size(177, 29);
+            this.CSTfmt.TabIndex = 12;
+            this.CSTfmt.Text = "Custom Format";
+            // 
+            // ErrorBlk
+            // 
+            this.ErrorBlk.AutoSize = true;
+            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
+            this.ErrorBlk.Location = new System.Drawing.Point(20, 487);
+            this.ErrorBlk.Name = "ErrorBlk";
+            this.ErrorBlk.NewText = "";
+            this.ErrorBlk.RotateAngle = 0;
+            this.ErrorBlk.Size = new System.Drawing.Size(133, 29);
+            this.ErrorBlk.TabIndex = 11;
+            this.ErrorBlk.Text = "Block Error";
+            // 
+            // AllocBlk
+            // 
+            this.AllocBlk.AutoSize = true;
+            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
+            this.AllocBlk.Location = new System.Drawing.Point(17, 655);
+            this.AllocBlk.Name = "AllocBlk";
+            this.AllocBlk.NewText = "";
+            this.AllocBlk.RotateAngle = 0;
+            this.AllocBlk.Size = new System.Drawing.Size(179, 29);
+            this.AllocBlk.TabIndex = 10;
+            this.AllocBlk.Text = "Allocated Block";
+            // 
+            // FreeBlk
+            // 
+            this.FreeBlk.AutoSize = true;
+            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
+            this.FreeBlk.Location = new System.Drawing.Point(17, 871);
+            this.FreeBlk.Name = "FreeBlk";
+            this.FreeBlk.NewText = "";
+            this.FreeBlk.RotateAngle = 0;
+            this.FreeBlk.Size = new System.Drawing.Size(130, 29);
+            this.FreeBlk.TabIndex = 9;
+            this.FreeBlk.Text = "Free Block";
+            // 
+            // track_label
+            // 
+            this.track_label.AutoSize = true;
+            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.track_label.Location = new System.Drawing.Point(2, 82);
+            this.track_label.Name = "track_label";
+            this.track_label.NewText = null;
+            this.track_label.RotateAngle = 0;
+            this.track_label.Size = new System.Drawing.Size(215, 37);
+            this.track_label.TabIndex = 0;
+            this.track_label.Text = "customLabel1";
             // 
             // Form1
             // 
@@ -4159,5 +4171,6 @@
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.ComboBox ProtDetectMethod;
         private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.CheckBox ParseLog;
     }
 }

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -138,40 +139,39 @@ namespace V_Max_Tool
             Set_ListBox_Items(true, true);
             // debugging buttons -- comment next line to enable debugging buttons
             button1.Visible = button2.Visible = false;
-            //string[] logLines = File.ReadAllLines($@"c:\test\1.log");
-            //DiskImage result = ParseLogFile(logLines);
-            ////Text = result.HasErrors.ToString();   
-            //if (result.HasErrors)
-            //{
-            //    Console.WriteLine("Image has errors.");
-            //    Console.WriteLine(result.Notes);
-            //    Text = result.Notes;
-            //}
-
+            
+            //byte[] sector = File.ReadAllBytes($@"c:\test\vmtest\sector2.bin");
+            //byte[] dec = DecodeVmaxV2(sector);
+            //File.WriteAllBytes($@"c:\test\vmtest\decoded.bin", dec);
         }
 
-        public DiskImage ParseLogFile(string[] logLines)
-        {
-            DiskImage image = new DiskImage();
-            foreach (string line in logLines)
-            {
-                if (line.Length < 2) continue;
-                string trackPart = line.Substring(0, 2).Trim();
-                if (!int.TryParse(trackPart, out int track)) continue;
-                if (Regex.IsMatch(line, @"\[E(\d{1,2})S(\d{1,2})\]"))
-                {
-                    image.HasErrors = true;
-                    image.ErrorTracks.Add(track);
-                }
-            }
-            if (image.HasErrors)
-            {
-                var sortedTracks = image.ErrorTracks.OrderBy(t => t);
-                var notes = "Errors on Tracks: " + string.Join(", ", sortedTracks);
-                image.Notes = notes.Length > 128 ? notes.Substring(0, 128) : notes;
-            }
-            return image;
-        }
+        //public (bool hasErrors, string errors) ParseLogFile(string[] logLines)
+        //{
+        //    HashSet<int> errorTracks = new HashSet<int>();
+        //
+        //    foreach (string line in logLines)
+        //    {
+        //        if (line.Length < 2) continue;
+        //
+        //        string trackPart = line.Substring(0, 2).Trim();
+        //        if (!int.TryParse(trackPart, out int track)) continue;
+        //
+        //        if (Regex.IsMatch(line, @"\[E(\d{1,2})S(\d{1,2})\]"))
+        //        {
+        //            errorTracks.Add(track);
+        //        }
+        //    }
+        //
+        //    if (errorTracks.Count > 0)
+        //    {
+        //        string plural = errorTracks.Count > 1 ? "s" : string.Empty;
+        //        var sortedTracks = errorTracks.OrderBy(t => t);
+        //        var notes = $"Error{plural} on Track{plural}: " + string.Join(", ", sortedTracks);
+        //        return (true, notes.Length > 128 ? notes.Substring(0, 128) : notes);
+        //    }
+        //
+        //    return (false, string.Empty);
+        //}
 
         private void Drag_Drop(object sender, DragEventArgs e)
         {
@@ -1273,7 +1273,7 @@ namespace V_Max_Tool
 
         private void EnableDBMenu_CheckedChanged(object sender, EventArgs e)
         {
-            ProtDetectMethod.Enabled = databaseToolStripMenuItem.Visible = EnableDBMenu.Checked;
+            ProtDetectMethod.Enabled = ParseLog.Enabled = databaseToolStripMenuItem.Visible = EnableDBMenu.Checked;
             if (databaseToolStripMenuItem.Visible)
             {
                 ReadDB(false, true);

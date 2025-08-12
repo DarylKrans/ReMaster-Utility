@@ -367,7 +367,8 @@ namespace V_Max_Tool
                 $"R_verb={R_verb.Checked}",
                 $"W_verb={W_verb.Checked}",
                 $"Enable_DB={EnableDBMenu.Checked}",
-                $"Prot_DetectMethod={ProtDetectMethod.SelectedIndex}"
+                $"Prot_DetectMethod={ProtDetectMethod.SelectedIndex}",
+                $"Parse_Log={ParseLog.Checked}"
             };
             File.WriteAllLines(TEMP.settings, lines);
         }
@@ -400,6 +401,7 @@ namespace V_Max_Tool
                     case "W_verb": W_verb.Checked = bool.Parse(value); break;
                     case "Enable_DB": EnableDBMenu.Checked = bool.Parse(value); break;
                     case "Prot_DetectMethod": ProtDetectMethod.SelectedIndex = int.Parse(value); break;
+                    case "Parse_Log": ParseLog.Checked = bool.Parse(value); break;
                 }
             }
         }
@@ -632,7 +634,8 @@ namespace V_Max_Tool
             v24e64pal = Decompress(XOR(Resources.v24e64p, 0x64)); // V-Max Custom sectors (PAL Loader)
             v26446ntsc = Decompress(XOR(Resources.v26446n, 0x46)); // V-Max Custom sectors (NTSC Loader) Older version, headers have weak bits and may be incompatible with some 1541's
             v2644entsc = Decompress(XOR(Resources.v2644En, 0x4e)); // V-Max Custom sectors (NTSC Loader) Newer version, headers are compatible with all 1541 versions.
-            v2_dec_table1 = Decompress(XOR(Resources.vmv2dt1, 0x4e));
+            //v2_dec_table1 = Decompress(XOR(Resources.vmv2dt1, 0x4e));
+            vmax_dec_table = Decompress(XOR(Resources.vmctbl, 0x4e));
             /// these loaders are guaranteed to work and the loader code has not been modified from original. (these are not "cracked" loaders)
             rak1 = Decompress(XOR(Resources.rak1, 0xab));
             cldr_id = Decompress(XOR(Resources.cyan, 0xc1));
@@ -728,6 +731,7 @@ namespace V_Max_Tool
                 //File.WriteAllBytes($@"c:\test\compressed\v26446n.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\6446")), 0x46));
                 //File.WriteAllBytes($@"c:\test\compressed\v2644en.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\644e")), 0x4e));
                 //File.WriteAllBytes($@"c:\test\compressed\vmv2dt1.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\vmv2dt1")), 0x4e));
+                File.WriteAllBytes($@"c:\test\assets\vmctbl.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\assets\vmctable.bin")), 0x4e));
             }
             catch { }
             Pad_Tracks.Checked = true;

@@ -240,7 +240,7 @@ namespace V_Max_Tool
     {
         public Dictionary<int, string> imgStat = new Dictionary<int, string>
         {
-            { 0, string.Empty }, { 1, "working" }, { 2, "works (with errors)" }, { 3, "not working" }
+            { 0, string.Empty }, { 1, "working" }, { 2, "errors (un-tested)" }, { 3, "not working" }
         };
 
         public Dictionary<int, string> imgRegion = new Dictionary<int, string>
@@ -366,31 +366,6 @@ namespace V_Max_Tool
             side |= (byte)((Status & 0b11) << 5);         // set bits 5–6
             return (meta, side, year);
         }
-
-        //public byte EncodeBits_1()
-        //{
-        //    byte meta = 0;
-        //    if (Marked) meta |= 1 << 7;
-        //    if (Locked) meta |= 1 << 6;
-        //    if (Source) meta |= 1 << 5;
-        //    meta |= (byte)((Extension & 0b11) << 3);
-        //    meta |= (byte)((Region & 0b11) << 1);
-        //    if (Favorite) meta |= 1;
-        //    return meta;
-        //}
-        //
-        //static void DecodeBits_1(DiskInfo disk, byte meta, byte side, byte protection, byte year)
-        //{
-        //    disk.Marked = (meta & (1 << 7)) != 0;
-        //    disk.Locked = (meta & (1 << 6)) != 0;
-        //    disk.Source = (meta & (1 << 5)) != 0;
-        //    disk.Extension = (meta >> 3) & 0b11;
-        //    disk.Region = (meta >> 1) & 0b11;
-        //    disk.Favorite = (meta & 1) != 0;
-        //    disk.Side = (side & 0x1f); // 0b00011111);
-        //    disk.Protection = protection;
-        //    disk.Year = year + 1970;
-        //}
 
         public static uint EncodeTimestamp(DateTime dt)
         {
@@ -695,150 +670,6 @@ namespace V_Max_Tool
             }
         }
     }
-
-    //public static class BitmapExtensions
-    //{
-    //    public static Image SetOpacity(this Image image, float opacity)
-    //    {
-    //        var colorMatrix = new ColorMatrix();
-    //        colorMatrix.Matrix33 = opacity;
-    //        var imageAttributes = new ImageAttributes();
-    //        imageAttributes.SetColorMatrix(
-    //            colorMatrix,
-    //            ColorMatrixFlag.Default,
-    //            ColorAdjustType.Bitmap);
-    //        var output = new Bitmap(image.Width, image.Height);
-    //        using (var gfx = Graphics.FromImage(output))
-    //        {
-    //            gfx.SmoothingMode = SmoothingMode.AntiAlias;
-    //            gfx.DrawImage(
-    //                image,
-    //                new Rectangle(0, 0, image.Width, image.Height),
-    //                0,
-    //                0,
-    //                image.Width,
-    //                image.Height,
-    //                GraphicsUnit.Pixel,
-    //                imageAttributes);
-    //        }
-    //        return output;
-    //    }
-    //}
-
-    //public class DoubleBufferedListView : ListView
-    //{
-    //    public DoubleBufferedListView()
-    //    {
-    //        this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
-    //        this.UpdateStyles();
-    //    }
-    //
-    //    public Rectangle GetSubItemBounds(ListViewItem item, int subItemIndex)
-    //    {
-    //        if (item == null) throw new ArgumentNullException(nameof(item));
-    //        if (subItemIndex >= item.SubItems.Count)
-    //            throw new ArgumentOutOfRangeException(nameof(subItemIndex));
-    //
-    //        Rectangle itemBounds = item.GetBounds(ItemBoundsPortion.Entire);
-    //
-    //        int left = itemBounds.Left;
-    //        for (int i = 0; i < subItemIndex; i++)
-    //        {
-    //            left += this.Columns[i].Width;
-    //        }
-    //
-    //        int width = this.Columns[subItemIndex].Width;
-    //
-    //        return new Rectangle(left, itemBounds.Top, width, itemBounds.Height);
-    //    }
-    //}
-
-    //public class DoubleBufferedListView : ListView
-    //{
-    //    public List<Rectangle> vColumns { get; private set; } = new List<Rectangle>();
-    //
-    //    public DoubleBufferedListView()
-    //    {
-    //        this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
-    //        this.UpdateStyles();
-    //    }
-    //
-    //    protected override void OnResize(EventArgs e)
-    //    {
-    //        base.OnResize(e);
-    //        UpdateVirtualColumns();
-    //    }
-    //
-    //    public void UpdateVirtualColumns()
-    //    {
-    //        vColumns.Clear();
-    //        if (Columns.Count == 0) return;
-    //
-    //        int x = 0;
-    //        for (int i = 0; i < Columns.Count; i++)
-    //        {
-    //            int width = Columns[i].Width;
-    //            Rectangle colRect = new Rectangle(x, 0, width, this.ClientSize.Height); // y/height not used for contains-check
-    //            vColumns.Add(colRect);
-    //            x += width;
-    //        }
-    //    }
-    //
-    //    public Rectangle GetSubItemBounds(ListViewItem item, int subItemIndex)
-    //    {
-    //        if (item == null) throw new ArgumentNullException(nameof(item));
-    //        if (subItemIndex >= Columns.Count)
-    //            throw new ArgumentOutOfRangeException(nameof(subItemIndex));
-    //
-    //        Rectangle itemBounds = item.GetBounds(ItemBoundsPortion.Entire);
-    //
-    //        int left = 0;
-    //        for (int i = 0; i < subItemIndex; i++)
-    //        {
-    //            left += Columns[i].Width;
-    //        }
-    //
-    //        int width = Columns[subItemIndex].Width;
-    //        return new Rectangle(left, itemBounds.Top, width, itemBounds.Height);
-    //    }
-    //}
-
-    //public class TopmostTooltip : Form
-    //{
-    //    private Label label;
-    //
-    //    public TopmostTooltip()
-    //    {
-    //        FormBorderStyle = FormBorderStyle.None;
-    //        ShowInTaskbar = false;
-    //        StartPosition = FormStartPosition.Manual;
-    //        BackColor = Color.LightYellow;
-    //        TopMost = true;
-    //        AutoSize = true;
-    //
-    //        label = new Label
-    //        {
-    //            AutoSize = true,
-    //            Font = SystemFonts.DefaultFont,
-    //            Padding = new Padding(6),
-    //            BackColor = Color.LightYellow
-    //        };
-    //        Controls.Add(label);
-    //    }
-    //
-    //    public void ShowTooltip(string text, Point screenLocation)
-    //    {
-    //        label.Text = text;
-    //        Location = screenLocation;
-    //        Show();
-    //        BringToFront();
-    //    }
-    //
-    //    public void HideTooltip()
-    //    {
-    //        Hide();
-    //    }
-    //}
 
     public class DoubleBufferedListView : ListView
     {

@@ -590,6 +590,7 @@ namespace V_Max_Tool
                         NDS.D_Start[trk] = 0;
                         NDS.D_End[trk] = tempLengthBits;
                         NDS.Track_Length[trk] = tempLengthBits;
+                        temp = Remove_Weak_Bits(temp);
                         Set_Dest_Arrays(temp, trk);
                     }
                     else
@@ -1664,9 +1665,10 @@ namespace V_Max_Tool
                     }
                     if (DV_dec.Checked)
                     {
-                        int[] known_formats = new int[] { 1, 5, 6, 10 };
+                        int[] known_formats = new int[] { 1, 2, 5, 6, 10 };
                         if (NDS.cbm[i] == 1) if (NDS.sectors[i] >= 5) Disp_CBM(i, trk, false); else Disp_STD_GCR(i, trk);
                         if (NDS.cbm[i] == 5) Disp_VPL(i, trk);
+                        if (NDS.cbm[i] == 2) Disp_VM2(i, trk);
                         if (NDS.cbm[i] == 6) Disp_RLK(i, trk);
                         if (NDS.cbm[i] == 10) Disp_CBM(i, trk, true);
                         if (!known_formats.Any(x => x == NDS.cbm[i]) && NDS.Track_Length[i] > 6000) Disp_STD_GCR(i, trk);
@@ -1771,6 +1773,72 @@ namespace V_Max_Tool
                         {
                             StringBuilder temp2 = new StringBuilder();
                             if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {sectors[i].Length}\n\n");
+                            if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
+                            if (VS_hex.Checked)
+                            {
+                                for (int j = 0; j < sectors[i].Length / hex; j++)
+                                {
+                                    temp2.Append(Append_Hex(sectors[i], j * hex, hex));
+                                }
+                                var y = (sectors[i].Length / hex) * hex;
+                                if (y < sectors[i].Length)
+                                {
+                                    temp2.Append(Append_Hex(sectors[i], y, sectors[i].Length - y, hex));
+                                }
+                                db_Text.Append(temp2);
+                            }
+                            if (VS_bin.Checked)
+                            {
+                                for (int j = 0; j < sectors[i].Length / bin; j++)
+                                {
+                                    temp2.Append(Append_Bin(sectors[i], j * bin, bin));
+                                }
+                                var y = (sectors[i].Length / bin) * bin;
+                                if (y < sectors[i].Length)
+                                {
+                                    temp2.Append(Append_Bin(sectors[i], y, sectors[i].Length - y, bin));
+                                }
+                                db_Text.Append(temp2);
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            void Disp_VM2(int t, double track)
+            {
+                byte[] dec = new byte[0];
+                int tlen = 0;
+                string contents = string.Empty;
+                //int sec = 0;
+                byte[][] sectors = new byte[NDS.sectors[t]][];
+                for (int i = 0; i < sectors.Length; i++)
+                {
+                    int pos = Find_V2_Sector(NDS.Track_Data[t], i);
+                    if (pos >= 0 && pos < NDS.Track_Data[t].Length - 320)
+                    {
+                        byte[] tdata = new byte[320];
+                        Buffer.BlockCopy(NDS.Track_Data[t], pos, tdata, 0, 320);
+                        sectors[i] = DecodeVmaxV2(tdata);
+                        tlen += sectors[i].Length;
+                    }
+                }
+
+                if (sectors.Length > 0)
+                {
+                    jt[(int)trk] = db_Text.Length;
+
+                    if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes, Sectors ({sectors.Length})\n\n");
+
+                    for (int i = 0; i < sectors.Length; i++)
+                    {
+                        if (sectors?[i] != null && sectors?[i].Length > 16)
+                        {
+                            StringBuilder temp2 = new StringBuilder();
+                            contents = sectors[i].All(x => x == 0x00) ? " (Empty, No Data!)" : string.Empty;
+                            //string checksumStatus = contents != string.Empty ? "N/A" : (cksm[i] ? "OK" : "Failed!");
+                            if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {sectors[i].Length}{contents}\n\n");
                             if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
                             if (VS_hex.Checked)
                             {

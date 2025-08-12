@@ -136,6 +136,16 @@ namespace ReMaster_Utility.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap diskPreview {
+            get {
+                object obj = ResourceManager.GetObject("diskPreview", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] fload {
@@ -351,6 +361,16 @@ namespace ReMaster_Utility.Properties {
         internal static byte[] v2cbmla {
             get {
                 object obj = ResourceManager.GetObject("v2cbmla", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] vmctbl {
+            get {
+                object obj = ResourceManager.GetObject("vmctbl", resourceCulture);
                 return ((byte[])(obj));
             }
         }

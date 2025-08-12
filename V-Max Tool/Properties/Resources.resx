@@ -136,6 +136,9 @@
   <data name="disk4" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>disk4.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="diskPreview" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>diskPreview.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="fload" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>fload.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -201,6 +204,9 @@
   </data>
   <data name="v2cbmla" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>v2cbmla.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="vmctbl" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>vmctbl.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="vmv2dt1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>vmv2dt1.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

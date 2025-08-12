@@ -93,6 +93,9 @@ namespace V_Max_Tool
         ToolStripMenuItem protectionItem = new ToolStripMenuItem("Disk Protection Type");
         ToolStripMenuItem importItem = new ToolStripMenuItem("Import for Processing");
         ToolStripMenuItem exportItem = new ToolStripMenuItem("Export to File");
+        ToolStripMenuItem markItem = new ToolStripMenuItem("Mark image for merging");
+        ToolStripMenuItem mergeItem = new ToolStripMenuItem("Merge marked images");
+        ToolStripMenuItem unmarkAllItem = new ToolStripMenuItem("Clear all marks");
         ToolStripSeparator[] dbSep = new ToolStripSeparator[5];
 
         ContextMenuStrip udMenu = new ContextMenuStrip();
@@ -194,6 +197,15 @@ namespace V_Max_Tool
             FlatStyle = FlatStyle.Flat,
         };
 
+        Button Prvw = new Button
+        {
+            Top = 1,
+            Height = 22,
+            Width = 22,
+            ImageAlign = ContentAlignment.BottomCenter,
+            FlatStyle = FlatStyle.Flat,
+        };
+
         void SetDBContextItems()
         {
             if (InvokeRequired)
@@ -249,39 +261,12 @@ namespace V_Max_Tool
             icons.Images.Add("recoverH", Resources.recoverH); // recover Hovered
             icons.Images.Add("redX", Resources.redX);       // recover
             icons.Images.Add("grnChk", Resources.greenChk); // recover Hovered
-            icons.Images.Add("!undo", Resources.recoverH); // recover Hovered
-            icons.Images.Add("!redo", Resources.redoG); // recover Hovered
-            icons.Images.Add("undo", Resources.recover); // recover Hovered
-            icons.Images.Add("redo", Resources.redoGn); // recover Hovered
-            //CreateOptionsPanel();
+            icons.Images.Add("!undo", Resources.recoverH); // undo disabled
+            icons.Images.Add("!redo", Resources.redoG); // redo disabled
+            icons.Images.Add("undo", Resources.recover); // undo enabled
+            icons.Images.Add("redo", Resources.redoGn); // redo enabled
+            icons.Images.Add("preview", Resources.diskPreview); // redo enabled
             PopulateEditItems();
-
-            void CreateOptionsPanel()
-            {
-                Undo.Left = dbSearch.Width + dbSearch.Left + 5;
-                Undo.ImageAlign = ContentAlignment.BottomCenter;
-                Redo.Left = Undo.Width + Undo.Left + 5;
-                Redo.ImageAlign = ContentAlignment.BottomCenter;
-                Undo.FlatAppearance.BorderSize = 0;
-                Redo.FlatAppearance.BorderSize = 0;
-                SetButtonImages();
-                ToolTip dbTip = new ToolTip();
-                dbTip.SetToolTip(Undo, "Undo");
-                dbTip.SetToolTip(Redo, "Redo");
-                Undo.Click += (s, e) => UndoClick();
-                Redo.Click += (s, e) => RedoClick();
-                opts.Width = BrowseDB.Width;
-                opts.Height = 24;
-                opts.Location = new Point(0, 0);
-                opts.Controls.Add(dbSearch);
-                opts.Controls.Add(DBsearch);
-                opts.Controls.Add(dbProg);
-                opts.Controls.Add(Undo);
-                opts.Controls.Add(Redo);
-                dbProg.Location = new Point(BrowseDB.Width - (dbProg.Width + 35), 7);
-                dbProg.Visible = false;
-                //InitProgressBar();
-            }
 
             dbView.OwnerDraw = true;
             dbView.View = View.Details; // Enables column mode
@@ -441,33 +426,6 @@ namespace V_Max_Tool
                 }
             };
 
-            void CheckMouseClick(object sender, MouseEventArgs e)
-            {
-                if (e.Button == MouseButtons.Left) mClick = true;
-            }
-
-            void ShowTooltipOnHover(object sender, MouseEventArgs e, string message)
-            {
-                if (sender is Control ctrl)
-                {
-                    tooltipCheckTimer.Start();
-                    Point screenPos = Cursor.Position;
-                    screenPos.X += 32;
-                    Point clientPos = editPan.PointToClient(screenPos);
-                    dbTooltip.Show(message, editPan, clientPos);
-                    dAddNotes.BackgroundImage = ctrl == dAddNotes ? ResizeIcon("notesH", icX, icY) : ResizeIcon("notes", icX, icY);
-                }
-            }
-
-            int GetColumnX(ListView listView, int columnIndex)
-            {
-                int x = 0;
-                for (int i = 0; i < columnIndex; i++)
-                {
-                    x += listView.Columns[i].Width;
-                }
-                return x;
-            }
             dFav.Click += (s, e) =>
             {
                 if (mClick)
@@ -628,6 +586,7 @@ namespace V_Max_Tool
                                     (this.ClientSize.Width - BuildDatabase.Width) / 2,
                                     (this.ClientSize.Height - BuildDatabase.Height) / 2);
                                 BuildDatabase.Controls.Add(dbProg);
+                                dbProg.Visible = true;
                                 dbProg.Location = new Point(5, 30);
                                 dbProg.Value = 0;
                                 dbProg.Maximum = 100 * 100;
@@ -643,6 +602,7 @@ namespace V_Max_Tool
                             {
                                 dbProg.Location = new Point(left, top);
                                 //BrowseDB.Controls.Add(dbProg);
+                                dbProg.Visible = false;
                                 opts.Controls.Add(dbProg);
                                 BuildDatabase.Visible = false; ;
                                 SetDBContextItems();
@@ -809,16 +769,24 @@ namespace V_Max_Tool
                             dbMenu.Items.Add(dbSep[separator++]);
                             dbMenu.Items.Add(importItem);
                             dbMenu.Items.Add(exportItem);
-                            if (disk.Length > 1) dbMenu.Items.Add(dupeItem);
+                            if (disk.Length > 1)
+                            {
+                                dbMenu.Items.Add(dupeItem);
+                                dbMenu.Items.Add(dbSep[separator++]);
+                                dbMenu.Items.Add(markItem);
+                                dbMenu.Items.Add(mergeItem);
+                                dbMenu.Items.Add(unmarkAllItem);
+                                markItem.Text = item.Checked ? "Remove from merge list" : "Mark image for merging";
+                            }
                             dbMenu.Items.Add(dbSep[separator++]);
                             dbMenu.Items.Add(removeItem);
-                            SetEnabled(dbView.SelectedItems.Count);
+                            SetEnabled(dbView.SelectedItems.Count, item.Checked);
                         }
 
                         dbMenu.Show(dbView, e.Location);
                     }
 
-                    void SetEnabled(int items)
+                    void SetEnabled(int items, bool chk)
                     {
                         bool allLocked = true;
                         bool anyLocked = false;
@@ -826,9 +794,12 @@ namespace V_Max_Tool
                         bool allUnlocked = true;
                         bool anyFav = false;
                         bool anyUnfav = false;
+                        int checkedItems = 0;
 
+                        foreach (ListViewItem chked in dbView.Items) if (chked.Checked) checkedItems++;
                         foreach (ListViewItem item in dbView.SelectedItems)
                         {
+                            
                             var d = disk[(int)item.Tag];
                             if (d.Locked)
                             {
@@ -841,7 +812,6 @@ namespace V_Max_Tool
                             if (d.Favorite) anyFav = true;
                             else anyUnfav = true;
                         }
-
                         importItem.Enabled = items == 1;
 
                         // Fields with bulk-edit actions
@@ -849,6 +819,14 @@ namespace V_Max_Tool
                         regionItem.Enabled = !allLocked;
                         yearItem.Enabled = !allLocked;
                         protectionItem.Enabled = !allLocked;
+                        if (checkedItems > 2 && chk)
+                        {
+                            markItem.Text = "Remove from merge list";
+                            markItem.Enabled = true;
+                        }
+                        else markItem.Enabled = (checkedItems < 3 && !chk && dbView.SelectedItems.Count == 1);
+                        unmarkAllItem.Enabled = checkedItems > 0;
+                        mergeItem.Enabled = checkedItems > 1;
                         // Handle menu text decoration for locked items
                         SetMenuItemText(sideItem, "Disk Side #");
                         SetMenuItemText(regionItem, "Disk Region");
@@ -886,8 +864,7 @@ namespace V_Max_Tool
                         {
                             item.MouseEnter += (ss, ee) =>
                             {
-                                ToolStripItem itemss = ss as ToolStripItem;
-                                if (itemss != null && itemss.Text.StartsWith("*"))
+                                if (ss is ToolStripItem itemss && itemss.Text.StartsWith("*"))
                                 {
                                     Point screenLocation = dbMenu.Bounds.Location;
                                     screenLocation.Offset(30, dbMenu.Height + 10);
@@ -1097,12 +1074,97 @@ namespace V_Max_Tool
                             UpdateProgressBar(i, images.Count);
                         }
 
-                        
+
                         MessageForYouSir(errors ? "Export Completed with Errors" : "Export Complete",
                                          errors ? "Some files may not have been exported." : "File(s) successfully exported.");
                     };
                     dbProg.Visible = false;
                 };
+
+                markItem.Click += (s, e) =>
+                {
+                    if (dbView.SelectedItems.Count == 1)
+                    {
+                        Text = s.ToString();
+                        bool chk = !s.ToString().ToLower().Contains("remove");
+                        foreach (ListViewItem item in dbView.SelectedItems) item.Checked = chk;
+                        dbView.Invalidate();
+                    }
+                };
+
+                mergeItem.Click += (s, e) =>
+                {
+                    string n = "";
+                    foreach (ListViewItem item in dbView.Items)
+                    {
+                        if (item.Checked)
+                        {
+                            int index = (int)item.Tag;
+                            n += $"{disk[index].Title} ";
+                        }
+                    }
+                    Text = n;
+                };
+
+                unmarkAllItem.Click += (s, e) =>
+                {
+                    foreach (ListViewItem item in dbView.Items) if (item.Checked) item.Checked = false;
+                };
+            }
+
+            void CreateOptionsPanel()
+            {
+                Undo.Left = dbSearch.Width + dbSearch.Left + 5;
+                Undo.ImageAlign = ContentAlignment.BottomCenter;
+                Redo.Left = Undo.Width + Undo.Left + 5;
+                Redo.ImageAlign = ContentAlignment.BottomCenter;
+                Prvw.Left = Redo.Width + Redo.Left + 5;
+                Prvw.ImageAlign = ContentAlignment.BottomCenter;
+                Undo.FlatAppearance.BorderSize = 0;
+                Redo.FlatAppearance.BorderSize = 0;
+                Prvw.FlatAppearance.BorderSize = 0;
+                SetButtonImages();
+                ToolTip dbTip = new ToolTip();
+                dbTip.SetToolTip(Undo, "Undo");
+                dbTip.SetToolTip(Redo, "Redo");
+                dbTip.SetToolTip(Prvw, "Toggle Directory Preview *'CTRL' key");
+                Undo.Click += (s, e) => UndoClick();
+                Redo.Click += (s, e) => RedoClick();
+                Prvw.Click += (s, e) => ToggleDirPreview();
+                opts.Width = BrowseDB.Width - 17;
+                opts.Height = 24;
+                opts.Location = new Point(0, 0);
+                opts.Controls.AddRange(new Control[] { dbSearch, DBsearch, dbProg, Undo, Redo, Prvw });
+                dbProg.Location = new Point(BrowseDB.Width - (dbProg.Width + 35), 7);
+                dbProg.Visible = false;
+            }
+
+            void CheckMouseClick(object sender, MouseEventArgs e)
+            {
+                if (e.Button == MouseButtons.Left) mClick = true;
+            }
+
+            void ShowTooltipOnHover(object sender, MouseEventArgs e, string message)
+            {
+                if (sender is Control ctrl)
+                {
+                    tooltipCheckTimer.Start();
+                    Point screenPos = Cursor.Position;
+                    screenPos.X += 32;
+                    Point clientPos = editPan.PointToClient(screenPos);
+                    dbTooltip.Show(message, editPan, clientPos);
+                    dAddNotes.BackgroundImage = ctrl == dAddNotes ? ResizeIcon("notesH", icX, icY) : ResizeIcon("notes", icX, icY);
+                }
+            }
+
+            int GetColumnX(ListView listView, int columnIndex)
+            {
+                int x = 0;
+                for (int i = 0; i < columnIndex; i++)
+                {
+                    x += listView.Columns[i].Width;
+                }
+                return x;
             }
         }
 
@@ -1183,7 +1245,6 @@ namespace V_Max_Tool
                 dSide.Value = disk[idx].Side + 1;
                 dYear.Value = disk[idx].Year;
                 dRegn.SelectedIndex = disk[idx].Region;
-                //dProt.SelectedIndex = disk[idx].Protection;
                 dProt.SelectedIndex = disk[idx].Protection + 1;
                 dStat.SelectedIndex = disk[idx].Status;
                 favToggle = disk[idx].Favorite;
@@ -1215,8 +1276,7 @@ namespace V_Max_Tool
             dbRemv.Items.Clear();
             foreach (int i in dbRemoved)
             {
-                ListViewItem item = new ListViewItem($"{i}");   // Locked
-                item.Tag = i;
+                ListViewItem item = new ListViewItem($"{i}") { Tag = i };   // Locked
                 dbRemv.Items.Add(item);
             }
             dbRemv.EndUpdate();
@@ -1328,7 +1388,6 @@ namespace V_Max_Tool
 
         void UpdateTempDir(FileStream tdir, int index, byte[] entry)
         {
-            //long length = new System.IO.FileInfo(TEMP.dbTempDir).Length;
             long length = tdir.Length;
             if (length % DiskInfo.ENTRY_SIZE == 0 && index * DiskInfo.ENTRY_SIZE < length)
             {
@@ -1441,7 +1500,7 @@ namespace V_Max_Tool
                 }
 
                 bool update = indexes.Length > 100;
-                int currentItem = 0;
+                //int currentItem = 0;
                 if (update) InitProgressBar();
 
                 if (entrylist.Length % DiskInfo.ENTRY_SIZE == 0 &&
@@ -1490,6 +1549,7 @@ namespace V_Max_Tool
             bool r = redoStack.Count > 0;
             uicon = u ? ResizeIcon("undo", 16, 16) : ResizeIcon("!undo", 16, 16);
             ricon = r ? ResizeIcon("redo", 16, 16) : ResizeIcon("!redo", 16, 16);
+            Image preview = ResizeIcon("preview", 22, 22);
             if (!u) uicon = GetTransparentImage(uicon, 50);
             if (!r) ricon = GetTransparentImage(ricon, 50);
             
@@ -1501,12 +1561,14 @@ namespace V_Max_Tool
                     Redo.BackgroundImage = ricon;
                     Undo.Enabled = u;
                     Redo.Enabled = r;
+                    Prvw.BackgroundImage = preview;
                 }));
             }
             else
             {
                 Undo.BackgroundImage = uicon;
                 Redo.BackgroundImage = ricon;
+                Prvw.BackgroundImage = preview;
                 Undo.Enabled = u;
                 Redo.Enabled = r;
             }
@@ -1696,7 +1758,7 @@ namespace V_Max_Tool
                 if (!ignoreLock && locked == indexes.Length)
                     return; // All locked, user didn't confirm override
             }
-
+            dbView.BeginUpdate();
             foreach (int i in indexes)
             {
                 if (!disk[i].Locked || ignoreLock)
@@ -1704,13 +1766,18 @@ namespace V_Max_Tool
                     disk[i].Marked = true;
                     disk[i].Locked = false;
                     dbRemoved.Add(i); // ++;
+                    int itemIndex = dbView.Items.Cast<ListViewItem>().ToList()
+                    .FindIndex(item => (int)item.Tag == i);
+
+                    if (itemIndex != -1)
+                        dbView.Items.RemoveAt(itemIndex);
                 }
             }
-
+            dbView.EndUpdate();
+            BrowseDB.Text = $"Browse ReMaster Image Database ({dbView.Items.Count}/{disk?.Length - dbRemoved.Count})";
             UpdateDBDirectory(indexes);
 
             if (dbRemoved.Count >= 100) PromptRebuildDatabase();
-            ReadDB(true, false);
         }
 
         void EditDiskField<T>(object sender, T newValue, Func<DiskInfo, T> getter, Action<DiskInfo, T> setter
@@ -1723,7 +1790,6 @@ namespace V_Max_Tool
             {
                 Dictionary<int, DiskInfo> compare = GetPreEditedDisks();
                 List<int> selected = new List<int>();
-                //Dictionary<int, ListViewItem> updatedItems = new Dictionary<int, ListViewItem>();
                 bool protV = typeof(T) == typeof(byte);
                 bool showUpdates = false;
                 int pval = protV ? Convert.ToInt32(newValue) : 0;
@@ -1743,13 +1809,11 @@ namespace V_Max_Tool
                         if (!protV) setter(disk[index], newValue);
                         else disk[index].Protection = (byte)(pval == 0 ? GetProtectionType(GetNIBData(index)) : pval - 1);
                         selected.Add(index);
-                        //if (updateDbView) updatedItems[index] = currentItem;
                     }
                     if (showUpdates && current++ > 1) UpdateProgressBar(current, totalItems);
                 }
                 UpdateDBDirectory(selected.ToArray());
                 AddUndoState(compare);
-                //if (updateDbView) foreach (var kvp in updatedItems) UpdateListView(kvp.Value, disk[kvp.Key]);
                 dbView.EndUpdate();
                 dbProg.Visible = false;
             }
@@ -1799,7 +1863,6 @@ namespace V_Max_Tool
                             string t = "Bad Header!";
                             string s = "Image is corrupt and cannot be opened";
                             MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            //error = true;
                         }
                     }
                 }
@@ -1857,7 +1920,6 @@ namespace V_Max_Tool
                     {
                         if (showErrorMSG)
                         {
-                            //error = true;
                             dbCorrupt = true;
                             string title = "Error accessing database.";
                             string message = ex.Message;
@@ -1902,7 +1964,6 @@ namespace V_Max_Tool
                     col.Text = col.Text.Replace(" ↑", "").Replace(" ↓", "");
                 }
             }
-            //Stopwatch sw = Stopwatch.StartNew();
             foreach (var disk in sorted)
             {
                 if (!disk.Marked)
@@ -1913,8 +1974,6 @@ namespace V_Max_Tool
             }
             dbView.EndUpdate();
             BrowseDB.Text = $"Browse ReMaster Image Database ({dbView.Items.Count}/{disk?.Length - dbRemoved.Count})";
-            //sw.Stop();
-            //Text = $"{sw.Elapsed.TotalMilliseconds}";
         }
 
         string Get_Name(string input)
@@ -2093,11 +2152,12 @@ namespace V_Max_Tool
                                     byte protection = 0;
                                     var extension = Path.GetExtension(f).ToLower();
                                     var dec = extension == ".nib" ? File.ReadAllBytes(f) : LZdecompress(File.ReadAllBytes(f));
+                                    string lf = f.Replace(extension, ".log");
+                                    
                                     switch (detect)
                                     {
                                         case 0: protection = GetProtectionType(dec); break;
                                         case 1: protection = Get_ProtectionFromFileName(Path.GetFileNameWithoutExtension(f)); break;
-                                            //case 2: protection = 0; break;
                                     }
                                     var title = getNameFromDirectory
                                         ? GetTitleFromDirectory(dec)
@@ -2128,6 +2188,12 @@ namespace V_Max_Tool
                                         Extension = fileExt[extension],
                                         Protection = protection,
                                     };
+                                    if (ParseLog.Checked && File.Exists(lf) && new FileInfo(lf).Length < 1024 * 1024)
+                                    {
+                                        (bool errors, string tracks) = ParseLogFile(File.ReadAllLines(lf));
+                                        info.Status = errors ? 2 : 0;
+                                        info.Notes = tracks;
+                                    }
                                     var newent = info.ToEntry();
                                     WriteTempDir(newent);
                                     write.Write(newent);
@@ -2703,6 +2769,13 @@ namespace V_Max_Tool
             PVbox.SelectionColor = C64_screen;
         }
 
+        void ToggleDirPreview()
+        {
+            PVbox.Visible = !PVbox.Visible;
+            if (PVbox.Visible) BrowseDB.Width += PVbox.Width;
+            else BrowseDB.Width -= PVbox.Width;
+        }
+
         string SanitizeRichText(RichTextBox rtb)
         {
             var sb = new StringBuilder();
@@ -2825,7 +2898,7 @@ namespace V_Max_Tool
                 $"{DiskInfo.Prot[diskInfo.Protection]}",
                 $"{diskInfo.Timestamp}",
             };
-
+            bool chked = e.Item.Checked;
             // Compute column rectangles
             Rectangle[] cols = new Rectangle[view.vColumns.Length];
             int x = e.Bounds.Left;
@@ -2848,7 +2921,11 @@ namespace V_Max_Tool
             Font font = dbView.Font;
             Color normalColor = isSelected ? SystemColors.HighlightText : Color.Black;
             Color hoverColor = isSelected ? Color.Yellow : Color.Blue;
-            Color textColor = editing ? Color.Gray : isHovered ? hoverColor : normalColor;
+            Color textColor;
+            //Color textColor = editing ? Color.Gray : isHovered ? hoverColor : normalColor;
+            if (chked) textColor = isSelected ? isHovered ? Color.LightGreen : Color.Orange : isHovered ? Color.Red : Color.BlueViolet;
+            else textColor = editing ? Color.Gray : isHovered ? hoverColor : normalColor;
+
             Image icon;
 
             // Column 0: Lock Icon
@@ -3129,12 +3206,7 @@ namespace V_Max_Tool
             {
                 ctrlHeld = false;
                 var holdtime = DateTime.Now - ctrlHold;
-                if (holdtime.TotalMilliseconds < 350)
-                {
-                    PVbox.Visible = !PVbox.Visible;
-                    if (PVbox.Visible) BrowseDB.Width += PVbox.Width;
-                    else BrowseDB.Width -= PVbox.Width;
-                }
+                if (holdtime.TotalMilliseconds < 350) ToggleDirPreview();
             }
             if (e.KeyData == Keys.Escape)
             {

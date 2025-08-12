@@ -24,7 +24,7 @@ namespace V_Max_Tool
         private static readonly byte[] VM2_Valid = { 0xa5, 0xa4, 0xa9, 0xaC, 0xad, 0xb4, 0xbc };
         private static readonly byte[] vv2n = { 0x64, 0xa5, 0xa5, 0xa5 };
         private static readonly byte[] vv2p = { 0x4e, 0xa5, 0xa5, 0xa5 };
-        private static byte[] v2_dec_table1 = new byte[0];
+        private static byte[] vmax_dec_table = new byte[0];
 
         void GetNewHeaders()
         {
@@ -36,6 +36,32 @@ namespace V_Max_Tool
                 case 1: { NDG.newheader[0] = 0x64; NDG.newheader[1] = 0x46; } break;
                 case 2: { NDG.newheader[0] = 0x4e; NDG.newheader[1] = 0x64; } break;
             }
+        }
+
+        int Find_V2_Sector(byte[] data, int sector)
+        {
+            if (data == null || (sector < 0 || sector > 22)) return -1;
+            byte[] sb = new byte[] { 0x64, 0x4e };
+            byte[] eb = new byte[] { 0x46, 0x4e, 0x64 };
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                try
+                {
+                    if (sb.Any(x => x == data[i]))
+                    {
+                        int sec = data[i + 1] ^ data[i + 2];
+                        if (sec == sector)
+                        {
+                            i += 2;
+                            while (!eb.Any(x => x == data[i])) i++;
+                            return i + 1;
+                        }
+                    }
+                }
+                catch { }
+            }
+            return -1;
         }
 
         void V2_Adv_Opts()
@@ -198,25 +224,32 @@ namespace V_Max_Tool
             using (var buffer = new MemoryStream())
             using (var write = new BinaryWriter(buffer))
             {
-                var st_sec = 0;
-                for (int i = 0; i < sectors; i++)
+                using (var buff = new MemoryStream())
+                using (var wrt = new BinaryWriter(buff))
                 {
-                    if (sec_dat[st_sec].Length > 0)
+                    var st_sec = 0;
+                    for (int i = 0; i < sectors; i++)
                     {
-                        if ((i == 0 && syncless && !addSync) || !syncless || addSync) write.Write(v2_sync_marker);
-                        write.Write(ArrayConcat(Build_Header(header[st_sec], hlen), sec_dat[st_sec++]));
-                        st_sec = st_sec == sectors ? 0 : st_sec;
+                        if (sec_dat[st_sec].Length > 0)
+                        {
+                            //wrt.Write(DecodeVMaxV2(sec_dat[st_sec]));
+                            wrt.Write(DecodeVmaxV2(sec_dat[st_sec]));
+                            if ((i == 0 && syncless && !addSync) || !syncless || addSync) write.Write(v2_sync_marker);
+                            write.Write(ArrayConcat(Build_Header(header[st_sec], hlen), sec_dat[st_sec++]));
+                            st_sec = st_sec == sectors ? 0 : st_sec;
+                        }
                     }
+                    //File.WriteAllBytes($@"c:\test\vmtest\trk{trk}", buff.ToArray());
+                    if (t_gap.Length > 0) write.Write(t_gap);
+                    int remain = (trk_density - (int)buffer.Position);
+                    if (remain > 0) write.Write(FastArray.Init(remain, gap_byte));
+                    if (error && !batch)
+                    {
+                        var tk = track_num;
+                        error = false;
+                    }
+                    return (buffer.ToArray(), 0, (int)buffer.Length, sectors);
                 }
-                if (t_gap.Length > 0) write.Write(t_gap);
-                int remain = (trk_density - (int)buffer.Position);
-                if (remain > 0) write.Write(FastArray.Init(remain, gap_byte));
-                if (error && !batch)
-                {
-                    var tk = track_num;
-                    error = false;
-                }
-                return (buffer.ToArray(), 0, (int)buffer.Length, sectors);
             }
 
             byte[] Build_Header(byte[] ID, int len)
