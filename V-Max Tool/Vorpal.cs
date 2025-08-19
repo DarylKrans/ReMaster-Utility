@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using System.IO;
 
 namespace V_Max_Tool
 {
@@ -236,7 +237,7 @@ namespace V_Max_Tool
                             var sec_data = Bit2Byte(source, dep, inc);
                             var decoded = Decode_Vorpal_GCR(sec_data);
                             bool isone = source[dep + 1290];
-                            bool pass = GetVorpal_Checksum(decoded, CopyArray(sec_data, 160));
+                            bool pass = GetVorpal_Checksum(decoded, CopyFrom(sec_data, 160, 2));
                             return dec ? (decoded, pass, isone, dep) : (sec_data, pass, isone, dep);
                         }
                         k += inc - sub;
@@ -259,199 +260,120 @@ namespace V_Max_Tool
         {
             var err = new List<int>();
             int numbering = 0;
-            var ok = "(OK)";
-            var fail = "(Failed!)";
-            int d = (tracks > 42) ? (trk / 2) + 1 : trk;
-            int sec_size = 0, lead_len = 0, sub = 1, compare_len = 16;
+            int track = (tracks > 42) ? (trk / 2) + 1 : trk;
             int secLen = 160 << 3;
-            int min_skip_len = vpl_density[density_map[d]] - 100;
-            int max_track_size = 7900, data_start = 0, data_end = 0, track_len = 0, track_lead_in = 0, sectors = 0, snc_cnt = 0;
+            int min_skip_len = vpl_density[density_map[track]] - 100;
+            int data_start = 0, data_end = 0, track_len = 0, sectors = 0;
             var sid = string.Empty;
-            bool single_rotation = false, start_found = false, end_found = false, lead_in_Found = false, repeat = false;
+            bool start_found = false, end_found = false;
             var sec_header = new List<string>();
             var sec_hdr = new List<string>();
             var sec_pos = new List<int>();
-            var tdata = new byte[0];
             var source = new BitArray(Flip_Endian(data));
-            var lead_in = new BitArray(leadIn_std.Length);
-            for (int k = 0; k < source.Length; k++)
+            int sec_zero_pos = 0, longest_gap = 0, current_sec = 0, last_sec = 0;
+            byte[] header = new byte[] { 0x3f, 0xbf };
+
+            int pos = 300;
+            byte compare = 0;
+            while (pos < source.Length)
             {
-                if (source[k]) snc_cnt++;
-                else //if (!source[k])
+                compare <<= 1;
+                if (source[pos]) compare |= 1;
+                if (header.Any(x => x == compare))
                 {
-                    if (snc_cnt == 8) // && k > 600)
+                    var comp = Bit2Byte(source, pos + 1, 16);
+                    if (comp[0] == 0xd5 && (comp[1] & 0x80) == 0)
                     {
-                        if (sec_size > secLen || k > 100 << 3)
+                        var cur_pos = pos - 7;
+                        sid = Hex_Val(Bit2Byte(source, pos - ((com << 3) >> 1), com << 3));
+                        if (!sec_header.Any(x => x == sid))
                         {
-                            if (k - ((com << 3) + 8) > 0)
+                            int distance = Math.Abs(cur_pos - last_sec);
+                            longest_gap = Math.Max(cur_pos - last_sec, longest_gap);
+                            current_sec = cur_pos;
+                            if (!start_found) { start_found = true; data_start = cur_pos; }
+                            if (cur_pos + (164 << 3) < source.Length)
                             {
-                                if (!lead_in_Found && (!source[k - 10] && !source[k - 9]))
+                                try
                                 {
-                                    numbering = sec_hdr.Count;
-                                    (lead_in_Found, track_lead_in) = Get_LeadIn_Position(k);
-                                }
-                                var sec_ID = Bit2Byte(source, k - ((com << 3) >> 1), com << 3);
-                                sid = Hex_Val(sec_ID);
-                                var sid2 = Byte_to_Binary(Bit2Byte(source, k - 10, 16), true);
-                                if (!sec_header.Any(x => x == sid))
-                                {
+                                    byte[] secdata = Decode_Vorpal_GCR(Bit2Byte(source, cur_pos + 17, secLen));
+                                    var ckm = GetVorpal_Checksum(secdata, Bit2Byte(source, cur_pos + 17 + secLen, 16));
+                                    var vcksm = ckm ? "(OK)" : "(Failed!)";
                                     sec_header.Add(sid);
-                                    sec_pos.Add(k >> 3);
-                                    var vcksm = "";
-                                    if (sec_size >> 3 > 0)
-                                    {
-                                        var sector = new byte[0];
-                                        var q = k + 7;
-                                        if (q + (162 << 3) < source.Length)
-                                        {
-                                            sector = Decode_Vorpal_GCR(Bit2Byte(source, q, secLen));
-                                            var ckm = GetVorpal_Checksum(sector, Bit2Byte(source, q + secLen, 16));
-                                            vcksm = ckm ? ok : fail;
-                                            if (!ckm) err.Add(sectors);
-                                        }
-                                        try { sec_hdr.Add($"pos ({k >> 3}) Header [{sid2}] Checksum {vcksm}"); }
-                                        catch { }
-                                    }
-                                    sec_size = 0;
-                                    if (!start_found)
-                                    {
-                                        data_start = k;
-                                        start_found = true;
-                                    }
-                                    k += 1180; // Skip over the next (x) bits after finding a sector
-                                    sec_size += 1180;
-                                }
-                                else
-                                {
+                                    sec_pos.Add(cur_pos);
+                                    sectors++;
+                                    if (compare == 0x3f) { sec_zero_pos = cur_pos; numbering = sec_hdr.Count; }
+                                    last_sec = cur_pos + secLen;
                                     if (!batch)
                                     {
-                                        try
-                                        {
-                                            if (!repeat)
-                                            {
-                                                sec_hdr.Add($"* Repeat * pos {k >> 3} sector {sectors - numbering}");
-                                                repeat = true;
-                                            }
-                                        }
-                                        catch { }
-                                    }
-                                    if (!end_found)
-                                    {
-                                        data_end = k - sub;
-                                        end_found = true;
+                                        if (!ckm) err.Add(sectors);
+                                        var sid2 = Byte_to_Binary(Bit2Byte(source, cur_pos, 16), true);
+                                        try { sec_hdr.Add($"pos ({pos >> 3}) Header [{sid2}] Checksum {vcksm}"); } catch { }
                                     }
                                 }
-                                sectors = sec_header.Count;
-                                if (!single_rotation && end_found) break;
+                                catch { }
                             }
+                            pos += 1180; // Skip over the next (x) bits after finding a sector
                         }
-                        else sec_size = 0;
-                    }
-                    snc_cnt = 0;
-                }
-                sec_size++;
-            }
-            if (start_found && !end_found) data_end = data.Length << 3;
-            track_len = (data_end - data_start); // + 1;
-
-            if (single_rotation) tdata = Bit2Byte(source, data_start, track_len);
-            else
-            {
-                var spl = 0;
-                var temp = new BitArray(track_len);
-                var pos = track_lead_in;
-                for (int i = 0; i < track_len; i++)
-                {
-                    try
-                    {
-                        temp[i] = source[pos];
-                        pos++;
-
-                        if (pos > data_end)
+                        else
                         {
-                            spl = i;
-                            pos = data_start;
+                            end_found = true; data_end = cur_pos - 1;
+                            try
+                            {
+                                sec_hdr.Add($"* Repeat * pos {pos >> 3} sector {sectors - numbering}");
+                            }
+                            catch { }
                         }
                     }
-                    catch { }
                 }
-                tdata = Bit2Byte(temp);
+                if (end_found) break;
+                pos++;
             }
+            Find_LeadIn(BitCopy(source, sec_zero_pos -longest_gap, longest_gap));
+            
+            if (start_found && !end_found) data_end = data.Length << 3;
+            track_len = (data_end - data_start);
+            var temp = new BitArray(track_len);
+            pos = sec_zero_pos;
+            for (int i = 0; i < track_len; i++)
+            {
+                try
+                {
+                    temp[i] = source[pos++];
+                    if (pos > data_end) pos = data_start;
+                }
+                catch { }
+            }
+            var tdata = Bit2Byte(temp);
             var headers = new string[sec_hdr.Count];
-            var strt = numbering > 0 ? sectors - numbering : 0; // sec_hdr.Count - 1;
+            var strt = numbering > 0 ? sectors - numbering : 0;
             for (int i = 0; i < sectors; i++)
             {
-                var z = strt == 0 ? "*" : "";
-                headers[i] = $"Sector {z}({strt++}) {sec_hdr[i]}";
+                var z = strt == 0 ? "*" : string.Empty;
+                headers[i] = $"Sector ({strt++}){z} {sec_hdr[i]}";
                 if (strt == sectors) strt = 0;
             }
             if (headers.Length > sectors) headers[headers.Length - 1] = sec_hdr[sec_hdr.Count - 1];
-            if (!batch && err.Count > 0)
-            {
-                var errtk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-                foreach (var s in err) ErrorList.Add($"Checksum failed on track {errtk}");
-            }
-            return (tdata, data_start, data_end, track_len, track_lead_in, sectors, sec_pos.ToArray(), headers);
+            if (!batch && err.Count > 0) foreach (var s in err) ErrorList.Add($"Checksum failed on track {track}");
+            return (tdata, data_start, data_end, track_len, sec_zero_pos, sectors, sec_pos.ToArray(), headers);
 
-            (bool, int) Get_LeadIn_Position(int position)
+            void Find_LeadIn(BitArray gap)
             {
-                BitArray isRealend = new BitArray(compare_len << 3);
-                bool leadF = false;
-                int leadin = 0, l = position - 18;
-                bool equal = false;
-                while (!equal)
+                pos = 0;
+                int window = 0;
+                int foundPos = -1;
+                for (int i = 0; i < gap.Length; i++)
                 {
-                    l -= leadIn_std.Length;
-                    lead_len += leadIn_std.Length;
-
-                    if (l < 0)
+                    window <<= 1;
+                    if (gap[i]) window |= 1;
+                    if ((window & 0x0000ffff) == 0xb5bd)
                     {
-                        l = 0;
+                        foundPos = i + 1;
+                        sec_zero_pos -= (longest_gap - foundPos);
                         break;
                     }
-                    bool a = false, b = false;
-                    lead_in = new BitArray(leadIn_std.Length);
-                    for (int i = 0; i < lead_in.Length; i++) lead_in[i] = source[l + i];
-                    a = ((BitArray)leadIn_std.Clone()).Xor(lead_in).OfType<bool>().All(e => !e);
-                    b = ((BitArray)leadIn_alt.Clone()).Xor(lead_in).OfType<bool>().All(e => !e);
-                    equal = !a && !b;
                 }
-                if (l != 0)
-                {
-                    byte[] te;
-                    var u = l;
-                    for (int i = 0; i < 32; i++)
-                    {
-                        te = Flip_Endian(Bit2Byte(source, u - i, 8));
-                        if (te?.Length > 0 && te[0] == 0xbd)
-                        {
-                            l = u - (i + 1);
-                            break;
-                        }
-                    }
-                }
-                leadin = l + leadIn_std.Count - 1;
-                isRealend = BitCopy(source, l, 16 << 3);
-                if (leadin + (max_track_size << 3) < source.Length)
-                {
-                    data_start = leadin;
-                    start_found = true;
-                    var q = min_skip_len << 3;
-                    var rcompp = new BitArray(isRealend.Count);
-                    while (q++ < source.Length - (rcompp.Length))
-                    {
-                        rcompp = BitCopy(source, q, isRealend.Length);
-                        if (((BitArray)isRealend.Clone()).Xor(rcompp).OfType<bool>().All(e => !e))
-                        {
-                            end_found = true;
-                            data_end = q - sub;
-                            single_rotation = true;
-                            break;
-                        }
-                    }
-                }
-                leadF = true;
-                return (leadF, leadin);
+                if (foundPos < 0) sec_zero_pos -= 32;
             }
         }
 

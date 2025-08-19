@@ -335,6 +335,7 @@ namespace V_Max_Tool
             }
             else
             {
+                //if (trackFmt == 2 || trackFmt == 3) d &= 0x7f;
                 col = Color.FromArgb(30, d, 30);
             }
 

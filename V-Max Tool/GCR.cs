@@ -289,25 +289,30 @@ namespace V_Max_Tool
         //    0x00, 0x00, 0x05, 0x04, 0x02, 0x03, 0x01, 0x00, 0x20, 0x0F, 0x1C, 0xA5, 0xBF, 0x30, 0x0B, 0xC9, 0x61
         //};
 
-        byte[] DecodeVmaxV2(byte[] rawGcr)
+        byte[] Decode_VmaxGCR(byte[] rawGcr)
         {
+            if (rawGcr == null) return null;
             byte bitmask;
             using (MemoryStream buffer = new MemoryStream())
             using (BinaryWriter write = new BinaryWriter(buffer))
             {
                 for (int i = 0; i < rawGcr.Length; i += 4)
                 {
-                    bitmask = (byte)(vmax_dec_table[rawGcr[i]] << 2);
-                    byte decoded = (byte)(bitmask ^ vmax_dec_table[rawGcr[i + 1]]);
-                    write.Write(decoded);
-                    bitmask <<= 2;
+                    try
+                    {
+                        bitmask = (byte)(vmax_dec_table[rawGcr[i]] << 2);
+                        byte decoded = (byte)(bitmask ^ vmax_dec_table[rawGcr[i + 1]]);
+                        write.Write(decoded);
+                        bitmask <<= 2;
 
-                    decoded = (byte)(bitmask ^ vmax_dec_table[rawGcr[i + 2]]);
-                    write.Write(decoded);
-                    decoded = (byte)(bitmask << 2);
+                        decoded = (byte)(bitmask ^ vmax_dec_table[rawGcr[i + 2]]);
+                        write.Write(decoded);
+                        decoded = (byte)(bitmask << 2);
 
-                    decoded = (byte)(decoded ^ vmax_dec_table[rawGcr[i + 3]]);
-                    write.Write(decoded);
+                        decoded = (byte)(decoded ^ vmax_dec_table[rawGcr[i + 3]]);
+                        write.Write(decoded);
+                    }
+                    catch { }
                 }
                 return buffer.ToArray();
             }

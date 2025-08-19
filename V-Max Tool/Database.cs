@@ -545,7 +545,7 @@ namespace V_Max_Tool
             dbView.Height = BrowseDB.Height - 38 - opts.Height - 5; //BrowseDB.Height;
             dbView.ShowItemToolTips = true;
             dbView.Location = new Point(0, opts.Height);
-            
+
             BrowseDB.Controls.Add(opts);
             opts.BringToFront();
             bdbW = BrowseDB.Width;
@@ -799,7 +799,7 @@ namespace V_Max_Tool
                         foreach (ListViewItem chked in dbView.Items) if (chked.Checked) checkedItems++;
                         foreach (ListViewItem item in dbView.SelectedItems)
                         {
-                            
+
                             var d = disk[(int)item.Tag];
                             if (d.Locked)
                             {
@@ -1552,7 +1552,7 @@ namespace V_Max_Tool
             Image preview = ResizeIcon("preview", 22, 22);
             if (!u) uicon = GetTransparentImage(uicon, 50);
             if (!r) ricon = GetTransparentImage(ricon, 50);
-            
+
             if (InvokeRequired)
             {
                 Invoke(new Action(() =>
@@ -1592,7 +1592,7 @@ namespace V_Max_Tool
         {
             List<int> idx = new List<int>();
             List<byte[]> entries = new List<byte[]>();
-            
+
             foreach (var pair in diskCompare)
             {
                 int index = pair.Key;
@@ -2153,7 +2153,7 @@ namespace V_Max_Tool
                                     var extension = Path.GetExtension(f).ToLower();
                                     var dec = extension == ".nib" ? File.ReadAllBytes(f) : LZdecompress(File.ReadAllBytes(f));
                                     string lf = f.Replace(extension, ".log");
-                                    
+
                                     switch (detect)
                                     {
                                         case 0: protection = GetProtectionType(dec); break;

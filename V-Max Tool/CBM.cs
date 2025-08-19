@@ -102,6 +102,7 @@ namespace V_Max_Tool
                 write.Write((errorCode == 2 || errorCode == 4 || current_sector == null) ? emptySector : current_sector);
                 if (i != sectors - 1) write.Write(tail_gap);
             }
+            //write.Write(ArrayConcat(FastArray.Init(15, 0x55), FastArray.Init(3, 0x00)));
             int rem = (int)(density[t_density] - buffer.Length);
             if (rem > 0)
             {
@@ -1398,7 +1399,7 @@ namespace V_Max_Tool
                     {
                         int checksum = 0;
                         for (int i = 9; i < 266; i++) checksum ^= decoded[i];
-                        return (decode ? CopyArray(decoded, 9, 256) : dec, checksum == decoded[266], pos);
+                        return (decode ? CopyFrom(decoded, 9, 256) : dec, checksum == decoded[266], pos);
                     }
                 }
                 else
@@ -1411,7 +1412,7 @@ namespace V_Max_Tool
                         {
                             int checksum = 0;
                             for (int i = 1; i < 257; i++) checksum ^= decoded[i];
-                            return (decode ? CopyArray(decoded, 1, 256) : dec, checksum == decoded[257], pos + location);
+                            return (decode ? CopyFrom(decoded, 1, 256) : dec, checksum == decoded[257], pos + location);
                         }
                     }
 

@@ -83,6 +83,17 @@ namespace V_Max_Tool
         	3, 3, 3, 3, 3, 3, 3				/* 36 - 42 (non-standard) */
         };
 
+        private static readonly byte[] vm2_density_map =
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
+        	0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	/* 11 - 20 */
+        	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	/* 21 - 30 */
+        	1, 1, 1, 1, 1,					/* 31 - 35 */
+        	1, 1, 1, 1, 1, 1, 1				/* 36 - 42 (non-standard) */
+        };
+
+        private static readonly int[] vm2_Sectors_by_density = { 22, 20 };
+
         private static readonly int[] Sectors_by_density = { 21, 19, 18, 17 };
 
         private static readonly string[] ErrorCodes =
@@ -731,7 +742,7 @@ namespace V_Max_Tool
                 //File.WriteAllBytes($@"c:\test\compressed\v26446n.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\6446")), 0x46));
                 //File.WriteAllBytes($@"c:\test\compressed\v2644en.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\644e")), 0x4e));
                 //File.WriteAllBytes($@"c:\test\compressed\vmv2dt1.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\vmv2dt1")), 0x4e));
-                File.WriteAllBytes($@"c:\test\assets\vmctbl.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\assets\vmctable.bin")), 0x4e));
+                //File.WriteAllBytes($@"c:\test\assets\vmctbl.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\assets\vmctable.bin")), 0x4e));
             }
             catch { }
             Pad_Tracks.Checked = true;

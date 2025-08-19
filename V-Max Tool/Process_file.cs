@@ -422,6 +422,7 @@ namespace V_Max_Tool
                                 break;
 
                             case 5:
+                                AddTrackInfo(Color.Blue, $"{tr} {t} {fm} : {secF[NDS.cbm[i]]} ");
                                 ProcessTrackInfo(5, "Dark Blue Track", Color.DarkBlue);
                                 AddTrackInfo(Color.Black, $"Track Length : ({(NDS.D_End[i] - NDS.D_Start[i] >> 3)}) Sectors ({NDS.sectors[i]})");
                                 AddTrackInfo(Color.Black, " ");
@@ -489,18 +490,6 @@ namespace V_Max_Tool
                         Track_Info.EndUpdate();
                     }
                     if (!cust_dens) Cust_Density.Text = "Track Densities: Standard"; else Cust_Density.Text = "Track Densities: Custom";
-                    //if (v2) NDS.Prot_Method = "Protection: V-Max v2";
-                    //if (v3) NDS.Prot_Method = "Protection: V-Max v3";
-                    //if (!v2 && !v3 && NDS.cbm.Any(x => x == 4)) NDS.Prot_Method = "Protection: V-Max v2 CBM";
-                    //if (!v2 && !v3 && !NDS.cbm.Any(x => x == 4)) NDS.Prot_Method = "Protection: None or CBM exploit";
-                    //if (fat) NDS.Prot_Method = "Protection: Fat-Tracks";
-                    //if (!v2 && !v3 && NDS.cbm.Any(x => x == 6)) NDS.Prot_Method = "Protection: RapidLok";
-                    //if (NDS.cbm.Any(s => s == 5)) NDS.Prot_Method = "Protection: Vorpal";
-                    //if (NDS.cbm.Any(x => x == 8)) NDS.Prot_Method = "Protection: (EA) PirateSlayer / Buster";
-                    //if (NDS.cbm.Any(x => x == 9)) NDS.Prot_Method = "Protection: Rainbow Arts / Magic Bytes";
-                    //if (NDS.cbm.Any(x => x == 10)) NDS.Prot_Method = "Protection: Micro Prose";
-                    //if (NDS.cbm.Any(x => x == 11)) NDS.Prot_Method = "Protection: GMA";
-                    //if (NDS.cbm.Any(x => x == 12)) NDS.Prot_Method = "Protection: Securispeed";
                     string method = string.Empty;
                     if (v2) method = "V-Max v2";
                     if (v3) method = "V-Max v3";
@@ -881,7 +870,6 @@ namespace V_Max_Tool
                 else ht = 0;
                 Color color = new Color();
                 Color tcolor = new Color();
-                //for (int i = 0; i < tracks; i++)
                 for (int i = 0; i < end_track; i++)
                 {
                     if (halftracks) ht += .5; else ht += 1;
@@ -932,20 +920,23 @@ namespace V_Max_Tool
                 {
                     try
                     {
-                        if (NDS.cbm[trk] == 0) Process_NDOS(trk);
-                        if (NDS.cbm[trk] == 1) Process_CBM(trk, acbm, cmb, cyn, c_trk);
-                        if (NDS.cbm[trk] == 2) Process_VMAX_V2(trk, av2, cv2, rvb);
-                        if (NDS.cbm[trk] == 3) Process_VMAX_V3(trk, av3, cv3, rvb, s_sec);
-                        if (NDS.cbm[trk] == 4) Process_Loader(trk, fix, sol);
-                        if (NDS.cbm[trk] == 5) Process_Vorpal(trk, avp, vpl_lead);
-                        if (NDS.cbm[trk] == 6) Process_RapidLok(trk);
-                        if (NDS.cbm[trk] == 7) Process_RapidLokKey(trk);
-                        if (NDS.cbm[trk] == 9) Process_Rainbow(trk);
-                        if (NDS.cbm[trk] == 10) Process_MPS(trk, acbm);
+                        switch (NDS.cbm[trk])
+                        {
+                            case 0: Process_NDOS(trk); break;
+                            case 1: Process_CBM(trk, acbm, cmb, cyn, c_trk); break;
+                            case 2: Process_VMAX_V2(trk, av2, cv2, rvb); break;
+                            case 3: Process_VMAX_V3(trk, av3, cv3, rvb, s_sec); break;
+                            case 4: Process_Loader(trk, fix, sol); break;
+                            case 5: Process_Vorpal(trk, avp, vpl_lead); break;
+                            case 6: Process_RapidLok(trk); break;
+                            case 7: Process_RapidLokKey(trk); break;
+                            case 9: Process_Rainbow(trk); break;
+                            case 10: Process_MPS(trk, acbm); break;
+                        }
                     }
                     catch { }
                 }
-                else { NDA.Track_Data[trk] = NDS.Track_Data[trk]; }
+                else NDA.Track_Data[trk] = NDS.Track_Data[trk];
             }
 
             void Process(int track, int vorpal_lead = 0, int cyan_track = -1, bool release = true)
@@ -1665,10 +1656,10 @@ namespace V_Max_Tool
                     }
                     if (DV_dec.Checked)
                     {
-                        int[] known_formats = new int[] { 1, 2, 5, 6, 10 };
+                        int[] known_formats = new int[] { 1, 2, 3, 5, 6, 10 };
                         if (NDS.cbm[i] == 1) if (NDS.sectors[i] >= 5) Disp_CBM(i, trk, false); else Disp_STD_GCR(i, trk);
                         if (NDS.cbm[i] == 5) Disp_VPL(i, trk);
-                        if (NDS.cbm[i] == 2) Disp_VM2(i, trk);
+                        if (NDS.cbm[i] == 2 || NDS.cbm[i] == 3) Disp_VMAX(i, trk);
                         if (NDS.cbm[i] == 6) Disp_RLK(i, trk);
                         if (NDS.cbm[i] == 10) Disp_CBM(i, trk, true);
                         if (!known_formats.Any(x => x == NDS.cbm[i]) && NDS.Track_Length[i] > 6000) Disp_STD_GCR(i, trk);
@@ -1806,25 +1797,18 @@ namespace V_Max_Tool
                 }
             }
 
-            void Disp_VM2(int t, double track)
+            void Disp_VMAX(int t, double track)
             {
                 byte[] dec = new byte[0];
                 int tlen = 0;
                 string contents = string.Empty;
-                //int sec = 0;
                 byte[][] sectors = new byte[NDS.sectors[t]][];
+                bool[] cksm = new bool[NDS.sectors[t]];
                 for (int i = 0; i < sectors.Length; i++)
                 {
-                    int pos = Find_V2_Sector(NDS.Track_Data[t], i);
-                    if (pos >= 0 && pos < NDS.Track_Data[t].Length - 320)
-                    {
-                        byte[] tdata = new byte[320];
-                        Buffer.BlockCopy(NDS.Track_Data[t], pos, tdata, 0, 320);
-                        sectors[i] = DecodeVmaxV2(tdata);
-                        tlen += sectors[i].Length;
-                    }
+                    (sectors[i], cksm[i]) = Find_VMax_Sector(NDG.Track_Data[t], i, NDS.cbm[t], true);
+                    tlen += sectors[i].Length;
                 }
-
                 if (sectors.Length > 0)
                 {
                     jt[(int)trk] = db_Text.Length;
@@ -1833,12 +1817,12 @@ namespace V_Max_Tool
 
                     for (int i = 0; i < sectors.Length; i++)
                     {
-                        if (sectors?[i] != null && sectors?[i].Length > 16)
+                        if (sectors?[i] != null && sectors?[i].Length > 0)
                         {
                             StringBuilder temp2 = new StringBuilder();
                             contents = sectors[i].All(x => x == 0x00) ? " (Empty, No Data!)" : string.Empty;
-                            //string checksumStatus = contents != string.Empty ? "N/A" : (cksm[i] ? "OK" : "Failed!");
-                            if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {sectors[i].Length}{contents}\n\n");
+                            string checksumStatus = cksm[i] ? "OK" : "Failed!";
+                            if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {sectors[i].Length}{contents} Checksum ({checksumStatus})\n\n");
                             if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
                             if (VS_hex.Checked)
                             {

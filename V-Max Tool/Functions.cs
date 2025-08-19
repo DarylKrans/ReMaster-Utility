@@ -164,21 +164,7 @@ namespace V_Max_Tool
             Protected_Tracks.Visible = (vmx > 0 || vpl > 0 || rlk > 0 || mps > 0);
         }
 
-        //void ResetAllBlocks()
-        //{
-        //    foreach (var row in BlkMap_bam)
-        //    {
-        //        foreach (var button in row)
-        //        {
-        //            {
-        //                tips.SetToolTip(button, string.Empty);
-        //                button.BackColor = Color.FromArgb(30, 100, 100, 100);
-        //            }
-        //        }
-        //    }
-        //}
-
-        (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, int) Set_Adjust_Options(bool rb_vm, bool cynldr = false)
+        (bool v2a, bool vpa, bool v3a, bool v2adj, bool v2cust, bool v3adj, bool v3cust, bool cbmadj, bool sl, bool fl, bool vpadj, bool rb_vm, int vpl_lead) Set_Adjust_Options(bool rb_vm, bool cynldr = false)
         {
             bool v2a = false, v3a = false, vpa = false, v2adj = false, v2cust = false, v3adj = false, v3cust = false, cbmadj = false;
             bool sl = false, fl = false, vpadj = false;
@@ -665,7 +651,7 @@ namespace V_Max_Tool
         byte[] CopyFrom(byte[] Source, int Pos = 0, int Length = 0)
         {
             if (Source == null || Source.Length == 0 || Pos > Source.Length - 1) return null;
-            Length = (Length > 0 && Pos + Length <= Source.Length - 1) ? Length : Source.Length - Pos - 1;
+            Length = (Length > 0 && Pos + Length <= Source.Length) ? Length : Source.Length - Pos;
             byte[] dest = new byte[Length];
             try
             {
@@ -675,27 +661,39 @@ namespace V_Max_Tool
             return dest;
         }
 
-        public static byte[] ArrayConcat(params byte[][] arrays)
-        {
-            int totalLength = arrays.Sum(a => a.Length);
-            byte[] result = new byte[totalLength];
-
-            int offset = 0;
-            foreach (byte[] array in arrays)
-            {
-                Buffer.BlockCopy(array, 0, result, offset, array.Length);
-                offset += array.Length;
-            }
-
-            return result;
-        }
-
         public static byte[] CopyArray(byte[] source, int start = 0, int length = -1)
         {
             if (source == null || start < 0 || start >= source.Length) return null;
             if (length == -1) length = source.Length - start;
             if (length < 0 || start + length > source.Length) return null;
             return source.Skip(start).Take(length).ToArray();
+        }
+
+        public static byte[] ArrayConcat(params byte[][] arrays)
+        {
+            int totalLength = arrays.Sum(a => a.Length);
+            byte[] result = new byte[totalLength];
+            int offset = 0;
+            foreach (byte[] array in arrays)
+            {
+                Buffer.BlockCopy(array, 0, result, offset, array.Length);
+                offset += array.Length;
+            }
+            return result;
+        }
+
+        byte[] FillArray(byte[] source, int length)
+        {
+            if (source == null || source.Length == 0) return Array.Empty<byte>(); // new byte[0];
+            int destIndex = 0;
+            var destination = new byte[length];
+            while (destIndex < length)
+            {
+                int copyLength = Math.Min(source.Length, length - destIndex);
+                Buffer.BlockCopy(source, 0, destination, destIndex, copyLength);
+                destIndex += copyLength;
+            }
+            return destination;
         }
 
         string Hex_Val(byte[] data, int start = 0, int end = -1)
@@ -717,6 +715,32 @@ namespace V_Max_Tool
                 if (ToBinary(Encoding.ASCII.GetString(data, i, 1)).Contains("000")) weak++;
             }
             return weak;
+        }
+
+        (int startPos, int runLength) FindLongestRunLength(byte[] data, byte value)
+        {
+            int current = 0;
+            int run = 0;
+            int pos = 0;
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] == value) current++;
+                else
+                {
+                    if (current > run)
+                    {
+                        run = current;
+                        pos = i - run;
+                    }
+                    current = 0;
+                }
+            }
+            if (current > run)
+            {
+                run = current;
+                pos = data.Length - run;
+            }
+            return (pos, run);
         }
 
         int FindLongestRun(byte[] data, byte value)
@@ -814,7 +838,7 @@ namespace V_Max_Tool
             {
                 if (line.Length < 2) continue;
                 string trackPart = line.Substring(0, 2).Trim();
-                if (!int.TryParse(trackPart, out int track) || track >  35) continue;
+                if (!int.TryParse(trackPart, out int track) || track > 35) continue;
                 if (Regex.IsMatch(line, @"\[E(\d{1,2})S(\d{1,2})\]")) errorTracks.Add(track);
             }
 
@@ -900,6 +924,20 @@ namespace V_Max_Tool
                 return temp;
             }
             else return bits;
+        }
+
+        int FindPos(BitArray source, byte look_for_byte, int pos = 0)
+        {
+            if (source == null || pos < 0 || pos >= source.Length) return -1;
+            byte compare = 0;
+            while (pos < source.Length)
+            {
+                compare <<= 1;
+                if (source[pos]) compare |= 1;
+                if (compare == look_for_byte) return pos;
+                pos++;
+            }
+            return pos;
         }
 
         public static string ToBinary(string data)
@@ -1034,6 +1072,7 @@ namespace V_Max_Tool
 
         (bool, int) Find_Data(byte[] find, byte[] data, int start_pos = -1)
         {
+            if (find == null || start_pos + find.Length >= data.Length) return (false, 0);
             try
             {
                 start_pos = start_pos < 0 ? 0 : start_pos;
@@ -1147,11 +1186,8 @@ namespace V_Max_Tool
         {
             try
             {
-                NDG.Track_Data[trk] = new byte[data.Length];
-                NDA.Track_Data[trk] = new byte[8192];
-                Buffer.BlockCopy(data, 0, NDG.Track_Data[trk], 0, data.Length);
-                Buffer.BlockCopy(data, 0, NDA.Track_Data[trk], 0, data.Length);
-                Buffer.BlockCopy(data, 0, NDA.Track_Data[trk], data.Length, 8192 - data.Length);
+                NDG.Track_Data[trk] = CopyFrom(data, 0, data.Length);
+                NDA.Track_Data[trk] = FillArray(data, 8192);
                 NDA.Track_Length[trk] = data.Length << 3;
                 NDG.Track_Length[trk] = data.Length;
             }
@@ -1168,6 +1204,11 @@ namespace V_Max_Tool
 
         byte[] SetSectorGap(int len)
         {
+            /// --------- V-Max Gap Test -----------
+            //var t = Encode_CBM_GCR(FastArray.Init(4, 0x00));
+            //byte[] gap = FillArray(t, len);
+            //gap[len - 1] = 0xaf;
+            /// ------------------------------------
             byte[] gap = FastArray.Init(len, cbm_gap);
             if (cbm_gap == 0x55) gap[gap.Length - 1] = 0x56;
             return gap;

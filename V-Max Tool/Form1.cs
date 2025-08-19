@@ -5,9 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
@@ -20,7 +18,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.15a";
+        private static readonly string ver = " v1.2 (test build)";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -137,41 +135,10 @@ namespace V_Max_Tool
             this.Text = $"ReMaster {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
-            // debugging buttons -- comment next line to enable debugging buttons
-            button1.Visible = button2.Visible = false;
-            
-            //byte[] sector = File.ReadAllBytes($@"c:\test\vmtest\sector2.bin");
-            //byte[] dec = DecodeVmaxV2(sector);
-            //File.WriteAllBytes($@"c:\test\vmtest\decoded.bin", dec);
-        }
 
-        //public (bool hasErrors, string errors) ParseLogFile(string[] logLines)
-        //{
-        //    HashSet<int> errorTracks = new HashSet<int>();
-        //
-        //    foreach (string line in logLines)
-        //    {
-        //        if (line.Length < 2) continue;
-        //
-        //        string trackPart = line.Substring(0, 2).Trim();
-        //        if (!int.TryParse(trackPart, out int track)) continue;
-        //
-        //        if (Regex.IsMatch(line, @"\[E(\d{1,2})S(\d{1,2})\]"))
-        //        {
-        //            errorTracks.Add(track);
-        //        }
-        //    }
-        //
-        //    if (errorTracks.Count > 0)
-        //    {
-        //        string plural = errorTracks.Count > 1 ? "s" : string.Empty;
-        //        var sortedTracks = errorTracks.OrderBy(t => t);
-        //        var notes = $"Error{plural} on Track{plural}: " + string.Join(", ", sortedTracks);
-        //        return (true, notes.Length > 128 ? notes.Substring(0, 128) : notes);
-        //    }
-        //
-        //    return (false, string.Empty);
-        //}
+            // debugging buttons -- comment next line to enable debugging buttons
+            button1.Visible = button2.Visible = false; // EnableDBMenu.Checked = false;
+        }
 
         private void Drag_Drop(object sender, DragEventArgs e)
         {
@@ -547,7 +514,8 @@ namespace V_Max_Tool
                     }
                     if (!batch && ErrorList.Count > 0)
                     {
-                        bool norepair = (NDS.cbm.Any(x => x == 6)); // || NDS.cbm.Any(x => x ==10));
+                        int[] norep = new int[] { 2, 3, 6 };
+                        bool norepair = NDS.cbm.Any(x => norep.Contains(x));
                         List<string> list = new List<string>(ErrorList);
                         var s = Sort_Errors(list);
                         s += norepair ? "\nThis image cannot be repaired (yet)\nOutput image may not work" : "\n Would you like to (attempt) repairing?";

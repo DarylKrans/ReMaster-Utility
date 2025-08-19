@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
-using System.Threading;
-using System.Linq;
 
 namespace V_Max_Tool
 {
@@ -23,7 +21,7 @@ namespace V_Max_Tool
             //OpenDB_Windows();
 
             databaseToolStripMenuItem.Enabled = true;
-            
+
             //byte[] sector = File.ReadAllBytes($@"c:\test\vmtest\sector.bin");
             //byte[] dec = DecodeVmaxV2(sector);
             //File.WriteAllBytes($@"c:\test\vmtest\decoded.bin", dec);
@@ -45,7 +43,7 @@ namespace V_Max_Tool
         }
 
 
-       
+
 
         //byte[] DecodeVmaxV2(byte[] rawGcr)
         //{

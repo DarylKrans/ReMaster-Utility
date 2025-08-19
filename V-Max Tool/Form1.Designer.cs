@@ -163,8 +163,14 @@
             this.Dir_screen = new System.Windows.Forms.RichTextBox();
             this.BlockMap = new System.Windows.Forms.TabPage();
             this.BlkMap_Panel = new System.Windows.Forms.Panel();
+            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
+            this.CSTfmt = new V_Max_Tool.CustomLabel();
+            this.ErrorBlk = new V_Max_Tool.CustomLabel();
+            this.AllocBlk = new V_Max_Tool.CustomLabel();
+            this.FreeBlk = new V_Max_Tool.CustomLabel();
             this.label21 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
+            this.track_label = new V_Max_Tool.CustomLabel();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RPL_Advanced = new System.Windows.Forms.GroupBox();
@@ -218,6 +224,7 @@
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.Options_Box = new System.Windows.Forms.GroupBox();
+            this.ParseLog = new System.Windows.Forms.CheckBox();
             this.ProtDetectMethod = new System.Windows.Forms.ComboBox();
             this.label26 = new System.Windows.Forms.Label();
             this.EnableDBMenu = new System.Windows.Forms.CheckBox();
@@ -290,7 +297,6 @@
             this.W_syncred = new System.Windows.Forms.CheckBox();
             this.W_align = new System.Windows.Forms.ComboBox();
             this.WTA = new System.Windows.Forms.CheckBox();
-            this.ParseLog = new System.Windows.Forms.CheckBox();
             this.GB_NewDisk = new V_Max_Tool.Gbox();
             this.S_Interleave = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
@@ -300,12 +306,6 @@
             this.label20 = new System.Windows.Forms.Label();
             this.ND_id = new System.Windows.Forms.TextBox();
             this.ND_name = new System.Windows.Forms.TextBox();
-            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
-            this.CSTfmt = new V_Max_Tool.CustomLabel();
-            this.ErrorBlk = new V_Max_Tool.CustomLabel();
-            this.AllocBlk = new V_Max_Tool.CustomLabel();
-            this.FreeBlk = new V_Max_Tool.CustomLabel();
-            this.track_label = new V_Max_Tool.CustomLabel();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -373,31 +373,31 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(28, 29);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(14, 15);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(106, 25);
+            this.label1.Size = new System.Drawing.Size(52, 13);
             this.label1.TabIndex = 1;
             this.label1.Text = "File name";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(24, 4);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Location = new System.Drawing.Point(12, 2);
+            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
             this.label2.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.label2.Size = new System.Drawing.Size(70, 25);
+            this.label2.Size = new System.Drawing.Size(35, 13);
             this.label2.TabIndex = 2;
             this.label2.Text = "label2";
             // 
             // f_load
             // 
             this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(8, 62);
-            this.f_load.Margin = new System.Windows.Forms.Padding(4);
+            this.f_load.Location = new System.Drawing.Point(4, 32);
+            this.f_load.Margin = new System.Windows.Forms.Padding(2);
             this.f_load.Name = "f_load";
-            this.f_load.Size = new System.Drawing.Size(146, 29);
+            this.f_load.Size = new System.Drawing.Size(75, 17);
             this.f_load.TabIndex = 12;
             this.f_load.Text = "Fix Loader";
             this.f_load.UseVisualStyleBackColor = true;
@@ -406,10 +406,10 @@
             // V2_Custom
             // 
             this.V2_Custom.AutoSize = true;
-            this.V2_Custom.Location = new System.Drawing.Point(9, 100);
-            this.V2_Custom.Margin = new System.Windows.Forms.Padding(4);
+            this.V2_Custom.Location = new System.Drawing.Point(4, 52);
+            this.V2_Custom.Margin = new System.Windows.Forms.Padding(2);
             this.V2_Custom.Name = "V2_Custom";
-            this.V2_Custom.Size = new System.Drawing.Size(295, 29);
+            this.V2_Custom.Size = new System.Drawing.Size(150, 17);
             this.V2_Custom.TabIndex = 28;
             this.V2_Custom.Text = "Use custom header length";
             this.V2_Custom.UseVisualStyleBackColor = true;
@@ -422,8 +422,8 @@
             0,
             0,
             0});
-            this.V2_hlen.Location = new System.Drawing.Point(311, 98);
-            this.V2_hlen.Margin = new System.Windows.Forms.Padding(4);
+            this.V2_hlen.Location = new System.Drawing.Point(156, 51);
+            this.V2_hlen.Margin = new System.Windows.Forms.Padding(2);
             this.V2_hlen.Maximum = new decimal(new int[] {
             36,
             0,
@@ -435,7 +435,7 @@
             0,
             0});
             this.V2_hlen.Name = "V2_hlen";
-            this.V2_hlen.Size = new System.Drawing.Size(120, 31);
+            this.V2_hlen.Size = new System.Drawing.Size(60, 20);
             this.V2_hlen.TabIndex = 29;
             this.V2_hlen.Value = new decimal(new int[] {
             18,
@@ -447,10 +447,10 @@
             // V2_Add_Sync
             // 
             this.V2_Add_Sync.AutoSize = true;
-            this.V2_Add_Sync.Location = new System.Drawing.Point(9, 135);
-            this.V2_Add_Sync.Margin = new System.Windows.Forms.Padding(4);
+            this.V2_Add_Sync.Location = new System.Drawing.Point(4, 70);
+            this.V2_Add_Sync.Margin = new System.Windows.Forms.Padding(2);
             this.V2_Add_Sync.Name = "V2_Add_Sync";
-            this.V2_Add_Sync.Size = new System.Drawing.Size(311, 29);
+            this.V2_Add_Sync.Size = new System.Drawing.Size(157, 17);
             this.V2_Add_Sync.TabIndex = 32;
             this.V2_Add_Sync.Text = "Add sync to syncless tracks";
             this.V2_Add_Sync.UseVisualStyleBackColor = true;
@@ -459,10 +459,10 @@
             // V2_Auto_Adj
             // 
             this.V2_Auto_Adj.AutoSize = true;
-            this.V2_Auto_Adj.Location = new System.Drawing.Point(7, 10);
-            this.V2_Auto_Adj.Margin = new System.Windows.Forms.Padding(4);
+            this.V2_Auto_Adj.Location = new System.Drawing.Point(4, 5);
+            this.V2_Auto_Adj.Margin = new System.Windows.Forms.Padding(2);
             this.V2_Auto_Adj.Name = "V2_Auto_Adj";
-            this.V2_Auto_Adj.Size = new System.Drawing.Size(491, 29);
+            this.V2_Auto_Adj.Size = new System.Drawing.Size(245, 17);
             this.V2_Auto_Adj.TabIndex = 33;
             this.V2_Auto_Adj.Text = "Auto Adjust tracks to fit track density (300 rpm)";
             this.V2_Auto_Adj.UseVisualStyleBackColor = true;
@@ -473,11 +473,11 @@
             this.Tabs.Appearance = System.Windows.Forms.TabAppearance.Buttons;
             this.Tabs.Controls.Add(this.Main);
             this.Tabs.Controls.Add(this.Advanced_Opts);
-            this.Tabs.Location = new System.Drawing.Point(13, 44);
-            this.Tabs.Margin = new System.Windows.Forms.Padding(4);
+            this.Tabs.Location = new System.Drawing.Point(6, 23);
+            this.Tabs.Margin = new System.Windows.Forms.Padding(2);
             this.Tabs.Name = "Tabs";
             this.Tabs.SelectedIndex = 0;
-            this.Tabs.Size = new System.Drawing.Size(1040, 227);
+            this.Tabs.Size = new System.Drawing.Size(520, 118);
             this.Tabs.TabIndex = 35;
             // 
             // Main
@@ -492,19 +492,20 @@
             this.Main.Controls.Add(this.Save_Disk);
             this.Main.Controls.Add(this.label1);
             this.Main.Controls.Add(this.label2);
-            this.Main.Location = new System.Drawing.Point(4, 37);
-            this.Main.Margin = new System.Windows.Forms.Padding(4);
+            this.Main.Location = new System.Drawing.Point(4, 25);
+            this.Main.Margin = new System.Windows.Forms.Padding(2);
             this.Main.Name = "Main";
-            this.Main.Padding = new System.Windows.Forms.Padding(4);
-            this.Main.Size = new System.Drawing.Size(1032, 186);
+            this.Main.Padding = new System.Windows.Forms.Padding(2);
+            this.Main.Size = new System.Drawing.Size(512, 89);
             this.Main.TabIndex = 0;
             this.Main.Text = "File Info";
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(763, 9);
+            this.button2.Location = new System.Drawing.Point(382, 5);
+            this.button2.Margin = new System.Windows.Forms.Padding(2);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(82, 39);
+            this.button2.Size = new System.Drawing.Size(41, 20);
             this.button2.TabIndex = 62;
             this.button2.Text = "NO!";
             this.button2.UseVisualStyleBackColor = true;
@@ -513,10 +514,10 @@
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(452, 4);
-            this.linkLabel1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.linkLabel1.Location = new System.Drawing.Point(226, 2);
+            this.linkLabel1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(231, 25);
+            this.linkLabel1.Size = new System.Drawing.Size(116, 13);
             this.linkLabel1.TabIndex = 61;
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "View source on GitHub";
@@ -527,18 +528,19 @@
             this.Other_opts.Controls.Add(this.CBM_Fix);
             this.Other_opts.Controls.Add(this.Density_Range);
             this.Other_opts.Controls.Add(this.Adj_cbm);
-            this.Other_opts.Location = new System.Drawing.Point(746, 62);
-            this.Other_opts.Margin = new System.Windows.Forms.Padding(4);
+            this.Other_opts.Location = new System.Drawing.Point(373, 32);
+            this.Other_opts.Margin = new System.Windows.Forms.Padding(2);
             this.Other_opts.Name = "Other_opts";
-            this.Other_opts.Size = new System.Drawing.Size(262, 96);
+            this.Other_opts.Size = new System.Drawing.Size(132, 51);
             this.Other_opts.TabIndex = 60;
             // 
             // CBM_Fix
             // 
             this.CBM_Fix.AutoSize = true;
-            this.CBM_Fix.Location = new System.Drawing.Point(16, 61);
+            this.CBM_Fix.Location = new System.Drawing.Point(8, 32);
+            this.CBM_Fix.Margin = new System.Windows.Forms.Padding(2);
             this.CBM_Fix.Name = "CBM_Fix";
-            this.CBM_Fix.Size = new System.Drawing.Size(246, 29);
+            this.CBM_Fix.Size = new System.Drawing.Size(127, 17);
             this.CBM_Fix.TabIndex = 18;
             this.CBM_Fix.Text = "Scan/Fix Checksums";
             this.CBM_Fix.UseVisualStyleBackColor = true;
@@ -547,9 +549,10 @@
             // Density_Range
             // 
             this.Density_Range.AutoSize = true;
-            this.Density_Range.Location = new System.Drawing.Point(16, 33);
+            this.Density_Range.Location = new System.Drawing.Point(8, 17);
+            this.Density_Range.Margin = new System.Windows.Forms.Padding(2);
             this.Density_Range.Name = "Density_Range";
-            this.Density_Range.Size = new System.Drawing.Size(224, 29);
+            this.Density_Range.Size = new System.Drawing.Size(117, 17);
             this.Density_Range.TabIndex = 17;
             this.Density_Range.Text = "True 300 RPM cap";
             this.Density_Range.UseVisualStyleBackColor = true;
@@ -558,10 +561,10 @@
             // Adj_cbm
             // 
             this.Adj_cbm.AutoSize = true;
-            this.Adj_cbm.Location = new System.Drawing.Point(16, 4);
-            this.Adj_cbm.Margin = new System.Windows.Forms.Padding(4);
+            this.Adj_cbm.Location = new System.Drawing.Point(8, 2);
+            this.Adj_cbm.Margin = new System.Windows.Forms.Padding(2);
             this.Adj_cbm.Name = "Adj_cbm";
-            this.Adj_cbm.Size = new System.Drawing.Size(221, 29);
+            this.Adj_cbm.Size = new System.Drawing.Size(113, 17);
             this.Adj_cbm.TabIndex = 16;
             this.Adj_cbm.Text = "Adjust CBM tracks";
             this.Adj_cbm.UseVisualStyleBackColor = true;
@@ -574,18 +577,19 @@
             this.VBS_info.Controls.Add(this.Cust_Density);
             this.VBS_info.Controls.Add(this.VM_Ver);
             this.VBS_info.Controls.Add(this.f_load);
-            this.VBS_info.Location = new System.Drawing.Point(320, 62);
-            this.VBS_info.Margin = new System.Windows.Forms.Padding(4);
+            this.VBS_info.Location = new System.Drawing.Point(160, 32);
+            this.VBS_info.Margin = new System.Windows.Forms.Padding(2);
             this.VBS_info.Name = "VBS_info";
-            this.VBS_info.Size = new System.Drawing.Size(420, 96);
+            this.VBS_info.Size = new System.Drawing.Size(211, 51);
             this.VBS_info.TabIndex = 22;
             // 
             // RM_cyan
             // 
             this.RM_cyan.AutoSize = true;
-            this.RM_cyan.Location = new System.Drawing.Point(171, 62);
+            this.RM_cyan.Location = new System.Drawing.Point(86, 32);
+            this.RM_cyan.Margin = new System.Windows.Forms.Padding(2);
             this.RM_cyan.Name = "RM_cyan";
-            this.RM_cyan.Size = new System.Drawing.Size(226, 29);
+            this.RM_cyan.Size = new System.Drawing.Size(117, 17);
             this.RM_cyan.TabIndex = 13;
             this.RM_cyan.Text = "Remove Protection";
             this.RM_cyan.UseVisualStyleBackColor = true;
@@ -594,20 +598,20 @@
             // Cust_Density
             // 
             this.Cust_Density.AutoSize = true;
-            this.Cust_Density.Location = new System.Drawing.Point(5, 33);
-            this.Cust_Density.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Cust_Density.Location = new System.Drawing.Point(2, 17);
+            this.Cust_Density.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Cust_Density.Name = "Cust_Density";
-            this.Cust_Density.Size = new System.Drawing.Size(173, 25);
+            this.Cust_Density.Size = new System.Drawing.Size(87, 13);
             this.Cust_Density.TabIndex = 1;
             this.Cust_Density.Text = "Track Densities :";
             // 
             // VM_Ver
             // 
             this.VM_Ver.AutoSize = true;
-            this.VM_Ver.Location = new System.Drawing.Point(4, 4);
-            this.VM_Ver.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.VM_Ver.Location = new System.Drawing.Point(2, 2);
+            this.VM_Ver.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.VM_Ver.Name = "VM_Ver";
-            this.VM_Ver.Size = new System.Drawing.Size(165, 25);
+            this.VM_Ver.Size = new System.Drawing.Size(81, 13);
             this.VM_Ver.TabIndex = 0;
             this.VM_Ver.Text = "V-Max Version :";
             // 
@@ -617,49 +621,49 @@
             this.Reg_info.Controls.Add(this.Protected_Tracks);
             this.Reg_info.Controls.Add(this.CBM_Tracks);
             this.Reg_info.Controls.Add(this.Loader_Track);
-            this.Reg_info.Location = new System.Drawing.Point(24, 62);
-            this.Reg_info.Margin = new System.Windows.Forms.Padding(4);
+            this.Reg_info.Location = new System.Drawing.Point(12, 32);
+            this.Reg_info.Margin = new System.Windows.Forms.Padding(2);
             this.Reg_info.Name = "Reg_info";
-            this.Reg_info.Size = new System.Drawing.Size(290, 96);
+            this.Reg_info.Size = new System.Drawing.Size(146, 51);
             this.Reg_info.TabIndex = 21;
             // 
             // Protected_Tracks
             // 
             this.Protected_Tracks.AutoSize = true;
-            this.Protected_Tracks.Location = new System.Drawing.Point(4, 62);
-            this.Protected_Tracks.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Protected_Tracks.Location = new System.Drawing.Point(2, 32);
+            this.Protected_Tracks.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Protected_Tracks.Name = "Protected_Tracks";
-            this.Protected_Tracks.Size = new System.Drawing.Size(138, 25);
+            this.Protected_Tracks.Size = new System.Drawing.Size(70, 13);
             this.Protected_Tracks.TabIndex = 23;
             this.Protected_Tracks.Text = "VMax Tracks";
             // 
             // CBM_Tracks
             // 
             this.CBM_Tracks.AutoSize = true;
-            this.CBM_Tracks.Location = new System.Drawing.Point(5, 4);
-            this.CBM_Tracks.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.CBM_Tracks.Location = new System.Drawing.Point(2, 2);
+            this.CBM_Tracks.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.CBM_Tracks.Name = "CBM_Tracks";
-            this.CBM_Tracks.Size = new System.Drawing.Size(130, 25);
+            this.CBM_Tracks.Size = new System.Drawing.Size(66, 13);
             this.CBM_Tracks.TabIndex = 22;
             this.CBM_Tracks.Text = "CBM Tracks";
             // 
             // Loader_Track
             // 
             this.Loader_Track.AutoSize = true;
-            this.Loader_Track.Location = new System.Drawing.Point(5, 33);
-            this.Loader_Track.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Loader_Track.Location = new System.Drawing.Point(2, 17);
+            this.Loader_Track.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Loader_Track.Name = "Loader_Track";
-            this.Loader_Track.Size = new System.Drawing.Size(139, 25);
+            this.Loader_Track.Size = new System.Drawing.Size(71, 13);
             this.Loader_Track.TabIndex = 21;
             this.Loader_Track.Text = "Loader Track";
             // 
             // Save_Disk
             // 
             this.Save_Disk.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.Save_Disk.Location = new System.Drawing.Point(916, 6);
-            this.Save_Disk.Margin = new System.Windows.Forms.Padding(4);
+            this.Save_Disk.Location = new System.Drawing.Point(458, 3);
+            this.Save_Disk.Margin = new System.Windows.Forms.Padding(2);
             this.Save_Disk.Name = "Save_Disk";
-            this.Save_Disk.Size = new System.Drawing.Size(104, 42);
+            this.Save_Disk.Size = new System.Drawing.Size(52, 22);
             this.Save_Disk.TabIndex = 59;
             this.Save_Disk.Text = "Export";
             this.Save_Disk.UseVisualStyleBackColor = true;
@@ -670,21 +674,21 @@
             this.Advanced_Opts.BackColor = System.Drawing.Color.Gainsboro;
             this.Advanced_Opts.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Advanced_Opts.Controls.Add(this.V2_export);
-            this.Advanced_Opts.Location = new System.Drawing.Point(4, 37);
-            this.Advanced_Opts.Margin = new System.Windows.Forms.Padding(4);
+            this.Advanced_Opts.Location = new System.Drawing.Point(4, 25);
+            this.Advanced_Opts.Margin = new System.Windows.Forms.Padding(2);
             this.Advanced_Opts.Name = "Advanced_Opts";
-            this.Advanced_Opts.Padding = new System.Windows.Forms.Padding(4);
-            this.Advanced_Opts.Size = new System.Drawing.Size(1032, 186);
+            this.Advanced_Opts.Padding = new System.Windows.Forms.Padding(2);
+            this.Advanced_Opts.Size = new System.Drawing.Size(512, 89);
             this.Advanced_Opts.TabIndex = 1;
             this.Advanced_Opts.Text = "Advanced";
             // 
             // V2_export
             // 
             this.V2_export.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.V2_export.Location = new System.Drawing.Point(916, 6);
-            this.V2_export.Margin = new System.Windows.Forms.Padding(4);
+            this.V2_export.Location = new System.Drawing.Point(458, 3);
+            this.V2_export.Margin = new System.Windows.Forms.Padding(2);
             this.V2_export.Name = "V2_export";
-            this.V2_export.Size = new System.Drawing.Size(104, 42);
+            this.V2_export.Size = new System.Drawing.Size(52, 22);
             this.V2_export.TabIndex = 60;
             this.V2_export.Text = "Export";
             this.V2_export.UseVisualStyleBackColor = true;
@@ -697,11 +701,11 @@
             this.Batch_Box.Controls.Add(this.B_cancel);
             this.Batch_Box.Controls.Add(this.Batch_Bar);
             this.Batch_Box.Controls.Add(this.label8);
-            this.Batch_Box.Location = new System.Drawing.Point(3, 4);
-            this.Batch_Box.Margin = new System.Windows.Forms.Padding(4);
+            this.Batch_Box.Location = new System.Drawing.Point(2, 2);
+            this.Batch_Box.Margin = new System.Windows.Forms.Padding(2);
             this.Batch_Box.Name = "Batch_Box";
-            this.Batch_Box.Padding = new System.Windows.Forms.Padding(4);
-            this.Batch_Box.Size = new System.Drawing.Size(1020, 148);
+            this.Batch_Box.Padding = new System.Windows.Forms.Padding(2);
+            this.Batch_Box.Size = new System.Drawing.Size(510, 77);
             this.Batch_Box.TabIndex = 59;
             this.Batch_Box.TabStop = false;
             this.Batch_Box.Text = "Batch Processing";
@@ -709,19 +713,19 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(7, 62);
-            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label9.Location = new System.Drawing.Point(4, 32);
+            this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(70, 25);
+            this.label9.Size = new System.Drawing.Size(35, 13);
             this.label9.TabIndex = 3;
             this.label9.Text = "label9";
             // 
             // B_cancel
             // 
-            this.B_cancel.Location = new System.Drawing.Point(896, 12);
-            this.B_cancel.Margin = new System.Windows.Forms.Padding(4);
+            this.B_cancel.Location = new System.Drawing.Point(448, 6);
+            this.B_cancel.Margin = new System.Windows.Forms.Padding(2);
             this.B_cancel.Name = "B_cancel";
-            this.B_cancel.Size = new System.Drawing.Size(116, 40);
+            this.B_cancel.Size = new System.Drawing.Size(58, 21);
             this.B_cancel.TabIndex = 2;
             this.B_cancel.Text = "Cancel";
             this.B_cancel.UseVisualStyleBackColor = true;
@@ -729,29 +733,29 @@
             // 
             // Batch_Bar
             // 
-            this.Batch_Bar.Location = new System.Drawing.Point(22, 102);
-            this.Batch_Bar.Margin = new System.Windows.Forms.Padding(4);
+            this.Batch_Bar.Location = new System.Drawing.Point(11, 53);
+            this.Batch_Bar.Margin = new System.Windows.Forms.Padding(2);
             this.Batch_Bar.Name = "Batch_Bar";
-            this.Batch_Bar.Size = new System.Drawing.Size(976, 27);
+            this.Batch_Bar.Size = new System.Drawing.Size(488, 14);
             this.Batch_Bar.TabIndex = 1;
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(7, 38);
-            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label8.Location = new System.Drawing.Point(4, 20);
+            this.label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(70, 25);
+            this.label8.Size = new System.Drawing.Size(35, 13);
             this.label8.TabIndex = 0;
             this.label8.Text = "label8";
             // 
             // DB_core_override
             // 
             this.DB_core_override.AutoSize = true;
-            this.DB_core_override.Location = new System.Drawing.Point(17, 111);
-            this.DB_core_override.Margin = new System.Windows.Forms.Padding(4);
+            this.DB_core_override.Location = new System.Drawing.Point(8, 58);
+            this.DB_core_override.Margin = new System.Windows.Forms.Padding(2);
             this.DB_core_override.Name = "DB_core_override";
-            this.DB_core_override.Size = new System.Drawing.Size(170, 29);
+            this.DB_core_override.Size = new System.Drawing.Size(88, 17);
             this.DB_core_override.TabIndex = 42;
             this.DB_core_override.Text = "Max Threads";
             this.DB_core_override.UseVisualStyleBackColor = true;
@@ -759,8 +763,8 @@
             // 
             // DB_cores
             // 
-            this.DB_cores.Location = new System.Drawing.Point(205, 109);
-            this.DB_cores.Margin = new System.Windows.Forms.Padding(4);
+            this.DB_cores.Location = new System.Drawing.Point(102, 57);
+            this.DB_cores.Margin = new System.Windows.Forms.Padding(2);
             this.DB_cores.Maximum = new decimal(new int[] {
             255,
             0,
@@ -772,7 +776,7 @@
             0,
             0});
             this.DB_cores.Name = "DB_cores";
-            this.DB_cores.Size = new System.Drawing.Size(120, 31);
+            this.DB_cores.Size = new System.Drawing.Size(60, 20);
             this.DB_cores.TabIndex = 41;
             this.DB_cores.Value = new decimal(new int[] {
             1,
@@ -784,10 +788,10 @@
             // DB_force
             // 
             this.DB_force.AutoSize = true;
-            this.DB_force.Location = new System.Drawing.Point(17, 221);
-            this.DB_force.Margin = new System.Windows.Forms.Padding(4);
+            this.DB_force.Location = new System.Drawing.Point(8, 115);
+            this.DB_force.Margin = new System.Windows.Forms.Padding(2);
             this.DB_force.Name = "DB_force";
-            this.DB_force.Size = new System.Drawing.Size(631, 29);
+            this.DB_force.Size = new System.Drawing.Size(312, 17);
             this.DB_force.TabIndex = 3;
             this.DB_force.Text = "Force Auto-Adjusting CBM tracks (ignores special conditions)";
             this.DB_force.UseVisualStyleBackColor = true;
@@ -795,10 +799,10 @@
             // Pad_Tracks
             // 
             this.Pad_Tracks.AutoSize = true;
-            this.Pad_Tracks.Location = new System.Drawing.Point(17, 185);
-            this.Pad_Tracks.Margin = new System.Windows.Forms.Padding(4);
+            this.Pad_Tracks.Location = new System.Drawing.Point(8, 96);
+            this.Pad_Tracks.Margin = new System.Windows.Forms.Padding(2);
             this.Pad_Tracks.Name = "Pad_Tracks";
-            this.Pad_Tracks.Size = new System.Drawing.Size(463, 29);
+            this.Pad_Tracks.Size = new System.Drawing.Size(234, 17);
             this.Pad_Tracks.TabIndex = 2;
             this.Pad_Tracks.Text = "Pad empty track-space in G64 output tracks";
             this.Pad_Tracks.UseVisualStyleBackColor = true;
@@ -806,10 +810,10 @@
             // CPP_tog
             // 
             this.CPP_tog.AutoSize = true;
-            this.CPP_tog.Location = new System.Drawing.Point(17, 147);
-            this.CPP_tog.Margin = new System.Windows.Forms.Padding(4);
+            this.CPP_tog.Location = new System.Drawing.Point(8, 76);
+            this.CPP_tog.Margin = new System.Windows.Forms.Padding(2);
             this.CPP_tog.Name = "CPP_tog";
-            this.CPP_tog.Size = new System.Drawing.Size(565, 29);
+            this.CPP_tog.Size = new System.Drawing.Size(280, 17);
             this.CPP_tog.TabIndex = 1;
             this.CPP_tog.Text = "Disable C++ Extensions. *Use if experiencing crashing";
             this.CPP_tog.UseVisualStyleBackColor = true;
@@ -818,10 +822,10 @@
             // DB_timers
             // 
             this.DB_timers.AutoSize = true;
-            this.DB_timers.Location = new System.Drawing.Point(17, 74);
-            this.DB_timers.Margin = new System.Windows.Forms.Padding(4);
+            this.DB_timers.Location = new System.Drawing.Point(8, 38);
+            this.DB_timers.Margin = new System.Windows.Forms.Padding(2);
             this.DB_timers.Name = "DB_timers";
-            this.DB_timers.Size = new System.Drawing.Size(245, 29);
+            this.DB_timers.Size = new System.Drawing.Size(125, 17);
             this.DB_timers.TabIndex = 0;
             this.DB_timers.Text = "Show Process Times";
             this.DB_timers.UseVisualStyleBackColor = true;
@@ -837,19 +841,20 @@
             this.CBD_box.Controls.Add(this.label10);
             this.CBD_box.Controls.Add(this.BD_tracks);
             this.CBD_box.Controls.Add(this.Create_Blank);
-            this.CBD_box.Location = new System.Drawing.Point(2217, 53);
-            this.CBD_box.Margin = new System.Windows.Forms.Padding(4);
+            this.CBD_box.Location = new System.Drawing.Point(1108, 28);
+            this.CBD_box.Margin = new System.Windows.Forms.Padding(2);
             this.CBD_box.Name = "CBD_box";
-            this.CBD_box.Padding = new System.Windows.Forms.Padding(4);
-            this.CBD_box.Size = new System.Drawing.Size(401, 201);
+            this.CBD_box.Padding = new System.Windows.Forms.Padding(2);
+            this.CBD_box.Size = new System.Drawing.Size(200, 105);
             this.CBD_box.TabIndex = 40;
             this.CBD_box.TabStop = false;
             // 
             // CBD_Cancel
             // 
-            this.CBD_Cancel.Location = new System.Drawing.Point(76, 138);
+            this.CBD_Cancel.Location = new System.Drawing.Point(38, 72);
+            this.CBD_Cancel.Margin = new System.Windows.Forms.Padding(2);
             this.CBD_Cancel.Name = "CBD_Cancel";
-            this.CBD_Cancel.Size = new System.Drawing.Size(106, 40);
+            this.CBD_Cancel.Size = new System.Drawing.Size(53, 21);
             this.CBD_Cancel.TabIndex = 46;
             this.CBD_Cancel.Text = "Cancel";
             this.CBD_Cancel.UseVisualStyleBackColor = true;
@@ -857,58 +862,58 @@
             // 
             // BD_id
             // 
-            this.BD_id.Location = new System.Drawing.Point(307, 86);
-            this.BD_id.Margin = new System.Windows.Forms.Padding(4);
+            this.BD_id.Location = new System.Drawing.Point(154, 45);
+            this.BD_id.Margin = new System.Windows.Forms.Padding(2);
             this.BD_id.MaxLength = 5;
             this.BD_id.Name = "BD_id";
-            this.BD_id.Size = new System.Drawing.Size(80, 31);
+            this.BD_id.Size = new System.Drawing.Size(42, 20);
             this.BD_id.TabIndex = 45;
             this.BD_id.Text = "00 2a";
             // 
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(269, 90);
-            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label12.Location = new System.Drawing.Point(134, 47);
+            this.label12.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(32, 25);
+            this.label12.Size = new System.Drawing.Size(18, 13);
             this.label12.TabIndex = 44;
             this.label12.Text = "ID";
             // 
             // BD_name
             // 
-            this.BD_name.Location = new System.Drawing.Point(76, 86);
-            this.BD_name.Margin = new System.Windows.Forms.Padding(4);
+            this.BD_name.Location = new System.Drawing.Point(38, 45);
+            this.BD_name.Margin = new System.Windows.Forms.Padding(2);
             this.BD_name.MaxLength = 16;
             this.BD_name.Name = "BD_name";
-            this.BD_name.Size = new System.Drawing.Size(188, 31);
+            this.BD_name.Size = new System.Drawing.Size(96, 20);
             this.BD_name.TabIndex = 43;
             this.BD_name.Text = "new disk";
             // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(12, 91);
-            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label11.Location = new System.Drawing.Point(6, 47);
+            this.label11.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(65, 25);
+            this.label11.Size = new System.Drawing.Size(33, 13);
             this.label11.TabIndex = 42;
             this.label11.Text = "name";
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(14, 51);
-            this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label10.Location = new System.Drawing.Point(7, 27);
+            this.label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(119, 25);
+            this.label10.Size = new System.Drawing.Size(62, 13);
             this.label10.TabIndex = 41;
             this.label10.Text = "# of Tracks";
             // 
             // BD_tracks
             // 
-            this.BD_tracks.Location = new System.Drawing.Point(144, 47);
-            this.BD_tracks.Margin = new System.Windows.Forms.Padding(4);
+            this.BD_tracks.Location = new System.Drawing.Point(72, 24);
+            this.BD_tracks.Margin = new System.Windows.Forms.Padding(2);
             this.BD_tracks.Maximum = new decimal(new int[] {
             41,
             0,
@@ -920,7 +925,7 @@
             0,
             0});
             this.BD_tracks.Name = "BD_tracks";
-            this.BD_tracks.Size = new System.Drawing.Size(120, 31);
+            this.BD_tracks.Size = new System.Drawing.Size(60, 20);
             this.BD_tracks.TabIndex = 40;
             this.BD_tracks.Value = new decimal(new int[] {
             35,
@@ -930,10 +935,10 @@
             // 
             // Create_Blank
             // 
-            this.Create_Blank.Location = new System.Drawing.Point(223, 138);
-            this.Create_Blank.Margin = new System.Windows.Forms.Padding(4);
+            this.Create_Blank.Location = new System.Drawing.Point(112, 72);
+            this.Create_Blank.Margin = new System.Windows.Forms.Padding(2);
             this.Create_Blank.Name = "Create_Blank";
-            this.Create_Blank.Size = new System.Drawing.Size(110, 40);
+            this.Create_Blank.Size = new System.Drawing.Size(55, 21);
             this.Create_Blank.TabIndex = 39;
             this.Create_Blank.Text = "Create";
             this.Create_Blank.UseVisualStyleBackColor = true;
@@ -942,10 +947,10 @@
             // RL_Fix
             // 
             this.RL_Fix.AutoSize = true;
-            this.RL_Fix.Location = new System.Drawing.Point(9, 79);
-            this.RL_Fix.Margin = new System.Windows.Forms.Padding(4);
+            this.RL_Fix.Location = new System.Drawing.Point(4, 41);
+            this.RL_Fix.Margin = new System.Windows.Forms.Padding(2);
             this.RL_Fix.Name = "RL_Fix";
-            this.RL_Fix.Size = new System.Drawing.Size(226, 29);
+            this.RL_Fix.Size = new System.Drawing.Size(117, 17);
             this.RL_Fix.TabIndex = 13;
             this.RL_Fix.Text = "Remove Protection";
             this.RL_Fix.UseVisualStyleBackColor = true;
@@ -955,20 +960,20 @@
             // 
             this.label13.AutoSize = true;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label13.Location = new System.Drawing.Point(449, 138);
-            this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label13.Location = new System.Drawing.Point(224, 72);
+            this.label13.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(410, 24);
+            this.label13.Size = new System.Drawing.Size(232, 13);
             this.label13.TabIndex = 64;
             this.label13.Text = "*64-46 may not work on some drives. Use 64-4E";
             // 
             // V2_swap_headers
             // 
             this.V2_swap_headers.AutoSize = true;
-            this.V2_swap_headers.Location = new System.Drawing.Point(439, 100);
-            this.V2_swap_headers.Margin = new System.Windows.Forms.Padding(4);
+            this.V2_swap_headers.Location = new System.Drawing.Point(220, 52);
+            this.V2_swap_headers.Margin = new System.Windows.Forms.Padding(2);
             this.V2_swap_headers.Name = "V2_swap_headers";
-            this.V2_swap_headers.Size = new System.Drawing.Size(184, 29);
+            this.V2_swap_headers.Size = new System.Drawing.Size(96, 17);
             this.V2_swap_headers.TabIndex = 63;
             this.V2_swap_headers.Text = "Swap Headers";
             this.V2_swap_headers.UseVisualStyleBackColor = true;
@@ -978,20 +983,20 @@
             // 
             this.V2_swap.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.V2_swap.FormattingEnabled = true;
-            this.V2_swap.Location = new System.Drawing.Point(647, 96);
-            this.V2_swap.Margin = new System.Windows.Forms.Padding(4);
+            this.V2_swap.Location = new System.Drawing.Point(324, 50);
+            this.V2_swap.Margin = new System.Windows.Forms.Padding(2);
             this.V2_swap.Name = "V2_swap";
-            this.V2_swap.Size = new System.Drawing.Size(228, 33);
+            this.V2_swap.Size = new System.Drawing.Size(116, 21);
             this.V2_swap.TabIndex = 62;
             this.V2_swap.SelectedIndexChanged += new System.EventHandler(this.V2_swap_SelectedIndexChanged);
             // 
             // Re_Align
             // 
             this.Re_Align.AutoSize = true;
-            this.Re_Align.Location = new System.Drawing.Point(7, 44);
-            this.Re_Align.Margin = new System.Windows.Forms.Padding(4);
+            this.Re_Align.Location = new System.Drawing.Point(4, 23);
+            this.Re_Align.Margin = new System.Windows.Forms.Padding(2);
             this.Re_Align.Name = "Re_Align";
-            this.Re_Align.Size = new System.Drawing.Size(199, 29);
+            this.Re_Align.Size = new System.Drawing.Size(102, 17);
             this.Re_Align.TabIndex = 38;
             this.Re_Align.Text = "Re-Align Loader";
             this.Re_Align.UseVisualStyleBackColor = true;
@@ -1001,20 +1006,20 @@
             // 
             this.v2exp.AutoSize = true;
             this.v2exp.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.v2exp.Location = new System.Drawing.Point(505, 12);
-            this.v2exp.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.v2exp.Location = new System.Drawing.Point(252, 6);
+            this.v2exp.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.v2exp.Name = "v2exp";
-            this.v2exp.Size = new System.Drawing.Size(137, 25);
+            this.v2exp.Size = new System.Drawing.Size(67, 13);
             this.v2exp.TabIndex = 35;
             this.v2exp.Text = "Experimental";
             // 
             // v2adv
             // 
             this.v2adv.AutoSize = true;
-            this.v2adv.Location = new System.Drawing.Point(219, 69);
-            this.v2adv.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.v2adv.Location = new System.Drawing.Point(110, 36);
+            this.v2adv.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.v2adv.Name = "v2adv";
-            this.v2adv.Size = new System.Drawing.Size(240, 25);
+            this.v2adv.Size = new System.Drawing.Size(121, 13);
             this.v2adv.TabIndex = 34;
             this.v2adv.Text = "Advanced Users ONLY!";
             // 
@@ -1022,27 +1027,27 @@
             // 
             this.v3exp.AutoSize = true;
             this.v3exp.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.v3exp.Location = new System.Drawing.Point(509, 14);
-            this.v3exp.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.v3exp.Location = new System.Drawing.Point(254, 7);
+            this.v3exp.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.v3exp.Name = "v3exp";
-            this.v3exp.Size = new System.Drawing.Size(137, 25);
+            this.v3exp.Size = new System.Drawing.Size(67, 13);
             this.v3exp.TabIndex = 39;
             this.v3exp.Text = "Experimental";
             // 
             // v3adv
             // 
             this.v3adv.AutoSize = true;
-            this.v3adv.Location = new System.Drawing.Point(59, 50);
-            this.v3adv.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.v3adv.Location = new System.Drawing.Point(30, 26);
+            this.v3adv.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.v3adv.Name = "v3adv";
-            this.v3adv.Size = new System.Drawing.Size(240, 25);
+            this.v3adv.Size = new System.Drawing.Size(121, 13);
             this.v3adv.TabIndex = 38;
             this.v3adv.Text = "Advanced Users ONLY!";
             // 
             // V3_hlen
             // 
-            this.V3_hlen.Location = new System.Drawing.Point(325, 85);
-            this.V3_hlen.Margin = new System.Windows.Forms.Padding(4);
+            this.V3_hlen.Location = new System.Drawing.Point(162, 44);
+            this.V3_hlen.Margin = new System.Windows.Forms.Padding(2);
             this.V3_hlen.Maximum = new decimal(new int[] {
             12,
             0,
@@ -1054,7 +1059,7 @@
             0,
             0});
             this.V3_hlen.Name = "V3_hlen";
-            this.V3_hlen.Size = new System.Drawing.Size(120, 31);
+            this.V3_hlen.Size = new System.Drawing.Size(60, 20);
             this.V3_hlen.TabIndex = 36;
             this.V3_hlen.Value = new decimal(new int[] {
             6,
@@ -1067,10 +1072,10 @@
             // 
             this.V3_Auto_Adj.AutoSize = true;
             this.V3_Auto_Adj.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.V3_Auto_Adj.Location = new System.Drawing.Point(7, 12);
-            this.V3_Auto_Adj.Margin = new System.Windows.Forms.Padding(4);
+            this.V3_Auto_Adj.Location = new System.Drawing.Point(4, 6);
+            this.V3_Auto_Adj.Margin = new System.Windows.Forms.Padding(2);
             this.V3_Auto_Adj.Name = "V3_Auto_Adj";
-            this.V3_Auto_Adj.Size = new System.Drawing.Size(491, 29);
+            this.V3_Auto_Adj.Size = new System.Drawing.Size(245, 17);
             this.V3_Auto_Adj.TabIndex = 35;
             this.V3_Auto_Adj.Text = "Auto Adjust tracks to fit track density (300 rpm)";
             this.V3_Auto_Adj.UseVisualStyleBackColor = true;
@@ -1079,10 +1084,10 @@
             // V3_Custom
             // 
             this.V3_Custom.AutoSize = true;
-            this.V3_Custom.Location = new System.Drawing.Point(7, 88);
-            this.V3_Custom.Margin = new System.Windows.Forms.Padding(4);
+            this.V3_Custom.Location = new System.Drawing.Point(4, 46);
+            this.V3_Custom.Margin = new System.Windows.Forms.Padding(2);
             this.V3_Custom.Name = "V3_Custom";
-            this.V3_Custom.Size = new System.Drawing.Size(295, 29);
+            this.V3_Custom.Size = new System.Drawing.Size(150, 17);
             this.V3_Custom.TabIndex = 34;
             this.V3_Custom.Text = "Use custom header length";
             this.V3_Custom.UseVisualStyleBackColor = true;
@@ -1091,10 +1096,10 @@
             // VPL_presync
             // 
             this.VPL_presync.AutoSize = true;
-            this.VPL_presync.Location = new System.Drawing.Point(387, 82);
-            this.VPL_presync.Margin = new System.Windows.Forms.Padding(4);
+            this.VPL_presync.Location = new System.Drawing.Point(194, 43);
+            this.VPL_presync.Margin = new System.Windows.Forms.Padding(2);
             this.VPL_presync.Name = "VPL_presync";
-            this.VPL_presync.Size = new System.Drawing.Size(331, 29);
+            this.VPL_presync.Size = new System.Drawing.Size(167, 17);
             this.VPL_presync.TabIndex = 73;
             this.VPL_presync.Text = "Add pre-sync to start of tracks";
             this.VPL_presync.UseVisualStyleBackColor = true;
@@ -1102,8 +1107,8 @@
             // 
             // VD3
             // 
-            this.VD3.Location = new System.Drawing.Point(765, 43);
-            this.VD3.Margin = new System.Windows.Forms.Padding(4);
+            this.VD3.Location = new System.Drawing.Point(382, 22);
+            this.VD3.Margin = new System.Windows.Forms.Padding(2);
             this.VD3.Maximum = new decimal(new int[] {
             6350,
             0,
@@ -1115,7 +1120,7 @@
             0,
             0});
             this.VD3.Name = "VD3";
-            this.VD3.Size = new System.Drawing.Size(120, 31);
+            this.VD3.Size = new System.Drawing.Size(60, 20);
             this.VD3.TabIndex = 72;
             this.VD3.Value = new decimal(new int[] {
             6200,
@@ -1126,8 +1131,8 @@
             // 
             // VD2
             // 
-            this.VD2.Location = new System.Drawing.Point(639, 43);
-            this.VD2.Margin = new System.Windows.Forms.Padding(4);
+            this.VD2.Location = new System.Drawing.Point(320, 22);
+            this.VD2.Margin = new System.Windows.Forms.Padding(2);
             this.VD2.Maximum = new decimal(new int[] {
             6700,
             0,
@@ -1139,7 +1144,7 @@
             0,
             0});
             this.VD2.Name = "VD2";
-            this.VD2.Size = new System.Drawing.Size(120, 31);
+            this.VD2.Size = new System.Drawing.Size(60, 20);
             this.VD2.TabIndex = 71;
             this.VD2.Value = new decimal(new int[] {
             6555,
@@ -1150,8 +1155,8 @@
             // 
             // VD1
             // 
-            this.VD1.Location = new System.Drawing.Point(513, 43);
-            this.VD1.Margin = new System.Windows.Forms.Padding(4);
+            this.VD1.Location = new System.Drawing.Point(256, 22);
+            this.VD1.Margin = new System.Windows.Forms.Padding(2);
             this.VD1.Maximum = new decimal(new int[] {
             7200,
             0,
@@ -1163,7 +1168,7 @@
             0,
             0});
             this.VD1.Name = "VD1";
-            this.VD1.Size = new System.Drawing.Size(120, 31);
+            this.VD1.Size = new System.Drawing.Size(60, 20);
             this.VD1.TabIndex = 70;
             this.VD1.Value = new decimal(new int[] {
             7012,
@@ -1174,8 +1179,8 @@
             // 
             // VD0
             // 
-            this.VD0.Location = new System.Drawing.Point(387, 43);
-            this.VD0.Margin = new System.Windows.Forms.Padding(4);
+            this.VD0.Location = new System.Drawing.Point(194, 22);
+            this.VD0.Margin = new System.Windows.Forms.Padding(2);
             this.VD0.Maximum = new decimal(new int[] {
             7900,
             0,
@@ -1187,7 +1192,7 @@
             0,
             0});
             this.VD0.Name = "VD0";
-            this.VD0.Size = new System.Drawing.Size(120, 31);
+            this.VD0.Size = new System.Drawing.Size(60, 20);
             this.VD0.TabIndex = 69;
             this.VD0.Value = new decimal(new int[] {
             7700,
@@ -1200,30 +1205,30 @@
             // 
             this.Lead_ptn.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Lead_ptn.FormattingEnabled = true;
-            this.Lead_ptn.Location = new System.Drawing.Point(683, 116);
-            this.Lead_ptn.Margin = new System.Windows.Forms.Padding(4);
+            this.Lead_ptn.Location = new System.Drawing.Point(342, 60);
+            this.Lead_ptn.Margin = new System.Windows.Forms.Padding(2);
             this.Lead_ptn.Name = "Lead_ptn";
-            this.Lead_ptn.Size = new System.Drawing.Size(194, 33);
+            this.Lead_ptn.Size = new System.Drawing.Size(99, 21);
             this.Lead_ptn.TabIndex = 68;
             this.Lead_ptn.SelectedIndexChanged += new System.EventHandler(this.Lead_In_ValueChanged);
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(483, 120);
-            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label7.Location = new System.Drawing.Point(242, 62);
+            this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(199, 25);
+            this.label7.Size = new System.Drawing.Size(102, 13);
             this.label7.TabIndex = 67;
             this.label7.Text = "Lead-In/Out Pattern";
             // 
             // VPL_auto_adj
             // 
             this.VPL_auto_adj.AutoSize = true;
-            this.VPL_auto_adj.Location = new System.Drawing.Point(7, 11);
-            this.VPL_auto_adj.Margin = new System.Windows.Forms.Padding(4);
+            this.VPL_auto_adj.Location = new System.Drawing.Point(4, 6);
+            this.VPL_auto_adj.Margin = new System.Windows.Forms.Padding(2);
             this.VPL_auto_adj.Name = "VPL_auto_adj";
-            this.VPL_auto_adj.Size = new System.Drawing.Size(225, 29);
+            this.VPL_auto_adj.Size = new System.Drawing.Size(116, 17);
             this.VPL_auto_adj.TabIndex = 66;
             this.VPL_auto_adj.Text = "Auto Adjust Tracks";
             this.VPL_auto_adj.UseVisualStyleBackColor = true;
@@ -1232,10 +1237,10 @@
             // VPL_only_sectors
             // 
             this.VPL_only_sectors.AutoSize = true;
-            this.VPL_only_sectors.Location = new System.Drawing.Point(7, 81);
-            this.VPL_only_sectors.Margin = new System.Windows.Forms.Padding(4);
+            this.VPL_only_sectors.Location = new System.Drawing.Point(4, 42);
+            this.VPL_only_sectors.Margin = new System.Windows.Forms.Padding(2);
             this.VPL_only_sectors.Name = "VPL_only_sectors";
-            this.VPL_only_sectors.Size = new System.Drawing.Size(334, 29);
+            this.VPL_only_sectors.Size = new System.Drawing.Size(166, 17);
             this.VPL_only_sectors.TabIndex = 65;
             this.VPL_only_sectors.Text = "Fastest possible writing speed";
             this.VPL_only_sectors.UseVisualStyleBackColor = true;
@@ -1243,8 +1248,8 @@
             // 
             // Lead_In
             // 
-            this.Lead_In.Location = new System.Drawing.Point(387, 117);
-            this.Lead_In.Margin = new System.Windows.Forms.Padding(4);
+            this.Lead_In.Location = new System.Drawing.Point(194, 61);
+            this.Lead_In.Margin = new System.Windows.Forms.Padding(2);
             this.Lead_In.Maximum = new decimal(new int[] {
             75,
             0,
@@ -1256,7 +1261,7 @@
             0,
             0});
             this.Lead_In.Name = "Lead_In";
-            this.Lead_In.Size = new System.Drawing.Size(88, 31);
+            this.Lead_In.Size = new System.Drawing.Size(44, 20);
             this.Lead_In.TabIndex = 64;
             this.Lead_In.Value = new decimal(new int[] {
             5,
@@ -1268,10 +1273,10 @@
             // VPL_lead
             // 
             this.VPL_lead.AutoSize = true;
-            this.VPL_lead.Location = new System.Drawing.Point(7, 118);
-            this.VPL_lead.Margin = new System.Windows.Forms.Padding(4);
+            this.VPL_lead.Location = new System.Drawing.Point(4, 61);
+            this.VPL_lead.Margin = new System.Windows.Forms.Padding(2);
             this.VPL_lead.Name = "VPL_lead";
-            this.VPL_lead.Size = new System.Drawing.Size(349, 29);
+            this.VPL_lead.Size = new System.Drawing.Size(175, 17);
             this.VPL_lead.TabIndex = 63;
             this.VPL_lead.Text = "Adjust Lead-In Length (in bytes)";
             this.VPL_lead.UseVisualStyleBackColor = true;
@@ -1280,10 +1285,10 @@
             // VPL_rb
             // 
             this.VPL_rb.AutoSize = true;
-            this.VPL_rb.Location = new System.Drawing.Point(7, 45);
-            this.VPL_rb.Margin = new System.Windows.Forms.Padding(4);
+            this.VPL_rb.Location = new System.Drawing.Point(4, 23);
+            this.VPL_rb.Margin = new System.Windows.Forms.Padding(2);
             this.VPL_rb.Name = "VPL_rb";
-            this.VPL_rb.Size = new System.Drawing.Size(306, 29);
+            this.VPL_rb.Size = new System.Drawing.Size(155, 17);
             this.VPL_rb.TabIndex = 62;
             this.VPL_rb.Text = "Rebuild Only Vorpal Tracks";
             this.VPL_rb.UseVisualStyleBackColor = true;
@@ -1297,11 +1302,11 @@
             this.Adv_ctrl.Controls.Add(this.Data_View);
             this.Adv_ctrl.Controls.Add(this.tabPage3);
             this.Adv_ctrl.Controls.Add(this.BlockMap);
-            this.Adv_ctrl.Location = new System.Drawing.Point(1054, 44);
-            this.Adv_ctrl.Margin = new System.Windows.Forms.Padding(4);
+            this.Adv_ctrl.Location = new System.Drawing.Point(527, 23);
+            this.Adv_ctrl.Margin = new System.Windows.Forms.Padding(2);
             this.Adv_ctrl.Name = "Adv_ctrl";
             this.Adv_ctrl.SelectedIndex = 0;
-            this.Adv_ctrl.Size = new System.Drawing.Size(1152, 1348);
+            this.Adv_ctrl.Size = new System.Drawing.Size(576, 701);
             this.Adv_ctrl.TabIndex = 36;
             // 
             // tabPage2
@@ -1316,20 +1321,20 @@
             this.tabPage2.Controls.Add(this.Img_style);
             this.tabPage2.Controls.Add(this.Save_Circle_btn);
             this.tabPage2.Controls.Add(this.Img_View);
-            this.tabPage2.Location = new System.Drawing.Point(4, 37);
-            this.tabPage2.Margin = new System.Windows.Forms.Padding(4);
+            this.tabPage2.Location = new System.Drawing.Point(4, 25);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage2.Size = new System.Drawing.Size(1144, 1307);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(2);
+            this.tabPage2.Size = new System.Drawing.Size(568, 672);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Visualizer";
             // 
             // M_render
             // 
-            this.M_render.Location = new System.Drawing.Point(812, 1162);
-            this.M_render.Margin = new System.Windows.Forms.Padding(4);
+            this.M_render.Location = new System.Drawing.Point(406, 604);
+            this.M_render.Margin = new System.Windows.Forms.Padding(2);
             this.M_render.Name = "M_render";
-            this.M_render.Size = new System.Drawing.Size(100, 38);
+            this.M_render.Size = new System.Drawing.Size(50, 20);
             this.M_render.TabIndex = 54;
             this.M_render.Text = "Render";
             this.M_render.UseVisualStyleBackColor = true;
@@ -1339,27 +1344,27 @@
             // 
             this.label3.AutoSize = true;
             this.label3.ForeColor = System.Drawing.Color.Yellow;
-            this.label3.Location = new System.Drawing.Point(880, 1204);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label3.Location = new System.Drawing.Point(440, 626);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(186, 25);
+            this.label3.Size = new System.Drawing.Size(93, 13);
             this.label3.TabIndex = 53;
             this.label3.Text = "Rendering Images";
             // 
             // Flat_Render
             // 
-            this.Flat_Render.Location = new System.Drawing.Point(812, 1262);
-            this.Flat_Render.Margin = new System.Windows.Forms.Padding(4);
+            this.Flat_Render.Location = new System.Drawing.Point(406, 656);
+            this.Flat_Render.Margin = new System.Windows.Forms.Padding(2);
             this.Flat_Render.Name = "Flat_Render";
-            this.Flat_Render.Size = new System.Drawing.Size(316, 15);
+            this.Flat_Render.Size = new System.Drawing.Size(158, 8);
             this.Flat_Render.TabIndex = 52;
             // 
             // Circle_Render
             // 
-            this.Circle_Render.Location = new System.Drawing.Point(812, 1236);
-            this.Circle_Render.Margin = new System.Windows.Forms.Padding(4);
+            this.Circle_Render.Location = new System.Drawing.Point(406, 643);
+            this.Circle_Render.Margin = new System.Windows.Forms.Padding(2);
             this.Circle_Render.Name = "Circle_Render";
-            this.Circle_Render.Size = new System.Drawing.Size(316, 15);
+            this.Circle_Render.Size = new System.Drawing.Size(158, 8);
             this.Circle_Render.TabIndex = 51;
             // 
             // Img_opts
@@ -1372,11 +1377,11 @@
             this.Img_opts.Controls.Add(this.Img_Q);
             this.Img_opts.Controls.Add(this.Img_zoom);
             this.Img_opts.ForeColor = System.Drawing.Color.Gainsboro;
-            this.Img_opts.Location = new System.Drawing.Point(348, 1148);
-            this.Img_opts.Margin = new System.Windows.Forms.Padding(4);
+            this.Img_opts.Location = new System.Drawing.Point(174, 597);
+            this.Img_opts.Margin = new System.Windows.Forms.Padding(2);
             this.Img_opts.Name = "Img_opts";
-            this.Img_opts.Padding = new System.Windows.Forms.Padding(4);
-            this.Img_opts.Size = new System.Drawing.Size(454, 138);
+            this.Img_opts.Padding = new System.Windows.Forms.Padding(2);
+            this.Img_opts.Size = new System.Drawing.Size(227, 72);
             this.Img_opts.TabIndex = 50;
             this.Img_opts.TabStop = false;
             this.Img_opts.Text = "View Options";
@@ -1385,10 +1390,10 @@
             // 
             this.Flat_Interp.AutoSize = true;
             this.Flat_Interp.ForeColor = System.Drawing.Color.Silver;
-            this.Flat_Interp.Location = new System.Drawing.Point(240, 62);
-            this.Flat_Interp.Margin = new System.Windows.Forms.Padding(4);
+            this.Flat_Interp.Location = new System.Drawing.Point(120, 32);
+            this.Flat_Interp.Margin = new System.Windows.Forms.Padding(2);
             this.Flat_Interp.Name = "Flat_Interp";
-            this.Flat_Interp.Size = new System.Drawing.Size(145, 29);
+            this.Flat_Interp.Size = new System.Drawing.Size(76, 17);
             this.Flat_Interp.TabIndex = 47;
             this.Flat_Interp.Text = "Interpolate";
             this.Flat_Interp.UseVisualStyleBackColor = true;
@@ -1398,10 +1403,10 @@
             // 
             this.Cap_margins.AutoSize = true;
             this.Cap_margins.ForeColor = System.Drawing.Color.Silver;
-            this.Cap_margins.Location = new System.Drawing.Point(7, 96);
-            this.Cap_margins.Margin = new System.Windows.Forms.Padding(4);
+            this.Cap_margins.Location = new System.Drawing.Point(4, 50);
+            this.Cap_margins.Margin = new System.Windows.Forms.Padding(2);
             this.Cap_margins.Name = "Cap_margins";
-            this.Cap_margins.Size = new System.Drawing.Size(199, 29);
+            this.Cap_margins.Size = new System.Drawing.Size(101, 17);
             this.Cap_margins.TabIndex = 40;
             this.Cap_margins.Text = "Density Margins";
             this.Cap_margins.UseVisualStyleBackColor = true;
@@ -1411,10 +1416,10 @@
             // 
             this.Show_sec.AutoSize = true;
             this.Show_sec.ForeColor = System.Drawing.Color.Silver;
-            this.Show_sec.Location = new System.Drawing.Point(7, 62);
-            this.Show_sec.Margin = new System.Windows.Forms.Padding(4);
+            this.Show_sec.Location = new System.Drawing.Point(4, 32);
+            this.Show_sec.Margin = new System.Windows.Forms.Padding(2);
             this.Show_sec.Name = "Show_sec";
-            this.Show_sec.Size = new System.Drawing.Size(207, 29);
+            this.Show_sec.Size = new System.Drawing.Size(106, 17);
             this.Show_sec.TabIndex = 41;
             this.Show_sec.Text = "Highlight Sectors";
             this.Show_sec.UseVisualStyleBackColor = true;
@@ -1424,10 +1429,10 @@
             // 
             this.Rev_View.AutoSize = true;
             this.Rev_View.ForeColor = System.Drawing.Color.Silver;
-            this.Rev_View.Location = new System.Drawing.Point(240, 62);
-            this.Rev_View.Margin = new System.Windows.Forms.Padding(4);
+            this.Rev_View.Location = new System.Drawing.Point(120, 32);
+            this.Rev_View.Margin = new System.Windows.Forms.Padding(2);
             this.Rev_View.Name = "Rev_View";
-            this.Rev_View.Size = new System.Drawing.Size(182, 29);
+            this.Rev_View.Size = new System.Drawing.Size(94, 17);
             this.Rev_View.TabIndex = 46;
             this.Rev_View.Text = "Alternate View";
             this.Rev_View.UseVisualStyleBackColor = true;
@@ -1437,10 +1442,10 @@
             // 
             this.label4.AutoSize = true;
             this.label4.ForeColor = System.Drawing.Color.Silver;
-            this.label4.Location = new System.Drawing.Point(79, 27);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Location = new System.Drawing.Point(40, 14);
+            this.label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(155, 25);
+            this.label4.Size = new System.Drawing.Size(77, 13);
             this.label4.TabIndex = 45;
             this.label4.Text = "Render Quality";
             // 
@@ -1448,10 +1453,10 @@
             // 
             this.Img_Q.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Img_Q.FormattingEnabled = true;
-            this.Img_Q.Location = new System.Drawing.Point(240, 23);
-            this.Img_Q.Margin = new System.Windows.Forms.Padding(4);
+            this.Img_Q.Location = new System.Drawing.Point(120, 12);
+            this.Img_Q.Margin = new System.Windows.Forms.Padding(2);
             this.Img_Q.Name = "Img_Q";
-            this.Img_Q.Size = new System.Drawing.Size(148, 33);
+            this.Img_Q.Size = new System.Drawing.Size(76, 21);
             this.Img_Q.TabIndex = 44;
             this.Img_Q.SelectedIndexChanged += new System.EventHandler(this.Img_Q_SelectedIndexChanged);
             // 
@@ -1459,10 +1464,10 @@
             // 
             this.Img_zoom.AutoSize = true;
             this.Img_zoom.ForeColor = System.Drawing.Color.Silver;
-            this.Img_zoom.Location = new System.Drawing.Point(240, 96);
-            this.Img_zoom.Margin = new System.Windows.Forms.Padding(4);
+            this.Img_zoom.Location = new System.Drawing.Point(120, 50);
+            this.Img_zoom.Margin = new System.Windows.Forms.Padding(2);
             this.Img_zoom.Name = "Img_zoom";
-            this.Img_zoom.Size = new System.Drawing.Size(162, 29);
+            this.Img_zoom.Size = new System.Drawing.Size(85, 17);
             this.Img_zoom.TabIndex = 37;
             this.Img_zoom.Text = "Zoom Image";
             this.Img_zoom.UseVisualStyleBackColor = true;
@@ -1473,10 +1478,10 @@
             this.panPic.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.panPic.Controls.Add(this.coords);
             this.panPic.Controls.Add(this.Disk_Image);
-            this.panPic.Location = new System.Drawing.Point(2, 4);
-            this.panPic.Margin = new System.Windows.Forms.Padding(4);
+            this.panPic.Location = new System.Drawing.Point(1, 2);
+            this.panPic.Margin = new System.Windows.Forms.Padding(2);
             this.panPic.Name = "panPic";
-            this.panPic.Size = new System.Drawing.Size(1144, 1142);
+            this.panPic.Size = new System.Drawing.Size(572, 594);
             this.panPic.TabIndex = 37;
             // 
             // coords
@@ -1484,20 +1489,20 @@
             this.coords.AutoSize = true;
             this.coords.BackColor = System.Drawing.Color.Transparent;
             this.coords.ForeColor = System.Drawing.Color.Silver;
-            this.coords.Location = new System.Drawing.Point(17, 1110);
-            this.coords.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.coords.Location = new System.Drawing.Point(8, 577);
+            this.coords.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.coords.Name = "coords";
-            this.coords.Size = new System.Drawing.Size(70, 25);
+            this.coords.Size = new System.Drawing.Size(35, 13);
             this.coords.TabIndex = 44;
             this.coords.Text = "label3";
             // 
             // Disk_Image
             // 
             this.Disk_Image.BackColor = System.Drawing.Color.Transparent;
-            this.Disk_Image.Location = new System.Drawing.Point(0, 4);
-            this.Disk_Image.Margin = new System.Windows.Forms.Padding(4);
+            this.Disk_Image.Location = new System.Drawing.Point(0, 2);
+            this.Disk_Image.Margin = new System.Windows.Forms.Padding(2);
             this.Disk_Image.Name = "Disk_Image";
-            this.Disk_Image.Size = new System.Drawing.Size(1140, 1140);
+            this.Disk_Image.Size = new System.Drawing.Size(570, 593);
             this.Disk_Image.TabIndex = 0;
             this.Disk_Image.TabStop = false;
             this.Disk_Image.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Disk_Image_MouseDown);
@@ -1509,11 +1514,11 @@
             this.Img_style.Controls.Add(this.Flat_View);
             this.Img_style.Controls.Add(this.Circle_View);
             this.Img_style.ForeColor = System.Drawing.Color.Gainsboro;
-            this.Img_style.Location = new System.Drawing.Point(7, 1148);
-            this.Img_style.Margin = new System.Windows.Forms.Padding(4);
+            this.Img_style.Location = new System.Drawing.Point(4, 597);
+            this.Img_style.Margin = new System.Windows.Forms.Padding(2);
             this.Img_style.Name = "Img_style";
-            this.Img_style.Padding = new System.Windows.Forms.Padding(4);
-            this.Img_style.Size = new System.Drawing.Size(176, 138);
+            this.Img_style.Padding = new System.Windows.Forms.Padding(2);
+            this.Img_style.Size = new System.Drawing.Size(88, 72);
             this.Img_style.TabIndex = 49;
             this.Img_style.TabStop = false;
             this.Img_style.Text = "Style";
@@ -1522,10 +1527,10 @@
             // 
             this.Flat_View.AutoSize = true;
             this.Flat_View.ForeColor = System.Drawing.Color.Silver;
-            this.Flat_View.Location = new System.Drawing.Point(7, 73);
-            this.Flat_View.Margin = new System.Windows.Forms.Padding(4);
+            this.Flat_View.Location = new System.Drawing.Point(4, 38);
+            this.Flat_View.Margin = new System.Windows.Forms.Padding(2);
             this.Flat_View.Name = "Flat_View";
-            this.Flat_View.Size = new System.Drawing.Size(150, 29);
+            this.Flat_View.Size = new System.Drawing.Size(78, 17);
             this.Flat_View.TabIndex = 1;
             this.Flat_View.TabStop = true;
             this.Flat_View.Text = "Flat Tracks";
@@ -1536,10 +1541,10 @@
             // 
             this.Circle_View.AutoSize = true;
             this.Circle_View.ForeColor = System.Drawing.Color.Silver;
-            this.Circle_View.Location = new System.Drawing.Point(7, 38);
-            this.Circle_View.Margin = new System.Windows.Forms.Padding(4);
+            this.Circle_View.Location = new System.Drawing.Point(4, 20);
+            this.Circle_View.Margin = new System.Windows.Forms.Padding(2);
             this.Circle_View.Name = "Circle_View";
-            this.Circle_View.Size = new System.Drawing.Size(156, 29);
+            this.Circle_View.Size = new System.Drawing.Size(82, 17);
             this.Circle_View.TabIndex = 0;
             this.Circle_View.TabStop = true;
             this.Circle_View.Text = "Disk Tracks";
@@ -1548,10 +1553,10 @@
             // 
             // Save_Circle_btn
             // 
-            this.Save_Circle_btn.Location = new System.Drawing.Point(976, 1162);
-            this.Save_Circle_btn.Margin = new System.Windows.Forms.Padding(4);
+            this.Save_Circle_btn.Location = new System.Drawing.Point(488, 604);
+            this.Save_Circle_btn.Margin = new System.Windows.Forms.Padding(2);
             this.Save_Circle_btn.Name = "Save_Circle_btn";
-            this.Save_Circle_btn.Size = new System.Drawing.Size(154, 38);
+            this.Save_Circle_btn.Size = new System.Drawing.Size(77, 20);
             this.Save_Circle_btn.TabIndex = 47;
             this.Save_Circle_btn.Text = "Save Image";
             this.Save_Circle_btn.UseVisualStyleBackColor = true;
@@ -1562,11 +1567,11 @@
             this.Img_View.Controls.Add(this.Out_view);
             this.Img_View.Controls.Add(this.Src_view);
             this.Img_View.ForeColor = System.Drawing.Color.Gainsboro;
-            this.Img_View.Location = new System.Drawing.Point(188, 1148);
-            this.Img_View.Margin = new System.Windows.Forms.Padding(4);
+            this.Img_View.Location = new System.Drawing.Point(94, 597);
+            this.Img_View.Margin = new System.Windows.Forms.Padding(2);
             this.Img_View.Name = "Img_View";
-            this.Img_View.Padding = new System.Windows.Forms.Padding(4);
-            this.Img_View.Size = new System.Drawing.Size(154, 138);
+            this.Img_View.Padding = new System.Windows.Forms.Padding(2);
+            this.Img_View.Size = new System.Drawing.Size(77, 72);
             this.Img_View.TabIndex = 48;
             this.Img_View.TabStop = false;
             this.Img_View.Text = "Image";
@@ -1575,10 +1580,10 @@
             // 
             this.Out_view.AutoSize = true;
             this.Out_view.ForeColor = System.Drawing.Color.Silver;
-            this.Out_view.Location = new System.Drawing.Point(24, 38);
-            this.Out_view.Margin = new System.Windows.Forms.Padding(4);
+            this.Out_view.Location = new System.Drawing.Point(12, 20);
+            this.Out_view.Margin = new System.Windows.Forms.Padding(2);
             this.Out_view.Name = "Out_view";
-            this.Out_view.Size = new System.Drawing.Size(107, 29);
+            this.Out_view.Size = new System.Drawing.Size(57, 17);
             this.Out_view.TabIndex = 40;
             this.Out_view.TabStop = true;
             this.Out_view.Text = "Output";
@@ -1589,10 +1594,10 @@
             // 
             this.Src_view.AutoSize = true;
             this.Src_view.ForeColor = System.Drawing.Color.Silver;
-            this.Src_view.Location = new System.Drawing.Point(24, 71);
-            this.Src_view.Margin = new System.Windows.Forms.Padding(4);
+            this.Src_view.Location = new System.Drawing.Point(12, 37);
+            this.Src_view.Margin = new System.Windows.Forms.Padding(2);
             this.Src_view.Name = "Src_view";
-            this.Src_view.Size = new System.Drawing.Size(111, 29);
+            this.Src_view.Size = new System.Drawing.Size(59, 17);
             this.Src_view.TabIndex = 41;
             this.Src_view.TabStop = true;
             this.Src_view.Text = "Source";
@@ -1602,11 +1607,11 @@
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.Track_Info);
-            this.tabPage1.Location = new System.Drawing.Point(4, 37);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(4);
+            this.tabPage1.Location = new System.Drawing.Point(4, 25);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage1.Size = new System.Drawing.Size(1144, 1307);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(2);
+            this.tabPage1.Size = new System.Drawing.Size(568, 672);
             this.tabPage1.TabIndex = 2;
             this.tabPage1.Text = "Track Info";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -1618,12 +1623,12 @@
             this.Track_Info.ForeColor = System.Drawing.Color.Black;
             this.Track_Info.FormattingEnabled = true;
             this.Track_Info.HorizontalScrollbar = true;
-            this.Track_Info.ItemHeight = 29;
-            this.Track_Info.Location = new System.Drawing.Point(7, 4);
-            this.Track_Info.Margin = new System.Windows.Forms.Padding(4);
+            this.Track_Info.ItemHeight = 15;
+            this.Track_Info.Location = new System.Drawing.Point(4, 2);
+            this.Track_Info.Margin = new System.Windows.Forms.Padding(2);
             this.Track_Info.Name = "Track_Info";
             this.Track_Info.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.Track_Info.Size = new System.Drawing.Size(1140, 1193);
+            this.Track_Info.Size = new System.Drawing.Size(572, 619);
             this.Track_Info.TabIndex = 11;
             // 
             // Data_View
@@ -1636,19 +1641,20 @@
             this.Data_View.Controls.Add(this.Disp_Data);
             this.Data_View.Controls.Add(this.D_separate);
             this.Data_View.Controls.Add(this.D_type);
-            this.Data_View.Location = new System.Drawing.Point(4, 37);
-            this.Data_View.Margin = new System.Windows.Forms.Padding(4);
+            this.Data_View.Location = new System.Drawing.Point(4, 25);
+            this.Data_View.Margin = new System.Windows.Forms.Padding(2);
             this.Data_View.Name = "Data_View";
-            this.Data_View.Padding = new System.Windows.Forms.Padding(4);
-            this.Data_View.Size = new System.Drawing.Size(1144, 1307);
+            this.Data_View.Padding = new System.Windows.Forms.Padding(2);
+            this.Data_View.Size = new System.Drawing.Size(568, 672);
             this.Data_View.TabIndex = 3;
             this.Data_View.Text = "Data View";
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(824, 25);
+            this.button1.Location = new System.Drawing.Point(412, 13);
+            this.button1.Margin = new System.Windows.Forms.Padding(2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(94, 41);
+            this.button1.Size = new System.Drawing.Size(47, 21);
             this.button1.TabIndex = 8;
             this.button1.Text = "NO!";
             this.button1.UseVisualStyleBackColor = true;
@@ -1658,9 +1664,10 @@
             // 
             this.linkLabel3.ActiveLinkColor = System.Drawing.Color.Blue;
             this.linkLabel3.AutoSize = true;
-            this.linkLabel3.Location = new System.Drawing.Point(927, 104);
+            this.linkLabel3.Location = new System.Drawing.Point(464, 54);
+            this.linkLabel3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.linkLabel3.Name = "linkLabel3";
-            this.linkLabel3.Size = new System.Drawing.Size(176, 25);
+            this.linkLabel3.Size = new System.Drawing.Size(89, 13);
             this.linkLabel3.TabIndex = 7;
             this.linkLabel3.TabStop = true;
             this.linkLabel3.Text = "Save as .TXT file";
@@ -1671,11 +1678,11 @@
             this.groupBox1.Controls.Add(this.VS_bin);
             this.groupBox1.Controls.Add(this.VS_hex);
             this.groupBox1.Controls.Add(this.VS_dat);
-            this.groupBox1.Location = new System.Drawing.Point(7, 6);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
+            this.groupBox1.Location = new System.Drawing.Point(4, 3);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox1.Size = new System.Drawing.Size(156, 135);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(2);
+            this.groupBox1.Size = new System.Drawing.Size(78, 70);
             this.groupBox1.TabIndex = 5;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "View Style";
@@ -1683,10 +1690,10 @@
             // VS_bin
             // 
             this.VS_bin.AutoSize = true;
-            this.VS_bin.Location = new System.Drawing.Point(12, 62);
-            this.VS_bin.Margin = new System.Windows.Forms.Padding(4);
+            this.VS_bin.Location = new System.Drawing.Point(6, 32);
+            this.VS_bin.Margin = new System.Windows.Forms.Padding(2);
             this.VS_bin.Name = "VS_bin";
-            this.VS_bin.Size = new System.Drawing.Size(104, 29);
+            this.VS_bin.Size = new System.Drawing.Size(54, 17);
             this.VS_bin.TabIndex = 2;
             this.VS_bin.TabStop = true;
             this.VS_bin.Text = "Binary";
@@ -1696,10 +1703,10 @@
             // VS_hex
             // 
             this.VS_hex.AutoSize = true;
-            this.VS_hex.Location = new System.Drawing.Point(12, 31);
-            this.VS_hex.Margin = new System.Windows.Forms.Padding(4);
+            this.VS_hex.Location = new System.Drawing.Point(6, 16);
+            this.VS_hex.Margin = new System.Windows.Forms.Padding(2);
             this.VS_hex.Name = "VS_hex";
-            this.VS_hex.Size = new System.Drawing.Size(81, 29);
+            this.VS_hex.Size = new System.Drawing.Size(44, 17);
             this.VS_hex.TabIndex = 1;
             this.VS_hex.TabStop = true;
             this.VS_hex.Text = "Hex";
@@ -1709,10 +1716,10 @@
             // VS_dat
             // 
             this.VS_dat.AutoSize = true;
-            this.VS_dat.Location = new System.Drawing.Point(12, 98);
-            this.VS_dat.Margin = new System.Windows.Forms.Padding(4);
+            this.VS_dat.Location = new System.Drawing.Point(6, 51);
+            this.VS_dat.Margin = new System.Windows.Forms.Padding(2);
             this.VS_dat.Name = "VS_dat";
-            this.VS_dat.Size = new System.Drawing.Size(88, 29);
+            this.VS_dat.Size = new System.Drawing.Size(48, 17);
             this.VS_dat.TabIndex = 0;
             this.VS_dat.TabStop = true;
             this.VS_dat.Text = "Data";
@@ -1723,20 +1730,20 @@
             // 
             this.Data_Box.DetectUrls = false;
             this.Data_Box.Font = new System.Drawing.Font("Courier New", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Data_Box.Location = new System.Drawing.Point(7, 144);
-            this.Data_Box.Margin = new System.Windows.Forms.Padding(4);
+            this.Data_Box.Location = new System.Drawing.Point(4, 75);
+            this.Data_Box.Margin = new System.Windows.Forms.Padding(2);
             this.Data_Box.Name = "Data_Box";
             this.Data_Box.ReadOnly = true;
-            this.Data_Box.Size = new System.Drawing.Size(1132, 1138);
+            this.Data_Box.Size = new System.Drawing.Size(568, 594);
             this.Data_Box.TabIndex = 4;
             this.Data_Box.Text = "";
             // 
             // Disp_Data
             // 
-            this.Disp_Data.Location = new System.Drawing.Point(1000, 12);
-            this.Disp_Data.Margin = new System.Windows.Forms.Padding(4);
+            this.Disp_Data.Location = new System.Drawing.Point(500, 6);
+            this.Disp_Data.Margin = new System.Windows.Forms.Padding(2);
             this.Disp_Data.Name = "Disp_Data";
-            this.Disp_Data.Size = new System.Drawing.Size(124, 40);
+            this.Disp_Data.Size = new System.Drawing.Size(62, 21);
             this.Disp_Data.TabIndex = 3;
             this.Disp_Data.Text = "Refresh";
             this.Disp_Data.UseVisualStyleBackColor = true;
@@ -1748,19 +1755,19 @@
             this.D_separate.Controls.Add(this.Jump);
             this.D_separate.Controls.Add(this.Data_Sep);
             this.D_separate.Controls.Add(this.label6);
-            this.D_separate.Location = new System.Drawing.Point(394, 6);
-            this.D_separate.Margin = new System.Windows.Forms.Padding(4);
+            this.D_separate.Location = new System.Drawing.Point(197, 3);
+            this.D_separate.Margin = new System.Windows.Forms.Padding(2);
             this.D_separate.Name = "D_separate";
-            this.D_separate.Padding = new System.Windows.Forms.Padding(4);
-            this.D_separate.Size = new System.Drawing.Size(328, 135);
+            this.D_separate.Padding = new System.Windows.Forms.Padding(2);
+            this.D_separate.Size = new System.Drawing.Size(164, 70);
             this.D_separate.TabIndex = 2;
             this.D_separate.TabStop = false;
             this.D_separate.Text = "Other Options";
             // 
             // T_jump
             // 
-            this.T_jump.Location = new System.Drawing.Point(192, 60);
-            this.T_jump.Margin = new System.Windows.Forms.Padding(4);
+            this.T_jump.Location = new System.Drawing.Point(96, 31);
+            this.T_jump.Margin = new System.Windows.Forms.Padding(2);
             this.T_jump.Maximum = new decimal(new int[] {
             42,
             0,
@@ -1772,7 +1779,7 @@
             0,
             0});
             this.T_jump.Name = "T_jump";
-            this.T_jump.Size = new System.Drawing.Size(120, 31);
+            this.T_jump.Size = new System.Drawing.Size(60, 20);
             this.T_jump.TabIndex = 3;
             this.T_jump.Value = new decimal(new int[] {
             1,
@@ -1784,10 +1791,10 @@
             // Jump
             // 
             this.Jump.AutoSize = true;
-            this.Jump.Location = new System.Drawing.Point(7, 62);
-            this.Jump.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Jump.Location = new System.Drawing.Point(4, 32);
+            this.Jump.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Jump.Name = "Jump";
-            this.Jump.Size = new System.Drawing.Size(148, 25);
+            this.Jump.Size = new System.Drawing.Size(75, 13);
             this.Jump.TabIndex = 2;
             this.Jump.Text = "Jump to Track";
             // 
@@ -1795,20 +1802,20 @@
             // 
             this.Data_Sep.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Data_Sep.FormattingEnabled = true;
-            this.Data_Sep.Location = new System.Drawing.Point(192, 19);
-            this.Data_Sep.Margin = new System.Windows.Forms.Padding(4);
+            this.Data_Sep.Location = new System.Drawing.Point(96, 10);
+            this.Data_Sep.Margin = new System.Windows.Forms.Padding(2);
             this.Data_Sep.Name = "Data_Sep";
-            this.Data_Sep.Size = new System.Drawing.Size(120, 33);
+            this.Data_Sep.Size = new System.Drawing.Size(62, 21);
             this.Data_Sep.TabIndex = 1;
             this.Data_Sep.SelectedIndexChanged += new System.EventHandler(this.Data_Sep_SelectedIndexChanged);
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(7, 27);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label6.Location = new System.Drawing.Point(4, 14);
+            this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(179, 25);
+            this.label6.Size = new System.Drawing.Size(90, 13);
             this.label6.TabIndex = 0;
             this.label6.Text = "Separate Data by";
             // 
@@ -1816,11 +1823,11 @@
             // 
             this.D_type.Controls.Add(this.DV_dec);
             this.D_type.Controls.Add(this.DV_gcr);
-            this.D_type.Location = new System.Drawing.Point(168, 6);
-            this.D_type.Margin = new System.Windows.Forms.Padding(4);
+            this.D_type.Location = new System.Drawing.Point(84, 3);
+            this.D_type.Margin = new System.Windows.Forms.Padding(2);
             this.D_type.Name = "D_type";
-            this.D_type.Padding = new System.Windows.Forms.Padding(4);
-            this.D_type.Size = new System.Drawing.Size(220, 135);
+            this.D_type.Padding = new System.Windows.Forms.Padding(2);
+            this.D_type.Size = new System.Drawing.Size(110, 70);
             this.D_type.TabIndex = 0;
             this.D_type.TabStop = false;
             this.D_type.Text = "Data Type";
@@ -1828,10 +1835,10 @@
             // DV_dec
             // 
             this.DV_dec.AutoSize = true;
-            this.DV_dec.Location = new System.Drawing.Point(7, 83);
-            this.DV_dec.Margin = new System.Windows.Forms.Padding(4);
+            this.DV_dec.Location = new System.Drawing.Point(4, 43);
+            this.DV_dec.Margin = new System.Windows.Forms.Padding(2);
             this.DV_dec.Name = "DV_dec";
-            this.DV_dec.Size = new System.Drawing.Size(169, 29);
+            this.DV_dec.Size = new System.Drawing.Size(89, 17);
             this.DV_dec.TabIndex = 1;
             this.DV_dec.TabStop = true;
             this.DV_dec.Text = "Decode GCR";
@@ -1841,10 +1848,10 @@
             // DV_gcr
             // 
             this.DV_gcr.AutoSize = true;
-            this.DV_gcr.Location = new System.Drawing.Point(7, 48);
-            this.DV_gcr.Margin = new System.Windows.Forms.Padding(4);
+            this.DV_gcr.Location = new System.Drawing.Point(4, 25);
+            this.DV_gcr.Margin = new System.Windows.Forms.Padding(2);
             this.DV_gcr.Name = "DV_gcr";
-            this.DV_gcr.Size = new System.Drawing.Size(143, 29);
+            this.DV_gcr.Size = new System.Drawing.Size(74, 17);
             this.DV_gcr.TabIndex = 0;
             this.DV_gcr.TabStop = true;
             this.DV_gcr.Text = "GCR (raw)";
@@ -1859,11 +1866,11 @@
             this.tabPage3.Controls.Add(this.Sec_Interleave);
             this.tabPage3.Controls.Add(this.Dir_Edit);
             this.tabPage3.Controls.Add(this.Dir_screen);
-            this.tabPage3.Location = new System.Drawing.Point(4, 37);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(4);
+            this.tabPage3.Location = new System.Drawing.Point(4, 25);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage3.Size = new System.Drawing.Size(1144, 1307);
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(2);
+            this.tabPage3.Size = new System.Drawing.Size(568, 672);
             this.tabPage3.TabIndex = 4;
             this.tabPage3.Text = "Disk Directory";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1882,11 +1889,11 @@
             this.groupBox3.Controls.Add(this.Dir_ChgType);
             this.groupBox3.Controls.Add(this.Dir_Cancel);
             this.groupBox3.Controls.Add(this.Dir_Apply);
-            this.groupBox3.Location = new System.Drawing.Point(4, 4);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
+            this.groupBox3.Location = new System.Drawing.Point(2, 2);
+            this.groupBox3.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox3.Size = new System.Drawing.Size(1136, 1302);
+            this.groupBox3.Padding = new System.Windows.Forms.Padding(2);
+            this.groupBox3.Size = new System.Drawing.Size(568, 677);
             this.groupBox3.TabIndex = 40;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Directory Editor";
@@ -1894,20 +1901,20 @@
             // Dir_FStart
             // 
             this.Dir_FStart.AutoSize = true;
-            this.Dir_FStart.Location = new System.Drawing.Point(526, 1248);
-            this.Dir_FStart.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Dir_FStart.Location = new System.Drawing.Point(263, 649);
+            this.Dir_FStart.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Dir_FStart.Name = "Dir_FStart";
-            this.Dir_FStart.Size = new System.Drawing.Size(135, 25);
+            this.Dir_FStart.Size = new System.Drawing.Size(67, 13);
             this.Dir_FStart.TabIndex = 17;
             this.Dir_FStart.Text = "File Location";
             // 
             // Dir_Info
             // 
             this.Dir_Info.AutoSize = true;
-            this.Dir_Info.Location = new System.Drawing.Point(526, 1208);
-            this.Dir_Info.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Dir_Info.Location = new System.Drawing.Point(263, 628);
+            this.Dir_Info.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Dir_Info.Name = "Dir_Info";
-            this.Dir_Info.Size = new System.Drawing.Size(186, 25);
+            this.Dir_Info.Size = new System.Drawing.Size(91, 13);
             this.Dir_Info.TabIndex = 16;
             this.Dir_Info.Text = "File Load Address";
             // 
@@ -1917,10 +1924,10 @@
             this.linkLabel2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.linkLabel2.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
             this.linkLabel2.LinkColor = System.Drawing.Color.Green;
-            this.linkLabel2.Location = new System.Drawing.Point(16, 1204);
-            this.linkLabel2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.linkLabel2.Location = new System.Drawing.Point(8, 626);
+            this.linkLabel2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.linkLabel2.Name = "linkLabel2";
-            this.linkLabel2.Size = new System.Drawing.Size(186, 29);
+            this.linkLabel2.Size = new System.Drawing.Size(93, 15);
             this.linkLabel2.TabIndex = 15;
             this.linkLabel2.TabStop = true;
             this.linkLabel2.Text = "Toggle Splat Bit";
@@ -1933,10 +1940,10 @@
             this.Dir_Lock.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Dir_Lock.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
             this.Dir_Lock.LinkColor = System.Drawing.Color.Green;
-            this.Dir_Lock.Location = new System.Drawing.Point(16, 1165);
-            this.Dir_Lock.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Dir_Lock.Location = new System.Drawing.Point(8, 606);
+            this.Dir_Lock.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Dir_Lock.Name = "Dir_Lock";
-            this.Dir_Lock.Size = new System.Drawing.Size(182, 29);
+            this.Dir_Lock.Size = new System.Drawing.Size(91, 15);
             this.Dir_Lock.TabIndex = 14;
             this.Dir_Lock.TabStop = true;
             this.Dir_Lock.Text = "Toggle Lock Bit";
@@ -1946,10 +1953,10 @@
             // Dir_None
             // 
             this.Dir_None.AutoSize = true;
-            this.Dir_None.Location = new System.Drawing.Point(526, 1169);
-            this.Dir_None.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Dir_None.Location = new System.Drawing.Point(263, 608);
+            this.Dir_None.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Dir_None.Name = "Dir_None";
-            this.Dir_None.Size = new System.Drawing.Size(89, 25);
+            this.Dir_None.Size = new System.Drawing.Size(45, 13);
             this.Dir_None.TabIndex = 13;
             this.Dir_None.TabStop = true;
             this.Dir_None.Text = "( None )";
@@ -1959,10 +1966,10 @@
             // Dir_Rev
             // 
             this.Dir_Rev.AutoSize = true;
-            this.Dir_Rev.Location = new System.Drawing.Point(631, 1169);
-            this.Dir_Rev.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Dir_Rev.Location = new System.Drawing.Point(316, 608);
+            this.Dir_Rev.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Dir_Rev.Name = "Dir_Rev";
-            this.Dir_Rev.Size = new System.Drawing.Size(91, 25);
+            this.Dir_Rev.Size = new System.Drawing.Size(46, 13);
             this.Dir_Rev.TabIndex = 12;
             this.Dir_Rev.TabStop = true;
             this.Dir_Rev.Text = "( Invert )";
@@ -1972,10 +1979,10 @@
             // Dir_All
             // 
             this.Dir_All.AutoSize = true;
-            this.Dir_All.Location = new System.Drawing.Point(458, 1169);
-            this.Dir_All.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Dir_All.Location = new System.Drawing.Point(229, 608);
+            this.Dir_All.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Dir_All.Name = "Dir_All";
-            this.Dir_All.Size = new System.Drawing.Size(62, 25);
+            this.Dir_All.Size = new System.Drawing.Size(30, 13);
             this.Dir_All.TabIndex = 11;
             this.Dir_All.TabStop = true;
             this.Dir_All.Text = "( All )";
@@ -1985,10 +1992,10 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(372, 1169);
-            this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label16.Location = new System.Drawing.Point(186, 608);
+            this.label16.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(72, 25);
+            this.label16.Size = new System.Drawing.Size(37, 13);
             this.label16.TabIndex = 10;
             this.label16.Text = "Select";
             // 
@@ -1996,20 +2003,20 @@
             // 
             this.Dir_Ftype.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Dir_Ftype.FormattingEnabled = true;
-            this.Dir_Ftype.Location = new System.Drawing.Point(264, 1244);
-            this.Dir_Ftype.Margin = new System.Windows.Forms.Padding(4);
+            this.Dir_Ftype.Location = new System.Drawing.Point(132, 647);
+            this.Dir_Ftype.Margin = new System.Windows.Forms.Padding(2);
             this.Dir_Ftype.Name = "Dir_Ftype";
-            this.Dir_Ftype.Size = new System.Drawing.Size(120, 33);
+            this.Dir_Ftype.Size = new System.Drawing.Size(62, 21);
             this.Dir_Ftype.TabIndex = 5;
             this.Dir_Ftype.SelectedIndexChanged += new System.EventHandler(this.Dir_Modify_FileType);
             // 
             // Dir_ChgType
             // 
             this.Dir_ChgType.AutoSize = true;
-            this.Dir_ChgType.Location = new System.Drawing.Point(20, 1248);
-            this.Dir_ChgType.Margin = new System.Windows.Forms.Padding(4);
+            this.Dir_ChgType.Location = new System.Drawing.Point(10, 649);
+            this.Dir_ChgType.Margin = new System.Windows.Forms.Padding(2);
             this.Dir_ChgType.Name = "Dir_ChgType";
-            this.Dir_ChgType.Size = new System.Drawing.Size(214, 29);
+            this.Dir_ChgType.Size = new System.Drawing.Size(109, 17);
             this.Dir_ChgType.TabIndex = 4;
             this.Dir_ChgType.Text = "Change File Type";
             this.Dir_ChgType.UseVisualStyleBackColor = true;
@@ -2017,10 +2024,10 @@
             // 
             // Dir_Cancel
             // 
-            this.Dir_Cancel.Location = new System.Drawing.Point(890, 1162);
-            this.Dir_Cancel.Margin = new System.Windows.Forms.Padding(4);
+            this.Dir_Cancel.Location = new System.Drawing.Point(445, 604);
+            this.Dir_Cancel.Margin = new System.Windows.Forms.Padding(2);
             this.Dir_Cancel.Name = "Dir_Cancel";
-            this.Dir_Cancel.Size = new System.Drawing.Size(98, 40);
+            this.Dir_Cancel.Size = new System.Drawing.Size(49, 21);
             this.Dir_Cancel.TabIndex = 1;
             this.Dir_Cancel.Text = "Cancel";
             this.Dir_Cancel.UseVisualStyleBackColor = true;
@@ -2028,10 +2035,10 @@
             // 
             // Dir_Apply
             // 
-            this.Dir_Apply.Location = new System.Drawing.Point(1006, 1162);
-            this.Dir_Apply.Margin = new System.Windows.Forms.Padding(4);
+            this.Dir_Apply.Location = new System.Drawing.Point(503, 604);
+            this.Dir_Apply.Margin = new System.Windows.Forms.Padding(2);
             this.Dir_Apply.Name = "Dir_Apply";
-            this.Dir_Apply.Size = new System.Drawing.Size(100, 40);
+            this.Dir_Apply.Size = new System.Drawing.Size(50, 21);
             this.Dir_Apply.TabIndex = 0;
             this.Dir_Apply.Text = "Apply";
             this.Dir_Apply.UseVisualStyleBackColor = true;
@@ -2041,9 +2048,10 @@
             // 
             this.label19.AutoSize = true;
             this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label19.Location = new System.Drawing.Point(513, 11);
+            this.label19.Location = new System.Drawing.Point(256, 6);
+            this.label19.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(598, 29);
+            this.label19.Size = new System.Drawing.Size(304, 15);
             this.label19.TabIndex = 41;
             this.label19.Text = "Drag files into Directory window to add them to the disk";
             // 
@@ -2051,18 +2059,20 @@
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label18.Location = new System.Drawing.Point(9, 11);
+            this.label18.Location = new System.Drawing.Point(4, 6);
+            this.label18.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(194, 29);
+            this.label18.Size = new System.Drawing.Size(98, 15);
             this.label18.TabIndex = 40;
             this.label18.Text = "Sector Interleave";
             // 
             // Sec_Interleave
             // 
             this.Sec_Interleave.FormattingEnabled = true;
-            this.Sec_Interleave.Location = new System.Drawing.Point(218, 7);
+            this.Sec_Interleave.Location = new System.Drawing.Point(109, 4);
+            this.Sec_Interleave.Margin = new System.Windows.Forms.Padding(2);
             this.Sec_Interleave.Name = "Sec_Interleave";
-            this.Sec_Interleave.Size = new System.Drawing.Size(237, 33);
+            this.Sec_Interleave.Size = new System.Drawing.Size(120, 21);
             this.Sec_Interleave.TabIndex = 39;
             // 
             // Dir_Edit
@@ -2072,10 +2082,10 @@
             this.Dir_Edit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(55)))), ((int)(((byte)(176)))));
             this.Dir_Edit.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Dir_Edit.LinkColor = System.Drawing.Color.White;
-            this.Dir_Edit.Location = new System.Drawing.Point(943, 80);
-            this.Dir_Edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Dir_Edit.Location = new System.Drawing.Point(472, 42);
+            this.Dir_Edit.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Dir_Edit.Name = "Dir_Edit";
-            this.Dir_Edit.Size = new System.Drawing.Size(157, 29);
+            this.Dir_Edit.Size = new System.Drawing.Size(79, 15);
             this.Dir_Edit.TabIndex = 14;
             this.Dir_Edit.TabStop = true;
             this.Dir_Edit.Text = "Edit Directory";
@@ -2087,11 +2097,11 @@
             this.Dir_screen.CausesValidation = false;
             this.Dir_screen.Cursor = System.Windows.Forms.Cursors.Default;
             this.Dir_screen.Font = new System.Drawing.Font("Comic Mono", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Dir_screen.Location = new System.Drawing.Point(4, 62);
-            this.Dir_screen.Margin = new System.Windows.Forms.Padding(4);
+            this.Dir_screen.Location = new System.Drawing.Point(2, 32);
+            this.Dir_screen.Margin = new System.Windows.Forms.Padding(2);
             this.Dir_screen.Name = "Dir_screen";
             this.Dir_screen.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.Dir_screen.Size = new System.Drawing.Size(1136, 1229);
+            this.Dir_screen.Size = new System.Drawing.Size(570, 641);
             this.Dir_screen.TabIndex = 38;
             this.Dir_screen.Text = "";
             // 
@@ -2099,10 +2109,11 @@
             // 
             this.BlockMap.BackColor = System.Drawing.SystemColors.ControlDark;
             this.BlockMap.Controls.Add(this.BlkMap_Panel);
-            this.BlockMap.Location = new System.Drawing.Point(4, 37);
+            this.BlockMap.Location = new System.Drawing.Point(4, 25);
+            this.BlockMap.Margin = new System.Windows.Forms.Padding(2);
             this.BlockMap.Name = "BlockMap";
-            this.BlockMap.Padding = new System.Windows.Forms.Padding(3);
-            this.BlockMap.Size = new System.Drawing.Size(1144, 1307);
+            this.BlockMap.Padding = new System.Windows.Forms.Padding(2);
+            this.BlockMap.Size = new System.Drawing.Size(568, 672);
             this.BlockMap.TabIndex = 5;
             this.BlockMap.Text = "Block Map";
             // 
@@ -2117,19 +2128,87 @@
             this.BlkMap_Panel.Controls.Add(this.label21);
             this.BlkMap_Panel.Controls.Add(this.label17);
             this.BlkMap_Panel.Controls.Add(this.track_label);
-            this.BlkMap_Panel.Location = new System.Drawing.Point(2, 3);
+            this.BlkMap_Panel.Location = new System.Drawing.Point(1, 2);
+            this.BlkMap_Panel.Margin = new System.Windows.Forms.Padding(2);
             this.BlkMap_Panel.Name = "BlkMap_Panel";
-            this.BlkMap_Panel.Size = new System.Drawing.Size(1135, 1289);
+            this.BlkMap_Panel.Size = new System.Drawing.Size(568, 670);
             this.BlkMap_Panel.TabIndex = 0;
+            // 
+            // Blk_pan
+            // 
+            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
+            this.Blk_pan.BorderThickness = 2;
+            this.Blk_pan.Location = new System.Drawing.Point(48, 25);
+            this.Blk_pan.Margin = new System.Windows.Forms.Padding(2);
+            this.Blk_pan.Name = "Blk_pan";
+            this.Blk_pan.Size = new System.Drawing.Size(513, 573);
+            this.Blk_pan.TabIndex = 2;
+            // 
+            // CSTfmt
+            // 
+            this.CSTfmt.AutoSize = true;
+            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
+            this.CSTfmt.Location = new System.Drawing.Point(10, 148);
+            this.CSTfmt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.CSTfmt.Name = "CSTfmt";
+            this.CSTfmt.NewText = "";
+            this.CSTfmt.RotateAngle = 0;
+            this.CSTfmt.Size = new System.Drawing.Size(91, 15);
+            this.CSTfmt.TabIndex = 12;
+            this.CSTfmt.Text = "Custom Format";
+            // 
+            // ErrorBlk
+            // 
+            this.ErrorBlk.AutoSize = true;
+            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
+            this.ErrorBlk.Location = new System.Drawing.Point(10, 253);
+            this.ErrorBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.ErrorBlk.Name = "ErrorBlk";
+            this.ErrorBlk.NewText = "";
+            this.ErrorBlk.RotateAngle = 0;
+            this.ErrorBlk.Size = new System.Drawing.Size(67, 15);
+            this.ErrorBlk.TabIndex = 11;
+            this.ErrorBlk.Text = "Block Error";
+            // 
+            // AllocBlk
+            // 
+            this.AllocBlk.AutoSize = true;
+            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
+            this.AllocBlk.Location = new System.Drawing.Point(8, 341);
+            this.AllocBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.AllocBlk.Name = "AllocBlk";
+            this.AllocBlk.NewText = "";
+            this.AllocBlk.RotateAngle = 0;
+            this.AllocBlk.Size = new System.Drawing.Size(90, 15);
+            this.AllocBlk.TabIndex = 10;
+            this.AllocBlk.Text = "Allocated Block";
+            // 
+            // FreeBlk
+            // 
+            this.FreeBlk.AutoSize = true;
+            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
+            this.FreeBlk.Location = new System.Drawing.Point(8, 453);
+            this.FreeBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.FreeBlk.Name = "FreeBlk";
+            this.FreeBlk.NewText = "";
+            this.FreeBlk.RotateAngle = 0;
+            this.FreeBlk.Size = new System.Drawing.Size(65, 15);
+            this.FreeBlk.TabIndex = 9;
+            this.FreeBlk.Text = "Free Block";
             // 
             // label21
             // 
             this.label21.AutoSize = true;
             this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label21.ForeColor = System.Drawing.Color.Yellow;
-            this.label21.Location = new System.Drawing.Point(160, 1248);
+            this.label21.Location = new System.Drawing.Point(80, 649);
+            this.label21.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(852, 29);
+            this.label21.Size = new System.Drawing.Size(434, 15);
             this.label21.TabIndex = 8;
             this.label21.Text = "*Block Availability determined from BAM may not represent actual \'Blocks Free\'";
             // 
@@ -2138,11 +2217,26 @@
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label17.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.label17.Location = new System.Drawing.Point(2, 4);
+            this.label17.Location = new System.Drawing.Point(1, 2);
+            this.label17.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(93, 31);
+            this.label17.Size = new System.Drawing.Size(49, 17);
             this.label17.TabIndex = 1;
             this.label17.Text = "Sector";
+            // 
+            // track_label
+            // 
+            this.track_label.AutoSize = true;
+            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.track_label.Location = new System.Drawing.Point(1, 43);
+            this.track_label.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.track_label.Name = "track_label";
+            this.track_label.NewText = null;
+            this.track_label.RotateAngle = 0;
+            this.track_label.Size = new System.Drawing.Size(109, 20);
+            this.track_label.TabIndex = 0;
+            this.track_label.Text = "customLabel1";
             // 
             // panel1
             // 
@@ -2168,10 +2262,10 @@
             this.panel1.Controls.Add(this.sl);
             this.panel1.Controls.Add(this.ss);
             this.panel1.Controls.Add(this.sf);
-            this.panel1.Location = new System.Drawing.Point(21, 261);
-            this.panel1.Margin = new System.Windows.Forms.Padding(4);
+            this.panel1.Location = new System.Drawing.Point(10, 136);
+            this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1022, 1123);
+            this.panel1.Size = new System.Drawing.Size(512, 585);
             this.panel1.TabIndex = 37;
             // 
             // RPL_Advanced
@@ -2181,9 +2275,11 @@
             this.RPL_Advanced.Controls.Add(this.label15);
             this.RPL_Advanced.Controls.Add(this.label14);
             this.RPL_Advanced.Controls.Add(this.RL_ChangeKey);
-            this.RPL_Advanced.Location = new System.Drawing.Point(15, 764);
+            this.RPL_Advanced.Location = new System.Drawing.Point(8, 397);
+            this.RPL_Advanced.Margin = new System.Windows.Forms.Padding(2);
             this.RPL_Advanced.Name = "RPL_Advanced";
-            this.RPL_Advanced.Size = new System.Drawing.Size(895, 180);
+            this.RPL_Advanced.Padding = new System.Windows.Forms.Padding(2);
+            this.RPL_Advanced.Size = new System.Drawing.Size(448, 94);
             this.RPL_Advanced.TabIndex = 61;
             this.RPL_Advanced.TabStop = false;
             this.RPL_Advanced.Text = "RapidLok";
@@ -2191,9 +2287,10 @@
             // RL_success
             // 
             this.RL_success.AutoSize = true;
-            this.RL_success.Location = new System.Drawing.Point(44, 112);
+            this.RL_success.Location = new System.Drawing.Point(22, 58);
+            this.RL_success.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.RL_success.Name = "RL_success";
-            this.RL_success.Size = new System.Drawing.Size(231, 25);
+            this.RL_success.Size = new System.Drawing.Size(117, 13);
             this.RL_success.TabIndex = 14;
             this.RL_success.Text = "Did patching succeed?";
             // 
@@ -2201,9 +2298,10 @@
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(355, 72);
+            this.label15.Location = new System.Drawing.Point(178, 37);
+            this.label15.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(452, 25);
+            this.label15.Size = new System.Drawing.Size(228, 13);
             this.label15.TabIndex = 2;
             this.label15.Text = "special \"0x7B\" sector length to match new key";
             // 
@@ -2211,18 +2309,20 @@
             // 
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.Location = new System.Drawing.Point(335, 47);
+            this.label14.Location = new System.Drawing.Point(168, 24);
+            this.label14.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(503, 25);
+            this.label14.Size = new System.Drawing.Size(251, 13);
             this.label14.TabIndex = 1;
             this.label14.Text = "* Replaces Key with a known-working key and fixes";
             // 
             // RL_ChangeKey
             // 
             this.RL_ChangeKey.AutoSize = true;
-            this.RL_ChangeKey.Location = new System.Drawing.Point(9, 43);
+            this.RL_ChangeKey.Location = new System.Drawing.Point(4, 22);
+            this.RL_ChangeKey.Margin = new System.Windows.Forms.Padding(2);
             this.RL_ChangeKey.Name = "RL_ChangeKey";
-            this.RL_ChangeKey.Size = new System.Drawing.Size(312, 29);
+            this.RL_ChangeKey.Size = new System.Drawing.Size(158, 17);
             this.RL_ChangeKey.TabIndex = 0;
             this.RL_ChangeKey.Text = "Repair Corrupted Key-Track";
             this.RL_ChangeKey.UseVisualStyleBackColor = true;
@@ -2240,9 +2340,11 @@
             this.V2_Advanced.Controls.Add(this.Re_Align);
             this.V2_Advanced.Controls.Add(this.v2adv);
             this.V2_Advanced.Controls.Add(this.v2exp);
-            this.V2_Advanced.Location = new System.Drawing.Point(15, 198);
+            this.V2_Advanced.Location = new System.Drawing.Point(8, 103);
+            this.V2_Advanced.Margin = new System.Windows.Forms.Padding(2);
             this.V2_Advanced.Name = "V2_Advanced";
-            this.V2_Advanced.Size = new System.Drawing.Size(895, 183);
+            this.V2_Advanced.Padding = new System.Windows.Forms.Padding(2);
+            this.V2_Advanced.Size = new System.Drawing.Size(448, 95);
             this.V2_Advanced.TabIndex = 60;
             this.V2_Advanced.TabStop = false;
             // 
@@ -2253,9 +2355,11 @@
             this.V3_Advanced.Controls.Add(this.V3_Custom);
             this.V3_Advanced.Controls.Add(this.v3adv);
             this.V3_Advanced.Controls.Add(this.V3_hlen);
-            this.V3_Advanced.Location = new System.Drawing.Point(15, 388);
+            this.V3_Advanced.Location = new System.Drawing.Point(8, 202);
+            this.V3_Advanced.Margin = new System.Windows.Forms.Padding(2);
             this.V3_Advanced.Name = "V3_Advanced";
-            this.V3_Advanced.Size = new System.Drawing.Size(895, 182);
+            this.V3_Advanced.Padding = new System.Windows.Forms.Padding(2);
+            this.V3_Advanced.Size = new System.Drawing.Size(448, 95);
             this.V3_Advanced.TabIndex = 60;
             this.V3_Advanced.TabStop = false;
             // 
@@ -2275,18 +2379,21 @@
             this.VPL_Advanced.Controls.Add(this.VPL_only_sectors);
             this.VPL_Advanced.Controls.Add(this.Lead_ptn);
             this.VPL_Advanced.Controls.Add(this.label7);
-            this.VPL_Advanced.Location = new System.Drawing.Point(15, 575);
+            this.VPL_Advanced.Location = new System.Drawing.Point(8, 299);
+            this.VPL_Advanced.Margin = new System.Windows.Forms.Padding(2);
             this.VPL_Advanced.Name = "VPL_Advanced";
-            this.VPL_Advanced.Size = new System.Drawing.Size(895, 183);
+            this.VPL_Advanced.Padding = new System.Windows.Forms.Padding(2);
+            this.VPL_Advanced.Size = new System.Drawing.Size(448, 95);
             this.VPL_Advanced.TabIndex = 60;
             this.VPL_Advanced.TabStop = false;
             // 
             // VPL_density_reset
             // 
             this.VPL_density_reset.AutoSize = true;
-            this.VPL_density_reset.Location = new System.Drawing.Point(668, 12);
+            this.VPL_density_reset.Location = new System.Drawing.Point(334, 6);
+            this.VPL_density_reset.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.VPL_density_reset.Name = "VPL_density_reset";
-            this.VPL_density_reset.Size = new System.Drawing.Size(166, 25);
+            this.VPL_density_reset.Size = new System.Drawing.Size(84, 13);
             this.VPL_density_reset.TabIndex = 75;
             this.VPL_density_reset.TabStop = true;
             this.VPL_density_reset.Text = "Reset to Default";
@@ -2296,9 +2403,10 @@
             // VPL_mod
             // 
             this.VPL_mod.AutoSize = true;
-            this.VPL_mod.Location = new System.Drawing.Point(387, 11);
+            this.VPL_mod.Location = new System.Drawing.Point(194, 6);
+            this.VPL_mod.Margin = new System.Windows.Forms.Padding(2);
             this.VPL_mod.Name = "VPL_mod";
-            this.VPL_mod.Size = new System.Drawing.Size(263, 29);
+            this.VPL_mod.Size = new System.Drawing.Size(134, 17);
             this.VPL_mod.TabIndex = 74;
             this.VPL_mod.Text = "Modify Track Densities";
             this.VPL_mod.UseVisualStyleBackColor = true;
@@ -2308,11 +2416,11 @@
             // 
             this.Batch_List_Box.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Batch_List_Box.FormattingEnabled = true;
-            this.Batch_List_Box.ItemHeight = 29;
-            this.Batch_List_Box.Location = new System.Drawing.Point(8, 150);
-            this.Batch_List_Box.Margin = new System.Windows.Forms.Padding(4);
+            this.Batch_List_Box.ItemHeight = 15;
+            this.Batch_List_Box.Location = new System.Drawing.Point(4, 78);
+            this.Batch_List_Box.Margin = new System.Windows.Forms.Padding(2);
             this.Batch_List_Box.Name = "Batch_List_Box";
-            this.Batch_List_Box.Size = new System.Drawing.Size(1012, 932);
+            this.Batch_List_Box.Size = new System.Drawing.Size(508, 484);
             this.Batch_List_Box.TabIndex = 38;
             this.Batch_List_Box.DoubleClick += new System.EventHandler(this.ListBox1_DoubleClick);
             // 
@@ -2322,10 +2430,10 @@
             this.Drag_pic.BackgroundImage = global::ReMaster_Utility.Properties.Resources.disk4;
             this.Drag_pic.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.Drag_pic.InitialImage = null;
-            this.Drag_pic.Location = new System.Drawing.Point(10, 15);
-            this.Drag_pic.Margin = new System.Windows.Forms.Padding(4);
+            this.Drag_pic.Location = new System.Drawing.Point(5, 8);
+            this.Drag_pic.Margin = new System.Windows.Forms.Padding(2);
             this.Drag_pic.Name = "Drag_pic";
-            this.Drag_pic.Size = new System.Drawing.Size(984, 1108);
+            this.Drag_pic.Size = new System.Drawing.Size(492, 576);
             this.Drag_pic.TabIndex = 58;
             this.Drag_pic.TabStop = false;
             // 
@@ -2334,12 +2442,11 @@
             this.out_weak.BackColor = System.Drawing.Color.Lavender;
             this.out_weak.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_weak.FormattingEnabled = true;
-            this.out_weak.ItemHeight = 25;
-            this.out_weak.Location = new System.Drawing.Point(860, 29);
-            this.out_weak.Margin = new System.Windows.Forms.Padding(4);
+            this.out_weak.Location = new System.Drawing.Point(430, 15);
+            this.out_weak.Margin = new System.Windows.Forms.Padding(2);
             this.out_weak.Name = "out_weak";
             this.out_weak.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_weak.Size = new System.Drawing.Size(110, 1002);
+            this.out_weak.Size = new System.Drawing.Size(56, 522);
             this.out_weak.TabIndex = 55;
             // 
             // Out_density
@@ -2347,12 +2454,11 @@
             this.Out_density.BackColor = System.Drawing.Color.Lavender;
             this.Out_density.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Out_density.FormattingEnabled = true;
-            this.Out_density.ItemHeight = 25;
-            this.Out_density.Location = new System.Drawing.Point(752, 29);
-            this.Out_density.Margin = new System.Windows.Forms.Padding(4);
+            this.Out_density.Location = new System.Drawing.Point(376, 15);
+            this.Out_density.Margin = new System.Windows.Forms.Padding(2);
             this.Out_density.Name = "Out_density";
             this.Out_density.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.Out_density.Size = new System.Drawing.Size(110, 1002);
+            this.Out_density.Size = new System.Drawing.Size(56, 522);
             this.Out_density.TabIndex = 33;
             // 
             // out_rpm
@@ -2361,12 +2467,11 @@
             this.out_rpm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_rpm.ForeColor = System.Drawing.Color.ForestGreen;
             this.out_rpm.FormattingEnabled = true;
-            this.out_rpm.ItemHeight = 25;
-            this.out_rpm.Location = new System.Drawing.Point(504, 29);
-            this.out_rpm.Margin = new System.Windows.Forms.Padding(4);
+            this.out_rpm.Location = new System.Drawing.Point(252, 15);
+            this.out_rpm.Margin = new System.Windows.Forms.Padding(2);
             this.out_rpm.Name = "out_rpm";
             this.out_rpm.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_rpm.Size = new System.Drawing.Size(86, 1002);
+            this.out_rpm.Size = new System.Drawing.Size(44, 522);
             this.out_rpm.TabIndex = 30;
             // 
             // sd
@@ -2374,12 +2479,11 @@
             this.sd.BackColor = System.Drawing.Color.Lavender;
             this.sd.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sd.FormattingEnabled = true;
-            this.sd.ItemHeight = 25;
-            this.sd.Location = new System.Drawing.Point(320, 29);
-            this.sd.Margin = new System.Windows.Forms.Padding(4);
+            this.sd.Location = new System.Drawing.Point(160, 15);
+            this.sd.Margin = new System.Windows.Forms.Padding(2);
             this.sd.Name = "sd";
             this.sd.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.sd.Size = new System.Drawing.Size(48, 1002);
+            this.sd.Size = new System.Drawing.Size(25, 522);
             this.sd.TabIndex = 32;
             // 
             // out_track
@@ -2388,12 +2492,11 @@
             this.out_track.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_track.ForeColor = System.Drawing.Color.Blue;
             this.out_track.FormattingEnabled = true;
-            this.out_track.ItemHeight = 25;
-            this.out_track.Location = new System.Drawing.Point(452, 29);
-            this.out_track.Margin = new System.Windows.Forms.Padding(4);
+            this.out_track.Location = new System.Drawing.Point(226, 15);
+            this.out_track.Margin = new System.Windows.Forms.Padding(2);
             this.out_track.Name = "out_track";
             this.out_track.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_track.Size = new System.Drawing.Size(54, 1002);
+            this.out_track.Size = new System.Drawing.Size(28, 522);
             this.out_track.TabIndex = 29;
             // 
             // out_dif
@@ -2402,21 +2505,20 @@
             this.out_dif.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_dif.ForeColor = System.Drawing.Color.BlueViolet;
             this.out_dif.FormattingEnabled = true;
-            this.out_dif.ItemHeight = 25;
-            this.out_dif.Location = new System.Drawing.Point(684, 29);
-            this.out_dif.Margin = new System.Windows.Forms.Padding(4);
+            this.out_dif.Location = new System.Drawing.Point(342, 15);
+            this.out_dif.Margin = new System.Windows.Forms.Padding(2);
             this.out_dif.Name = "out_dif";
             this.out_dif.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_dif.Size = new System.Drawing.Size(74, 1002);
+            this.out_dif.Size = new System.Drawing.Size(38, 522);
             this.out_dif.TabIndex = 24;
             // 
             // Output
             // 
             this.Output.AutoSize = true;
-            this.Output.Location = new System.Drawing.Point(610, 0);
-            this.Output.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Output.Location = new System.Drawing.Point(305, 0);
+            this.Output.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Output.Name = "Output";
-            this.Output.Size = new System.Drawing.Size(76, 25);
+            this.Output.Size = new System.Drawing.Size(39, 13);
             this.Output.TabIndex = 54;
             this.Output.Text = "Output";
             // 
@@ -2425,21 +2527,20 @@
             this.out_size.BackColor = System.Drawing.Color.Lavender;
             this.out_size.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.out_size.FormattingEnabled = true;
-            this.out_size.ItemHeight = 25;
-            this.out_size.Location = new System.Drawing.Point(586, 29);
-            this.out_size.Margin = new System.Windows.Forms.Padding(4);
+            this.out_size.Location = new System.Drawing.Point(293, 15);
+            this.out_size.Margin = new System.Windows.Forms.Padding(2);
             this.out_size.Name = "out_size";
             this.out_size.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.out_size.Size = new System.Drawing.Size(100, 1002);
+            this.out_size.Size = new System.Drawing.Size(51, 522);
             this.out_size.TabIndex = 23;
             // 
             // Source
             // 
             this.Source.AutoSize = true;
-            this.Source.Location = new System.Drawing.Point(124, 0);
-            this.Source.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Source.Location = new System.Drawing.Point(62, 0);
+            this.Source.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Source.Name = "Source";
-            this.Source.Size = new System.Drawing.Size(121, 25);
+            this.Source.Size = new System.Drawing.Size(60, 13);
             this.Source.TabIndex = 53;
             this.Source.Text = "Source File";
             // 
@@ -2449,12 +2550,11 @@
             this.strack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.strack.ForeColor = System.Drawing.Color.Blue;
             this.strack.FormattingEnabled = true;
-            this.strack.ItemHeight = 25;
-            this.strack.Location = new System.Drawing.Point(12, 29);
-            this.strack.Margin = new System.Windows.Forms.Padding(4);
+            this.strack.Location = new System.Drawing.Point(6, 15);
+            this.strack.Margin = new System.Windows.Forms.Padding(2);
             this.strack.Name = "strack";
             this.strack.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.strack.Size = new System.Drawing.Size(54, 1002);
+            this.strack.Size = new System.Drawing.Size(28, 522);
             this.strack.TabIndex = 31;
             // 
             // sl
@@ -2462,12 +2562,11 @@
             this.sl.BackColor = System.Drawing.Color.Lavender;
             this.sl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sl.FormattingEnabled = true;
-            this.sl.ItemHeight = 25;
-            this.sl.Location = new System.Drawing.Point(64, 29);
-            this.sl.Margin = new System.Windows.Forms.Padding(4);
+            this.sl.Location = new System.Drawing.Point(32, 15);
+            this.sl.Margin = new System.Windows.Forms.Padding(2);
             this.sl.Name = "sl";
             this.sl.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.sl.Size = new System.Drawing.Size(90, 1002);
+            this.sl.Size = new System.Drawing.Size(46, 522);
             this.sl.TabIndex = 29;
             // 
             // ss
@@ -2475,12 +2574,11 @@
             this.ss.BackColor = System.Drawing.Color.Lavender;
             this.ss.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.ss.FormattingEnabled = true;
-            this.ss.ItemHeight = 25;
-            this.ss.Location = new System.Drawing.Point(264, 29);
-            this.ss.Margin = new System.Windows.Forms.Padding(4);
+            this.ss.Location = new System.Drawing.Point(132, 15);
+            this.ss.Margin = new System.Windows.Forms.Padding(2);
             this.ss.Name = "ss";
             this.ss.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.ss.Size = new System.Drawing.Size(62, 1002);
+            this.ss.Size = new System.Drawing.Size(32, 522);
             this.ss.TabIndex = 25;
             // 
             // sf
@@ -2488,17 +2586,15 @@
             this.sf.BackColor = System.Drawing.Color.Lavender;
             this.sf.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sf.FormattingEnabled = true;
-            this.sf.ItemHeight = 25;
-            this.sf.Location = new System.Drawing.Point(151, 29);
-            this.sf.Margin = new System.Windows.Forms.Padding(4);
+            this.sf.Location = new System.Drawing.Point(76, 15);
+            this.sf.Margin = new System.Windows.Forms.Padding(2);
             this.sf.Name = "sf";
             this.sf.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.sf.Size = new System.Drawing.Size(114, 1002);
+            this.sf.Size = new System.Drawing.Size(58, 522);
             this.sf.TabIndex = 26;
             // 
             // menuStrip1
             // 
-            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
@@ -2508,8 +2604,8 @@
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(3725, 40);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 1, 0, 1);
+            this.menuStrip1.Size = new System.Drawing.Size(1924, 24);
             this.menuStrip1.TabIndex = 39;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -2525,14 +2621,14 @@
             this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(71, 36);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 22);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(367, 44);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
@@ -2540,49 +2636,49 @@
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
             this.saveAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(367, 44);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.saveAsToolStripMenuItem.Text = "Export Image";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAsToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(364, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(181, 6);
             // 
             // recentMenu
             // 
             this.recentMenu.Name = "recentMenu";
-            this.recentMenu.Size = new System.Drawing.Size(367, 44);
+            this.recentMenu.Size = new System.Drawing.Size(184, 22);
             this.recentMenu.Text = "Open Recent";
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(364, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
             // 
             // createBlankDiskToolStripMenuItem
             // 
             this.createBlankDiskToolStripMenuItem.Name = "createBlankDiskToolStripMenuItem";
-            this.createBlankDiskToolStripMenuItem.Size = new System.Drawing.Size(367, 44);
+            this.createBlankDiskToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.createBlankDiskToolStripMenuItem.Text = "Create Blank Disk";
             this.createBlankDiskToolStripMenuItem.Click += new System.EventHandler(this.CreateBlankDiskToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(364, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(181, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(367, 44);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(118, 36);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 22);
             this.optionsToolStripMenuItem.Text = "Options";
             this.optionsToolStripMenuItem.Click += new System.EventHandler(this.OptionsToolStripMenuItem_Click);
             // 
@@ -2594,7 +2690,7 @@
             this.NibSeparator,
             this.configurePathToNibtoolsToolStripMenuItem});
             this.nibToolsMenu.Name = "nibToolsMenu";
-            this.nibToolsMenu.Size = new System.Drawing.Size(124, 36);
+            this.nibToolsMenu.Size = new System.Drawing.Size(64, 22);
             this.nibToolsMenu.Text = "Nibtools";
             // 
             // NibReadImage
@@ -2602,7 +2698,7 @@
             this.NibReadImage.Name = "NibReadImage";
             this.NibReadImage.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
             | System.Windows.Forms.Keys.R)));
-            this.NibReadImage.Size = new System.Drawing.Size(532, 44);
+            this.NibReadImage.Size = new System.Drawing.Size(265, 22);
             this.NibReadImage.Text = "Read Image From Disk";
             this.NibReadImage.Click += new System.EventHandler(this.NibReadImage_Click);
             // 
@@ -2611,19 +2707,19 @@
             this.NibWriteImage.Name = "NibWriteImage";
             this.NibWriteImage.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
             | System.Windows.Forms.Keys.W)));
-            this.NibWriteImage.Size = new System.Drawing.Size(532, 44);
+            this.NibWriteImage.Size = new System.Drawing.Size(265, 22);
             this.NibWriteImage.Text = "Write Image To Disk";
             this.NibWriteImage.Click += new System.EventHandler(this.NibWriteImage_Click);
             // 
             // NibSeparator
             // 
             this.NibSeparator.Name = "NibSeparator";
-            this.NibSeparator.Size = new System.Drawing.Size(529, 6);
+            this.NibSeparator.Size = new System.Drawing.Size(262, 6);
             // 
             // configurePathToNibtoolsToolStripMenuItem
             // 
             this.configurePathToNibtoolsToolStripMenuItem.Name = "configurePathToNibtoolsToolStripMenuItem";
-            this.configurePathToNibtoolsToolStripMenuItem.Size = new System.Drawing.Size(532, 44);
+            this.configurePathToNibtoolsToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
             this.configurePathToNibtoolsToolStripMenuItem.Text = "Configure path to Nibtools";
             this.configurePathToNibtoolsToolStripMenuItem.Click += new System.EventHandler(this.ConfigurePathToNibtools_Click);
             // 
@@ -2637,47 +2733,47 @@
             this.recoverDBmenu,
             this.rebuildDBmenu});
             this.databaseToolStripMenuItem.Name = "databaseToolStripMenuItem";
-            this.databaseToolStripMenuItem.Size = new System.Drawing.Size(132, 36);
+            this.databaseToolStripMenuItem.Size = new System.Drawing.Size(67, 22);
             this.databaseToolStripMenuItem.Text = "Database";
             // 
             // browseDBmenu
             // 
             this.browseDBmenu.Name = "browseDBmenu";
-            this.browseDBmenu.Size = new System.Drawing.Size(405, 44);
+            this.browseDBmenu.Size = new System.Drawing.Size(200, 22);
             this.browseDBmenu.Text = "Browse Database";
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(402, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(197, 6);
             // 
             // addFolderDBmenu
             // 
             this.addFolderDBmenu.Name = "addFolderDBmenu";
-            this.addFolderDBmenu.Size = new System.Drawing.Size(405, 44);
+            this.addFolderDBmenu.Size = new System.Drawing.Size(200, 22);
             this.addFolderDBmenu.Text = "Add Folder to Database";
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(402, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(197, 6);
             // 
             // recoverDBmenu
             // 
             this.recoverDBmenu.Name = "recoverDBmenu";
-            this.recoverDBmenu.Size = new System.Drawing.Size(405, 44);
+            this.recoverDBmenu.Size = new System.Drawing.Size(200, 22);
             this.recoverDBmenu.Text = "Recover Deleted Images";
             // 
             // rebuildDBmenu
             // 
             this.rebuildDBmenu.Name = "rebuildDBmenu";
-            this.rebuildDBmenu.Size = new System.Drawing.Size(405, 44);
+            this.rebuildDBmenu.Size = new System.Drawing.Size(200, 22);
             this.rebuildDBmenu.Text = "Re-build";
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(99, 36);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(52, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItem_Click);
             // 
@@ -2702,27 +2798,42 @@
             this.Options_Box.Controls.Add(this.CPP_tog);
             this.Options_Box.Controls.Add(this.DB_force);
             this.Options_Box.Controls.Add(this.Pad_Tracks);
-            this.Options_Box.Location = new System.Drawing.Point(2219, 933);
+            this.Options_Box.Location = new System.Drawing.Point(1110, 485);
+            this.Options_Box.Margin = new System.Windows.Forms.Padding(2);
             this.Options_Box.Name = "Options_Box";
-            this.Options_Box.Size = new System.Drawing.Size(806, 513);
+            this.Options_Box.Padding = new System.Windows.Forms.Padding(2);
+            this.Options_Box.Size = new System.Drawing.Size(403, 275);
             this.Options_Box.TabIndex = 41;
             this.Options_Box.TabStop = false;
+            // 
+            // ParseLog
+            // 
+            this.ParseLog.AutoSize = true;
+            this.ParseLog.Location = new System.Drawing.Point(8, 211);
+            this.ParseLog.Margin = new System.Windows.Forms.Padding(2);
+            this.ParseLog.Name = "ParseLog";
+            this.ParseLog.Size = new System.Drawing.Size(287, 17);
+            this.ParseLog.TabIndex = 50;
+            this.ParseLog.Text = "Parse nib.log file (if exists) and notate errors in database";
+            this.ParseLog.UseVisualStyleBackColor = true;
             // 
             // ProtDetectMethod
             // 
             this.ProtDetectMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ProtDetectMethod.FormattingEnabled = true;
-            this.ProtDetectMethod.Location = new System.Drawing.Point(337, 439);
+            this.ProtDetectMethod.Location = new System.Drawing.Point(168, 228);
+            this.ProtDetectMethod.Margin = new System.Windows.Forms.Padding(2);
             this.ProtDetectMethod.Name = "ProtDetectMethod";
-            this.ProtDetectMethod.Size = new System.Drawing.Size(432, 33);
+            this.ProtDetectMethod.Size = new System.Drawing.Size(218, 21);
             this.ProtDetectMethod.TabIndex = 49;
             // 
             // label26
             // 
             this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(13, 442);
+            this.label26.Location = new System.Drawing.Point(6, 230);
+            this.label26.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(317, 25);
+            this.label26.Size = new System.Drawing.Size(159, 13);
             this.label26.TabIndex = 48;
             this.label26.Text = "Detect Copy Protection Method ";
             // 
@@ -2731,9 +2842,10 @@
             this.EnableDBMenu.AutoSize = true;
             this.EnableDBMenu.Checked = true;
             this.EnableDBMenu.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.EnableDBMenu.Location = new System.Drawing.Point(15, 370);
+            this.EnableDBMenu.Location = new System.Drawing.Point(8, 192);
+            this.EnableDBMenu.Margin = new System.Windows.Forms.Padding(2);
             this.EnableDBMenu.Name = "EnableDBMenu";
-            this.EnableDBMenu.Size = new System.Drawing.Size(506, 29);
+            this.EnableDBMenu.Size = new System.Drawing.Size(255, 17);
             this.EnableDBMenu.TabIndex = 47;
             this.EnableDBMenu.Text = "Enable Database (collect / sort image collection)";
             this.EnableDBMenu.UseVisualStyleBackColor = true;
@@ -2744,9 +2856,10 @@
             this.label25.AutoSize = true;
             this.label25.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.label25.ForeColor = System.Drawing.Color.DarkBlue;
-            this.label25.Location = new System.Drawing.Point(216, 28);
+            this.label25.Location = new System.Drawing.Point(108, 15);
+            this.label25.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(318, 25);
+            this.label25.Size = new System.Drawing.Size(154, 13);
             this.label25.TabIndex = 46;
             this.label25.Text = "----[ ReMaster Main Options ]----";
             // 
@@ -2755,20 +2868,22 @@
             this.label24.AutoSize = true;
             this.label24.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.label24.ForeColor = System.Drawing.Color.DarkBlue;
-            this.label24.Location = new System.Drawing.Point(272, 338);
+            this.label24.Location = new System.Drawing.Point(82, 176);
+            this.label24.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(220, 25);
+            this.label24.Size = new System.Drawing.Size(222, 13);
             this.label24.TabIndex = 45;
-            this.label24.Text = "----[    Database    ]----";
+            this.label24.Text = "----[ Image Database (Disabled until ready) ]----";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
             this.label5.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.label5.ForeColor = System.Drawing.Color.DarkBlue;
-            this.label5.Location = new System.Drawing.Point(243, 268);
+            this.label5.Location = new System.Drawing.Point(122, 139);
+            this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(277, 25);
+            this.label5.Size = new System.Drawing.Size(134, 13);
             this.label5.TabIndex = 44;
             this.label5.Text = "----[ Nibtools Integration ]----";
             // 
@@ -2776,9 +2891,10 @@
             // 
             this.No_Warn.AutoSize = true;
             this.No_Warn.ForeColor = System.Drawing.Color.Brown;
-            this.No_Warn.Location = new System.Drawing.Point(16, 296);
+            this.No_Warn.Location = new System.Drawing.Point(8, 154);
+            this.No_Warn.Margin = new System.Windows.Forms.Padding(2);
             this.No_Warn.Name = "No_Warn";
-            this.No_Warn.Size = new System.Drawing.Size(753, 29);
+            this.No_Warn.Size = new System.Drawing.Size(379, 17);
             this.No_Warn.TabIndex = 43;
             this.No_Warn.Text = "I know what I\'m doing! -Disable warning message on Nibtools (Read/Write)";
             this.No_Warn.UseVisualStyleBackColor = true;
@@ -2793,9 +2909,11 @@
             this.Read_GBox.Controls.Add(this.Retry);
             this.Read_GBox.Controls.Add(this.R_advanced);
             this.Read_GBox.Controls.Add(this.R_adv);
-            this.Read_GBox.Location = new System.Drawing.Point(2213, 262);
+            this.Read_GBox.Location = new System.Drawing.Point(1106, 136);
+            this.Read_GBox.Margin = new System.Windows.Forms.Padding(2);
             this.Read_GBox.Name = "Read_GBox";
-            this.Read_GBox.Size = new System.Drawing.Size(1294, 308);
+            this.Read_GBox.Padding = new System.Windows.Forms.Padding(2);
+            this.Read_GBox.Size = new System.Drawing.Size(647, 160);
             this.Read_GBox.TabIndex = 42;
             this.Read_GBox.TabStop = false;
             // 
@@ -2809,9 +2927,11 @@
             this.groupBox2.Controls.Add(this.T_override);
             this.groupBox2.Controls.Add(this.S_track);
             this.groupBox2.Controls.Add(this.E_track);
-            this.groupBox2.Location = new System.Drawing.Point(7, 30);
+            this.groupBox2.Location = new System.Drawing.Point(4, 16);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(502, 186);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(2);
+            this.groupBox2.Size = new System.Drawing.Size(251, 97);
             this.groupBox2.TabIndex = 47;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Device Settings";
@@ -2819,25 +2939,28 @@
             // Drive_Num
             // 
             this.Drive_Num.AutoSize = true;
-            this.Drive_Num.Location = new System.Drawing.Point(7, 32);
+            this.Drive_Num.Location = new System.Drawing.Point(4, 17);
+            this.Drive_Num.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Drive_Num.Name = "Drive_Num";
-            this.Drive_Num.Size = new System.Drawing.Size(80, 25);
+            this.Drive_Num.Size = new System.Drawing.Size(42, 13);
             this.Drive_Num.TabIndex = 29;
             this.Drive_Num.Text = "Drive #";
             // 
             // R_limit
             // 
             this.R_limit.AutoSize = true;
-            this.R_limit.Location = new System.Drawing.Point(206, 28);
+            this.R_limit.Location = new System.Drawing.Point(103, 15);
+            this.R_limit.Margin = new System.Windows.Forms.Padding(2);
             this.R_limit.Name = "R_limit";
-            this.R_limit.Size = new System.Drawing.Size(193, 29);
+            this.R_limit.Size = new System.Drawing.Size(99, 17);
             this.R_limit.TabIndex = 28;
             this.R_limit.Text = "Limit (Track 40)";
             this.R_limit.UseVisualStyleBackColor = true;
             // 
             // Dev_num
             // 
-            this.Dev_num.Location = new System.Drawing.Point(106, 28);
+            this.Dev_num.Location = new System.Drawing.Point(53, 15);
+            this.Dev_num.Margin = new System.Windows.Forms.Padding(2);
             this.Dev_num.Maximum = new decimal(new int[] {
             11,
             0,
@@ -2849,7 +2972,7 @@
             0,
             0});
             this.Dev_num.Name = "Dev_num";
-            this.Dev_num.Size = new System.Drawing.Size(73, 31);
+            this.Dev_num.Size = new System.Drawing.Size(36, 20);
             this.Dev_num.TabIndex = 23;
             this.Dev_num.Value = new decimal(new int[] {
             8,
@@ -2860,9 +2983,10 @@
             // Parallel
             // 
             this.Parallel.AutoSize = true;
-            this.Parallel.Location = new System.Drawing.Point(11, 120);
+            this.Parallel.Location = new System.Drawing.Point(6, 62);
+            this.Parallel.Margin = new System.Windows.Forms.Padding(2);
             this.Parallel.Name = "Parallel";
-            this.Parallel.Size = new System.Drawing.Size(358, 29);
+            this.Parallel.Size = new System.Drawing.Size(178, 17);
             this.Parallel.TabIndex = 22;
             this.Parallel.Text = "Use parallel Transfer (1571 only)";
             this.Parallel.UseVisualStyleBackColor = true;
@@ -2870,9 +2994,10 @@
             // T_override
             // 
             this.T_override.AutoSize = true;
-            this.T_override.Location = new System.Drawing.Point(11, 80);
+            this.T_override.Location = new System.Drawing.Point(6, 42);
+            this.T_override.Margin = new System.Windows.Forms.Padding(2);
             this.T_override.Name = "T_override";
-            this.T_override.Size = new System.Drawing.Size(309, 29);
+            this.T_override.Size = new System.Drawing.Size(156, 17);
             this.T_override.TabIndex = 25;
             this.T_override.Text = "Override (Start) (End) Track";
             this.T_override.UseVisualStyleBackColor = true;
@@ -2880,7 +3005,8 @@
             // 
             // S_track
             // 
-            this.S_track.Location = new System.Drawing.Point(336, 79);
+            this.S_track.Location = new System.Drawing.Point(168, 41);
+            this.S_track.Margin = new System.Windows.Forms.Padding(2);
             this.S_track.Maximum = new decimal(new int[] {
             41,
             0,
@@ -2892,7 +3018,7 @@
             0,
             0});
             this.S_track.Name = "S_track";
-            this.S_track.Size = new System.Drawing.Size(74, 31);
+            this.S_track.Size = new System.Drawing.Size(37, 20);
             this.S_track.TabIndex = 26;
             this.S_track.Value = new decimal(new int[] {
             1,
@@ -2903,7 +3029,8 @@
             // 
             // E_track
             // 
-            this.E_track.Location = new System.Drawing.Point(416, 79);
+            this.E_track.Location = new System.Drawing.Point(208, 41);
+            this.E_track.Margin = new System.Windows.Forms.Padding(2);
             this.E_track.Maximum = new decimal(new int[] {
             41,
             0,
@@ -2915,7 +3042,7 @@
             0,
             0});
             this.E_track.Name = "E_track";
-            this.E_track.Size = new System.Drawing.Size(75, 31);
+            this.E_track.Size = new System.Drawing.Size(38, 20);
             this.E_track.TabIndex = 27;
             this.E_track.Value = new decimal(new int[] {
             1,
@@ -2926,9 +3053,10 @@
             // 
             // Read_Start
             // 
-            this.Read_Start.Location = new System.Drawing.Point(15, 258);
+            this.Read_Start.Location = new System.Drawing.Point(8, 134);
+            this.Read_Start.Margin = new System.Windows.Forms.Padding(2);
             this.Read_Start.Name = "Read_Start";
-            this.Read_Start.Size = new System.Drawing.Size(173, 38);
+            this.Read_Start.Size = new System.Drawing.Size(86, 20);
             this.Read_Start.TabIndex = 6;
             this.Read_Start.Text = "Read Disk";
             this.Read_Start.UseVisualStyleBackColor = true;
@@ -2936,17 +3064,19 @@
             // 
             // R_Retry
             // 
-            this.R_Retry.Location = new System.Drawing.Point(388, 225);
+            this.R_Retry.Location = new System.Drawing.Point(194, 117);
+            this.R_Retry.Margin = new System.Windows.Forms.Padding(2);
             this.R_Retry.Name = "R_Retry";
-            this.R_Retry.Size = new System.Drawing.Size(120, 31);
+            this.R_Retry.Size = new System.Drawing.Size(60, 20);
             this.R_Retry.TabIndex = 51;
             // 
             // R_verb
             // 
             this.R_verb.AutoSize = true;
-            this.R_verb.Location = new System.Drawing.Point(17, 225);
+            this.R_verb.Location = new System.Drawing.Point(8, 117);
+            this.R_verb.Margin = new System.Windows.Forms.Padding(2);
             this.R_verb.Name = "R_verb";
-            this.R_verb.Size = new System.Drawing.Size(124, 29);
+            this.R_verb.Size = new System.Drawing.Size(65, 17);
             this.R_verb.TabIndex = 32;
             this.R_verb.Text = "Verbose";
             this.R_verb.UseVisualStyleBackColor = true;
@@ -2954,9 +3084,10 @@
             // Retry
             // 
             this.Retry.AutoSize = true;
-            this.Retry.Location = new System.Drawing.Point(201, 227);
+            this.Retry.Location = new System.Drawing.Point(100, 118);
+            this.Retry.Margin = new System.Windows.Forms.Padding(2);
             this.Retry.Name = "Retry";
-            this.Retry.Size = new System.Drawing.Size(169, 29);
+            this.Retry.Size = new System.Drawing.Size(88, 17);
             this.Retry.TabIndex = 50;
             this.Retry.Text = "Read Retries";
             this.Retry.UseVisualStyleBackColor = true;
@@ -2965,9 +3096,10 @@
             // R_advanced
             // 
             this.R_advanced.AutoSize = true;
-            this.R_advanced.Location = new System.Drawing.Point(201, 262);
+            this.R_advanced.Location = new System.Drawing.Point(100, 136);
+            this.R_advanced.Margin = new System.Windows.Forms.Padding(2);
             this.R_advanced.Name = "R_advanced";
-            this.R_advanced.Size = new System.Drawing.Size(293, 29);
+            this.R_advanced.Size = new System.Drawing.Size(150, 17);
             this.R_advanced.TabIndex = 48;
             this.R_advanced.Text = "Enable Advanced Options";
             this.R_advanced.UseVisualStyleBackColor = true;
@@ -2988,9 +3120,11 @@
             this.R_adv.Controls.Add(this.U_bitrate);
             this.R_adv.Controls.Add(this.U_test);
             this.R_adv.Controls.Add(this.IHS);
-            this.R_adv.Location = new System.Drawing.Point(550, 30);
+            this.R_adv.Location = new System.Drawing.Point(275, 16);
+            this.R_adv.Margin = new System.Windows.Forms.Padding(2);
             this.R_adv.Name = "R_adv";
-            this.R_adv.Size = new System.Drawing.Size(737, 265);
+            this.R_adv.Padding = new System.Windows.Forms.Padding(2);
+            this.R_adv.Size = new System.Drawing.Size(368, 138);
             this.R_adv.TabIndex = 49;
             this.R_adv.TabStop = false;
             this.R_adv.Text = "Advanced Options";
@@ -2998,9 +3132,10 @@
             // R_halftracks
             // 
             this.R_halftracks.AutoSize = true;
-            this.R_halftracks.Location = new System.Drawing.Point(11, 42);
+            this.R_halftracks.Location = new System.Drawing.Point(6, 22);
+            this.R_halftracks.Margin = new System.Windows.Forms.Padding(2);
             this.R_halftracks.Name = "R_halftracks";
-            this.R_halftracks.Size = new System.Drawing.Size(201, 29);
+            this.R_halftracks.Size = new System.Drawing.Size(104, 17);
             this.R_halftracks.TabIndex = 33;
             this.R_halftracks.Text = "Read half-tracks";
             this.R_halftracks.UseVisualStyleBackColor = true;
@@ -3008,9 +3143,10 @@
             // DR_killer
             // 
             this.DR_killer.AutoSize = true;
-            this.DR_killer.Location = new System.Drawing.Point(323, 77);
+            this.DR_killer.Location = new System.Drawing.Point(162, 40);
+            this.DR_killer.Margin = new System.Windows.Forms.Padding(2);
             this.DR_killer.Name = "DR_killer";
-            this.DR_killer.Size = new System.Drawing.Size(347, 29);
+            this.DR_killer.Size = new System.Drawing.Size(174, 17);
             this.DR_killer.TabIndex = 28;
             this.DR_killer.Text = "Disable reading of \'killer\' tracks ";
             this.DR_killer.UseVisualStyleBackColor = true;
@@ -3018,23 +3154,25 @@
             // FD_density
             // 
             this.FD_density.AutoSize = true;
-            this.FD_density.Location = new System.Drawing.Point(11, 77);
+            this.FD_density.Location = new System.Drawing.Point(6, 40);
+            this.FD_density.Margin = new System.Windows.Forms.Padding(2);
             this.FD_density.Name = "FD_density";
-            this.FD_density.Size = new System.Drawing.Size(262, 29);
+            this.FD_density.Size = new System.Drawing.Size(132, 17);
             this.FD_density.TabIndex = 29;
             this.FD_density.Text = "Force default densities";
             this.FD_density.UseVisualStyleBackColor = true;
             // 
             // R_tgap
             // 
-            this.R_tgap.Location = new System.Drawing.Point(589, 41);
+            this.R_tgap.Location = new System.Drawing.Point(294, 21);
+            this.R_tgap.Margin = new System.Windows.Forms.Padding(2);
             this.R_tgap.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.R_tgap.Name = "R_tgap";
-            this.R_tgap.Size = new System.Drawing.Size(106, 31);
+            this.R_tgap.Size = new System.Drawing.Size(53, 20);
             this.R_tgap.TabIndex = 46;
             this.R_tgap.Value = new decimal(new int[] {
             1,
@@ -3045,9 +3183,10 @@
             // ET_matching
             // 
             this.ET_matching.AutoSize = true;
-            this.ET_matching.Location = new System.Drawing.Point(11, 112);
+            this.ET_matching.Location = new System.Drawing.Point(6, 58);
+            this.ET_matching.Margin = new System.Windows.Forms.Padding(2);
             this.ET_matching.Name = "ET_matching";
-            this.ET_matching.Size = new System.Drawing.Size(257, 29);
+            this.ET_matching.Size = new System.Drawing.Size(132, 17);
             this.ET_matching.TabIndex = 30;
             this.ET_matching.Text = "Enable track matching";
             this.ET_matching.UseVisualStyleBackColor = true;
@@ -3055,9 +3194,10 @@
             // Read_tgap
             // 
             this.Read_tgap.AutoSize = true;
-            this.Read_tgap.Location = new System.Drawing.Point(323, 42);
+            this.Read_tgap.Location = new System.Drawing.Point(162, 22);
+            this.Read_tgap.Margin = new System.Windows.Forms.Padding(2);
             this.Read_tgap.Name = "Read_tgap";
-            this.Read_tgap.Size = new System.Drawing.Size(253, 29);
+            this.Read_tgap.Size = new System.Drawing.Size(131, 17);
             this.Read_tgap.TabIndex = 45;
             this.Read_tgap.Text = "Match track gap (adv)";
             this.Read_tgap.UseVisualStyleBackColor = true;
@@ -3066,9 +3206,10 @@
             // II_mode
             // 
             this.II_mode.AutoSize = true;
-            this.II_mode.Location = new System.Drawing.Point(11, 145);
+            this.II_mode.Location = new System.Drawing.Point(6, 75);
+            this.II_mode.Margin = new System.Windows.Forms.Padding(2);
             this.II_mode.Name = "II_mode";
-            this.II_mode.Size = new System.Drawing.Size(283, 29);
+            this.II_mode.Size = new System.Drawing.Size(144, 17);
             this.II_mode.TabIndex = 31;
             this.II_mode.Text = "Interactive imaging mode";
             this.II_mode.UseVisualStyleBackColor = true;
@@ -3076,9 +3217,10 @@
             // EP_tests
             // 
             this.EP_tests.AutoSize = true;
-            this.EP_tests.Location = new System.Drawing.Point(11, 180);
+            this.EP_tests.Location = new System.Drawing.Point(6, 94);
+            this.EP_tests.Margin = new System.Windows.Forms.Padding(2);
             this.EP_tests.Name = "EP_tests";
-            this.EP_tests.Size = new System.Drawing.Size(282, 29);
+            this.EP_tests.Size = new System.Drawing.Size(141, 17);
             this.EP_tests.TabIndex = 34;
             this.EP_tests.Text = "Extend parallel port tests";
             this.EP_tests.UseVisualStyleBackColor = true;
@@ -3086,9 +3228,10 @@
             // U_sensor
             // 
             this.U_sensor.AutoSize = true;
-            this.U_sensor.Location = new System.Drawing.Point(323, 112);
+            this.U_sensor.Location = new System.Drawing.Point(162, 58);
+            this.U_sensor.Margin = new System.Windows.Forms.Padding(2);
             this.U_sensor.Name = "U_sensor";
-            this.U_sensor.Size = new System.Drawing.Size(258, 29);
+            this.U_sensor.Size = new System.Drawing.Size(130, 17);
             this.U_sensor.TabIndex = 35;
             this.U_sensor.Text = "Use index hole sensor";
             this.U_sensor.UseVisualStyleBackColor = true;
@@ -3096,9 +3239,10 @@
             // U_alignment
             // 
             this.U_alignment.AutoSize = true;
-            this.U_alignment.Location = new System.Drawing.Point(323, 145);
+            this.U_alignment.Location = new System.Drawing.Point(162, 75);
+            this.U_alignment.Margin = new System.Windows.Forms.Padding(2);
             this.U_alignment.Name = "U_alignment";
-            this.U_alignment.Size = new System.Drawing.Size(259, 29);
+            this.U_alignment.Size = new System.Drawing.Size(132, 17);
             this.U_alignment.TabIndex = 36;
             this.U_alignment.Text = "Track alignment report";
             this.U_alignment.UseVisualStyleBackColor = true;
@@ -3106,9 +3250,10 @@
             // U_bitrate
             // 
             this.U_bitrate.AutoSize = true;
-            this.U_bitrate.Location = new System.Drawing.Point(323, 180);
+            this.U_bitrate.Location = new System.Drawing.Point(162, 94);
+            this.U_bitrate.Margin = new System.Windows.Forms.Padding(2);
             this.U_bitrate.Name = "U_bitrate";
-            this.U_bitrate.Size = new System.Drawing.Size(246, 29);
+            this.U_bitrate.Size = new System.Drawing.Size(124, 17);
             this.U_bitrate.TabIndex = 37;
             this.U_bitrate.Text = "Deep bitrate analysis";
             this.U_bitrate.UseVisualStyleBackColor = true;
@@ -3116,9 +3261,10 @@
             // U_test
             // 
             this.U_test.AutoSize = true;
-            this.U_test.Location = new System.Drawing.Point(323, 215);
+            this.U_test.Location = new System.Drawing.Point(162, 112);
+            this.U_test.Margin = new System.Windows.Forms.Padding(2);
             this.U_test.Name = "U_test";
-            this.U_test.Size = new System.Drawing.Size(262, 29);
+            this.U_test.Size = new System.Drawing.Size(132, 17);
             this.U_test.TabIndex = 38;
             this.U_test.Text = "Test index hole sensor";
             this.U_test.UseVisualStyleBackColor = true;
@@ -3126,9 +3272,10 @@
             // IHS
             // 
             this.IHS.AutoSize = true;
-            this.IHS.Location = new System.Drawing.Point(11, 215);
+            this.IHS.Location = new System.Drawing.Point(6, 112);
+            this.IHS.Margin = new System.Windows.Forms.Padding(2);
             this.IHS.Name = "IHS";
-            this.IHS.Size = new System.Drawing.Size(279, 29);
+            this.IHS.Size = new System.Drawing.Size(143, 17);
             this.IHS.TabIndex = 39;
             this.IHS.Text = "Use SC+ compatible IHS";
             this.IHS.UseVisualStyleBackColor = true;
@@ -3142,9 +3289,11 @@
             this.Write_GBox.Controls.Add(this.WAdv);
             this.Write_GBox.Controls.Add(this.Zero_Disk);
             this.Write_GBox.Controls.Add(this.W_advopts);
-            this.Write_GBox.Location = new System.Drawing.Point(2217, 576);
+            this.Write_GBox.Location = new System.Drawing.Point(1108, 300);
+            this.Write_GBox.Margin = new System.Windows.Forms.Padding(2);
             this.Write_GBox.Name = "Write_GBox";
-            this.Write_GBox.Size = new System.Drawing.Size(1452, 351);
+            this.Write_GBox.Padding = new System.Windows.Forms.Padding(2);
+            this.Write_GBox.Size = new System.Drawing.Size(726, 183);
             this.Write_GBox.TabIndex = 43;
             this.Write_GBox.TabStop = false;
             // 
@@ -3160,9 +3309,11 @@
             this.groupBox4.Controls.Add(this.W_override);
             this.groupBox4.Controls.Add(this.W_start);
             this.groupBox4.Controls.Add(this.W_end);
-            this.groupBox4.Location = new System.Drawing.Point(7, 17);
+            this.groupBox4.Location = new System.Drawing.Point(4, 9);
+            this.groupBox4.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(509, 197);
+            this.groupBox4.Padding = new System.Windows.Forms.Padding(2);
+            this.groupBox4.Size = new System.Drawing.Size(254, 102);
             this.groupBox4.TabIndex = 48;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Device Settings";
@@ -3170,17 +3321,19 @@
             // Wrt_devnum
             // 
             this.Wrt_devnum.AutoSize = true;
-            this.Wrt_devnum.Location = new System.Drawing.Point(8, 32);
+            this.Wrt_devnum.Location = new System.Drawing.Point(4, 17);
+            this.Wrt_devnum.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Wrt_devnum.Name = "Wrt_devnum";
-            this.Wrt_devnum.Size = new System.Drawing.Size(80, 25);
+            this.Wrt_devnum.Size = new System.Drawing.Size(42, 13);
             this.Wrt_devnum.TabIndex = 74;
             this.Wrt_devnum.Text = "Drive #";
             // 
             // Drv_status
             // 
-            this.Drv_status.Location = new System.Drawing.Point(7, 143);
+            this.Drv_status.Location = new System.Drawing.Point(4, 74);
+            this.Drv_status.Margin = new System.Windows.Forms.Padding(2);
             this.Drv_status.Name = "Drv_status";
-            this.Drv_status.Size = new System.Drawing.Size(92, 35);
+            this.Drv_status.Size = new System.Drawing.Size(46, 18);
             this.Drv_status.TabIndex = 30;
             this.Drv_status.Text = "Status";
             this.Drv_status.UseVisualStyleBackColor = true;
@@ -3189,18 +3342,20 @@
             // W_limit
             // 
             this.W_limit.AutoSize = true;
-            this.W_limit.Location = new System.Drawing.Point(202, 28);
+            this.W_limit.Location = new System.Drawing.Point(101, 15);
+            this.W_limit.Margin = new System.Windows.Forms.Padding(2);
             this.W_limit.Name = "W_limit";
-            this.W_limit.Size = new System.Drawing.Size(193, 29);
+            this.W_limit.Size = new System.Drawing.Size(99, 17);
             this.W_limit.TabIndex = 29;
             this.W_limit.Text = "Limit (Track 40)";
             this.W_limit.UseVisualStyleBackColor = true;
             // 
             // ADJ_RPM
             // 
-            this.ADJ_RPM.Location = new System.Drawing.Point(124, 143);
+            this.ADJ_RPM.Location = new System.Drawing.Point(62, 74);
+            this.ADJ_RPM.Margin = new System.Windows.Forms.Padding(2);
             this.ADJ_RPM.Name = "ADJ_RPM";
-            this.ADJ_RPM.Size = new System.Drawing.Size(146, 36);
+            this.ADJ_RPM.Size = new System.Drawing.Size(73, 19);
             this.ADJ_RPM.TabIndex = 73;
             this.ADJ_RPM.Text = "Adjust RPM";
             this.ADJ_RPM.UseVisualStyleBackColor = true;
@@ -3208,7 +3363,8 @@
             // 
             // W_num
             // 
-            this.W_num.Location = new System.Drawing.Point(106, 28);
+            this.W_num.Location = new System.Drawing.Point(53, 15);
+            this.W_num.Margin = new System.Windows.Forms.Padding(2);
             this.W_num.Maximum = new decimal(new int[] {
             11,
             0,
@@ -3220,7 +3376,7 @@
             0,
             0});
             this.W_num.Name = "W_num";
-            this.W_num.Size = new System.Drawing.Size(73, 31);
+            this.W_num.Size = new System.Drawing.Size(36, 20);
             this.W_num.TabIndex = 23;
             this.W_num.Value = new decimal(new int[] {
             8,
@@ -3231,9 +3387,10 @@
             // WParallel
             // 
             this.WParallel.AutoSize = true;
-            this.WParallel.Location = new System.Drawing.Point(7, 105);
+            this.WParallel.Location = new System.Drawing.Point(4, 55);
+            this.WParallel.Margin = new System.Windows.Forms.Padding(2);
             this.WParallel.Name = "WParallel";
-            this.WParallel.Size = new System.Drawing.Size(358, 29);
+            this.WParallel.Size = new System.Drawing.Size(178, 17);
             this.WParallel.TabIndex = 22;
             this.WParallel.Text = "Use parallel Transfer (1571 only)";
             this.WParallel.UseVisualStyleBackColor = true;
@@ -3241,9 +3398,10 @@
             // W_override
             // 
             this.W_override.AutoSize = true;
-            this.W_override.Location = new System.Drawing.Point(7, 65);
+            this.W_override.Location = new System.Drawing.Point(4, 34);
+            this.W_override.Margin = new System.Windows.Forms.Padding(2);
             this.W_override.Name = "W_override";
-            this.W_override.Size = new System.Drawing.Size(309, 29);
+            this.W_override.Size = new System.Drawing.Size(156, 17);
             this.W_override.TabIndex = 25;
             this.W_override.Text = "Override (Start) (End) Track";
             this.W_override.UseVisualStyleBackColor = true;
@@ -3251,7 +3409,8 @@
             // 
             // W_start
             // 
-            this.W_start.Location = new System.Drawing.Point(343, 64);
+            this.W_start.Location = new System.Drawing.Point(172, 33);
+            this.W_start.Margin = new System.Windows.Forms.Padding(2);
             this.W_start.Maximum = new decimal(new int[] {
             41,
             0,
@@ -3263,7 +3422,7 @@
             0,
             0});
             this.W_start.Name = "W_start";
-            this.W_start.Size = new System.Drawing.Size(74, 31);
+            this.W_start.Size = new System.Drawing.Size(37, 20);
             this.W_start.TabIndex = 26;
             this.W_start.Value = new decimal(new int[] {
             1,
@@ -3274,7 +3433,8 @@
             // 
             // W_end
             // 
-            this.W_end.Location = new System.Drawing.Point(422, 64);
+            this.W_end.Location = new System.Drawing.Point(211, 33);
+            this.W_end.Margin = new System.Windows.Forms.Padding(2);
             this.W_end.Maximum = new decimal(new int[] {
             41,
             0,
@@ -3286,7 +3446,7 @@
             0,
             0});
             this.W_end.Name = "W_end";
-            this.W_end.Size = new System.Drawing.Size(75, 31);
+            this.W_end.Size = new System.Drawing.Size(38, 20);
             this.W_end.TabIndex = 27;
             this.W_end.Value = new decimal(new int[] {
             1,
@@ -3297,9 +3457,10 @@
             // 
             // Write_Start
             // 
-            this.Write_Start.Location = new System.Drawing.Point(7, 288);
+            this.Write_Start.Location = new System.Drawing.Point(4, 150);
+            this.Write_Start.Margin = new System.Windows.Forms.Padding(2);
             this.Write_Start.Name = "Write_Start";
-            this.Write_Start.Size = new System.Drawing.Size(146, 38);
+            this.Write_Start.Size = new System.Drawing.Size(73, 20);
             this.Write_Start.TabIndex = 7;
             this.Write_Start.Text = "Write Disk";
             this.Write_Start.UseVisualStyleBackColor = true;
@@ -3308,9 +3469,10 @@
             // W_verb
             // 
             this.W_verb.AutoSize = true;
-            this.W_verb.Location = new System.Drawing.Point(11, 249);
+            this.W_verb.Location = new System.Drawing.Point(6, 129);
+            this.W_verb.Margin = new System.Windows.Forms.Padding(2);
             this.W_verb.Name = "W_verb";
-            this.W_verb.Size = new System.Drawing.Size(124, 29);
+            this.W_verb.Size = new System.Drawing.Size(65, 17);
             this.W_verb.TabIndex = 52;
             this.W_verb.Text = "Verbose";
             this.W_verb.UseVisualStyleBackColor = true;
@@ -3318,9 +3480,10 @@
             // WAdv
             // 
             this.WAdv.AutoSize = true;
-            this.WAdv.Location = new System.Drawing.Point(224, 249);
+            this.WAdv.Location = new System.Drawing.Point(112, 129);
+            this.WAdv.Margin = new System.Windows.Forms.Padding(2);
             this.WAdv.Name = "WAdv";
-            this.WAdv.Size = new System.Drawing.Size(293, 29);
+            this.WAdv.Size = new System.Drawing.Size(150, 17);
             this.WAdv.TabIndex = 72;
             this.WAdv.Text = "Enable Advanced Options";
             this.WAdv.UseVisualStyleBackColor = true;
@@ -3328,9 +3491,10 @@
             // 
             // Zero_Disk
             // 
-            this.Zero_Disk.Location = new System.Drawing.Point(338, 288);
+            this.Zero_Disk.Location = new System.Drawing.Point(169, 150);
+            this.Zero_Disk.Margin = new System.Windows.Forms.Padding(2);
             this.Zero_Disk.Name = "Zero_Disk";
-            this.Zero_Disk.Size = new System.Drawing.Size(173, 35);
+            this.Zero_Disk.Size = new System.Drawing.Size(86, 18);
             this.Zero_Disk.TabIndex = 62;
             this.Zero_Disk.Text = "Unformat Disk";
             this.Zero_Disk.UseVisualStyleBackColor = true;
@@ -3359,9 +3523,11 @@
             this.W_advopts.Controls.Add(this.W_align);
             this.W_advopts.Controls.Add(this.WTA);
             this.W_advopts.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.W_advopts.Location = new System.Drawing.Point(535, 17);
+            this.W_advopts.Location = new System.Drawing.Point(268, 9);
+            this.W_advopts.Margin = new System.Windows.Forms.Padding(2);
             this.W_advopts.Name = "W_advopts";
-            this.W_advopts.Size = new System.Drawing.Size(911, 318);
+            this.W_advopts.Padding = new System.Windows.Forms.Padding(2);
+            this.W_advopts.Size = new System.Drawing.Size(456, 165);
             this.W_advopts.TabIndex = 71;
             this.W_advopts.TabStop = false;
             this.W_advopts.Text = "Advanced Options";
@@ -3371,17 +3537,19 @@
             this.W_prot.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.W_prot.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.W_prot.FormattingEnabled = true;
-            this.W_prot.Location = new System.Drawing.Point(409, 269);
+            this.W_prot.Location = new System.Drawing.Point(204, 140);
+            this.W_prot.Margin = new System.Windows.Forms.Padding(2);
             this.W_prot.Name = "W_prot";
-            this.W_prot.Size = new System.Drawing.Size(348, 33);
+            this.W_prot.Size = new System.Drawing.Size(176, 21);
             this.W_prot.TabIndex = 79;
             // 
             // WP
             // 
             this.WP.AutoSize = true;
-            this.WP.Location = new System.Drawing.Point(7, 271);
+            this.WP.Location = new System.Drawing.Point(4, 141);
+            this.WP.Margin = new System.Windows.Forms.Padding(2);
             this.WP.Name = "WP";
-            this.WP.Size = new System.Drawing.Size(296, 29);
+            this.WP.Size = new System.Drawing.Size(149, 17);
             this.WP.TabIndex = 78;
             this.WP.Text = "Custom protection handler";
             this.WP.UseVisualStyleBackColor = true;
@@ -3389,22 +3557,24 @@
             // 
             // W_cap
             // 
-            this.W_cap.Location = new System.Drawing.Point(770, 167);
+            this.W_cap.Location = new System.Drawing.Point(385, 87);
+            this.W_cap.Margin = new System.Windows.Forms.Padding(2);
             this.W_cap.Maximum = new decimal(new int[] {
             512,
             0,
             0,
             0});
             this.W_cap.Name = "W_cap";
-            this.W_cap.Size = new System.Drawing.Size(120, 31);
+            this.W_cap.Size = new System.Drawing.Size(60, 20);
             this.W_cap.TabIndex = 77;
             // 
             // W_capmar
             // 
             this.W_capmar.AutoSize = true;
-            this.W_capmar.Location = new System.Drawing.Point(409, 168);
+            this.W_capmar.Location = new System.Drawing.Point(204, 87);
+            this.W_capmar.Margin = new System.Windows.Forms.Padding(2);
             this.W_capmar.Name = "W_capmar";
-            this.W_capmar.Size = new System.Drawing.Size(330, 29);
+            this.W_capmar.Size = new System.Drawing.Size(166, 17);
             this.W_capmar.TabIndex = 76;
             this.W_capmar.Text = "Change extra capacity margin";
             this.W_capmar.UseVisualStyleBackColor = true;
@@ -3413,9 +3583,10 @@
             // W_autobad
             // 
             this.W_autobad.AutoSize = true;
-            this.W_autobad.Location = new System.Drawing.Point(7, 164);
+            this.W_autobad.Location = new System.Drawing.Point(4, 85);
+            this.W_autobad.Margin = new System.Windows.Forms.Padding(2);
             this.W_autobad.Name = "W_autobad";
-            this.W_autobad.Size = new System.Drawing.Size(361, 29);
+            this.W_autobad.Size = new System.Drawing.Size(181, 17);
             this.W_autobad.TabIndex = 75;
             this.W_autobad.Text = "Disable auto bad GCR simulation";
             this.W_autobad.UseVisualStyleBackColor = true;
@@ -3423,22 +3594,24 @@
             // 
             // W_agg
             // 
-            this.W_agg.Location = new System.Drawing.Point(770, 62);
+            this.W_agg.Location = new System.Drawing.Point(385, 32);
+            this.W_agg.Margin = new System.Windows.Forms.Padding(2);
             this.W_agg.Maximum = new decimal(new int[] {
             3,
             0,
             0,
             0});
             this.W_agg.Name = "W_agg";
-            this.W_agg.Size = new System.Drawing.Size(120, 31);
+            this.W_agg.Size = new System.Drawing.Size(60, 20);
             this.W_agg.TabIndex = 74;
             // 
             // W_aggcr
             // 
             this.W_aggcr.AutoSize = true;
-            this.W_aggcr.Location = new System.Drawing.Point(409, 65);
+            this.W_aggcr.Location = new System.Drawing.Point(204, 34);
+            this.W_aggcr.Margin = new System.Windows.Forms.Padding(2);
             this.W_aggcr.Name = "W_aggcr";
-            this.W_aggcr.Size = new System.Drawing.Size(348, 29);
+            this.W_aggcr.Size = new System.Drawing.Size(174, 17);
             this.W_aggcr.TabIndex = 73;
             this.W_aggcr.Text = "Aggressive bad GCR simulation";
             this.W_aggcr.UseVisualStyleBackColor = true;
@@ -3446,14 +3619,15 @@
             // 
             // W_tgap
             // 
-            this.W_tgap.Location = new System.Drawing.Point(770, 97);
+            this.W_tgap.Location = new System.Drawing.Point(385, 50);
+            this.W_tgap.Margin = new System.Windows.Forms.Padding(2);
             this.W_tgap.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.W_tgap.Name = "W_tgap";
-            this.W_tgap.Size = new System.Drawing.Size(120, 31);
+            this.W_tgap.Size = new System.Drawing.Size(60, 20);
             this.W_tgap.TabIndex = 72;
             this.W_tgap.Value = new decimal(new int[] {
             1,
@@ -3464,16 +3638,18 @@
             // W_timedalign
             // 
             this.W_timedalign.AutoSize = true;
-            this.W_timedalign.Location = new System.Drawing.Point(7, 199);
+            this.W_timedalign.Location = new System.Drawing.Point(4, 103);
+            this.W_timedalign.Margin = new System.Windows.Forms.Padding(2);
             this.W_timedalign.Name = "W_timedalign";
-            this.W_timedalign.Size = new System.Drawing.Size(381, 29);
+            this.W_timedalign.Size = new System.Drawing.Size(191, 17);
             this.W_timedalign.TabIndex = 53;
             this.W_timedalign.Text = "Enable timer based track alignment";
             this.W_timedalign.UseVisualStyleBackColor = true;
             // 
             // W_rpm
             // 
-            this.W_rpm.Location = new System.Drawing.Point(770, 131);
+            this.W_rpm.Location = new System.Drawing.Point(385, 68);
+            this.W_rpm.Margin = new System.Windows.Forms.Padding(2);
             this.W_rpm.Maximum = new decimal(new int[] {
             340,
             0,
@@ -3485,7 +3661,7 @@
             0,
             0});
             this.W_rpm.Name = "W_rpm";
-            this.W_rpm.Size = new System.Drawing.Size(120, 31);
+            this.W_rpm.Size = new System.Drawing.Size(60, 20);
             this.W_rpm.TabIndex = 70;
             this.W_rpm.Value = new decimal(new int[] {
             260,
@@ -3496,9 +3672,10 @@
             // W_gapmatch
             // 
             this.W_gapmatch.AutoSize = true;
-            this.W_gapmatch.Location = new System.Drawing.Point(409, 99);
+            this.W_gapmatch.Location = new System.Drawing.Point(204, 51);
+            this.W_gapmatch.Margin = new System.Windows.Forms.Padding(2);
             this.W_gapmatch.Name = "W_gapmatch";
-            this.W_gapmatch.Size = new System.Drawing.Size(301, 29);
+            this.W_gapmatch.Size = new System.Drawing.Size(153, 17);
             this.W_gapmatch.TabIndex = 71;
             this.W_gapmatch.Text = "Alternate gap match length";
             this.W_gapmatch.UseVisualStyleBackColor = true;
@@ -3507,9 +3684,10 @@
             // W_capacity
             // 
             this.W_capacity.AutoSize = true;
-            this.W_capacity.Location = new System.Drawing.Point(7, 30);
+            this.W_capacity.Location = new System.Drawing.Point(4, 16);
+            this.W_capacity.Margin = new System.Windows.Forms.Padding(2);
             this.W_capacity.Name = "W_capacity";
-            this.W_capacity.Size = new System.Drawing.Size(361, 29);
+            this.W_capacity.Size = new System.Drawing.Size(182, 17);
             this.W_capacity.TabIndex = 49;
             this.W_capacity.Text = "Disable auto capacity adjustment";
             this.W_capacity.UseVisualStyleBackColor = true;
@@ -3517,9 +3695,10 @@
             // Wrpm
             // 
             this.Wrpm.AutoSize = true;
-            this.Wrpm.Location = new System.Drawing.Point(409, 133);
+            this.Wrpm.Location = new System.Drawing.Point(204, 69);
+            this.Wrpm.Margin = new System.Windows.Forms.Padding(2);
             this.Wrpm.Name = "Wrpm";
-            this.Wrpm.Size = new System.Drawing.Size(333, 29);
+            this.Wrpm.Size = new System.Drawing.Size(169, 17);
             this.Wrpm.TabIndex = 69;
             this.Wrpm.Text = "Simulate track capacity (RPM)";
             this.Wrpm.UseVisualStyleBackColor = true;
@@ -3528,9 +3707,10 @@
             // W_gapreduce
             // 
             this.W_gapreduce.AutoSize = true;
-            this.W_gapreduce.Location = new System.Drawing.Point(7, 62);
+            this.W_gapreduce.Location = new System.Drawing.Point(4, 32);
+            this.W_gapreduce.Margin = new System.Windows.Forms.Padding(2);
             this.W_gapreduce.Name = "W_gapreduce";
-            this.W_gapreduce.Size = new System.Drawing.Size(248, 29);
+            this.W_gapreduce.Size = new System.Drawing.Size(127, 17);
             this.W_gapreduce.TabIndex = 50;
             this.W_gapreduce.Text = "Enable gap reduction";
             this.W_gapreduce.UseVisualStyleBackColor = true;
@@ -3538,9 +3718,10 @@
             // W_skew
             // 
             this.W_skew.AutoSize = true;
-            this.W_skew.Location = new System.Drawing.Point(409, 30);
+            this.W_skew.Location = new System.Drawing.Point(204, 16);
+            this.W_skew.Margin = new System.Windows.Forms.Padding(2);
             this.W_skew.Name = "W_skew";
-            this.W_skew.Size = new System.Drawing.Size(156, 29);
+            this.W_skew.Size = new System.Drawing.Size(84, 17);
             this.W_skew.TabIndex = 68;
             this.W_skew.Text = "Track Skew";
             this.W_skew.UseVisualStyleBackColor = true;
@@ -3549,31 +3730,34 @@
             // W_gcrrunred
             // 
             this.W_gcrrunred.AutoSize = true;
-            this.W_gcrrunred.Location = new System.Drawing.Point(7, 97);
+            this.W_gcrrunred.Location = new System.Drawing.Point(4, 50);
+            this.W_gcrrunred.Margin = new System.Windows.Forms.Padding(2);
             this.W_gcrrunred.Name = "W_gcrrunred";
-            this.W_gcrrunred.Size = new System.Drawing.Size(266, 29);
+            this.W_gcrrunred.Size = new System.Drawing.Size(136, 17);
             this.W_gcrrunred.TabIndex = 51;
             this.W_gcrrunred.Text = "Bad GCR run reduction";
             this.W_gcrrunred.UseVisualStyleBackColor = true;
             // 
             // W_tskew
             // 
-            this.W_tskew.Location = new System.Drawing.Point(770, 28);
+            this.W_tskew.Location = new System.Drawing.Point(385, 15);
+            this.W_tskew.Margin = new System.Windows.Forms.Padding(2);
             this.W_tskew.Maximum = new decimal(new int[] {
             200,
             0,
             0,
             0});
             this.W_tskew.Name = "W_tskew";
-            this.W_tskew.Size = new System.Drawing.Size(120, 31);
+            this.W_tskew.Size = new System.Drawing.Size(60, 20);
             this.W_tskew.TabIndex = 67;
             // 
             // W_syncred
             // 
             this.W_syncred.AutoSize = true;
-            this.W_syncred.Location = new System.Drawing.Point(7, 131);
+            this.W_syncred.Location = new System.Drawing.Point(4, 68);
+            this.W_syncred.Margin = new System.Windows.Forms.Padding(2);
             this.W_syncred.Name = "W_syncred";
-            this.W_syncred.Size = new System.Drawing.Size(310, 29);
+            this.W_syncred.Size = new System.Drawing.Size(157, 17);
             this.W_syncred.TabIndex = 54;
             this.W_syncred.Text = "Disable auto sync reduction";
             this.W_syncred.UseVisualStyleBackColor = true;
@@ -3582,31 +3766,23 @@
             // 
             this.W_align.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.W_align.FormattingEnabled = true;
-            this.W_align.Location = new System.Drawing.Point(409, 232);
+            this.W_align.Location = new System.Drawing.Point(204, 121);
+            this.W_align.Margin = new System.Windows.Forms.Padding(2);
             this.W_align.Name = "W_align";
-            this.W_align.Size = new System.Drawing.Size(348, 33);
+            this.W_align.Size = new System.Drawing.Size(176, 21);
             this.W_align.TabIndex = 66;
             // 
             // WTA
             // 
             this.WTA.AutoSize = true;
-            this.WTA.Location = new System.Drawing.Point(7, 236);
+            this.WTA.Location = new System.Drawing.Point(4, 123);
+            this.WTA.Margin = new System.Windows.Forms.Padding(2);
             this.WTA.Name = "WTA";
-            this.WTA.Size = new System.Drawing.Size(309, 29);
+            this.WTA.Size = new System.Drawing.Size(156, 17);
             this.WTA.TabIndex = 65;
             this.WTA.Text = "Alternative track alignments";
             this.WTA.UseVisualStyleBackColor = true;
             this.WTA.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
-            // 
-            // ParseLog
-            // 
-            this.ParseLog.AutoSize = true;
-            this.ParseLog.Location = new System.Drawing.Point(15, 405);
-            this.ParseLog.Name = "ParseLog";
-            this.ParseLog.Size = new System.Drawing.Size(585, 29);
-            this.ParseLog.TabIndex = 50;
-            this.ParseLog.Text = "Parse nib.log file (if exists) and notate errors in database";
-            this.ParseLog.UseVisualStyleBackColor = true;
             // 
             // GB_NewDisk
             // 
@@ -3620,9 +3796,11 @@
             this.GB_NewDisk.Controls.Add(this.label20);
             this.GB_NewDisk.Controls.Add(this.ND_id);
             this.GB_NewDisk.Controls.Add(this.ND_name);
-            this.GB_NewDisk.Location = new System.Drawing.Point(2625, 53);
+            this.GB_NewDisk.Location = new System.Drawing.Point(1312, 28);
+            this.GB_NewDisk.Margin = new System.Windows.Forms.Padding(2);
             this.GB_NewDisk.Name = "GB_NewDisk";
-            this.GB_NewDisk.Size = new System.Drawing.Size(417, 276);
+            this.GB_NewDisk.Padding = new System.Windows.Forms.Padding(2);
+            this.GB_NewDisk.Size = new System.Drawing.Size(208, 144);
             this.GB_NewDisk.TabIndex = 38;
             this.GB_NewDisk.TabStop = false;
             this.GB_NewDisk.Text = "Create New Disk  ";
@@ -3631,35 +3809,39 @@
             // 
             this.S_Interleave.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.S_Interleave.FormattingEnabled = true;
-            this.S_Interleave.Location = new System.Drawing.Point(196, 164);
+            this.S_Interleave.Location = new System.Drawing.Point(98, 85);
+            this.S_Interleave.Margin = new System.Windows.Forms.Padding(2);
             this.S_Interleave.Name = "S_Interleave";
-            this.S_Interleave.Size = new System.Drawing.Size(194, 33);
+            this.S_Interleave.Size = new System.Drawing.Size(99, 21);
             this.S_Interleave.TabIndex = 7;
             // 
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(16, 172);
+            this.label23.Location = new System.Drawing.Point(8, 89);
+            this.label23.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(174, 25);
+            this.label23.Size = new System.Drawing.Size(88, 13);
             this.label23.TabIndex = 6;
             this.label23.Text = "Sector Interleave";
             // 
             // SortBySize
             // 
             this.SortBySize.AutoSize = true;
-            this.SortBySize.Location = new System.Drawing.Point(20, 124);
+            this.SortBySize.Location = new System.Drawing.Point(10, 64);
+            this.SortBySize.Margin = new System.Windows.Forms.Padding(2);
             this.SortBySize.Name = "SortBySize";
-            this.SortBySize.Size = new System.Drawing.Size(276, 29);
+            this.SortBySize.Size = new System.Drawing.Size(138, 17);
             this.SortBySize.TabIndex = 5;
             this.SortBySize.Text = "Sort by size (ascending)";
             this.SortBySize.UseVisualStyleBackColor = true;
             // 
             // NewDiskBtn
             // 
-            this.NewDiskBtn.Location = new System.Drawing.Point(161, 219);
+            this.NewDiskBtn.Location = new System.Drawing.Point(80, 114);
+            this.NewDiskBtn.Margin = new System.Windows.Forms.Padding(2);
             this.NewDiskBtn.Name = "NewDiskBtn";
-            this.NewDiskBtn.Size = new System.Drawing.Size(86, 40);
+            this.NewDiskBtn.Size = new System.Drawing.Size(43, 21);
             this.NewDiskBtn.TabIndex = 4;
             this.NewDiskBtn.Text = "OK";
             this.NewDiskBtn.UseVisualStyleBackColor = true;
@@ -3667,118 +3849,48 @@
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(45, 79);
+            this.label22.Location = new System.Drawing.Point(22, 41);
+            this.label22.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(32, 25);
+            this.label22.Size = new System.Drawing.Size(18, 13);
             this.label22.TabIndex = 3;
             this.label22.Text = "ID";
             // 
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(9, 40);
+            this.label20.Location = new System.Drawing.Point(4, 21);
+            this.label20.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(68, 25);
+            this.label20.Size = new System.Drawing.Size(35, 13);
             this.label20.TabIndex = 2;
             this.label20.Text = "Name";
             // 
             // ND_id
             // 
-            this.ND_id.Location = new System.Drawing.Point(100, 76);
+            this.ND_id.Location = new System.Drawing.Point(50, 40);
+            this.ND_id.Margin = new System.Windows.Forms.Padding(2);
             this.ND_id.MaxLength = 5;
             this.ND_id.Name = "ND_id";
-            this.ND_id.Size = new System.Drawing.Size(100, 31);
+            this.ND_id.Size = new System.Drawing.Size(52, 20);
             this.ND_id.TabIndex = 1;
             this.ND_id.Text = "00 2A";
             // 
             // ND_name
             // 
-            this.ND_name.Location = new System.Drawing.Point(100, 38);
+            this.ND_name.Location = new System.Drawing.Point(50, 20);
+            this.ND_name.Margin = new System.Windows.Forms.Padding(2);
             this.ND_name.MaxLength = 16;
             this.ND_name.Name = "ND_name";
-            this.ND_name.Size = new System.Drawing.Size(280, 31);
+            this.ND_name.Size = new System.Drawing.Size(142, 20);
             this.ND_name.TabIndex = 0;
             this.ND_name.Text = "NEW DISK";
             // 
-            // Blk_pan
-            // 
-            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
-            this.Blk_pan.BorderThickness = 2;
-            this.Blk_pan.Location = new System.Drawing.Point(96, 49);
-            this.Blk_pan.Name = "Blk_pan";
-            this.Blk_pan.Size = new System.Drawing.Size(1026, 1101);
-            this.Blk_pan.TabIndex = 2;
-            // 
-            // CSTfmt
-            // 
-            this.CSTfmt.AutoSize = true;
-            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
-            this.CSTfmt.Location = new System.Drawing.Point(20, 284);
-            this.CSTfmt.Name = "CSTfmt";
-            this.CSTfmt.NewText = "";
-            this.CSTfmt.RotateAngle = 0;
-            this.CSTfmt.Size = new System.Drawing.Size(177, 29);
-            this.CSTfmt.TabIndex = 12;
-            this.CSTfmt.Text = "Custom Format";
-            // 
-            // ErrorBlk
-            // 
-            this.ErrorBlk.AutoSize = true;
-            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
-            this.ErrorBlk.Location = new System.Drawing.Point(20, 487);
-            this.ErrorBlk.Name = "ErrorBlk";
-            this.ErrorBlk.NewText = "";
-            this.ErrorBlk.RotateAngle = 0;
-            this.ErrorBlk.Size = new System.Drawing.Size(133, 29);
-            this.ErrorBlk.TabIndex = 11;
-            this.ErrorBlk.Text = "Block Error";
-            // 
-            // AllocBlk
-            // 
-            this.AllocBlk.AutoSize = true;
-            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
-            this.AllocBlk.Location = new System.Drawing.Point(17, 655);
-            this.AllocBlk.Name = "AllocBlk";
-            this.AllocBlk.NewText = "";
-            this.AllocBlk.RotateAngle = 0;
-            this.AllocBlk.Size = new System.Drawing.Size(179, 29);
-            this.AllocBlk.TabIndex = 10;
-            this.AllocBlk.Text = "Allocated Block";
-            // 
-            // FreeBlk
-            // 
-            this.FreeBlk.AutoSize = true;
-            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
-            this.FreeBlk.Location = new System.Drawing.Point(17, 871);
-            this.FreeBlk.Name = "FreeBlk";
-            this.FreeBlk.NewText = "";
-            this.FreeBlk.RotateAngle = 0;
-            this.FreeBlk.Size = new System.Drawing.Size(130, 29);
-            this.FreeBlk.TabIndex = 9;
-            this.FreeBlk.Text = "Free Block";
-            // 
-            // track_label
-            // 
-            this.track_label.AutoSize = true;
-            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.track_label.Location = new System.Drawing.Point(2, 82);
-            this.track_label.Name = "track_label";
-            this.track_label.NewText = null;
-            this.track_label.RotateAngle = 0;
-            this.track_label.Size = new System.Drawing.Size(215, 37);
-            this.track_label.TabIndex = 0;
-            this.track_label.Text = "customLabel1";
-            // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(3725, 1616);
+            this.ClientSize = new System.Drawing.Size(1924, 771);
             this.Controls.Add(this.Write_GBox);
             this.Controls.Add(this.Read_GBox);
             this.Controls.Add(this.Options_Box);
@@ -3791,7 +3903,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "V-Max Sync Tool";
