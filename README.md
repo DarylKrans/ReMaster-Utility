@@ -1,11 +1,12 @@
-If you are here for ReMaster Utilities executable, there are 3 here.  Please use the most recent upload if you want the most current version.  
--- note, .Net 3.5 version for Windows XP has been removed.  It is an older version and doesn't build with the newer functions added.
+If you are here for ReMaster Utilities executable, Please use one of the Release versions.  The source is always a work-in-
+progress and may not be stable.  Updates to the source may be buggy or incomplete.  Release builds will have considerably more 
+testing done to ensure stability and proper functionality. 
 
 Protection methods currently handled by ReMaster include..
 
 V-Max (all versions)
 
-RapidLok
+RapidLok 
 
 Vorpal (EPYX -- California Games, Legend of Blacksilver, Wrestling, The Games - Summer/Winter Edition)
 
@@ -24,6 +25,10 @@ Rainbow Arts/Magic Bytes
 GMA/Securispeed
 
 .. and some images with special signatures on the inner tracks.
+
+Custom format sector checksum integrity checks for Vorpal, RapidLok and Micro Prose are performed on image import with 
+option to repair (corrects checksum only) on Vorpal and Micro Prose protections.
+V-Max (v2/v3/v4) sector integrity check will release soon.
 
 Note: 
 
