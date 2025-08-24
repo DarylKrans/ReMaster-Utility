@@ -255,6 +255,7 @@ namespace V_Max_Tool
             return (new byte[0], false, false, 0);
         }
 
+
         int Get_SecNum(byte[] input)
         {
             int secnum = 0;
