@@ -63,7 +63,37 @@ namespace V_Max_Tool
             Process_Nib_Data(p, false, false, true); /// false flag instructs the routine NOT to process CBM tracks again
         }
 
-        (int sectors, int first, int last_pos) Get_VPL_Sectors(BitArray source)
+        //(int sectors, int first, int last_pos) Get_VPL_Sectors(BitArray source, int trk = -1)
+        //{
+        //    var sectors = 0;
+        //    var first = 0;
+        //    var last = 0;
+        //    int compare = 0;
+        //    int pos = 0;
+        //    int s0 = 0x3fd500;
+        //    int s1 = 0xbfd500;
+        //    List<string> hdr = new List<string>();
+        //    while (pos < source.Length)
+        //    {
+        //        compare <<= 1;
+        //        if (source[pos]) compare |= 1;
+        //        if ((compare & 0xffff80) == s0 || (compare & 0xffff80) == s1)
+        //        {
+        //            var cur_pos = pos - 23;
+        //            byte[] d = Bit2Byte(source, cur_pos + 17 + (161 << 3) + 2, 24);
+        //            var secnum = Get_SecNum(d);
+        //            hdr.Add($"3 raw GCR bytes (binary) : {Byte_to_Binary(d)} , decoded sector# from first 9 bits : {secnum}"); 
+        //            if (sectors < 1) first = pos - 31;
+        //            sectors++;
+        //            last = pos - 7;
+        //        }
+        //        pos++;
+        //    }
+        //    File.WriteAllLines($@"c:\test\track{trk}.txt", hdr.ToArray());
+        //    return (sectors, first, last);
+        //}
+
+        (int sectors, int first, int last_pos) Get_VPL_Sectors(BitArray source, int trk = -1)
         {
             var sectors = 0;
             var first = 0;
@@ -76,7 +106,7 @@ namespace V_Max_Tool
             {
                 compare <<= 1;
                 if (source[pos]) compare |= 1;
-                if ((compare & 0x00ffff80) == s0 || (compare & 0x00ffff80) == s1)
+                if ((compare & 0xffff80) == s0 || (compare & 0xffff80) == s1)
                 {
                     if (sectors < 1) first = pos - 31;
                     sectors++;
@@ -90,13 +120,14 @@ namespace V_Max_Tool
         byte[] Rebuild_Vorpal(byte[] data, int trk, int leadptn = 0)
         {
             int offset;
-            int last_sector = 1312; // 1312; /// # of bytes to read when last sector found
+            int last_sector = 1300; // Sector length (160 * 3 bits) + checksum (10 bits) + 10 bit sector identifier
+                                    // Previously set to 1312 before I figured out how to read the sector ID
             byte[] output = new byte[0];
             int d = 0;
             int tlen = data.Length;
             if (VPL_auto_adj.Checked || VPL_rb.Checked) d = VPL_Density(tlen);
             var source = new BitArray(Flip_Endian(data));
-            (int sectors, int tstart, int tend) = Get_VPL_Sectors(source);
+            (int sectors, int tstart, int tend) = Get_VPL_Sectors(source, trk > 42 ? (trk >> 1) + 1 : trk + 1);
             tend += last_sector;
             byte[] lead_in = new byte[0];
             byte endbyte = leadptn == 1 ? (byte)0x55 : (leadptn == 2 ? (byte)0xAA : (byte)0xb5);
@@ -127,7 +158,7 @@ namespace V_Max_Tool
             }
             if ((VPL_auto_adj.Checked || VPL_rb.Checked) && !(VPL_only_sectors.Checked || VPL_lead.Checked))
             {
-                offset = ((((vpl_density[d] << 3) - (tend - tstart)) >> 1) >> 3) << 3;
+                offset = ((vpl_density[d] << 3) - (tend - tstart)) >> 1 >> 3 << 3;
                 offset = (offset > 60 << 3) ? 60 << 3 : (offset < 15 << 3) ? 15 << 3 : offset;
             }
             if (VPL_auto_adj.Checked)
@@ -179,10 +210,10 @@ namespace V_Max_Tool
             {
                 if (leadptn > 0)
                 {
-                    output[(offset >> 3) - 4] = 0xff;
+                    output[(offset >> 3) - 4] = 0x55; // 0xff;
                     output[(offset >> 3) - 3] = 0xff;
-                    output[(offset >> 3) - 2] = 0x55;
-                    output[(offset >> 3) - 1] = 0x55;
+                    output[(offset >> 3) - 2] = 0xff; // 0x55;
+                    output[(offset >> 3) - 1] = 0xff; // 0x55;
                 }
             }
         
@@ -196,30 +227,44 @@ namespace V_Max_Tool
 
         (byte[] data, bool checksum, bool isone, int Position) Decode_Vorpal(BitArray source, int sector = -1, bool dec = true)
         {
-            int snc_cnt = 0, psec = 0, sub = dec ? 0 : 8 * 5;
-            var inc = 162 << 3;
-            for (int k = 0; k < source.Length; k++)
+            byte[] chk = new byte[] { 0x3f, 0xbf, 0xd5 };
+            int inc = (162 << 3) - 6;
+            int pos = 0;
+            ushort window = 0;
+            while (pos < source.Length)
             {
-                if (source[k]) snc_cnt++;
-                else
+                window <<= 1;
+                if (source[pos]) window |= 1;
+                byte high = (byte)(window >> 8);
+                if ((high == chk[0] || high == chk[1]) && ((window & 0xff) == chk[2] && !source[pos + 1]))
                 {
-                    if (snc_cnt == 8)
+                    var p = pos + 2;
+                    var secnum = p + (163 << 3) < source.Length ? Get_SecNum(Bit2Byte(source, p + inc, 9)) : -1;
+                    if (secnum == sector)
                     {
-                        int dep = k + 7;
-                        if (psec++ == sector && dep + 1290 < source.Length)
-                        {
-                            var sec_data = Bit2Byte(source, dep, inc);
-                            var decoded = Decode_Vorpal_GCR(sec_data);
-                            bool isone = source[dep + 1290];
-                            bool pass = GetVorpal_Checksum(decoded, CopyFrom(sec_data, 160, 2));
-                            return dec ? (decoded, pass, isone, dep) : (sec_data, pass, isone, dep);
-                        }
-                        k += inc - sub;
+                        var sec_data = Bit2Byte(source, p, inc);
+                        var decoded = Decode_Vorpal_GCR(sec_data);
+                        bool isone = source[p + 1290];
+                        bool pass = GetVorpal_Checksum(decoded, CopyFrom(sec_data, 160, 2));
+                        return dec ? (decoded, pass, isone, p) : (sec_data, pass, isone, p);
                     }
-                    snc_cnt = 0;
+                    pos += inc;
                 }
+                pos++;
             }
             return (new byte[0], false, false, 0);
+        }
+
+        int Get_SecNum(byte[] input)
+        {
+            int secnum = 0;
+            secnum |= ((input[0] >> 7) & 1) << 5; // keep bit7 of input[0]
+            secnum |= ((input[0] >> 5) & 1) << 4; // keep bit5 of input[0]
+            secnum |= ((input[0] >> 4) & 1) << 3; // keep bit4 of input[0]
+            secnum |= ((input[0] >> 2) & 1) << 2; // keep bit2 of input[0]
+            secnum |= ((input[0] >> 1) & 1) << 1; // keep bit1 of input[0]
+            secnum |= ((input[1]) >> 7) << 0; // keep bit7 of input[1]
+            return secnum;
         }
 
         bool GetVorpal_Checksum(byte[] data, byte[] GCR_value)
@@ -232,20 +277,18 @@ namespace V_Max_Tool
 
         (byte[] data, int start, int end, int len, int lead, int sectors, int[] sec_pos, string[] headers) Get_Vorpal_Track_Length(byte[] data, int trk = -1)
         {
-            var err = new List<int>();
-            bool first_sec_start = false;
-            int numbering = 0;
+            bool first_sec_start = false, start_found = false, end_found = false;
             int track = (tracks > 42) ? (trk / 2) + 1 : trk;
             int secLen = 160 << 3;
             int min_skip_len = vpl_density[density_map[track]] - 100;
             int data_start = 0, data_end = 0, track_len = 0, sectors = 0;
-            var sid = string.Empty;
-            bool start_found = false, end_found = false;
             var sec_header = new List<string>();
             var sec_hdr = new List<string>();
             var sec_pos = new List<int>();
             var source = new BitArray(Flip_Endian(data));
+            var sid = string.Empty;
             var vcksm = string.Empty;
+            var err = new List<int>();
             int sec_zero_pos = 0, longest_gap = 0, last_sec = 0;
             byte[] header = new byte[] { 0x3f, 0xbf };
 
@@ -261,6 +304,8 @@ namespace V_Max_Tool
                     if (comp[0] == 0xd5 && (comp[1] & 0x80) == 0)
                     {
                         var cur_pos = pos - 7;
+                        var secnum = cur_pos + (163 << 3) < source.Length 
+                            ? Get_SecNum(Bit2Byte(source, cur_pos + 17 + (161 << 3) + 2, 9)) : -1;
                         sid = Hex_Val(Bit2Byte(source, pos - ((com << 3) >> 1), com << 3));
                         if (!sec_header.Any(x => x == sid))
                         {
@@ -276,7 +321,7 @@ namespace V_Max_Tool
                                     if (compare == 0x3f)
                                     {
                                         if (sectors == 1) first_sec_start = true; 
-                                        sec_zero_pos = cur_pos; numbering = sec_hdr.Count;
+                                        sec_zero_pos = cur_pos; // numbering = sec_hdr.Count;
                                         longest_gap = Math.Min(160 << 3, Math.Max(cur_pos - last_sec, longest_gap));
                                     }
                                     last_sec = cur_pos + secLen;
@@ -288,7 +333,7 @@ namespace V_Max_Tool
                                         if (!ckm) err.Add(sectors);
                                     }
                                     var sid2 = Byte_to_Binary(Bit2Byte(source, cur_pos, 16), true);
-                                    sec_hdr.Add($"pos ({pos >> 3}) Header [{sid2}] Checksum {vcksm}");
+                                    sec_hdr.Add($"pos ({pos >> 3}) Sector ({secnum}){(secnum == 0 ? "*" : string.Empty)} Header [{sid2}] Checksum {vcksm}");
                                 }
                                 catch { }
                             }
@@ -297,19 +342,13 @@ namespace V_Max_Tool
                         else
                         {
                             end_found = true; data_end = cur_pos - 1;
-                            sec_hdr.Add($"* Repeat * pos {pos >> 3} sector {sectors - numbering}");
+                            sec_hdr.Add($"* Repeat * pos {pos >> 3} sector {secnum}");
                         }
                     }
                 }
                 if (end_found) break;
                 pos++;
             }
-            //if (first_sec_start && !end_found) data_start = sec_zero_pos;
-            //if (start_found && !end_found)
-            //{
-            //    sub = Find_LeadIn(BitCopy(source, last_sec), true);
-            //    data_end = last_sec + sub;
-            //}
             
             int sub = Find_LeadIn(BitCopy(source, sec_zero_pos - longest_gap, longest_gap));
             if (sub > 0) sec_zero_pos -= sub;
@@ -332,17 +371,8 @@ namespace V_Max_Tool
                 catch { }
             }
             var tdata = Bit2Byte(temp);
-            var headers = new string[sec_hdr.Count];
-            var strt = numbering > 0 ? sectors - numbering : 0;
-            for (int i = 0; i < sectors; i++)
-            {
-                var z = strt == 0 ? "*" : string.Empty;
-                headers[i] = $"Sector ({strt++}){z} {sec_hdr[i]}";
-                if (strt == sectors) strt = 0;
-            }
-            if (headers.Length > sectors) headers[headers.Length - 1] = sec_hdr[sec_hdr.Count - 1];
             if (!batch && err.Count > 0) foreach (var s in err) ErrorList.Add($"Checksum failed on track {track}");
-            return (tdata, data_start, data_end, track_len, sec_zero_pos, sectors, sec_pos.ToArray(), headers);
+            return (tdata, data_start, data_end, track_len, sec_zero_pos, sectors, sec_pos.ToArray(), sec_hdr.ToArray());
 
             int Find_LeadIn(BitArray gap, bool leadout = false)
             {
