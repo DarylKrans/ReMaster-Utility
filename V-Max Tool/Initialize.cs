@@ -606,14 +606,14 @@ namespace V_Max_Tool
             /// ------------------ Vorpal Config --------------
             Lead_In.Enabled = VPL_lead.Checked;
             Lead_In.Value = 50;
-            leadIn_std[9] = true;
-            bool flip = false;
-            for (int i = 0; i < leadIn_std.Length; i++)
-            {
-                if (i < 7) leadIn_std[i] = !flip;
-                leadIn_alt[i] = flip;
-                flip = !flip;
-            }
+            //leadIn_std[9] = true;
+            //bool flip = false;
+            //for (int i = 0; i < leadIn_std.Length; i++)
+            //{
+            //    if (i < 7) leadIn_std[i] = !flip;
+            //    leadIn_alt[i] = flip;
+            //    flip = !flip;
+            //}
             Lead_ptn.DataSource = new string[] { "Default", "0x55", "0xAA" };//pt;
             Lead_ptn.SelectedIndex = 0;
             Lead_ptn.Enabled = VPL_rb.Checked;

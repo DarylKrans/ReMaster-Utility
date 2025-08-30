@@ -940,6 +940,71 @@ namespace V_Max_Tool
             return pos;
         }
 
+        public static BitArray BitConcat(params BitArray[] arrays)
+        {
+            // Filter out nulls and empty arrays
+            var valid = arrays?.Where(a => a != null && a.Length > 0).ToList() ?? new List<BitArray>();
+            if (valid.Count == 0) return new BitArray(0); // nothing to concat
+
+            // Calculate total length
+            int totalLength = valid.Sum(a => a.Length);
+
+            // Create the result and copy bits in
+            BitArray result = new BitArray(totalLength);
+            int offset = 0;
+
+            foreach (var array in valid)
+            {
+                for (int i = 0; i < array.Length; i++) result[offset + i] = array[i];
+                offset += array.Length;
+            }
+            return result;
+        }
+
+        //public static BitArray BitConcat(params BitArray[] arrays)
+        //{
+        //    // Calculate total length
+        //    int totalLength = arrays.Where(a => a != null).Sum(a => a.Length);
+        //
+        //    // Create result BitArray
+        //    BitArray result = new BitArray(totalLength);
+        //
+        //    int offset = 0;
+        //    foreach (BitArray array in arrays)
+        //    {
+        //        if (array != null)
+        //        {
+        //            for (int i = 0; i < array.Length; i++)
+        //            {
+        //                result[offset + i] = array[i];
+        //            }
+        //            offset += array.Length;
+        //        }
+        //    }
+        //    return result;
+        //}
+
+        //public static BitArray BitConcat(params BitArray[] arrays)
+        //{
+        //    // Calculate total length
+        //    int totalLength = arrays.Sum(a => a.Length);
+        //
+        //    // Create result BitArray
+        //    BitArray result = new BitArray(totalLength);
+        //
+        //    int offset = 0;
+        //    foreach (BitArray array in arrays)
+        //    {
+        //        for (int i = 0; i < array.Length; i++)
+        //        {
+        //            result[offset + i] = array[i];
+        //        }
+        //        offset += array.Length;
+        //    }
+        //
+        //    return result;
+        //}
+
         public static string ToBinary(string data)
         {
             StringBuilder sb = new StringBuilder();
@@ -994,6 +1059,20 @@ namespace V_Max_Tool
                 bitarray[i] = flip;
             }
         }
+
+        int[] VPL_density_map = new int[]
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
+        	0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	/* 11 - 20 */
+        	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,	/* 21 - 30 */
+        	3, 3, 3, 3, 3,					/* 31 - 35 */
+        };
+
+        //int[] VPL_Track_Density = new int[]
+        //{
+        //    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        //    1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3
+        //};
 
         int VPL_Density(int len)
         {

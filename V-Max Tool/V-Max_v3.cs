@@ -102,7 +102,7 @@ namespace V_Max_Tool
         byte[] Rebuild_V3(byte[] data, int gap_sector, byte[] Disk_ID, int trk)
         {
             trk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-            byte compare = 0;
+            int compare = 0;
             byte[] track_ID = trk % 2 == 1
                 ? ArrayConcat(v3_sector_sync, new byte[] { 0xff, 0xff }, Build_BlockHeader(trk, 255, NDS.t18_ID))
                 : new byte[] { 0x7f };
@@ -117,29 +117,22 @@ namespace V_Max_Tool
             {
                 compare <<= 1;
                 if (source[i]) compare |= 1;
-                if (compare == 0x49)
+                if ((compare & 0x00ffffff) == 0x4949ee)
                 {
                     try
                     {
-                        byte[] cmp = Bit2Byte(source, i - 7, 60 << 3);
-                        int hlen = 0;
-                        while (cmp[hlen] == 0x49 && hlen < cmp.Length) hlen++;
-                        if (hlen < cmp.Length && cmp[hlen] == 0xee)
+                        int pos = i + 1;
+                        int cursec = Decode_VmaxGCR(Bit2Byte(source, pos, 32))[0] & 0x1f; // decodes the sector # from V-Max GCR
+                        if (!sector.ContainsKey(cursec) && cursec >= 0 && cursec < 30)
                         {
-                            int pos = i + (hlen << 3) + 1;
-                            int cursec = Decode_VmaxGCR(CopyFrom(cmp, hlen + 1, 4))[0] & 0x1f; // decodes the sector # from V-Max GCR
-                            if (!sector.ContainsKey(cursec) && cursec >= 0 && cursec < 30)
-                            {
-                                byte[] getsec = Bit2Byte(source, pos, Math.Min(340 << 3, source.Length - pos)); // take more than we need
-                                int secsize = Get_vm3_sectorSize(getsec, 0);        // find exact size of sector
-                                sector.Add(cursec, CopyFrom(getsec, 0, secsize));  // copy relevant sector data into the array
-                                tlen += secsize + 1 + sync;
-                                i += secsize << 3; // advance source pointer near the end of sector.
-                            }
+                            byte[] getsec = Bit2Byte(source, pos, Math.Min(340 << 3, source.Length - pos)); // take more than we need
+                            int secsize = Get_vm3_sectorSize(getsec, 0);        // find exact size of sector
+                            sector.Add(cursec, CopyFrom(getsec, 0, secsize));  // copy relevant sector data into the array
+                            tlen += secsize + 1 + sync;
+                            i += secsize << 3; // advance source pointer near the end of sector.
                         }
-                        else i += (hlen + 2) << 3; // "these are not the sectors you are looking for", advancing pointer past the header
                     }
-                    catch { }
+                    catch (Exception ex) { Console.WriteLine(ex); }
                 }
                 i++;
             }
@@ -176,202 +169,6 @@ namespace V_Max_Tool
                     }
                 }
                 return possible_Filler.Any(x => x != filler) ? (byte)0xff : filler;
-            }
-        }
-
-        //byte[] Rebuild_V3(byte[] data, int gap_sector, byte[] Disk_ID, int trk)
-        //{
-        //    trk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-        //    byte[] track_ID = trk % 2 == 1
-        //        ? ArrayConcat(v3_sector_sync, new byte[] { 0xff, 0xff }, Build_BlockHeader(trk, 255, NDS.t18_ID))
-        //        : new byte[] { 0x7f };
-        //    byte compare = 0;
-        //    int d = trk < 18 ? 0 : Get_Density(data.Length) < 1 ? 1 : Get_Density(data.Length);
-        //    int sync = v3_sector_sync.Length;
-        //    int tlen = track_ID.Length;
-        //    Dictionary<int, byte[]> sector = new Dictionary<int, byte[]>();
-        //    BitArray source = new BitArray(Flip_Endian(data));
-        //
-        //    int i = 0;
-        //    while (i < source.Length)
-        //    {
-        //        compare <<= 1;
-        //        if (source[i]) compare |= 1;
-        //        if (compare == 0x49)
-        //        {
-        //            try
-        //            {
-        //                byte[] cmp = Bit2Byte(source, i - 7, 60 << 3);
-        //                int hlen = 0;
-        //                while (cmp[hlen] == 0x49 && hlen < cmp.Length) hlen++;
-        //                if (hlen < cmp.Length && cmp[hlen] == 0xee)
-        //                {   
-        //                    int pos = i + (hlen << 3) + 1;
-        //                    int cursec = Decode_VmaxGCR(CopyArray(cmp, hlen + 1, 4))[0] & 0x1f; // decodes the sector # from V-Max GCR
-        //                    if (!sector.ContainsKey(cursec) && cursec >= 0 && cursec < 30)
-        //                    {
-        //                        byte[] getsec = Bit2Byte(source, pos, Math.Min(340 << 3, source.Length - pos)); // take more than we need
-        //                        int secsize = Get_vm3_sectorSize(getsec, 0);        // find exact size of sector
-        //                        sector.Add(cursec, CopyArray(getsec, 0, secsize));  // copy relevant sector data into the array
-        //                        tlen += secsize + 1 + sync;
-        //                        i += secsize << 3; // advance source pointer near the end of sector.
-        //                    }
-        //                }
-        //                else i += (hlen + 2) << 3; // "these are not the sectors you are looking for", advancing pointer past the header
-        //            }
-        //            catch { }
-        //        }
-        //        i++;
-        //    }
-        //    int header_len = (density[d] - (tlen + 10)) / sector.Count;
-        //    header_len = header_len > v3_max_header ? v3_max_header : header_len < v3_min_header ? v3_min_header : header_len;
-        //    byte[] sec_header = ArrayConcat(v3_sector_sync, (FastArray.Init(header_len, 0x49)), new byte[] { 0xee });
-        //    var sec_seq = sector.Keys.OrderBy(k => k).ToList(); // sort sectors numerically
-        //    using (MemoryStream buffer = new MemoryStream())
-        //    using (BinaryWriter writer = new BinaryWriter(buffer))
-        //    {
-        //        foreach (var sec in sec_seq)
-        //        {
-        //            writer.Write(sec_header);
-        //            writer.Write(sector[sec]);
-        //        }
-        //        writer.Write(track_ID);
-        //        int remaining = (density[d] - (int)buffer.Position);
-        //        if (remaining > 0) writer.Write(FastArray.Init(remaining, sector.Count < 10 ? Get_Filler() : (byte)0x55));
-        //        return buffer.ToArray();
-        //    }
-        //    
-        //
-        //    byte Get_Filler()
-        //    {
-        //        byte[] possible_Filler = new byte[] { 0xaa, 0x55, 0xff };
-        //        byte filler = 0;
-        //        int count = 0, longest = 0;
-        //        for (int f = 1; f < data.Length; f++)
-        //        {
-        //            if (data[f] != data[f - 1] && (data[f] != 0xaa && data[f] != 0x55)) count = 0;
-        //            else if (++count > longest)
-        //            {
-        //                longest = count;
-        //                filler = data[f]; // track the most common filler byte
-        //            }
-        //        }
-        //        return possible_Filler.Any(x => x != filler) ? (byte)0xff : filler;
-        //    }
-        //}
-
-        byte[] Rebuild_V3_old(byte[] data, int gap_sector, byte[] Disk_ID, int trk)
-        {
-            trk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-            int d = trk < 18 ? 0 : Get_Density(data.Length) < 1 ? 1 : Get_Density(data.Length);
-            int sectors = 0;
-            int fill = 0;
-            byte[] header = FastArray.Init(3, 0x49);
-            byte[][] sec_data;
-            byte sb = 0x49;
-            byte eb = 0xee;
-            byte filler = 0xff;
-            int sync = v3_sector_sync.Length;
-            byte gap = 0x55;
-            var s_st = new List<int>();
-            var hdr_ID = new List<string>();
-            byte[] comp = new byte[3];
-            byte[] track_ID = new byte[] { 0x7f };
-            if (trk % 2 == 1 && !Disk_ID.All(x => x == 0))
-            {
-                track_ID = ArrayConcat(v3_sector_sync, new byte[] { 0xff, 0xff }, Build_BlockHeader(trk, 255, NDS.t18_ID));
-            }
-            int tlen = track_ID.Length;
-            var a = 0;
-            bool fnd = false;
-            (fnd, a) = Find_Data(ArrayConcat(header, new byte[] { eb }), data);
-            while (data[a] == 0x49)
-            {
-                a -= 1;
-                if (a < 0) a = data.Length - 1;
-            }
-            data = Rotate_Left(data, a);
-            for (int i = 0; i < data.Length - comp.Length; i++)
-            {
-                if (data[i] == sb && MatchSeq(data, header, i))
-                {
-                    int b = 0;
-                    while (data[i + b] == sb) b++;
-                    if (b < 20 && data[i + b] == eb)
-                    {
-                        s_st.Add(i + b);
-                    }
-                    i += b;
-                    try
-                    {
-                        Buffer.BlockCopy(data, i, comp, 0, comp.Length);
-                    }
-                    catch { }
-                    if (comp[0] == eb)
-                    {
-                        sectors++;
-                        hdr_ID.Add(Hex_Val(comp, 2, 1));
-                    }
-                }
-            }
-
-            sec_data = new byte[sectors][];
-            for (int i = 0; i < sectors; i++)
-            {
-                int pos = 0;
-                try
-                {
-                    while (s_st[i] + pos < data.Length)
-                    {
-                        if (vm3_pos_sync.Any(x => x == data[s_st[i] + pos]) || data[s_st[i] + pos] == sb) break;
-                        pos++;
-                    }
-                    sec_data[i] = CopyFrom(data, s_st[i], pos);
-                    tlen += sec_data[i].Length + sync;
-                }
-                catch { };
-            }
-
-            int header_len = (density[d] - (tlen) - 15) / sectors;
-            header_len = header_len > v3_max_header ? v3_max_header : header_len < v3_min_header ? v3_min_header : header_len;
-            int track_len = tlen + (header_len * sectors);
-            if (sectors < 16)
-            {
-                fill = (density[d] - track_len);
-                fill = track_ID.Length == 0 ? fill - 1 : fill;
-                int start = 0;
-                int longest = 0;
-                int count = 0;
-                for (int i = 1; i < data.Length; i++)
-                {
-                    if (data[i] != data[i - 1] && (data[i] != 0xaa && data[i] != 0x55)) count = 0;
-                    count++;
-                    if (count > longest)
-                    {
-                        start = i - count;
-                        longest = count;
-                        filler = data[start + 2];
-                    }
-                }
-            }
-            int index = hdr_ID.FindIndex(x => x.StartsWith("F3"));
-            byte[] sec_header = ArrayConcat(v3_sector_sync, FastArray.Init(header_len, 0x49));
-
-            /// Start rebuilding the track
-            using (var buff = new MemoryStream())
-            using (var wrt = new BinaryWriter(buff))
-            {
-                for (int i = 0; i < sectors; i++)
-                {
-                    wrt.Write(sec_header);
-                    wrt.Write(sec_data?[index++]);
-                    index = index == sectors ? 0 : index;
-                }
-                wrt.Write(track_ID);
-                if (fill > 0) wrt.Write(FastArray.Init(fill, filler));
-                int remaining = (density[d] - (int)buff.Position);
-                if (remaining > 0) wrt.Write(FastArray.Init(remaining, gap));
-                return buff.ToArray();
             }
         }
 

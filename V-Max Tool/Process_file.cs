@@ -519,6 +519,7 @@ namespace V_Max_Tool
 
             void Get_Track_Info(int trk)
             {
+                //int t = tracks > 42 ? (trk / 2) : trk;
                 if (NDS.cbm[trk] == 0)
                 {
                     byte[] temp;
@@ -628,32 +629,42 @@ namespace V_Max_Tool
                 }
                 if (NDS.cbm[trk] == 2)
                 {
-                    vmx++;
-                    (
-                        NDA.Track_Data[trk],
-                        NDS.D_Start[trk],
-                        NDS.D_End[trk],
-                        NDS.Sector_Zero[trk],
-                        NDS.Track_Length[trk],
-                        NDS.Info[trk],
-                        NDS.sectors[trk],
-                        NDS.Gap_Sector[trk],
-                        NDS.v2info[trk]) = Get_V2_Track_Info(NDS.Track_Data[trk], trk);
+                    int t = tracks > 42 ? (trk / 2) : trk;
+                    if (t < 38)
+                    {
+                        vmx++;
+                        (
+                            NDA.Track_Data[trk],
+                            NDS.D_Start[trk],
+                            NDS.D_End[trk],
+                            NDS.Sector_Zero[trk],
+                            NDS.Track_Length[trk],
+                            NDS.Info[trk],
+                            NDS.sectors[trk],
+                            NDS.Gap_Sector[trk],
+                            NDS.v2info[trk]) = Get_V2_Track_Info(NDS.Track_Data[trk], trk);
+                    }
+                    else NDS.cbm[trk] = secF.Length - 1;
                 }
                 if (NDS.cbm[trk] == 3)
                 {
-                    vmx++;
-                    int len;
-                    (NDS.Info[trk],
-                        NDS.D_Start[trk],
-                        NDS.D_End[trk],
-                        NDS.Sector_Zero[trk],
-                        len, NDS.sectors[trk],
-                        NDS.Header_Len[trk],
-                        NDS.Gap_Sector[trk]) = Get_vmv3_track_length(NDS.Track_Data[trk], trk);
-                    NDS.Track_Length[trk] = len * 8;
-                    NDS.Sector_Zero[trk] *= 8;
-                    NDA.sectors[trk] = NDS.sectors[trk];
+                    int t = tracks > 42 ? (trk / 2) : trk;
+                    if (t < 38)
+                    {
+                        vmx++;
+                        int len;
+                        (NDS.Info[trk],
+                            NDS.D_Start[trk],
+                            NDS.D_End[trk],
+                            NDS.Sector_Zero[trk],
+                            len, NDS.sectors[trk],
+                            NDS.Header_Len[trk],
+                            NDS.Gap_Sector[trk]) = Get_vmv3_track_length(NDS.Track_Data[trk], trk);
+                        NDS.Track_Length[trk] = len * 8;
+                        NDS.Sector_Zero[trk] *= 8;
+                        NDA.sectors[trk] = NDS.sectors[trk];
+                    }
+                    else NDS.cbm[trk] = secF.Length - 1;
                 }
                 if (NDS.cbm[trk] == 4)
                 {
@@ -671,50 +682,60 @@ namespace V_Max_Tool
 
                 if (NDS.cbm[trk] == 5)
                 {
-                    vpl++;
-                    (NDG.Track_Data[trk],
-                        NDS.D_Start[trk],
-                        NDS.D_End[trk],
-                        NDS.Track_Length[trk],
-                        NDS.Header_Len[trk],
-                        NDS.sectors[trk],
-                        NDS.cbm_sector[trk],
-                        NDS.Info[trk]) = Get_Vorpal_Track_Length(NDS.Track_Data[trk], trk);
-                    if (NDS.sectors[trk] == 0)
+                    int t = tracks > 42 ? (trk / 2) : trk;
+                    if (t < 35)
                     {
-                        NDS.cbm[trk] = secF.Length - 1;
-                        NDS.Track_Data[trk] = FastArray.Init(8192, 0x00);
-                    }
-                    if (NDG.Track_Data[trk] != null)
-                    {
-                        if (NDS.cbm[trk] == 5)
+                        vpl++;
+                        (NDG.Track_Data[trk],
+                            NDS.D_Start[trk],
+                            NDS.D_End[trk],
+                            NDS.Track_Length[trk],
+                            NDS.Header_Len[trk],
+                            NDS.sectors[trk],
+                            NDS.cbm_sector[trk],
+                            NDS.Info[trk]) = Get_Vorpal_Track_Length(NDS.Track_Data[trk], trk);
+                        if (NDS.sectors[trk] == 0)
                         {
-                            if (Original.OT[trk].Length == 0)
+                            NDS.cbm[trk] = secF.Length - 1;
+                            NDS.Track_Data[trk] = FastArray.Init(8192, 0x00);
+                        }
+                        if (NDG.Track_Data[trk] != null)
+                        {
+                            if (NDS.cbm[trk] == 5)
                             {
-                                Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
-                                Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);
+                                if (Original.OT[trk].Length == 0)
+                                {
+                                    Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
+                                    Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);
+                                }
                             }
                         }
                     }
+                    else NDS.cbm[trk] = secF.Length - 1;
                 }
 
                 if (NDS.cbm[trk] == 6)
                 {
-                    int tk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-                    rlk++;
-                    int q = 0;
-                    byte[] temp = new byte[q];
-                    (temp,
-                        NDS.D_Start[trk],
-                        NDS.D_End[trk], q,
-                        NDS.sectors[trk],
-                        NDS.Header_Len[trk],
-                        NDS.Info[trk]) = RapidLok_Track_Info(NDS.Track_Data[trk], trk, false, new byte[] { 0x00 });
-                    if (q < (8000 << 3) && tk < 36) NDS.Track_Length[trk] = q;
-                    else
+                    int t = tracks > 42 ? (trk / 2) : trk;
+                    if (t < 35 || t > 35)
                     {
-                        NDS.cbm[trk] = secF.Length - 1;
+                        int tk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
+                        rlk++;
+                        int q = 0;
+                        byte[] temp = new byte[q];
+                        (temp,
+                            NDS.D_Start[trk],
+                            NDS.D_End[trk], q,
+                            NDS.sectors[trk],
+                            NDS.Header_Len[trk],
+                            NDS.Info[trk]) = RapidLok_Track_Info(NDS.Track_Data[trk], trk, false, new byte[] { 0x00 });
+                        if (q < (8000 << 3) && tk < 36) NDS.Track_Length[trk] = q;
+                        else
+                        {
+                            NDS.cbm[trk] = secF.Length - 1;
+                        }
                     }
+                    else NDS.cbm[trk] = secF.Length - 1;
                 }
 
                 if (NDS.cbm[trk] == 7)
@@ -1146,7 +1167,7 @@ namespace V_Max_Tool
                     if (!(short_sec && NDS.sectors[trk] < 16))
                     {
                         (NDG.Track_Data[trk], NDA.Track_Length[trk], NDA.Sector_Zero[trk]) =
-                            Adjust_Vmax_V3_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.sectors[trk]);
+                        Adjust_Vmax_V3_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.sectors[trk]);
                     }
                     else Shrink_Short_Sector(trk);
                 }
@@ -1197,7 +1218,7 @@ namespace V_Max_Tool
 
             void Process_Vorpal(int trk, bool avp, int lead)
             {
-                if (Original.OT[trk].Length == 0)
+                if (Original.OT[trk].Length == 0 && NDG.Track_Data[trk]?.Length > 0)
                 {
                     Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
                     Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);

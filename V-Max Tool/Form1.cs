@@ -82,7 +82,7 @@ namespace V_Max_Tool
             AutoScaleMode = AutoScaleMode.Font
         };
 
-        Form WriteNib = new Form
+        readonly Form WriteNib = new Form
         {
             Text = "<- Use RPM guide and adjust your drive accordingly (if possible) ** Write Image To Disk",
             MinimizeBox = false,
@@ -135,7 +135,17 @@ namespace V_Max_Tool
             this.Text = $"ReMaster {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
-
+            //List<string> list = new List<string>();
+            ////Text = $"{Hex_Val(Decode_CBM_GCR(new byte[] { 0x52, 0x55, 0x75, 0x29, 0x57, 0x9a, 0xa6, 0xa5, 0x29, 0x4a}))}";
+            //for (int i = 0; i < 47; i++)
+            //{
+            //    string t = $"{i:00} ";
+            //    BitArray tt = new BitArray(Make_VPL_SecNum(i).ID);
+            //    for (int j = 0; j < tt.Length; j++) t += tt[j] ? "1" : "0";
+            //    list.Add(t);
+            //    //Text = $"{Make_VPL_SecNum(0).Needed_Sync} {Byte_to_Binary(Bit2Byte(Make_VPL_SecNum(0).ID))}";
+            //}
+            //File.WriteAllLines($@"c:\test\nsec.txt", list.ToArray());
             // debugging buttons -- comment next line to enable debugging buttons
             button1.Visible = button2.Visible = false; // EnableDBMenu.Checked = false;
         }
@@ -925,36 +935,6 @@ namespace V_Max_Tool
             return true;
         }
 
-        //protected override void OnFormClosing(FormClosingEventArgs e)
-        //{
-        //    Exit(batch);
-        //    //try
-        //    //{
-        //    //    cancel = true;
-        //    //    this.Text = "Closing..";
-        //    //    Application.Exit();
-        //    //    Environment.Exit(0);
-        //    //}
-        //    //catch { }
-        //    //this.Close();
-        //}
-
-        //private void Exit(bool busy)
-        //{
-        //    if (busy)
-        //    {
-        //        using (Message_Center center = new Message_Center(this))
-        //        {
-        //            string message = "Cancel operations and exit?";
-        //            string title = "Operations in progress!";
-        //            DialogResult exit = MessageBox.Show(message, title, MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
-        //            if (exit == DialogResult.OK) Terminate();
-        //        }
-        //    }
-        //    else Terminate();
-        //
-        //}
-
         private void Terminate()
         {
             try
@@ -1028,6 +1008,13 @@ namespace V_Max_Tool
         private void Density_Range_CheckedChanged(object sender, EventArgs e)
         {
             SwapDensities(tracks > 0 && !NDS.cbm.Any(x => x == 5));
+            if (!busy)
+            {
+                Clear_Out_Items();
+                bool p = true;
+                if (Adj_cbm.Checked && !V3_Auto_Adj.Checked) p = false;
+                Process_Nib_Data(true, p, false, true);
+            }
         }
 
         private void Dir_Screen_DragEnter(object sender, DragEventArgs e)
