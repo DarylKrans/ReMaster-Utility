@@ -343,57 +343,78 @@ namespace V_Max_Tool
             }
         }
 
-        byte[] Custom_Format(byte[] data)
+        byte[] Custom_Format(byte[] data, int trk = -1)
         {
+            if (data == null || data.Length < 6000) return data;
+            //int track = tracks > 42 ? (trk / 2) + 1 : trk + 1;
             byte[] skip = new byte[] { 0x55, 0xaa };
             HashSet<byte> BlankSet = new HashSet<byte>(blank);
             HashSet<byte> Padding = new HashSet<byte>(skip);
             int nb = 0;
             int pad = 0;
             int dataLength = data.Length;
-
+            int sncpos = -1;
+            
             for (int i = 0; i < dataLength; i++)
             {
                 if (!BlankSet.Contains(data[i])) nb++;
                 if (data[i] == 0x55 || data[i] == 0xaa) pad++;
+                if (data[i] == 0xff && sncpos != -1) sncpos = i;
             }
             if (pad > density[0] - 100) return new byte[0];
-
-            if (nb > 6200) // 6200
+            int sp = 0;
+            if (nb > 1000) // 6200
             {
-                const int clen = 192;
-                int d_end = dataLength;
-                byte[] compare = new byte[clen];
-                Buffer.BlockCopy(data, dataLength - clen, compare, 0, clen);
-
-                for (int i = 0; i < dataLength - clen; i++)
+                while (sp < 256)
                 {
-                    if (MatchSeq(data, compare, i))
+                    if (sp++ > 0) data = Rotate_Left(data, 1);
+                    const int clen = 192;
+                    int start_pos = sncpos >= 0 && sncpos < 256 ? sncpos : 2;
+                    byte[] compare = CopyArray(data, start_pos, clen);
+                    for (int i = clen + 1000; i < dataLength - clen; i++)
                     {
-                        int newLength = d_end - (i + clen);
-                        if (newLength > 6000)
+                        if (MatchSeq(data, compare, i))
                         {
-                            byte[] temp = new byte[newLength];
-                            Buffer.BlockCopy(data, i + clen, temp, 0, newLength);
-                            int snc = FindLongestRun(temp, 0xff);
-                            if (snc > 0) temp = Rotate_Left(temp, snc);
-                            return temp;
-                        }
-                        else
-                        {
-                            int p = density[2] >> 1;
-                            return ArrayConcat(FastArray.Init(p - 1, 0xac), new byte[] { 0xa0 }, FastArray.Init(density[2] - p, 0xca));
+                            int newLength = i - start_pos; // - 10;
+                            if (newLength > 6000)
+                            {
+                                byte[] temp = CopyArray(data, start_pos, newLength);
+                                if (pad < 1000)
+                                {
+                                    int gap = FindLongestRun_Specific(temp, 0x55);
+                                    if (gap > 0) temp = Rotate_Left(temp, gap);
+                                }
+                                int d = density[Get_Density(temp.Length)];
+                                if (temp.Length > d)
+                                {
+                                    int trim = temp.Length - d;
+                                    (int pos, int len) = FindLongestRun_General(temp);
+                                    if (len > 0 && pos >= 0 && pos + len < temp.Length)
+                                    {
+                                        if (trim > len) trim = len - 2;
+                                        temp = ArrayConcat(CopyArray(temp, 0, pos), CopyArray(temp, pos + trim));
+                                    }
+                                }
+                                int snc = FindLongestRun_Specific(temp, 0xff);
+                                if (snc > 0) temp = Rotate_Left(temp, snc);
+                                if (temp.Length > d) temp = CopyArray(temp, 0, d);
+                                return temp;
+                            }
+                            else
+                            {
+                                int p = density[2] >> 1;
+                                return ArrayConcat(FastArray.Init(p - 1, 0xac), new byte[] { 0xa0 }, FastArray.Init(density[2] - p, 0xca));
+                            }
                         }
                     }
                 }
             }
-
+            
             if (nb > 500)
             {
-                int workLength = data.Length;
                 int snc = 0;
                 int spos = 0;
-                for (int i = 0; i < workLength; i++)
+                for (int i = 0; i < data.Length; i++)
                 {
                     if (data[i] == 0xff) snc++;
                     else
@@ -407,12 +428,12 @@ namespace V_Max_Tool
                     }
                 }
                 if (spos > 0) data = Rotate_Left(data, spos);
-
+            
                 int actual_data = Check_Valid_Data(data, true);
                 byte[] temp = new byte[Check_Valid_Data(data, false, true) < 1000 ? density[2] : density[3]];
                 Buffer.BlockCopy(data, 0, temp, 0, temp.Length);
-                if (actual_data > 500) temp = Remove_Weak_Bits(temp, true);
-                temp = Add_Weak_Bit(temp);
+                if (actual_data > 500 && snc < 1000) temp = Remove_Weak_Bits(temp, true);
+                //temp = Add_Weak_Bit(temp);
                 return temp;
             }
             return data;
@@ -435,30 +456,30 @@ namespace V_Max_Tool
                 return ad;
             }
 
-            byte[] Add_Weak_Bit(byte[] input)
-            {
-                int run = 0;
-                byte g = 0x00;
-                for (int j = 0; j < input.Length; j++)
-                {
-                    if (input[j] == g) run++;
-                    else
-                    {
-                        g = input[j];
-                        if (run > 300)
-                        {
-                            input[j] = 0x00;
-                            if (j + 1 < input.Length) input[j + 1] = 0x00;
-                            byte[] output = new byte[density[3]];
-                            int start = (input.Length - density[3]) / 2;
-                            Buffer.BlockCopy(input, start, output, 0, density[3]);
-                            return output;
-                        }
-                        run = 0;
-                    }
-                }
-                return input;
-            }
+            //byte[] Add_Weak_Bit(byte[] input)
+            //{
+            //    int run = 0;
+            //    byte g = 0x00;
+            //    for (int j = 0; j < input.Length; j++)
+            //    {
+            //        if (input[j] == g) run++;
+            //        else
+            //        {
+            //            g = input[j];
+            //            if (run > 300)
+            //            {
+            //                input[j] = 0x00;
+            //                if (j + 1 < input.Length) input[j + 1] = 0x00;
+            //                byte[] output = new byte[density[3]];
+            //                int start = (input.Length - density[3]) / 2;
+            //                Buffer.BlockCopy(input, start, output, 0, density[3]);
+            //                return output;
+            //            }
+            //            run = 0;
+            //        }
+            //    }
+            //    return input;
+            //}
         }
     }
 }

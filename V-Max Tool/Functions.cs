@@ -743,7 +743,7 @@ namespace V_Max_Tool
             return (pos, run);
         }
 
-        int FindLongestRun(byte[] data, byte value)
+        int FindLongestRun_Specific(byte[] data, byte value)
         {
             int current = 0;
             int run = 0;
@@ -767,6 +767,43 @@ namespace V_Max_Tool
                 pos = data.Length - run;
             }
             return pos;
+        }
+
+        (int position, int length) FindLongestRun_General(byte[] data)
+        {
+            if (data == null || data.Length == 0)
+                return (0, 0);
+
+            int run = 0;
+            int pos = 0;
+            int current = 1;
+
+            for (int i = 1; i < data.Length; i++)
+            {
+                if (data[i] != 0xff && data[i] == data[i - 1])
+                {
+                    current++;
+                }
+                else
+                {
+                    // save best run so far (ignore 0xFF sync runs)
+                    if (current > run && data[i - 1] != 0xFF)
+                    {
+                        run = current;
+                        pos = i - run;
+                    }
+                    current = 1;
+                }
+            }
+
+            // final check at end of array
+            if (current > run && data[data.Length - 1] != 0xFF)
+            {
+                run = current;
+                pos = data.Length - run;
+            }
+
+            return run > 5 ? (pos, run) : (0, 0);
         }
 
         (byte[], int, int) GetSectorWithErrorCode(byte[] data, int sector, bool decode, byte[] ID = null, BitArray source = null, int position = 0)

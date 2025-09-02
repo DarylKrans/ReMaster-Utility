@@ -295,6 +295,7 @@ namespace V_Max_Tool
                 if (tracks > 42) i++;
             }
             foreach (var thread in Job) thread?.Join();
+
             Check_Formats(); /// <- Checks and corrects falsly identified track formats
 
             Job = new Thread[0];
@@ -531,47 +532,45 @@ namespace V_Max_Tool
                     if (snc > NDS.Track_Data[trk].Length - 5) temp = FastArray.Init(density[3], 0xff);
                     else
                     {
-                        temp = Custom_Format(NDS.Track_Data[trk]);
-                        int consecutive = 0;
-                        int pad = 0;
-                        bool breakLoop = false;
-                        int tempLength = temp.Length;
-
-                        // Avoid using LINQ's .Any() inside a loop, and cache the blank array length
-                        int blankLength = blank.Length;
-                        for (int i = 0; i < tempLength; i++)
+                        temp = Custom_Format(NDS.Track_Data[trk], trk);
+                        File.WriteAllBytes($@"c:\test\ret{(tracks > 42 ? (trk / 2) + 1 : trk + 1)}", temp);
+                        if (temp != null)
                         {
-                            if (temp[i] == 0x55) pad++;
-
-                            bool isBlank = false;
-                            for (int j = 0; j < blankLength; j++)
+                            int consecutive = 0;
+                            int pad = 0;
+                            bool breakLoop = false;
+                            int tempLength = temp.Length;
+                        
+                            // Avoid using LINQ's .Any() inside a loop, and cache the blank array length
+                            int blankLength = blank.Length;
+                            for (int i = 0; i < tempLength; i++)
                             {
-                                if (temp[i] == blank[j])
+                                if (temp[i] == 0x55 || temp[i] == 0xaa) pad++;
+                        
+                                bool isBlank = false;
+                                for (int j = 0; j < blankLength; j++)
                                 {
-                                    isBlank = true;
-                                    break;
+                                    if (temp[i] == blank[j])
+                                    {
+                                        isBlank = true;
+                                        break;
+                                    }
+                                }
+                        
+                                if (!isBlank) consecutive++;
+                                else
+                                {
+                                    if (consecutive > 50)
+                                    {
+                                        breakLoop = true;
+                                        break;
+                                    }
+                                    consecutive = 0;
                                 }
                             }
-
-                            if (!isBlank) consecutive++;
-                            else
-                            {
-                                if (consecutive > 50)
-                                {
-                                    breakLoop = true;
-                                    break;
-                                }
-                                consecutive = 0;
-                            }
-                        }
-
-                        if (!breakLoop && consecutive < 50) temp = new byte[0];
-
-                        if (pad > 3000 && temp.Length >= density[3])
-                        {
-                            byte[] tmp = new byte[density[3]];
-                            Buffer.BlockCopy(temp, 0, tmp, 0, tmp.Length);
-                            temp = tmp;
+                        
+                            if (!breakLoop && consecutive < 50) temp = new byte[0];
+                            if (pad > 5000 && temp.Length >= density[3]) temp = CopyArray(temp, 0, density[3]);
                         }
                     }
                     if (temp != null && (temp.Length > 6000 && temp.Length <= 8000))
@@ -1274,12 +1273,12 @@ namespace V_Max_Tool
                 byte[] temp1 = new byte[NDG.Track_Data[trk].Length];
                 Buffer.BlockCopy(NDG.Track_Data[trk], 0, temp1, 0, temp1.Length);
                 int snc = 0;
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 100; i++) // i < 100
                 {
                     if (temp1[i] == 0xff) snc++;
                     else
                     {
-                        if (snc > 20)
+                        if (snc >= 5) // 20
                         {
                             Set_Dest_Arrays(temp1, trk);
                             break;
@@ -1287,7 +1286,7 @@ namespace V_Max_Tool
                         snc = 0;
                     }
                 }
-                if (snc < 20)
+                if (snc < 5) // 20
                 {
                     byte[] temp = new byte[0];
                     (int pos, int longest) = Longest_Run(temp1, new byte[] { 0x55, 0xaa });
@@ -1306,12 +1305,12 @@ namespace V_Max_Tool
         int Get_Data_Fmt2(byte[] data, int track, bool modNDS = true) // improved for speed and reliability (needs testing)
         {
             if (data == null) return 0;
-
+        
             Dictionary<byte, int> headerDict = new Dictionary<byte, int>()
             {
                 { 0xff, 0 }, { 0x64, 1 }, { 0x4e, 2 }, { 0x49, 3 }, { 0x3f, 4 }, { 0xbf, 5 }
             };
-
+        
             int tk = tracks > 42 ? (track / 2) + 1 : track + 1; // are we working with half-tracks?
             bool noData = true;         // this remains true until a '1' bit is found.  If all 0's, the track is empty 
             byte compare = 0;           // this is the 'sliding window' byte where each bit of the bitarray is rotated through 1 at a time
@@ -1329,7 +1328,7 @@ namespace V_Max_Tool
             int vpl_min = 140 << 3;     // sets minimum distance allowed between sectors (in bits)
             // convert byte[] array to BitArray and changes the endianess so the highest bit is the 1st and the lowest bit is the last
             BitArray source = new BitArray(Flip_Endian(data));
-
+        
             for (int i = 0; i < source.Length; i++)
             {
                 compare <<= 1;
@@ -1351,7 +1350,7 @@ namespace V_Max_Tool
                         weak = 0;
                     }
                 }
-
+        
                 if (compare > 62)
                 {
                     index = headerDict.TryGetValue(compare, out int value) ? value : -1;
@@ -1386,7 +1385,7 @@ namespace V_Max_Tool
             if (tk == 35 && cbm > 0 && weak_bits > 4000) return 1;      // EA protection found on Jordan Vs. Bird (maybe others)
             // Still no matches, check for signature based protections (Pirate Slayer, GMA, Rainbow Arts, etc..)
             return Check_Signatures();
-
+        
             bool Check_VMaxLoader()
             {
                 int l = 0;
@@ -1403,13 +1402,13 @@ namespace V_Max_Tool
                 }
                 return false;
             }
-
+        
             void Check_cbm_rapidlok(int pos)
             {
-                if (sync > 12 && pos + 8 < source.Count)
+                if (sync >= 10 && pos + 8 < source.Count)
                 {
                     byte[] cbit = Bit2Byte(source, pos, 8);
-
+        
                     if (sync < 288 && cbit[0] == 0x52)
                     {
                         Verify_Header(pos, ref prev_cbm, cbm_min, 4, header =>
@@ -1423,7 +1422,7 @@ namespace V_Max_Tool
                             cbm--;  // Adjust CBM count
                         }
                     }
-
+        
                     if (sync < 420 && cbit[0] == 0x75)
                     {
                         Verify_Header(pos, ref prev_rl, rl_min, 6, header =>
@@ -1435,25 +1434,25 @@ namespace V_Max_Tool
                         }, ref rapidlok);
                     }
                 }
-
+        
                 bool Check_for_Block_Sync(int length)
                 {
                     if (pos + length >= source.Count) return false;
-
+        
                     int snc = 0;
                     for (int i = 0; i < length; i++)
                     {
                         if (source[pos + i]) snc++;
                         else
                         {
-                            if (snc >= 10) return true;
+                            if (snc >= 8) return true;
                             snc = 0;
                         }
                     }
                     return snc >= 10;
                 }
             }
-
+        
             void Check_Vmax_V2(int pos)
             {
                 Verify_Header(pos, ref prev_v2, v2_min, 5, header =>
@@ -1463,7 +1462,7 @@ namespace V_Max_Tool
                            (header[1] == header[3] && header[2] == header[4]);
                 }, ref vmax_v2);
             }
-
+        
             void Check_Vmax_V3(int pos)
             {
                 Verify_Header(pos, ref prev_v3, v3_min, 9, header =>
@@ -1479,7 +1478,7 @@ namespace V_Max_Tool
                     return false;
                 }, ref vmax_v3);
             }
-
+        
             void Check_Vorpal(int pos)
             {
                 Verify_Header(pos, ref prev_vpl, vpl_min, 3, header =>
@@ -1487,7 +1486,7 @@ namespace V_Max_Tool
                     return (header[0] == 0x3f || header[0] == 0xbf) && header[1] == 0xd5 && (header[2] & 0x7f) != 0x80;
                 }, ref vorpal);
             }
-
+        
             void Verify_Header(int pos, ref int lastPos, int minDistance, int byteLength, Func<byte[], bool> validate, ref int count)
             {
                 if ((lastPos < 0 || pos - lastPos > minDistance) && pos >= 0 && pos + (byteLength << 3) < source.Length)
@@ -1500,7 +1499,7 @@ namespace V_Max_Tool
                     }
                 }
             }
-
+        
             int Check_Signatures()
             {
                 for (int h = 0; h < 8; h++)
@@ -1577,7 +1576,7 @@ namespace V_Max_Tool
                         }
                     }
                 }
-
+        
                 bool CheckForKey()
                 {
                     for (int i = 0; i < data.Length; i++)
@@ -1592,7 +1591,7 @@ namespace V_Max_Tool
                 }
                 return 0;
             }
-
+        
             bool CheckPadding()
             {
                 int pad = 0;

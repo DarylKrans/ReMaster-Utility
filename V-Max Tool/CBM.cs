@@ -400,7 +400,7 @@ namespace V_Max_Tool
                 {
                     syncCount++;
                     //if (syncCount == 12) sync = true;
-                    if (syncCount == 12) sync = true;
+                    if (syncCount == 10) sync = true; // 12
                 }
                 else
                 {

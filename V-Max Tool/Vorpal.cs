@@ -281,6 +281,8 @@ namespace V_Max_Tool
                         var secnum = cur_pos + (163 << 3) < source.Length
                             ? Get_VPL_SecNum(Bit2Byte(source, cur_pos + 17 + (161 << 3) + 2, 9)) : -1;
                         sid = Hex_Val(Bit2Byte(source, pos - ((com << 3) >> 1), com << 3));
+                        // skip first sector found if it resides within the 1st 38 bytes of the NIB track to avoid possible header corruption
+                        // also sets variable 'last_sec' to the end of the found sector to calculate Lead-In length if next sector is '0'
                         if (pos < 300 && secnum < 47) last_sec = cur_pos + 17 + secLen + 20;
                         else if (!sec_header.Any(x => x == sid))
                         {
@@ -296,7 +298,7 @@ namespace V_Max_Tool
                                     if (compare == 0x3f)
                                     {
                                         if (sectors == 1) first_sec_start = true;
-                                        sec_zero_pos = cur_pos; // numbering = sec_hdr.Count;
+                                        sec_zero_pos = cur_pos;
                                         longest_gap = Math.Min(160 << 3, Math.Max(cur_pos - last_sec, longest_gap));
                                     }
                                     last_sec = cur_pos + 17 + secLen + 20;
