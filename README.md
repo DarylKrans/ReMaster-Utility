@@ -24,6 +24,10 @@ Rainbow Arts/Magic Bytes
 
 GMA/Securispeed
 
+Para-Protect (limited support) -- Many titles working, some still not.
+
+Other custom formats include protections found on titles like Goonies, Paperback Writer 128, Boulder Dash II, Alternate Reality (PAL), and many more.
+
 .. and some images with special signatures on the inner tracks.
 
 Custom format sector checksum integrity checks for Vorpal, RapidLok and Micro Prose are performed on image import with 
