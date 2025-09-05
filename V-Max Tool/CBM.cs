@@ -362,7 +362,6 @@ namespace V_Max_Tool
                         dest_pos++;
                         if (dest_pos == d.Length) break;
                     }
-                    //if (dest_pos < d.Length) Pad_Bits(dest_pos, d.Length - dest_pos, d);
                     int bcnt;
                     var a = Math.Abs(((dest_pos >> 3) << 3) - dest_pos);
                     if (a != 0) bcnt = (dest_pos >> 3) + 1;
@@ -841,7 +840,6 @@ namespace V_Max_Tool
                 Invoke(new Action(() =>
                 {
                     Stopwatch po = Process_Nib_Data(true, false, false, false, true);
-                    //string ret = Get_Disk_Directory();
                     Set_Dir(Get_Disk_Directory());
                     Set_BlockMap();
                     Set_ListBox_Items(false, false);

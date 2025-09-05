@@ -38,7 +38,7 @@ namespace V_Max_Tool
             }
         }
 
-        (byte[] sector, bool checksum) Find_VMax_Sector(byte[] data, int sector, int version, bool decode = false, int trk = -1)
+        (byte[] sector, bool checksum) Find_VMax_Sector(byte[] data, BitArray source, int sector, int version, bool decode = false, int trk = -1)
         {
             byte[] secdata = new byte[0];
             bool checksum = false;
@@ -48,7 +48,8 @@ namespace V_Max_Tool
                 byte[] sb = new byte[] { 0x64, 0x4e };
                 byte[] eb = new byte[] { 0x46, 0x4e, 0x64 };
                 // process as bitarray //
-                BitArray source = new BitArray(Flip_Endian(data));
+                //BitArray source = new BitArray(Flip_Endian(data));
+                if (source == null || source.Count < 1) source = new BitArray(Flip_Endian(data));
                 int pos = 0;
                 byte compare = 0;
                 while (pos < source.Length)

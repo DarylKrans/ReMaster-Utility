@@ -354,7 +354,7 @@ namespace V_Max_Tool
             int pad = 0;
             int dataLength = data.Length;
             int sncpos = -1;
-            
+
             for (int i = 0; i < dataLength; i++)
             {
                 if (!BlankSet.Contains(data[i])) nb++;
@@ -409,7 +409,7 @@ namespace V_Max_Tool
                     }
                 }
             }
-            
+
             if (nb > 500)
             {
                 int snc = 0;
@@ -428,7 +428,7 @@ namespace V_Max_Tool
                     }
                 }
                 if (spos > 0) data = Rotate_Left(data, spos);
-            
+
                 int actual_data = Check_Valid_Data(data, true);
                 byte[] temp = new byte[Check_Valid_Data(data, false, true) < 1000 ? density[2] : density[3]];
                 Buffer.BlockCopy(data, 0, temp, 0, temp.Length);
