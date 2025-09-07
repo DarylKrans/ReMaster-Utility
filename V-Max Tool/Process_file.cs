@@ -297,6 +297,9 @@ namespace V_Max_Tool
             foreach (var thread in Job) thread?.Join();
 
             Check_Formats(); /// <- Checks and corrects falsly identified track formats
+            List<string> list = new List<string>();
+            for (int i = 0; i < tracks; i++) list.Add($"track {i} fmt {secF[NDS.cbm[i]]}");
+            File.WriteAllLines($@"c:\test\formats.txt", list.ToArray());
 
             Job = new Thread[0];
             for (int i = 0; i < tracks; ++i)
@@ -324,7 +327,8 @@ namespace V_Max_Tool
                 {
                     { 0, Color.FromArgb(110, 70, 173) }, { 1, Color.Black }, { 2, Color.DarkMagenta },
                     { 3, Color.Green }, { 4, Color.Blue }, { 5, Color.DarkCyan }, { 6, Color.DarkOrange },
-                    { 7, Color.Blue }, { 8, Color.Blue }, { 9, Color.Blue }, { 10, Color.Brown },  { 11, Color.Blue }
+                    { 7, Color.Blue }, { 8, Color.Blue }, { 9, Color.Blue }, { 10, Color.Brown },
+                    { 11, Color.Blue }, { 12, Color.Blue }
                 };
 
                 var color = Color.Black;
@@ -431,14 +435,18 @@ namespace V_Max_Tool
 
                             case 6:
                                 AddTrackInfo(Color.Blue, $"{tr} {t} {fm} : {secF[6]}");
-                                foreach (var info in NDS.Info[i])
+                                try
                                 {
-                                    Color infoColor = info.Contains("(Failed!)") ? Color.FromArgb(190, 0, 0) :
-                                                      info.Contains("(Empty") ? Color.Black :
-                                                      info.Contains("0x7B") ? Color.Green :
-                                                      Color.DarkMagenta;
-                                    AddTrackInfo(infoColor, info);
+                                    foreach (var info in NDS.Info?[i])
+                                    {
+                                        Color infoColor = info.Contains("(Failed!)") ? Color.FromArgb(190, 0, 0) :
+                                                          info.Contains("(Empty") ? Color.Black :
+                                                          info.Contains("0x7B") ? Color.Green :
+                                                          Color.DarkMagenta;
+                                        AddTrackInfo(infoColor, info);
+                                    }
                                 }
+                                catch (Exception) { }
                                 AddTrackInfo(Color.Black, $"Track Length : ({(NDS.D_End[i] - NDS.D_Start[i] >> 3)}) Sectors ({NDS.sectors[i]})");
                                 AddTrackInfo(Color.Black, " ");
                                 break;
@@ -459,7 +467,11 @@ namespace V_Max_Tool
                                 break;
 
                             case 11:
-                                AddTrackInfo(Color.DarkBlue, $"{tr} {t} {fm} : GMA/Securispeed {tr} {le} ({NDG.Track_Data[i].Length})");
+                                AddTrackInfo(Color.DarkBlue, $"{tr} {t} {fm} : Securispeed {tr} {le} ({NDG.Track_Data[i].Length})");
+                                AddTrackInfo(Color.Black, " ");
+                                break;
+                            case 12:
+                                AddTrackInfo(Color.DarkBlue, $"{tr} {t} {fm} : GMA {tr} {le} ({NDG.Track_Data[i].Length})");
                                 AddTrackInfo(Color.Black, " ");
                                 break;
                         }
@@ -786,7 +798,7 @@ namespace V_Max_Tool
             void Check_Formats()
             {
                 int m = Find_Most_Frequent_Format(NDS.cbm);
-                int[] skip = new int[] { 0, 1, 4, 7, 8, 9, 11, secF.Length - 1 };
+                int[] skip = new int[] { 0, 1, 4, 7, 8, 9, 11, 12, secF.Length - 1 };
                 if (!(skip.Any(x => x == m)))
                 {
                     HashSet<int> ignore = new HashSet<int>();
@@ -1310,6 +1322,7 @@ namespace V_Max_Tool
                 { 0xff, 0 }, { 0x64, 1 }, { 0x4e, 2 }, { 0x49, 3 }, { 0x3f, 4 }, { 0xbf, 5 }
             };
 
+            int lowest_value = headerDict.Keys.Min();
             int tk = tracks > 42 ? (track / 2) + 1 : track + 1; // are we working with half-tracks?
             bool noData = true;         // this remains true until a '1' bit is found.  If all 0's, the track is empty 
             byte compare = 0;           // this is the 'sliding window' byte where each bit of the bitarray is rotated through 1 at a time
@@ -1350,7 +1363,7 @@ namespace V_Max_Tool
                     }
                 }
 
-                if (compare > 62)
+                if (compare >= lowest_value)
                 {
                     index = headerDict.TryGetValue(compare, out int value) ? value : -1;
                     if (index >= 0)
@@ -1680,23 +1693,27 @@ namespace V_Max_Tool
                     if (s[pos++]) window |= 1;
                     if (window == 0xff)
                     {
-                        while (s[pos] && pos < s.Length) pos++;
-                        int start = pos;
-                        while (pos < s.Length)
+                        try
                         {
-                            window <<= 1;
-                            if (s[pos++]) window |= 1;
-                            if (window == 0xff || pos == s.Length - 1)
+                            while (s[pos] && pos < s.Length) pos++;
+                            int start = pos;
+                            while (pos < s.Length)
                             {
-                                int end = pos - 7 - start;
-                                if (end >= 7)
+                                window <<= 1;
+                                if (s[pos++]) window |= 1;
+                                if (window == 0xff || pos == s.Length - 1)
                                 {
-                                    sectors.Add(Decode_CBM_GCR(Bit2Byte(s, start, end)));
-                                    tlen += sectors[sectors.Count - 1].Length;
-                                    break;
+                                    int end = pos - 7 - start;
+                                    if (end >= 7)
+                                    {
+                                        sectors.Add(Decode_CBM_GCR(Bit2Byte(s, start, end)));
+                                        tlen += sectors[sectors.Count - 1].Length;
+                                        break;
+                                    }
                                 }
                             }
                         }
+                        catch { }
                     }
                 }
 
@@ -1759,7 +1776,7 @@ namespace V_Max_Tool
                         bool blank = window == hdr[1];
                         if (window == hdr[0])
                         {
-                            var (tmp, csm) = Decode_Rapidlok_GCR(Bit2Byte(s, pos - 8, 583 << 3), false);
+                            var (tmp, csm) = Decode_Rapidlok_GCR(Bit2Byte(s, pos - 8, 583 << 3), true);
                             sectors.Add(tmp);
                             cksm.Add(csm);
                         }

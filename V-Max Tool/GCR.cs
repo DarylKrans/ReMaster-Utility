@@ -189,30 +189,42 @@ namespace V_Max_Tool
             0xa0, 0x20, 0x80, 0x00
         };
 
-        (byte[], bool) Decode_RL_Data(byte[] sector)
+        (byte[] sector, bool checksum, bool version) Decode_RL_Data(byte[] sector)
         {
-            if (sector == null) return (new byte[0], false);
+            if (sector == null) return (new byte[0], false, false);
             int pos = sector[0] == 0x6b ? 1 : 0;
             bool rl_ver = (sector.Length == 583 && sector[195 + pos] == 0xa4);
-            byte GCR_a, GCR_b, GCR_c;
+            byte b1, b2, b3;
             byte dec0 = 0, dec1;
-            List<byte> output = new List<byte>();
-            while (pos < sector.Length)
-            {
-                if (pos < 300 && sector[pos] == 0xa4) pos++;
-                GCR_a = sector[pos++];
-                GCR_b = sector[pos++];
-                GCR_c = pos < sector.Length ? sector[pos++] : (byte)0;
-                dec0 = (byte)((0xb6 & GCR_b) + (GCR_a & 0x49));
-                if (GCR_c != 0)
-                {
-                    dec1 = (byte)((0xdb & GCR_c) + (GCR_a & 0x24));
-                    output.Add(dec0);
-                    output.Add(dec1);
-                }
-            }
-            return (output.ToArray(), rl_ver ? RL2_7_Checksum(output.ToArray(), dec0) : RL1_Checksum(sector));
 
+            using (MemoryStream buffer = new MemoryStream())
+            using (BinaryWriter write = new BinaryWriter(buffer))
+            {
+                while (pos < sector.Length)
+                {
+                    if (pos < 300 && sector[pos] == 0xa4) pos++;
+                    b1 = sector[pos++];
+                    b2 = sector[pos++];
+                    b3 = pos < sector.Length ? sector[pos++] : (byte)0;
+                    if (rl_ver) // Decode RapidLok v2-7
+                    {
+                        dec0 = (byte)((b1 & 0x49) + (0xb6 & b2));
+                        if (b3 != 0)
+                        {
+                            dec1 = (byte)((0xdb & b3) + (b1 & 0x24));
+                            write.Write(dec0);
+                            write.Write(dec1);
+                        }
+                    }
+                    else
+                    {
+                        // Decode RapidLok v1
+                        write.Write((byte)~(((b1 & 0x60) << 1) | (b1 & 0x0c) << 2 | (b1 & 0x01) << 3 | (b2 & 0x80) >> 5 | (b2 & 0x30) >> 4));
+                        write.Write((byte)~(((b2 & 0x06) << 5) | (b3 & 0xc0) >> 2 | (b3 & 0x18) >> 1 | (b3 & 0x03)));
+                    }
+                }
+                return (buffer.ToArray(), rl_ver ? RL2_7_Checksum(buffer.ToArray(), dec0) : RL1_Checksum(sector), rl_ver);
+            }
             bool RL2_7_Checksum(byte[] data, byte value)
             {
                 int ck = 0;

@@ -197,97 +197,26 @@ namespace V_Max_Tool
             sw.Stop();
             Text = sw.Elapsed.TotalMilliseconds.ToString();
         }
-
-        //void New_Task(int x)
-        //{
-        //    Get_Data_Fmt2(NDS.Track_Data[x], x);
-        //    Task_Limit.Release();
-        //}
-
-        void Test_RLD()
+        
+        byte[] rl1_test2(byte[] data)  // Test RapidLok v1 GCR decoding
         {
-            byte[] key = File.ReadAllBytes($@"c:\test\pirates_key.bin");
-            Text = key.Length.ToString();
-            //byte[] gcr = CopyFrom(key, 3, 3);
-            //byte a = GCRDecoder.DecodeGCR(gcr);
-            //Text = $"{Hex_Val(new byte[] { a })}";
-
-
-            //byte x = 0, y = 0, a = 0;
-            byte a;
-            byte b1, b2, b3;
+            if (data == null) return null;
+            int chunks = data.Length / 3;
             int pos = 0;
-            List<byte> dec = new List<byte>();
-            while (pos < key.Length)
+            using (MemoryStream buffer = new MemoryStream())
+            using (BinaryWriter write = new BinaryWriter(buffer))
             {
-                b1 = key[pos++];
-                b2 = key[pos++];
-                b3 = key[pos++];
-                a = b3;
-                for (int i = 0; i < 4; i++)
+                while (pos < chunks)
                 {
-                    ROLL(b1, 2);
-                    ROLL(b2, 2);
-                    ROLL(b3, 2);
-                    ROLL(a, 1);
-                    ROLL(b1, 1);
-                    ROLL(b2, 1);
-                    ROLL(b3, 1);
-                    ROLL(a, 1);
+                    byte b1 = data[pos * 3];
+                    byte b2 = data[(pos * 3) + 1];
+                    byte b3 = data[(pos++ * 3) + 2];
+                    write.Write((byte)~(((b1 & 0x60) << 1) | (b1 & 0x0c) << 2 | (b1 & 0x01) << 3 | (b2 & 0x80) >> 5 | (b2 & 0x30) >> 4));
+                    write.Write((byte)~(((b2 & 0x06) << 5) | (b3 & 0xc0) >> 2 | (b3 & 0x18) >> 1 | (b3 & 0x03)));
                 }
-                dec.Add(a);
-
+                return buffer.ToArray();
             }
-            Text = $"{dec.Count} [ {Hex_Val(dec.ToArray())} ]";
-            Text = dec.Count.ToString();
-
-
-            byte ROLL(byte value, int count)
-            {
-                //byte carry = 0;
-                return (byte)((value << count) | (value >> (8 - count)));
-            }
-
-            //byte[] sector = File.ReadAllBytes($@"c:\test\rlsec11.bin");
-            //int ck = 0;
-            //for (int i = 1; i < sector.Length; i++) ck ^= sector[i];
-            //ck ^= sector[sector.Length - 1];
-            //ck ^= sector[sector.Length - 2];
-            //
-            //byte x = (byte)(sector[sector.Length - 2] << 3);
-            //byte b24 = (byte)(ck & 0x03); // a;
-            //b24 ^= (byte)(ck & 0x0c); // a;
-            //b24 ^= (byte)(x & 0xc0);
-            //b24 ^= (byte)((x & 0x18) << 1);
-            //Text = $"{Hex_Val(new byte[] { (byte)ck, b24})}";
         }
-
-        //void Test_RL1()
-        //{
-        //    byte[] sector = File.ReadAllBytes($@"c:\test\rlsec1.bin");
-        //    
-        //    byte and1;
-        //    byte and2;
-        //    byte a;
-        //    byte stk1;
-        //    byte g1, g2, g3;
-        //    //byte d1 = 0, d2 = 0;
-        //    //byte b0 = 0, b1 = 0;
-        //    int pos = 1;
-        //    //
-        //    while (pos < sector.Length)
-        //    {
-        //        g1 = sector[pos++];
-        //        g2 = sector[pos++];
-        //        g3 = sector[pos++];
-        //        and1 = (byte)(g1 << 1);
-        //        and2 = ROR(g1, 3);
-        //        stk1 = ROR(g2, 1);
-        //        a = (byte)(stk1 >> 3);
-        //        //byte x = 0x02;
-        //    
-        //    }
-        //}
 
         /// Vorpal sector modifications code
         private void Button1_Click(object sender, EventArgs e)

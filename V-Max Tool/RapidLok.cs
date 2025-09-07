@@ -106,14 +106,8 @@ namespace V_Max_Tool
                 {
                     for (int j = 0; j < patterns.GetLength(0); j++)
                     {
-                        if (patterns[j, 0].SequenceEqual(sector.Skip(i).Take(patterns[j, 0].Length)))
-                        {
-                            flags[j] = true;
-                        }
-                        if (patterns[j, 1].SequenceEqual(sector.Skip(i).Take(patterns[j, 1].Length)))
-                        {
-                            patched[j] = true;
-                        }
+                        if (patterns[j, 0].SequenceEqual(sector.Skip(i).Take(patterns[j, 0].Length))) flags[j] = true;
+                        if (patterns[j, 1].SequenceEqual(sector.Skip(i).Take(patterns[j, 1].Length))) patched[j] = true;
                     }
                 }
 
@@ -182,35 +176,24 @@ namespace V_Max_Tool
 
         (byte[], int, int, int, int, int, string[]) RapidLok_Track_Info(byte[] data, int trk, bool build, byte[] track_ID, int rl_7b_len = 0)
         {
-            bool sevenb = false;
-            bool trk_id = false;
-            bool sync = false;
-            bool start_found = false;
-            bool end_found = false;
-            var track = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-            var errors = 0;
-            var rl_seclen = 583;
-            var d_start = 0;
-            var d_end = 0;
-            var sectors = 0;
-            var pos = 0;
-            var snc_cnt = 0;
-            var sevenb_pos = 0;
-            var header = new string[0];
-            var pre_head = new byte[32];
-            var nsb = rl_7b_len;
-            var sb_sec = rl_7b_len;
-            var tid = new byte[0];
-            var first_sector = -1;
-            var headers = new List<string>();
-            var a_headers = new List<string>();
-            var sec_pos = new List<int>();
-            var secds_pos = new List<int>();
-            var secde_pos = new List<int>();
-            var sec_data = new List<byte[]>();
-            var sec_head = new List<byte[]>();
-            var source = new BitArray(Flip_Endian(data));
-            var adata = new byte[0];
+            bool sevenb = false, trk_id = false, start_found = false, end_found = false, sync = false;
+            int d_start = 0, d_end = 0, sectors = 0, pos = 0, sevenb_pos = 0, snc_cnt = 0; //, dpos = 0;
+            int track = tracks > 42 ? (trk / 2) + 1 : trk + 1;
+            int errors = 0, first_sector = -1, rl_seclen = 583, nsb = rl_7b_len, sb_sec = rl_7b_len;
+            const int bitBlockSize = 10 << 3;
+            string[] header = new string[0];
+            byte[] pre_head = new byte[32];
+            byte[] tid = new byte[0];
+            byte[] emptySector = FastArray.Init(rl_seclen, 0x55);
+            List<string> headers = new List<string>();
+            List<string> a_headers = new List<string>();
+            List<int> sec_pos = new List<int>();
+            List<int> secds_pos = new List<int>();
+            List<int> secde_pos = new List<int>();
+            List<byte[]> sec_data = new List<byte[]>();
+            List<byte[]> sec_head = new List<byte[]>();
+            BitArray source = new BitArray(Flip_Endian(data));
+            byte[] adata = null;
             Compare();
             while (pos < source.Length)
             {
@@ -231,12 +214,12 @@ namespace V_Max_Tool
                     if (pos >= source.Length) pos = source.Length - 1;
                     d_end = pos;
                     int c_len = pos - secds_pos[secds_pos.Count - 1] - 1;
-                    diff = ((583 + 21) * 8) - c_len;
+                    diff = ((583 + 21) << 3) - c_len;
                     d_start -= diff;
                 }
             }
             catch { }
-            if (build && sectors > 10) Rebuild_RapidLok_Track();
+            if (build && sectors > 10) adata = Rebuild_RapidLok_Track();
             if ((track < 18 && sectors < 12) || track > 18 && sectors < 11)
             {
                 int needed = track < 18 ? 12 : 11;
@@ -250,7 +233,7 @@ namespace V_Max_Tool
             }
             return (adata, d_start, d_end, d_end - d_start, sectors, rl_7b_len, a_headers.ToArray());
 
-            void Rebuild_RapidLok_Track()
+            byte[] Rebuild_RapidLok_Track()
             {
                 var den = (track >= 18) ? 1 : 0; // Determine density index based on track number
                 var snc = 20;   // (20) Sync length before the 0x7b sector (40) before Track ID (60) Before first RapidLok sector
@@ -273,7 +256,7 @@ namespace V_Max_Tool
                             write.Write(ArrayConcat(os_sync, sec_head[cursec], sector_gap, os_sync, sec_data[cursec], sector_gap));
                     }
                     if (buffer.Length < density[den]) write.Write((FastArray.Init(density[den] - (int)buffer.Length, 0x55)));
-                    adata = buffer.ToArray();
+                    return buffer.ToArray();
                 }
             }
 
@@ -284,9 +267,7 @@ namespace V_Max_Tool
                     var temp = Decode_CBM_GCR(tk_id);
                     if (temp[3] != track || (temp[4] != track_ID[0] && temp[5] != track_ID[1]))
                     {
-                        byte[] ID = FastArray.Init(12, 0x55);
-                        Buffer.BlockCopy(Build_BlockHeader(track, 0, track_ID), 0, ID, 0, 10);
-                        return ID;
+                        return ArrayConcat(Build_BlockHeader(track, 0, track_ID), new byte[] { 0x55, 0x55 });
                     }
                 }
                 return tk_id;
@@ -294,7 +275,6 @@ namespace V_Max_Tool
 
             void Compare()
             {
-                const int bitBlockSize = 10 << 3;
                 if (pos + bitBlockSize >= source.Length) return;
                 var c = Bit2Byte(source, pos, bitBlockSize);
                 if (MatchSeq(RLok_7b, c)) HandleRLok7bMatch();
@@ -389,7 +369,7 @@ namespace V_Max_Tool
                     {
                         end_found = true;
                         d_end = pos;
-                        a_headers.Add($"pos ({pos / 8}) {hdr} ** Repeat **");
+                        a_headers.Add($"pos ({pos >> 3}) {hdr} ** Repeat **");
                     }
                 }
                 headers.Add(Hex_Val(d, 0, 7)); //6
@@ -441,7 +421,7 @@ namespace V_Max_Tool
                             {
                                 sec_data.Add(sdt);
                                 secds_pos.Add(tpos);
-                                secde_pos.Add(tpos + (rl_seclen * 8));
+                                secde_pos.Add(tpos + (rl_seclen << 3));
                                 break;
                             }
                         }
@@ -459,8 +439,7 @@ namespace V_Max_Tool
                     {
                         if (cc[0] == 0x6b)
                         {
-                            var sdt = FastArray.Init(rl_seclen, 0x00);
-                            sdt = Bit2Byte(source, tpos, sdt.Length << 3);
+                            var sdt = Bit2Byte(source, tpos, rl_seclen << 3);
                             return sdt;
                         }
                     }
@@ -469,7 +448,7 @@ namespace V_Max_Tool
                         var sdt = HandleIncompleteSector(cc, tpos);
                         return sdt;
                     }
-                    if (cc[0] == 0x55) return FastArray.Init(rl_seclen, 0x55);
+                    if (cc[0] == 0x55) return emptySector;
                 }
                 return null;
             }
@@ -504,10 +483,9 @@ namespace V_Max_Tool
         (byte[] data, bool checksum) Decode_Rapidlok_GCR(byte[] sector, bool just_the_sector = false)
         {
             if (sector == null) return (new byte[0], false);
-            (byte[] decoded, bool cksm) = Decode_RL_Data(sector);
-            RL_Decrypt(decoded);
-            if (!just_the_sector) return (decoded, cksm);
-            return (decoded.Length > 10 ? CopyFrom(decoded, 10) : decoded, cksm);
+            (byte[] decoded, bool cksm, bool rl_v2_7) = Decode_RL_Data(sector);
+            if (rl_v2_7) RL_Decrypt(decoded); // if RapidLok version = v2-7 -- Decrypt 'decoded' data after 10 bytes of assembly code
+            return (just_the_sector ? rl_v2_7 ? CopyFrom(decoded, 10) : CopyFrom(decoded, 0, decoded.Length - 4) : decoded, cksm);
         }
 
         byte[] RL_Decrypt(byte[] data)

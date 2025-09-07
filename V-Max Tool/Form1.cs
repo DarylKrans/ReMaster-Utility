@@ -135,18 +135,7 @@ namespace V_Max_Tool
             this.Text = $"ReMaster {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
-            //List<string> list = new List<string>();
-            ////Text = $"{Hex_Val(Decode_CBM_GCR(new byte[] { 0x52, 0x55, 0x75, 0x29, 0x57, 0x9a, 0xa6, 0xa5, 0x29, 0x4a}))}";
-            //for (int i = 0; i < 47; i++)
-            //{
-            //    string t = $"{i:00} ";
-            //    BitArray tt = new BitArray(Make_VPL_SecNum(i).ID);
-            //    for (int j = 0; j < tt.Length; j++) t += tt[j] ? "1" : "0";
-            //    list.Add(t);
-            //    //Text = $"{Make_VPL_SecNum(0).Needed_Sync} {Byte_to_Binary(Bit2Byte(Make_VPL_SecNum(0).ID))}";
-            //}
-            //File.WriteAllLines($@"c:\test\nsec.txt", list.ToArray());
-            // debugging buttons -- comment next line to enable debugging buttons
+
             button1.Visible = button2.Visible = false; // EnableDBMenu.Checked = false;
         }
 
