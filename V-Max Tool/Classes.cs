@@ -61,6 +61,8 @@ namespace V_Max_Tool
         public static bool[] Adjust = new bool[0];
         public static string Prot_Method = string.Empty;
         public static string[][] Info = new string[0][];
+
+        public static byte[][][] Sector = new byte[0][][];
     }
 
     public static class NDA  // Global variables for adjusted-sync arrays

@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace V_Max_Tool
 {
@@ -806,6 +807,33 @@ namespace V_Max_Tool
             return run > 5 ? (pos, run) : (0, 0);
         }
 
+        int FindTrackGap(byte[] data)
+        {
+            int current = 0;
+            int run = 0;
+            int pos = 0;
+            byte[] value = new byte[] { 0x55, 0xaa };
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] == value[0] || data[i] == value[1]) current++;
+                else
+                {
+                    if (current > run)
+                    {
+                        run = current;
+                        pos = i; // - run;
+                    }
+                    current = 0;
+                }
+            }
+            if (current > run)
+            {
+                run = current;
+                pos = data.Length - run;
+            }
+            return pos;
+        }
+
         (byte[], int, int) GetSectorWithErrorCode(byte[] data, int sector, bool decode, byte[] ID = null, BitArray source = null, int position = 0)
         {
             source = source ?? new BitArray(Flip_Endian(data));
@@ -814,13 +842,32 @@ namespace V_Max_Tool
             (bool valid, int pos, _, byte[] id, bool hdr_cksm) = Find_Sector(source, sector, position, true);
             if (valid && pos >= 0)
             {
-                (byte[] sec_data, bool chksum) = Decode_CBM_Sector(data, sector, true, source, pos);
-                error = !chksum ? 5 : error;
-                error = (sec_data == null || sec_data?.Length != 256) ? 4 : error;
-                if (ID != null) error = (!MatchSeq(id, ID)) ? 11 : error;
-                /* if Decode is set to true, Send back the un-altered sector data from the track */
-                if (!decode) (sec_data, _) = Decode_CBM_Sector(data, sector, false, source, pos);
-                return (sec_data, error, pos);
+                bool chksum;
+                byte[] sec_data = Decode_CBM_Sector(data, sector, false, source, pos).data;
+                try
+                {
+                    if (sec_data != null)
+                    {
+                        (byte[] decoded, int illegal) = Decode_CBM_GCR(sec_data);
+                        if (illegal > 6)
+                        {
+                            (decoded, chksum) = Decode_eVPL(CopyArray(sec_data, 3));
+                            if (chksum) return (!decode ? sec_data : decoded, error, pos);
+                        }
+                        else
+                        {
+                            int checksum = 0;
+                            for (int i = 1; i < 257; i++) checksum ^= decoded[i];
+                            chksum = checksum == decoded[257];
+                            error = !chksum ? 5 : error;
+                            error = (decoded == null || decoded.Length < 256) ? 4 : error;
+                            if (ID != null) error = (!MatchSeq(id, ID)) ? 11 : error;
+                            /* if Decode is set to true, Send back the un-altered sector data from the track */
+                            return (decode ? decoded : sec_data, error, pos);
+                        }
+                    }
+                }
+                catch { }
             }
             error = (!hdr_cksm) ? 9 : 2;
             return (null, error, -1);
@@ -1097,19 +1144,7 @@ namespace V_Max_Tool
             }
         }
 
-        int[] VPL_density_map = new int[]
-        {
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
-        	0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	/* 11 - 20 */
-        	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,	/* 21 - 30 */
-        	3, 3, 3, 3, 3,					/* 31 - 35 */
-        };
 
-        //int[] VPL_Track_Density = new int[]
-        //{
-        //    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        //    1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3
-        //};
 
         int VPL_Density(int len)
         {
@@ -1194,21 +1229,46 @@ namespace V_Max_Tool
                 start_pos = start_pos < 0 ? 0 : start_pos;
                 for (int i = start_pos; i <= data.Length - find.Length; i++)
                 {
-                    bool Match = true;
-                    for (int j = 0; j < find.Length; j++)
-                    {
-                        if (data[i + j] != find[j])
-                        {
-                            Match = false;
-                            break;
-                        }
-                    }
-                    if (Match) return (true, i);
+                    if (MatchSeq(data, find, i)) return (true, i);
+                    //bool Match = true;
+                    //for (int j = 0; j < find.Length; j++)
+                    //{
+                    //    if (data[i + j] != find[j])
+                    //    {
+                    //        Match = false;
+                    //        break;
+                    //    }
+                    //}
+                    //if (Match) return (true, i);
                 }
             }
             catch { }
             return (false, 0);
         }
+
+        //(bool, int) Find_Data(byte[] find, byte[] data, int start_pos = -1)
+        //{
+        //    if (find == null || start_pos + find.Length >= data.Length) return (false, 0);
+        //    try
+        //    {
+        //        start_pos = start_pos < 0 ? 0 : start_pos;
+        //        for (int i = start_pos; i <= data.Length - find.Length; i++)
+        //        {
+        //            bool Match = true;
+        //            for (int j = 0; j < find.Length; j++)
+        //            {
+        //                if (data[i + j] != find[j])
+        //                {
+        //                    Match = false;
+        //                    break;
+        //                }
+        //            }
+        //            if (Match) return (true, i);
+        //        }
+        //    }
+        //    catch { }
+        //    return (false, 0);
+        //}
 
         byte[] Hex2Byte(string hex)
         {
@@ -1501,7 +1561,8 @@ namespace V_Max_Tool
                 {
                     s += $"\n{list.Count - errorslist} more errors found.\n";
                     break;
-                };
+                }
+                ;
             }
             return s;
         }

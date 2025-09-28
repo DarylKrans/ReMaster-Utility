@@ -43,6 +43,7 @@ namespace V_Max_Tool
         private static readonly Color c64_text = Color.FromArgb(135, 122, 237);
         private static bool usecpp = true;
         private static bool CPP_LZ = true;
+        private static bool debug = false;
         private static string def_bg_text;
         private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
         private static ConcurrentBag<string> ErrorList = new ConcurrentBag<string>();
@@ -92,10 +93,24 @@ namespace V_Max_Tool
         	1, 1, 1, 1, 1, 1, 1				/* 36 - 42 (non-standard) */
         };
 
+        private static readonly int[] VPL_density_map =
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
+        	0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	/* 11 - 20 */
+        	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,	/* 21 - 30 */
+        	3, 3, 3, 3, 3					/* 31 - 35 */
+        };
+
+        private static readonly int[] RLK_density_map =
+        {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*  1 - 10 */
+        	0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	/* 11 - 20 */
+        	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	/* 21 - 30 */
+        	1, 1, 1, 1, 1                   /* 31 - 35 */
+        };
+
         private static readonly int[] vm2_Sectors_by_density = { 22, 20 };
-
         private static readonly int[] Sectors_by_density = { 21, 19, 18, 17 };
-
         private static readonly string[] ErrorCodes =
         {
             "null",
@@ -249,6 +264,8 @@ namespace V_Max_Tool
             NDS.t18_ID = new byte[4];
             NDS.Adjust = new bool[len];
             NDS.Info = new string[len][];
+
+            NDS.Sector = new byte[len][][];
             /// NDA is the destination or output array
             NDA.Track_Data = new byte[len][];
             NDA.Sector_Zero = new int[len];
@@ -724,9 +741,8 @@ namespace V_Max_Tool
             Build_BitReverseTable();
             ProtDetectMethod.DataSource = new string[] { "Scan source on add (slower)", "Parse file-name for protection type", "Don't detect" };
             RunBusy(() => LoadSettings());
-            Setup_Database_Window();
 
-
+            //Setup_Database_Window();
             //RecoverDatabase();
 
             try
@@ -893,10 +909,14 @@ namespace V_Max_Tool
 
         private void Object_Imager(bool dbg = false)
         {
-            if (dbg) button1.Visible = button2.Visible = CBM_Fix.Visible = true;
+            if (dbg)
+            {
+                debug = !debug;
+                button1.Visible = button2.Visible = CBM_Fix.Visible = debug;
+            }
             else
             {
-                byte[] obj = Decompress(XOR(Resources.objects, 0x4e));
+                byte[] obj = Decompress(XOR(Resources.objects, 0xbd));
                 using (MemoryStream ms = new MemoryStream(obj))
                 {
                     Image img = Image.FromStream(ms);

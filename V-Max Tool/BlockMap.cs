@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.IO;
 
 namespace V_Max_Tool
 {
@@ -136,7 +137,6 @@ namespace V_Max_Tool
                     bool alt = (NDS.cbm.Any(x => c.Any()));
                     int start = trk == 17 || alt ? 0 : NDS.D_Start[i];
                     BitArray tk = new BitArray(Flip_Endian(trk == 17 || alt ? NDG.Track_Data[i] : NDS.Track_Data[i]));
-
                     for (int j = 0; j < 21; j++)
                     {
                         int index = blockMap.FindIndex(b => b.Track == trk + 1 && b.Sector == j + 1);
@@ -159,6 +159,7 @@ namespace V_Max_Tool
                             blockMap[index].Tip = string.Empty;
                         }
                     }
+                    //File.WriteAllLines($@"c:\test\track{trk}_errors.txt", e.ToArray());
                 }
                 else
                 {

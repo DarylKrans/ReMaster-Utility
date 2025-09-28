@@ -95,7 +95,8 @@ namespace V_Max_Tool
                     pos++;
                 }
             }
-            catch { };
+            catch { }
+            ;
             return pos;
         }
 
@@ -123,7 +124,7 @@ namespace V_Max_Tool
                     {
                         int pos = i + 1;
                         int cursec = Decode_VmaxGCR(Bit2Byte(source, pos, 32))[0] & 0x1f; // decodes the sector # from V-Max GCR
-                        if (!sector.ContainsKey(cursec) && cursec >= 0 && cursec < 30)
+                        if (!sector.ContainsKey(cursec) && cursec >= 0 && cursec <= 32)
                         {
                             byte[] getsec = Bit2Byte(source, pos, Math.Min(340 << 3, source.Length - pos)); // take more than we need
                             int secsize = Get_vm3_sectorSize(getsec, 0);        // find exact size of sector

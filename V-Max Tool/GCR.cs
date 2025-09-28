@@ -1,6 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Management.Instrumentation;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -36,9 +39,12 @@ namespace V_Max_Tool
             0xff, 0x09, 0x0a, 0x0b, 0xff, 0x0d, 0x0e, 0xff
         };
 
-        byte[] Decode_CBM_GCR(byte[] gcr)
+        //(byte[] decoded, bool illegal) Decode_CBM_GCR(byte[] gcr)
+        (byte[] decoded, int illegal) Decode_CBM_GCR(byte[] gcr)
         {
+            if (gcr == null) return (null, -1);
             byte[] plain = new byte[(gcr.Length / 5) << 2];
+            int illegal = 0;
             for (int i = 0; i < gcr.Length / 5; i++)
             {
                 int baseIndex = i * 5;
@@ -55,13 +61,17 @@ namespace V_Max_Tool
                 b2 = gcr[baseIndex + 4];
                 plain[(i << 2) + 3] = CombineNibbles((byte)(((b1 << 3) | (b2 >> 5)) & 0x1f), (byte)(b2 & 0x1f));
             }
-            return plain;
+            return (plain, illegal); // > 6);
 
             byte CombineNibbles(byte hnib, byte lnib)
             {
                 hnib = GCR_decode_high[hnib];
                 lnib = GCR_decode_low[lnib];
-                if (hnib == 0xff || lnib == 0xff) return 0x00;
+                if (hnib == 0xff || lnib == 0xff)
+                {
+                    illegal++;
+                    return 0x00;
+                }
                 else return (byte)(hnib | lnib);
             }
         }
@@ -85,6 +95,61 @@ namespace V_Max_Tool
             }
             return gcr;
         }
+
+        /// <summary>
+        ///  ------------------ Early Vorpal GCR Encode/Decode routines --------------- 
+        /// </summary>
+        /// 
+        
+        Dictionary<int, byte> eVorpal_LookupTable = new Dictionary<int, byte>
+        {
+            { 0 , 0x00 }, { 1 , 0x01 }, { 2 , 0x00 }, { 3 , 0x01 }, { 4 , 0x02 }, { 5 , 0x03 }, { 6 , 0x02 }, { 7 , 0x03 },
+            { 8 , 0x00 }, { 9 , 0x01 }, { 10 , 0x00 }, { 11 , 0x01 }, { 12 , 0x02 }, { 13 , 0x03 }, { 14 , 0x02 }, { 15 , 0x03 },
+            { 32 , 0x04 }, { 33 , 0x05 }, { 34 , 0x04 }, { 35 , 0x05 }, { 36 , 0x06 }, { 37 , 0x07 }, { 38 , 0x06 }, { 39 , 0x07 },
+            { 40 , 0x04 }, { 41 , 0x05 }, { 42 , 0x04 }, { 43 , 0x05 }, { 44 , 0x06 }, { 45 , 0x07 }, { 46 , 0x06 }, { 47 , 0x07 },
+            { 64 , 0x08 }, { 65 , 0x09 }, { 66 , 0x08 }, { 67 , 0x09 }, { 68 , 0x0A }, { 69 , 0x0B }, { 70 , 0x0A }, { 71 , 0x0B },
+            { 72 , 0x08 }, { 73 , 0x09 }, { 74 , 0x08 }, { 75 , 0x09 }, { 76 , 0x0A }, { 77 , 0x0B }, { 78 , 0x0A }, { 79 , 0x0B },
+            { 96 , 0x0C }, { 97 , 0x0D }, { 98 , 0x0C }, { 99 , 0x0D }, { 100 , 0x0E }, { 101 , 0x0F }, { 102 , 0x0E }, { 103 , 0x0F },
+            { 104 , 0x0C }, { 105 , 0x0D }, { 106 , 0x0C }, { 107 , 0x0D }, { 108 , 0x0E }, { 109 , 0x0F }, { 110 , 0x0E }, { 111 , 0x0F },
+            { 113 , 0x00 }, { 114 , 0x01 }, { 115 , 0x02 }, { 117 , 0x03 }, { 118 , 0x04 }, { 122 , 0x05 }, { 123 , 0x06 }, { 125 , 0x07 },
+            { 126 , 0x08 }, { 129 , 0x09 }, { 130 , 0x0A }, { 131 , 0x0B }, { 133 , 0x0C }, { 134 , 0x0D }, { 141 , 0x0E }, { 142 , 0x0F },
+            { 145 , 0x20 }, { 146 , 0x21 }, { 147 , 0x22 }, { 149 , 0x23 }, { 150 , 0x24 }, { 154 , 0x25 }, { 155 , 0x26 }, { 157 , 0x27 },
+            { 158 , 0x28 }, { 161 , 0x29 }, { 162 , 0x2A }, { 163 , 0x2B }, { 186 , 0x2C }, { 187 , 0x2D }, { 189 , 0x2E }, { 190 , 0x2F },
+            { 193 , 0x40 }, { 194 , 0x41 }, { 195 , 0x42 }, { 197 , 0x43 }, { 198 , 0x44 }, { 205 , 0x45 }, { 206 , 0x46 }, { 209 , 0x47 },
+            { 210 , 0x48 }, { 211 , 0x49 }, { 213 , 0x4A }, { 214 , 0x4B }, { 218 , 0x4C }, { 219 , 0x4D }, { 221 , 0x4E }, { 222 , 0x4F },
+            { 225 , 0x60 }, { 226 , 0x61 }, { 227 , 0x62 }, { 229 , 0x63 }, { 241 , 0x64 }, { 242 , 0x65 }, { 243 , 0x66 }, { 245 , 0x67 },
+            { 246 , 0x68 }, { 250 , 0x69 }, { 251 , 0x6A }, { 253 , 0x6B }, { 254 , 0x6C }, { 257 , 0x6D }, { 258 , 0x6E }, { 259 , 0x6F },
+        };
+
+        (byte[] sector, bool checksum) Decode_eVPL(byte[] data)
+        {
+            if (data == null) return (new byte[0], false);
+            byte a = 0, val;
+            byte[] p1 = new byte[4]; // Decode through Lookup Table (pass 1)
+            byte[] p2 = new byte[4]; // Decode through Lookup Table (pass 2)
+            List<byte> output = new List<byte>();
+            for (int i = 0; i < (data.Length >> 2); i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    p1[j] = a ^= (byte)(eVorpal_LookupTable.TryGetValue(data[(i << 2) + j] + 0x28, out val) ? val : 0xff);   // Pass 1
+                    p2[j] = (byte)(eVorpal_LookupTable.TryGetValue(a, out val) ? val : 0xff);                                // Pass 2
+                }
+                output.AddRange(new byte[]  // Decode 4 GCR bytes to 3 Data bytes
+                {
+                    (byte)(GetBits(p1[0], 0) ^ GetBits(p2[0], 2) ^ GetBits((byte)(p2[0] << 1), 4) ^ GetBits(p1[1], 6)),
+                    (byte)(GetBits(p2[1], 0) ^ GetBits((byte)(p2[1] << 1), 2) ^ GetBits(p1[2], 4) ^ GetBits(p2[2], 6)),
+                    (byte)(GetBits((byte)(p2[2] << 1), 0) ^ GetBits(p1[3], 2) ^ GetBits(p2[3], 4) ^ GetBits((byte)(p2[3] << 1), 6))
+                });
+            }
+            return (output.ToArray(), data.Length >= 321 && (a == (byte)(eVorpal_LookupTable.TryGetValue(data[320] + 0x28, out val) ? val : 255)));
+
+            byte GetBits(byte b, int bitPosition)
+            {
+                return (byte)(((b & 0x02) ^ (byte)((b & 0x08) >> 3)) << bitPosition);
+            }
+        }
+
 
         /// <summary>
         ///  ------------------ Vorpal GCR Encode/Decode routines --------------------- 
@@ -193,7 +258,7 @@ namespace V_Max_Tool
         {
             if (sector == null) return (new byte[0], false, false);
             int pos = sector[0] == 0x6b ? 1 : 0;
-            bool rl_ver = (sector.Length == 583 && sector[195 + pos] == 0xa4);
+            bool rl_v2_7 = (sector.Length == 583 && sector[195 + pos] == 0xa4);
             byte b1, b2, b3;
             byte dec0 = 0, dec1;
 
@@ -202,28 +267,27 @@ namespace V_Max_Tool
             {
                 while (pos < sector.Length)
                 {
-                    if (pos < 300 && sector[pos] == 0xa4) pos++;
-                    b1 = sector[pos++];
-                    b2 = sector[pos++];
-                    b3 = pos < sector.Length ? sector[pos++] : (byte)0;
-                    if (rl_ver) // Decode RapidLok v2-7
+                    try
                     {
-                        dec0 = (byte)((b1 & 0x49) + (0xb6 & b2));
+                        if (pos == 196 && rl_v2_7 && sector[pos] == 0xa4) pos++; // < 300
+                        b1 = sector[pos++];
+                        b2 = sector[pos++];
+                        b3 = pos < sector.Length ? sector[pos++] : (byte)0;
+                        dec0 = rl_v2_7
+                            ? (byte)((b1 & 0x49) | (0xb6 & b2))         // rapidlok v2-7
+                            : (byte)~(((b1 & 0x60) << 1) | (b1 & 0x0c) << 2 | (b1 & 0x01) << 3 | (b2 & 0x80) >> 5 | (b2 & 0x30) >> 4); // version 1
+                        dec1 = rl_v2_7 && b3 != 0
+                            ? dec1 = (byte)((0xdb & b3) | (b1 & 0x24))  // rapidlok v2-7
+                            : (byte)~(((b2 & 0x06) << 5) | (b3 & 0xc0) >> 2 | (b3 & 0x18) >> 1 | (b3 & 0x03)); // version 1
                         if (b3 != 0)
                         {
-                            dec1 = (byte)((0xdb & b3) + (b1 & 0x24));
                             write.Write(dec0);
                             write.Write(dec1);
                         }
                     }
-                    else
-                    {
-                        // Decode RapidLok v1
-                        write.Write((byte)~(((b1 & 0x60) << 1) | (b1 & 0x0c) << 2 | (b1 & 0x01) << 3 | (b2 & 0x80) >> 5 | (b2 & 0x30) >> 4));
-                        write.Write((byte)~(((b2 & 0x06) << 5) | (b3 & 0xc0) >> 2 | (b3 & 0x18) >> 1 | (b3 & 0x03)));
-                    }
+                    catch { }
                 }
-                return (buffer.ToArray(), rl_ver ? RL2_7_Checksum(buffer.ToArray(), dec0) : RL1_Checksum(sector), rl_ver);
+                return (buffer.ToArray(), rl_v2_7 ? RL2_7_Checksum(buffer.ToArray(), dec0) : RL1_Checksum(sector), rl_v2_7);
             }
             bool RL2_7_Checksum(byte[] data, byte value)
             {
@@ -238,6 +302,7 @@ namespace V_Max_Tool
                 int ck = 0;
                 for (int i = 1; i < data.Length - 2; i++) ck ^= data[i];
                 byte x = (byte)(data[data.Length - 2] << 3);
+                // quite honestly, I don't know what I'm doing here, but it works
                 byte value = (byte)(ck & 0x03 ^ ck & 0x0c ^ x & 0xc0 ^ (x & 0x18) << 1);
                 return ck == value;
             }
@@ -326,6 +391,53 @@ namespace V_Max_Tool
                     }
                     catch { }
                 }
+                return buffer.ToArray();
+            }
+        }
+
+        byte[] Decode_VM_Loader_CBM(byte[] gcrTrack)
+        {
+            List<byte> decoded = new List<byte>();
+            int pos = 0;
+            byte a = 0;
+            while (pos < gcrTrack.Length)
+            {
+                try
+                {
+                    a ^= (byte)(gcrTrack[pos++] ^ gcrTrack[pos++]);
+                    if (pos % 257 != 0) decoded.Add(a); // pos % 514 != 0
+                }
+                catch { }
+            }
+            return decoded.ToArray();
+        }
+
+        byte[] Decode_VM_Loader(byte[] data)
+        {
+            if (data == null || data.Length < 2) return null;
+            List<byte> result = new List<byte>();
+            int sec = 0;
+            for (int i = 0; i < data.Length; i++)
+            {
+                result.Add(data[i]);
+                sec++;
+                if (sec % 387 == 0) i += 2;
+            }
+            data = result.ToArray();
+            using (MemoryStream buffer = new MemoryStream())
+            using (BinaryWriter write = new BinaryWriter(buffer))
+            {
+                try
+                {
+                    int pos = 0;
+                    while (pos < data.Length)
+                    {
+                        byte fa = (byte)(data[pos++] & 0xB6);
+                        write.Write((byte)((data[pos++] & 0xDB) ^ fa));
+                        write.Write((byte)((data[pos++] & 0x6D) ^ fa));
+                    }
+                }
+                catch { }
                 return buffer.ToArray();
             }
         }

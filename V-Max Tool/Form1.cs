@@ -18,7 +18,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2 (test build)";
+        private static readonly string ver = " v1.2c";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -136,7 +136,10 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            button1.Visible = button2.Visible = false; // EnableDBMenu.Checked = false;
+            //BinToDictionary($@"c:\test\300tbl.bin", $@"c:\test\tableTest.txt", "test", "int", "byte", 8);
+            //BinToByte_Table($@"c:\test\300tbl.bin", $@"c:\test\tableTest2.txt", "test", 16);
+
+            button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)

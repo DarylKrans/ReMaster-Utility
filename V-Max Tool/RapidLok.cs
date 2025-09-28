@@ -264,7 +264,7 @@ namespace V_Max_Tool
             {
                 if (track_ID.Length == 4)
                 {
-                    var temp = Decode_CBM_GCR(tk_id);
+                    var temp = Decode_CBM_GCR(tk_id).decoded;
                     if (temp[3] != track || (temp[4] != track_ID[0] && temp[5] != track_ID[1]))
                     {
                         return ArrayConcat(Build_BlockHeader(track, 0, track_ID), new byte[] { 0x55, 0x55 });
@@ -342,9 +342,10 @@ namespace V_Max_Tool
                     start_found = true;
                     d_start = pos;
                 }
-                string hdr = string.Empty;
-                try { hdr = Hex_Val(Decode_RL_Data(CopyFrom(d, 1)).Item1); } catch { }
-                string head = Hex_Val(d, 0, 7); //6
+                byte[] hdr = new byte[0]; // = string.Empty;
+                bool headChecksum = false;
+                try { (hdr, headChecksum) = Decode_RL_Header(CopyFrom(d, 1, 6)); } catch { }
+                string head = Hex_Val(hdr); //6
                 if (!headers.Any(x => x == head))
                 {
                     if (!batch)
@@ -357,7 +358,8 @@ namespace V_Max_Tool
                             case 1: cksm = "OK"; break;
                             case 2: cksm = "Empty Sector, No Data"; break;
                         }
-                        a_headers.Add($"sector ({headers.Count}) Header ID [ {hdr} ] Checksum ({cksm})");
+                        //a_headers.Add($"sector ({Convert.ToInt32(hdr[0])}) Header ID [ {Hex_Val(hdr)} ] Header Checksum ({(headChecksum ? "OK" : "Failed!")}) Sector Checksum ({cksm})");
+                        a_headers.Add($"sector ({Convert.ToInt32(hdr[0])}) Header ID [ {Hex_Val(hdr)} ] Header ({(headChecksum ? "OK" : "Failed!")}) Sector ({cksm})");
                         if (ckm < 1) errors++;
                     }
                     sectors++;
@@ -369,11 +371,11 @@ namespace V_Max_Tool
                     {
                         end_found = true;
                         d_end = pos;
-                        a_headers.Add($"pos ({pos >> 3}) {hdr} ** Repeat **");
+                        a_headers.Add($"pos ({pos >> 3}) {Hex_Val(hdr)} ** Repeat **");
                     }
                 }
-                headers.Add(Hex_Val(d, 0, 7)); //6
-                sec_head.Add(d.Take(7).ToArray());
+                headers.Add(Hex_Val(hdr)); //6
+                sec_head.Add(CopyFrom(d, 0, 7));
                 sec_pos.Add(pos);
             }
 
@@ -393,7 +395,7 @@ namespace V_Max_Tool
                             if (sdt != null)
                             {
                                 if (sdt[0] == 0x55 && sdt[1] == 0x55) return 2;
-                                bool valid_Checksum = Decode_RL_Data(sdt).Item2;
+                                bool valid_Checksum = Decode_RL_Data(sdt).checksum;
                                 return valid_Checksum ? 1 : 0;
                             }
                         }
@@ -480,12 +482,12 @@ namespace V_Max_Tool
             }
         }
 
-        (byte[] data, bool checksum) Decode_Rapidlok_GCR(byte[] sector, bool just_the_sector = false)
+        (byte[] data, bool checksum, bool version) Decode_Rapidlok_GCR(byte[] sector, bool just_the_sector = false)
         {
-            if (sector == null) return (new byte[0], false);
+            if (sector == null) return (new byte[0], false, false);
             (byte[] decoded, bool cksm, bool rl_v2_7) = Decode_RL_Data(sector);
             if (rl_v2_7) RL_Decrypt(decoded); // if RapidLok version = v2-7 -- Decrypt 'decoded' data after 10 bytes of assembly code
-            return (just_the_sector ? rl_v2_7 ? CopyFrom(decoded, 10) : CopyFrom(decoded, 0, decoded.Length - 4) : decoded, cksm);
+            return (just_the_sector ? rl_v2_7 ? CopyFrom(decoded, 10) : CopyFrom(decoded, 0, decoded.Length - 4) : decoded, cksm, rl_v2_7);
         }
 
         byte[] RL_Decrypt(byte[] data)
@@ -495,6 +497,24 @@ namespace V_Max_Tool
                 data[i] = (byte)(RapidLok_Decode_High[(byte)(data[i] >> 4)] | RapidLok_Decode_Low[(byte)(data[i] & 0x0f)]);
             }
             return data;
+        }
+
+        (byte[] header, bool checksum) Decode_RL_Header(byte[] data)  // Test RapidLok v1 GCR decoding
+        {
+            if (data == null || data.Length < 6) return (null, false);
+            int pos = 0;
+            List<byte> bytes = new List<byte>();
+            while (pos < 2)
+            {
+                byte b1 = data[pos * 3];
+                byte b2 = data[(pos * 3) + 1];
+                byte b3 = data[(pos++ * 3) + 2];
+                bytes.Add((byte)(((b1 & 0x60) << 1) | (b1 & 0x0c) << 2 | (b1 & 0x01) << 3 | (b2 & 0x80) >> 5 | (b2 & 0x30) >> 4));
+                bytes.Add((byte)(((b2 & 0x06) << 5) | (b3 & 0xc0) >> 2 | (b3 & 0x18) >> 1 | (b3 & 0x03)));
+            }
+            byte csm = 0;
+            for (int i = 0; i < 3; i++) csm ^= bytes[i];
+            return (bytes.ToArray(), csm == bytes[3]);
         }
     }
 }

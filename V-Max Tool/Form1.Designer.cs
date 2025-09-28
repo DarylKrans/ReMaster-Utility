@@ -2802,7 +2802,7 @@
             this.Options_Box.Margin = new System.Windows.Forms.Padding(2);
             this.Options_Box.Name = "Options_Box";
             this.Options_Box.Padding = new System.Windows.Forms.Padding(2);
-            this.Options_Box.Size = new System.Drawing.Size(403, 275);
+            this.Options_Box.Size = new System.Drawing.Size(403, 187);
             this.Options_Box.TabIndex = 41;
             this.Options_Box.TabStop = false;
             // 

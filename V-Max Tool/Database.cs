@@ -208,6 +208,7 @@ namespace V_Max_Tool
 
         void SetDBContextItems()
         {
+
             if (InvokeRequired)
             {
                 Invoke(new Action(() =>
@@ -225,6 +226,7 @@ namespace V_Max_Tool
 
         void Setup_Database_Window()
         {
+            Text = "Fuck";
             databaseToolStripMenuItem.Visible = EnableDBMenu.Checked;
             if (EnableDBMenu.Checked)
             {
@@ -1077,7 +1079,8 @@ namespace V_Max_Tool
 
                         MessageForYouSir(errors ? "Export Completed with Errors" : "Export Complete",
                                          errors ? "Some files may not have been exported." : "File(s) successfully exported.");
-                    };
+                    }
+                    ;
                     dbProg.Visible = false;
                 };
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -189,9 +190,9 @@ namespace V_Max_Tool
             if (!batch && !cbm && err.Count > 0)
             {
                 int errtk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-                //err.Sort();
                 foreach (string s in err) ErrorList.Add($"Checksum failed on track {errtk} sector {s}");
             }
+            //File.WriteAllLines($@"c:\test\track{trk}headers.txt", lister.ToArray());
             return (data_start, data_end, sector_zero, len, headers.ToArray(), sectors, s_st, total_sync, Disk_ID, s_pos, track_id, dont_adj);
 
             void add_total()
@@ -227,7 +228,7 @@ namespace V_Max_Tool
                 if (d[0] == 0x52 && !skip && pos + 80 < source.Length)
                 {
                     for (int i = 1; i < sz.Length; i++) d[i] &= sz[i];
-                    dec_hdr = Decode_CBM_GCR(Bit2Byte(source, pos, 80));
+                    dec_hdr = Decode_CBM_GCR(Bit2Byte(source, pos, 80)).decoded;
                     sect = Convert.ToInt32(dec_hdr[2]);
 
                     if (dec_hdr[2] < 21 && (dec_hdr[3] > 0 && dec_hdr[3] < 43))
@@ -254,19 +255,7 @@ namespace V_Max_Tool
                                 sector_zero = pos;
                                 sec_zero = true;
                             }
-                            if (checksums)
-                            {
-                                if (cbm)
-                                {
-                                    s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
-                                    if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
-                                }
-                                else
-                                {
-                                    s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
-                                    if (!s_cksm) err.Add($"{sect}");
-                                }
-                            }
+                            if (checksums) GetChecksum();
                             if (!batch) headers.Add($"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
                                 $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])}) Track Position ({pos >> 3})");
                         }
@@ -278,17 +267,12 @@ namespace V_Max_Tool
                                 if (dec_hdr[2] == 0x00) sz = "*";
                                 decoded_header = Hex_Val(dec_hdr);
                                 h_cksm = Check_Header(dec_hdr);
-                                if (checksums)
-                                {
-                                    if (cbm) s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
-                                    else s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
-
-                                }
+                                if (checksums) GetChecksum();
                                 if (!batch)
                                 {
                                     headers[0] = $"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
                                         $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])}) Track Position ({data_start >> 3})";
-                                    headers.Add($"pos {p / 8} ** repeat ** Sector ({(Decode_CBM_GCR(Bit2Byte(source, pos, 5 << 3)))[2]})");
+                                    headers.Add($"pos {p / 8} ** repeat ** Sector ({(Decode_CBM_GCR(Bit2Byte(source, pos, 5 << 3))).decoded[2]})");
                                 }
                                 if (data_start == 0) data_end = pos;
                                 else data_end = pos;
@@ -298,6 +282,24 @@ namespace V_Max_Tool
                             }
                         }
                         list.Add(sect);
+
+                        void GetChecksum()
+                        {
+                            if (cbm)
+                            {
+                                s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                if (!s_cksm)
+                                {
+                                    s_cksm = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3)).checksum;
+                                }
+                                if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
+                            }
+                            else
+                            {
+                                s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
+                                if (!s_cksm) err.Add($"{sect}");
+                            }
+                        }
                     }
                 }
             }
@@ -312,7 +314,8 @@ namespace V_Max_Tool
 
         byte[] Adjust_Sync_CBM(byte[] data, int expected_sync, int minimum_sync, int exception, int Data_Start_Pos, int Data_End_Pos, int Sec_0, int Track_Len, int Track_Num, bool adjust = true)
         {
-            if (Track_Num == Track_Num - 0) { };
+            if (Track_Num == Track_Num - 0) { }
+            ;
             if (exception > expected_sync && expected_sync > minimum_sync)
             {
                 byte[] tempp = Flip_Endian(data);
@@ -430,7 +433,7 @@ namespace V_Max_Tool
                 byte[] sectorBytes = Bit2Byte(source, pos, sectorDataLength);
                 if (!decode) return (sectorBytes, false);
 
-                byte[] decodedSector = Decode_CBM_GCR(sectorBytes);
+                byte[] decodedSector = Decode_CBM_GCR(sectorBytes).decoded;
                 int checksum = 0;
 
                 for (int i = 1; i < 257; i++)
@@ -447,7 +450,7 @@ namespace V_Max_Tool
 
                 if (header[0] == 0x52)
                 {
-                    byte[] decodedHeader = Decode_CBM_GCR(header);
+                    byte[] decodedHeader = Decode_CBM_GCR(header).decoded;
                     if (decodedHeader[3] > 0 && decodedHeader[3] < 43 && decodedHeader[2] == sector)
                     {
                         sectorFound = true;
@@ -507,7 +510,7 @@ namespace V_Max_Tool
 
                 if (d[0] == 0x52)
                 {
-                    byte[] g = Decode_CBM_GCR(d);
+                    byte[] g = Decode_CBM_GCR(d).decoded;
                     if (g[3] > 0 && g[3] < 43 && g[2] == sector)
                     {
                         sector_found = true;
@@ -583,7 +586,7 @@ namespace V_Max_Tool
                     byte[] d = Bit2Byte(source, pos, cl << 3);
                     if (d[0] == 0x52)
                     {
-                        byte[] g = Decode_CBM_GCR(d);
+                        byte[] g = Decode_CBM_GCR(d).decoded;
                         byte[] ID = new byte[2];
                         byte csm = 0x00;
                         for (int i = 2; i < 6; i++) csm ^= g[i];
@@ -601,7 +604,7 @@ namespace V_Max_Tool
                                     {
                                         if (snc2 > 10 && Bit2Byte(source, k, 8)[0] == 0x55)
                                         {
-                                            var blkdata = Decode_CBM_GCR(Bit2Byte(source, k, 5 << 3));
+                                            var blkdata = Decode_CBM_GCR(Bit2Byte(source, k, 5 << 3)).decoded;
                                             if (blkdata[0] == 0x07) blk_pos = k;
                                         }
                                         snc2 = 0;
@@ -612,7 +615,7 @@ namespace V_Max_Tool
                             return (true, ID, cksm, blk_pos);
                         }
                         //pos += (320 << 3);
-                        pos += (300 << 3);
+                        pos += (1 << 3);
                     }
                 }
                 return (false, null, cksm, blk_pos);
@@ -1392,7 +1395,7 @@ namespace V_Max_Tool
 
                 if (!isCBMSector)
                 {
-                    byte[] decoded = Decode_CBM_GCR(dec);
+                    byte[] decoded = Decode_CBM_GCR(dec).decoded;
                     if (decoded != null && decoded.Length == 268)
                     {
                         int checksum = 0;
@@ -1405,7 +1408,7 @@ namespace V_Max_Tool
                     // Look for standard CBM sector data since sync was found shortly after the header
                     if (pos + location + (cbm) < source.Length)
                     {
-                        byte[] decoded = Decode_CBM_GCR(Bit2Byte(source, pos + location, cbm));
+                        byte[] decoded = Decode_CBM_GCR(Bit2Byte(source, pos + location, cbm)).decoded;
                         if (decoded != null && decoded.Length == 260 && decoded[0] == 0x07)
                         {
                             int checksum = 0;
@@ -1449,7 +1452,7 @@ namespace V_Max_Tool
 
                 if (header[0] == 0x52)
                 {
-                    byte[] decodedHeader = Decode_CBM_GCR(header);
+                    byte[] decodedHeader = Decode_CBM_GCR(header).decoded;
                     if (decodedHeader[3] > 0 && decodedHeader[3] < 42 && decodedHeader[2] == sect)
                     {
                         return true;
