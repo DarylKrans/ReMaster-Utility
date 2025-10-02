@@ -39,7 +39,7 @@ namespace V_Max_Tool
         //private static readonly string[] secF = { "Non-DOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "RapidLok", "RL-Key", "EA", "RA/MB", "Microprose", "GMA", "Unformatted" };
         private static readonly string[] secF = { "Non-DOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "RapidLok"
                 , "RL-Key", "EA", "RA/MB", "Microprose", "Securispeed", "GMA" ,"Unformatted" };
-        private static int[] jt = new int[42];
+        private static int[] jump_to = new int[42];
         const int MAX_TRACK_SIZE = 8192;
         const int SAMPLE_SIZE = 1024;
 
@@ -1665,7 +1665,7 @@ namespace V_Max_Tool
                         try
                         {
                             //if (NDS.cbm[i] == 4) File.WriteAllBytes($@"c:\test\ldrt", NDG.Track_Data[i]);
-                            jt[(int)trk] = db_Text.Length;
+                            jump_to[(int)trk] = db_Text.Length;
                             if (tr) db_Text.Append($"\n\nTrack ({trk})  Data Format: {secF[NDS.cbm[i]]} {NDG.Track_Data[i].Length} Bytes\n\n");
                             StringBuilder temp = new StringBuilder();
                             if (VS_dat.Checked) db_Text.Append($"{Encoding.ASCII.GetString(Fix_Stops(NDG.Track_Data[i]))}");
@@ -1741,8 +1741,7 @@ namespace V_Max_Tool
 
                 if (sectors.Count > 0)
                 {
-                    jt[(int)trk] = db_Text.Length;
-                    //if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes, Sectors ({sectors.Count})\n Decoder: (format unknown, Default Standard CBM)\n\n");
+                    jump_to[(int)trk] = db_Text.Length;
                     if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes\n Decoder: (format unknown, Default Standard CBM)\n\n");
                     if (!VS_dat.Checked) db_Text.Append(Append_Strings(ArrayConcat(sectors.ToArray()), dhex));
                     else db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(ArrayConcat(sectors.ToArray()))));
@@ -1764,7 +1763,7 @@ namespace V_Max_Tool
                 if (sectors.Length > 0)
                 {
                     string decoder = "V-Max!";
-                    jt[(int)trk] = db_Text.Length;
+                    jump_to[(int)trk] = db_Text.Length;
                     if (tr) db_Text.Append($"\n\nTrack ({track}) Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes, Sectors ({sectors.Length})\nDecoder: {decoder}\n\n");
                     if (!se && !VS_dat.Checked) db_Text.Append(Append_Strings(ArrayConcat(sectors), dhex));
                     else
@@ -1800,7 +1799,7 @@ namespace V_Max_Tool
                 if (sectors.Length > 0)
                 {
                     string decoder = "V-Max! Loader";
-                    jt[(int)trk] = db_Text.Length;
+                    jump_to[(int)trk] = db_Text.Length;
                     if (tr) db_Text.Append($"\n\nTrack ({track}) Format: {secF[NDS.cbm[t]]}, Length ({tlen}) bytes,\nDecoder: {decoder}\n\n");
                     if (!se && !VS_dat.Checked) db_Text.Append(Append_Strings(sectors, dhex));
                     else
@@ -1852,7 +1851,7 @@ namespace V_Max_Tool
                 if (sectors.Count > 0)
                 {
                     string dec = version.Any(x => x == true) ? " v2+" : " v1";
-                    jt[(int)trk] = db_Text.Length;
+                    jump_to[(int)trk] = db_Text.Length;
                     if (tr) db_Text.Append($"\n\nTrack ({track}) Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes, Sectors ({sectors.Count})\nDecoder: RapidLok{dec}\n\n");
                     if (!se && !VS_dat.Checked) db_Text.Append(Append_Strings(ArrayConcat(sectors.ToArray()), dhex));
                     else
@@ -1881,26 +1880,31 @@ namespace V_Max_Tool
             {
                 byte[][] temp = new byte[NDS.sectors[t]][];
                 bool[] valid_checksum = new bool[NDS.sectors[t]];
-                string ev = " Decoder: Early Vorpal (4:3)";
-                string std = " Decoder: Standard CBM (5:4)";
+                string ev = " Decoder: Early Vorpal (4:3)", std = " Decoder: Standard CBM (5:4)";
                 if (DV_dec.Checked)
                 {
-                    jt[(int)trk] = db_Text.Length;
-                    try
+                    jump_to[(int)trk] = db_Text.Length;
+                    int total = 0;
+                    for (int i = 0; i < NDS.sectors[t]; i++)
                     {
-                        int total = 0;
-                        for (int i = 0; i < NDS.sectors[t]; i++)
+                        try
                         {
                             if (mps) (temp[i], valid_checksum[i], _) = Decode_MicroProse_Sector(tdata, i);
                             {
-                                byte[] tempdat = Decode_CBM_Sector(NDG.Track_Data[t], i, false, tdata).data;
-                                if (Decode_CBM_GCR(tempdat).illegal > 6) (temp[i], valid_checksum[i]) = Decode_eVPL(CopyArray(tempdat, 3));
-                                else (temp[i], valid_checksum[i]) = Decode_CBM_Sector(NDG.Track_Data[t], i, true, tdata);
+                                var tempdat = Decode_CBM_Sector(NDG.Track_Data[t], i, false, tdata).data;
+                                (var cbmdat, var illcbm) = Decode_CBM_GCR(tempdat);
+                                (var vpldat, var csm, var illvpl) = Decode_eVPL(CopyArray(tempdat, 3));
+                                if (illcbm > 6 && illvpl < 10) { temp[i] = CopyArray(vpldat); valid_checksum[i] = csm; }
+                                else { temp[i] = CopyArray(cbmdat, 1, 256); valid_checksum[i] = CBM_Checksum(cbmdat); }
                             }
                             if (temp[i] != null) total += temp[i].Length;
                         }
-                        if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({total}) bytes\n\n");
-                        for (int i = 0; i < NDS.sectors[t]; i++)
+                        catch { }
+                    }
+                    if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({total}) bytes\n\n");
+                    for (int i = 0; i < NDS.sectors[t]; i++)
+                    {
+                        try
                         {
                             if (temp[i]?.Length != null)
                             {
@@ -1909,8 +1913,8 @@ namespace V_Max_Tool
                                 else db_Text.Append(Append_Strings(temp[i], dhex));
                             }
                         }
+                        catch { }
                     }
-                    catch { }
                 }
             }
 
@@ -1920,13 +1924,11 @@ namespace V_Max_Tool
                 bool[] cksm = new bool[NDS.sectors[t]];
                 byte[] ID = new byte[NDS.sectors[t]];
                 int pos = 0;
-                jt[(int)trk] = db_Text.Length;
+                jump_to[(int)trk] = db_Text.Length;
                 if (DV_dec.Checked)
                 {
                     int interleave = 1; // Set to 3 to display sectors in read-order interleave
-                    int current = 0;
-                    int s = 0;
-                    int total = 0;
+                    int current = 0, s = 0, total = 0;
                     for (int ii = 0; ii < NDS.sectors[t]; ii++)
                     {
                         (temp[ii], cksm[ii], _, pos) = Decode_Vorpal(tdata, ii);

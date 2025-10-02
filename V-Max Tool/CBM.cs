@@ -290,7 +290,17 @@ namespace V_Max_Tool
                                 s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
                                 if (!s_cksm)
                                 {
+                                    byte[] ddd = new byte[0];
                                     s_cksm = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3)).checksum;
+                                    //(ddd, s_cksm, _) = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3));
+                                    //if (trk == 0 && sect == 14)
+                                    //{
+                                    //    //File.WriteAllBytes($@"c:\test\t1s15.bin", ddd);
+                                    //    ddd = Decode_CBM_Sector(data, sect, false, source).data;
+                                    //    byte[] poo = Encode_eVpl(File.ReadAllBytes($@"c:\test\t1s15.bin"));
+                                    //    Buffer.BlockCopy(poo, 0, ddd, 3, poo.Length);
+                                    //    NDS.Track_Data[0] = Replace_CBM_Sector(NDS.Track_Data[0], sect, ddd);
+                                    //}
                                 }
                                 if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
                             }
@@ -432,15 +442,8 @@ namespace V_Max_Tool
             {
                 byte[] sectorBytes = Bit2Byte(source, pos, sectorDataLength);
                 if (!decode) return (sectorBytes, false);
-
                 byte[] decodedSector = Decode_CBM_GCR(sectorBytes).decoded;
-                int checksum = 0;
-
-                for (int i = 1; i < 257; i++)
-                    checksum ^= decodedSector[i];
-
-                bool isValid = checksum == decodedSector[257];
-                return (decodedSector, isValid);
+                return (decodedSector, CBM_Checksum(decodedSector));
             }
 
             bool CompareSectorMarker(bool skip = true)
@@ -460,6 +463,14 @@ namespace V_Max_Tool
                 }
                 return false;
             }
+        }
+
+        bool CBM_Checksum(byte[] data)
+        {
+            if (data == null || data.Length < 258) return false;
+            int checksum = 0;
+            for (int i = 1; i < 257; i++) checksum ^= data[i];
+            return checksum == data[257];
         }
 
         byte[] Replace_CBM_Sector(byte[] data, int sector, byte[] new_sector, byte[] padding = null, int pos = 0)

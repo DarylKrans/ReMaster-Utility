@@ -137,9 +137,21 @@ namespace V_Max_Tool
             Set_ListBox_Items(true, true);
 
             //BinToDictionary($@"c:\test\300tbl.bin", $@"c:\test\tableTest.txt", "test", "int", "byte", 8);
-            //BinToByte_Table($@"c:\test\300tbl.bin", $@"c:\test\tableTest2.txt", "test", 16);
+            //BinToByte_Table($@"c:\test\evpl_enc.bin", $@"c:\test\tableTest2.txt", "eVorpal_EncodeTable", 16);
 
-            button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
+            //byte[] poo = new byte[64];
+            //for (int i = 0; i < poo.Length; i++) poo[i] = eVorpal_EncodeTable[i];
+            //
+            //File.WriteAllBytes($@"c:\test\pootable.bin", poo);
+            //BinToDictionary($@"c:\test\pootable.bin", $@"c:\test\pootable.txt", "eVpl_inverse", "byte", "byte", 8);
+
+            File.WriteAllBytes($@"c:\test\encodedtest.bin", Encode_eVpl(File.ReadAllBytes($@"c:\test\enctest.bin"), true));
+            (byte[] dec, bool chk, _) = Decode_eVPL(CopyArray(File.ReadAllBytes($@"c:\test\encodedtest.bin"), 3));
+            Text = $"{chk}";
+            File.WriteAllBytes($@"c:\test\re-encodedtest.bin", dec);
+
+            //button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
+            button1.Visible = button2.Visible = false;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)

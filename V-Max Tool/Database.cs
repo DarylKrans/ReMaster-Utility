@@ -226,7 +226,7 @@ namespace V_Max_Tool
 
         void Setup_Database_Window()
         {
-            Text = "Fuck";
+            //Text = "Fuck";
             databaseToolStripMenuItem.Visible = EnableDBMenu.Checked;
             if (EnableDBMenu.Checked)
             {
@@ -248,25 +248,25 @@ namespace V_Max_Tool
             editPan.MouseMove += (s, e) => EditPan_MouseMove(s, e);
             ProtDetectMethod.Enabled = EnableDBMenu.Checked;
             icons.ImageSize = new Size(20, 20);
-            icons.Images.Add("lock", Resources._lock);      // lock icon
-            icons.Images.Add("star", Resources.star);       // favorites icon
-            icons.Images.Add("starU", Resources.starU);     // unfavorite icon
-            icons.Images.Add("notes", Resources.notes);     // notes icon
-            icons.Images.Add("edit", Resources.pencil);     // edit icon
-            icons.Images.Add("notesH", Resources.notesH);   // notes highlighted icon
-            icons.Images.Add("editH", Resources.pencilH);   // edit highlighted icon
-            icons.Images.Add("editG", Resources.pencilG);   // edit grayed out
-            icons.Images.Add("ok", Resources.OK);           // good image icon
-            icons.Images.Add("bad", Resources.bad);         // bad image icon
-            icons.Images.Add("wwe", Resources.wwe);         // works, with errors icon
-            icons.Images.Add("recover", Resources.recover); // recover
-            icons.Images.Add("recoverH", Resources.recoverH); // recover Hovered
-            icons.Images.Add("redX", Resources.redX);       // recover
-            icons.Images.Add("grnChk", Resources.greenChk); // recover Hovered
-            icons.Images.Add("!undo", Resources.recoverH); // undo disabled
-            icons.Images.Add("!redo", Resources.redoG); // redo disabled
-            icons.Images.Add("undo", Resources.recover); // undo enabled
-            icons.Images.Add("redo", Resources.redoGn); // redo enabled
+            icons.Images.Add("lock", Resources._lock);          // lock icon
+            icons.Images.Add("star", Resources.star);           // favorites icon
+            icons.Images.Add("starU", Resources.starU);         // unfavorite icon
+            icons.Images.Add("notes", Resources.notes);         // notes icon
+            icons.Images.Add("edit", Resources.pencil);         // edit icon
+            icons.Images.Add("notesH", Resources.notesH);       // notes highlighted icon
+            icons.Images.Add("editH", Resources.pencilH);       // edit highlighted icon
+            icons.Images.Add("editG", Resources.pencilG);       // edit grayed out
+            icons.Images.Add("ok", Resources.OK);               // good image icon
+            icons.Images.Add("bad", Resources.bad);             // bad image icon
+            icons.Images.Add("wwe", Resources.wwe);             // works, with errors icon
+            icons.Images.Add("recover", Resources.recover);     // recover
+            icons.Images.Add("recoverH", Resources.recoverH);   // recover Hovered
+            icons.Images.Add("redX", Resources.redX);           // recover
+            icons.Images.Add("grnChk", Resources.greenChk);     // recover Hovered
+            icons.Images.Add("!undo", Resources.recoverH);      // undo disabled
+            icons.Images.Add("!redo", Resources.redoG);         // redo disabled
+            icons.Images.Add("undo", Resources.recover);        // undo enabled
+            icons.Images.Add("redo", Resources.redoGn);         // redo enabled
             icons.Images.Add("preview", Resources.diskPreview); // redo enabled
             PopulateEditItems();
 
@@ -1296,17 +1296,20 @@ namespace V_Max_Tool
 
         void OpenDB_Windows()
         {
-            BrowseDB.Location = new Point(
-                    this.Location.X + ((this.Width - BrowseDB.Width) / 2),
-                    this.Location.Y + (this.Height - BrowseDB.Height) / 2);
-            dbView.Items.Clear();
-            Task.Run(delegate
+            if (databaseToolStripMenuItem.Enabled)
             {
-                if (disk == null || disk.Length == 0 || dbView.Items.Count == 0) ReadDB();
-                SetDBContextItems();
-            });
-            Thread.Sleep(150);
-            BrowseDB.ShowDialog(this);
+                BrowseDB.Location = new Point(
+                        this.Location.X + ((this.Width - BrowseDB.Width) / 2),
+                        this.Location.Y + (this.Height - BrowseDB.Height) / 2);
+                dbView.Items.Clear();
+                Task.Run(delegate
+                {
+                    if (disk == null || disk.Length == 0 || dbView.Items.Count == 0) ReadDB();
+                    SetDBContextItems();
+                });
+                Thread.Sleep(150);
+                BrowseDB.ShowDialog(this);
+            }
         }
 
         void UpdatedbView()

@@ -114,7 +114,7 @@ namespace V_Max_Tool
                 // Minimum track length for Vorpal (when "Fastest Writing Speed Possible" is enabled).
                 // Uses 7726 bytes for >44 sectors (297.9 RPM) instead of 7728 (297.8 RPM).
                 // On 47-sector tracks this leaves only 1 spare byte — slight risk of truncation on odd-ball images.
-                var size = sectors > 41 ? 7726 : density[d];
+                var size = sectors > 41 ? 7730 : density[d];
                 var tsize = size > density[d] ? size : density[d];
                 var offset_adj = (tsize - asize) >> 1 < 3 ? 3 : (tsize - asize) >> 1;
                 offset = offset_adj >= 60 ? 60 << 3 : offset_adj << 3;

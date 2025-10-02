@@ -63,7 +63,7 @@ namespace V_Max_Tool
             string d = "    ";
             foreach (byte b in tbl)
             {
-                d += $"0x{Hex_Val(new byte[] {b})}, ";
+                d += $"0x{Hex_Val(new byte[] { b })}, ";
                 i++;
                 if (i % entriesPerLine == 0)
                 {
@@ -147,6 +147,7 @@ namespace V_Max_Tool
             lines.Add("};");
             File.WriteAllLines(OutputFile, lines);
         }
+
 
         /// Vorpal sector modifications code
         private void Button1_Click(object sender, EventArgs e)

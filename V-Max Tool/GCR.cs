@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Management.Instrumentation;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -21,7 +18,6 @@ namespace V_Max_Tool
             0x09, 0x19, 0x1a, 0x1b,
             0x0d, 0x1d, 0x1e, 0x15
         };
-
 
         private static readonly byte[] GCR_decode_high =
         {
@@ -101,55 +97,73 @@ namespace V_Max_Tool
         /// </summary>
         /// 
         
-        Dictionary<int, byte> eVorpal_LookupTable = new Dictionary<int, byte>
+        Dictionary<byte, byte> eVorpal_DecodeTable = new Dictionary<byte, byte> // GCR byte in, 6-bit nybble out
         {
-            { 0 , 0x00 }, { 1 , 0x01 }, { 2 , 0x00 }, { 3 , 0x01 }, { 4 , 0x02 }, { 5 , 0x03 }, { 6 , 0x02 }, { 7 , 0x03 },
-            { 8 , 0x00 }, { 9 , 0x01 }, { 10 , 0x00 }, { 11 , 0x01 }, { 12 , 0x02 }, { 13 , 0x03 }, { 14 , 0x02 }, { 15 , 0x03 },
-            { 32 , 0x04 }, { 33 , 0x05 }, { 34 , 0x04 }, { 35 , 0x05 }, { 36 , 0x06 }, { 37 , 0x07 }, { 38 , 0x06 }, { 39 , 0x07 },
-            { 40 , 0x04 }, { 41 , 0x05 }, { 42 , 0x04 }, { 43 , 0x05 }, { 44 , 0x06 }, { 45 , 0x07 }, { 46 , 0x06 }, { 47 , 0x07 },
-            { 64 , 0x08 }, { 65 , 0x09 }, { 66 , 0x08 }, { 67 , 0x09 }, { 68 , 0x0A }, { 69 , 0x0B }, { 70 , 0x0A }, { 71 , 0x0B },
-            { 72 , 0x08 }, { 73 , 0x09 }, { 74 , 0x08 }, { 75 , 0x09 }, { 76 , 0x0A }, { 77 , 0x0B }, { 78 , 0x0A }, { 79 , 0x0B },
-            { 96 , 0x0C }, { 97 , 0x0D }, { 98 , 0x0C }, { 99 , 0x0D }, { 100 , 0x0E }, { 101 , 0x0F }, { 102 , 0x0E }, { 103 , 0x0F },
-            { 104 , 0x0C }, { 105 , 0x0D }, { 106 , 0x0C }, { 107 , 0x0D }, { 108 , 0x0E }, { 109 , 0x0F }, { 110 , 0x0E }, { 111 , 0x0F },
-            { 113 , 0x00 }, { 114 , 0x01 }, { 115 , 0x02 }, { 117 , 0x03 }, { 118 , 0x04 }, { 122 , 0x05 }, { 123 , 0x06 }, { 125 , 0x07 },
-            { 126 , 0x08 }, { 129 , 0x09 }, { 130 , 0x0A }, { 131 , 0x0B }, { 133 , 0x0C }, { 134 , 0x0D }, { 141 , 0x0E }, { 142 , 0x0F },
-            { 145 , 0x20 }, { 146 , 0x21 }, { 147 , 0x22 }, { 149 , 0x23 }, { 150 , 0x24 }, { 154 , 0x25 }, { 155 , 0x26 }, { 157 , 0x27 },
-            { 158 , 0x28 }, { 161 , 0x29 }, { 162 , 0x2A }, { 163 , 0x2B }, { 186 , 0x2C }, { 187 , 0x2D }, { 189 , 0x2E }, { 190 , 0x2F },
-            { 193 , 0x40 }, { 194 , 0x41 }, { 195 , 0x42 }, { 197 , 0x43 }, { 198 , 0x44 }, { 205 , 0x45 }, { 206 , 0x46 }, { 209 , 0x47 },
-            { 210 , 0x48 }, { 211 , 0x49 }, { 213 , 0x4A }, { 214 , 0x4B }, { 218 , 0x4C }, { 219 , 0x4D }, { 221 , 0x4E }, { 222 , 0x4F },
-            { 225 , 0x60 }, { 226 , 0x61 }, { 227 , 0x62 }, { 229 , 0x63 }, { 241 , 0x64 }, { 242 , 0x65 }, { 243 , 0x66 }, { 245 , 0x67 },
-            { 246 , 0x68 }, { 250 , 0x69 }, { 251 , 0x6A }, { 253 , 0x6B }, { 254 , 0x6C }, { 257 , 0x6D }, { 258 , 0x6E }, { 259 , 0x6F },
+            { 0x49, 0x00 }, { 0x56, 0x01 }, { 0x4B, 0x02 }, { 0x5A, 0x03 }, { 0x99, 0x04 }, { 0xAA, 0x05 }, { 0x9B, 0x06 }, { 0xAD, 0x07 },
+            { 0x4E, 0x08 }, { 0x5D, 0x09 }, { 0x53, 0x0A }, { 0x65, 0x0B }, { 0x9E, 0x0C }, { 0xB2, 0x0D }, { 0xA6, 0x0E }, { 0xB5, 0x0F },
+            { 0x69, 0x10 }, { 0x76, 0x11 }, { 0x6B, 0x12 }, { 0x7A, 0x13 }, { 0xB9, 0x14 }, { 0xCE, 0x15 }, { 0xBB, 0x16 }, { 0xD3, 0x17 },
+            { 0x6E, 0x18 }, { 0x92, 0x19 }, { 0x73, 0x1A }, { 0x95, 0x1B }, { 0xC9, 0x1C }, { 0xD6, 0x1D }, { 0xCB, 0x1E }, { 0xDA, 0x1F },
+            { 0x4A, 0x20 }, { 0x59, 0x21 }, { 0x4D, 0x22 }, { 0x5B, 0x23 }, { 0x9A, 0x24 }, { 0xAB, 0x25 }, { 0x9D, 0x26 }, { 0xAE, 0x27 },
+            { 0x52, 0x28 }, { 0x5E, 0x29 }, { 0x55, 0x2A }, { 0x66, 0x2B }, { 0xA5, 0x2C }, { 0xB3, 0x2D }, { 0xA9, 0x2E }, { 0xB6, 0x2F },
+            { 0x6A, 0x30 }, { 0x79, 0x31 }, { 0x6D, 0x32 }, { 0x7B, 0x33 }, { 0xBA, 0x34 }, { 0xD2, 0x35 }, { 0xBD, 0x36 }, { 0xD5, 0x37 },
+            { 0x72, 0x38 }, { 0x93, 0x39 }, { 0x75, 0x3A }, { 0x96, 0x3B }, { 0xCA, 0x3C }, { 0xD9, 0x3D }, { 0xCD, 0x3E }, { 0xDB, 0x3F },
         };
 
-        (byte[] sector, bool checksum) Decode_eVPL(byte[] data)
+        byte[] eVorpal_EncodeTable = new byte[] // 6-bit nybble in, GCR byte out
         {
-            if (data == null) return (new byte[0], false);
-            byte a = 0, val;
-            byte[] p1 = new byte[4]; // Decode through Lookup Table (pass 1)
-            byte[] p2 = new byte[4]; // Decode through Lookup Table (pass 2)
+            0x49, 0x56, 0x4B, 0x5A, 0x99, 0xAA, 0x9B, 0xAD, 0x4E, 0x5D, 0x53, 0x65, 0x9E, 0xB2, 0xA6, 0xB5,
+            0x69, 0x76, 0x6B, 0x7A, 0xB9, 0xCE, 0xBB, 0xD3, 0x6E, 0x92, 0x73, 0x95, 0xC9, 0xD6, 0xCB, 0xDA,
+            0x4A, 0x59, 0x4D, 0x5B, 0x9A, 0xAB, 0x9D, 0xAE, 0x52, 0x5E, 0x55, 0x66, 0xA5, 0xB3, 0xA9, 0xB6,
+            0x6A, 0x79, 0x6D, 0x7B, 0xBA, 0xD2, 0xBD, 0xD5, 0x72, 0x93, 0x75, 0x96, 0xCA, 0xD9, 0xCD, 0xDB,
+        };
+
+        (byte[] sector, bool checksum, int illegal) Decode_eVPL(byte[] data)
+        {
+            if (data == null || data.Length < 4) return (new byte[0], false, 240);
+            byte[] gcr = new byte[4];
+            byte parity = 0;
+            int illegal = 0, chunks = data.Length >> 2, ppos = chunks << 2;
             List<byte> output = new List<byte>();
-            for (int i = 0; i < (data.Length >> 2); i++)
+            for (int i = 0; i < chunks; i++)
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    p1[j] = a ^= (byte)(eVorpal_LookupTable.TryGetValue(data[(i << 2) + j] + 0x28, out val) ? val : 0xff);   // Pass 1
-                    p2[j] = (byte)(eVorpal_LookupTable.TryGetValue(a, out val) ? val : 0xff);                                // Pass 2
+                    gcr[j] = parity = (byte)(eVorpal_DecodeTable.TryGetValue(data[(i << 2) + j], out byte val) ? val ^ parity : 0xff);
+                    if (gcr[j] == 0xff) illegal++;
                 }
-                output.AddRange(new byte[]  // Decode 4 GCR bytes to 3 Data bytes
+                output.AddRange(new byte[]
                 {
-                    (byte)(GetBits(p1[0], 0) ^ GetBits(p2[0], 2) ^ GetBits((byte)(p2[0] << 1), 4) ^ GetBits(p1[1], 6)),
-                    (byte)(GetBits(p2[1], 0) ^ GetBits((byte)(p2[1] << 1), 2) ^ GetBits(p1[2], 4) ^ GetBits(p2[2], 6)),
-                    (byte)(GetBits((byte)(p2[2] << 1), 0) ^ GetBits(p1[3], 2) ^ GetBits(p2[3], 4) ^ GetBits((byte)(p2[3] << 1), 6))
+                    (byte)(gcr[0] | ((gcr[1] & 0x03) << 6)),
+                    (byte)(((gcr[1] >> 2) & 0x0F) | ((gcr[2] & 0x0F) << 4)),
+                    (byte)(((gcr[2] >> 4) & 0x03) | (gcr[3] << 2))
                 });
             }
-            return (output.ToArray(), data.Length >= 321 && (a == (byte)(eVorpal_LookupTable.TryGetValue(data[320] + 0x28, out val) ? val : 255)));
-
-            byte GetBits(byte b, int bitPosition)
-            {
-                return (byte)(((b & 0x02) ^ (byte)((b & 0x08) >> 3)) << bitPosition);
-            }
+            return (output.ToArray(), data.Length >= ppos && eVorpal_EncodeTable[parity & 0x3f] == data[ppos], illegal);
         }
 
+        byte[] Encode_eVpl(byte[] data, bool full_325 = false)
+        {
+            if (data == null || data.Length < 3) return new byte[0];
+            byte parity = 0; int EncodeLen = (data.Length / 3) * 3;
+            List<byte> output = new List<byte>();
+            if (full_325) output.AddRange(new byte[] { 0x55, 0xd4, 0xad });
+            for (int i = 0; i < EncodeLen; i += 3)
+            {
+                AddOutput((byte)(data[i] & 0x3f));
+                AddOutput((byte)(((data[i + 1] << 2) | (data[i] >> 6)) & 0x3f));
+                AddOutput((byte)((((data[i + 1] >> 4) & 0x0f) | ((data[i + 2] & 0x03) << 4)) & 0x3f));
+                AddOutput((byte)((data[i + 2] >> 2) & 0x3f));
+            }
+            output.Add(eVorpal_EncodeTable[parity]);
+            if (full_325) output.Add(0x55);
+            return output.ToArray();
+        
+            void AddOutput(byte gcr)
+            {
+                output.Add(eVorpal_EncodeTable[(byte)(gcr ^ parity)]);
+                parity = gcr; 
+            }
+        }
 
         /// <summary>
         ///  ------------------ Vorpal GCR Encode/Decode routines --------------------- 

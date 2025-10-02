@@ -369,7 +369,7 @@ namespace V_Max_Tool
             if (Data_Box.Text.Length >= 0)
             {
                 Data_Box.Visible = false;
-                Data_Box.Select(jt[Convert.ToInt32(T_jump.Value)], 0);
+                Data_Box.Select(jump_to[Convert.ToInt32(T_jump.Value)], 0);
                 Data_Box.ScrollToCaret();
                 Data_Box.Visible = true;
             }
@@ -834,7 +834,7 @@ namespace V_Max_Tool
             return pos;
         }
 
-        (byte[], int, int) GetSectorWithErrorCode(byte[] data, int sector, bool decode, byte[] ID = null, BitArray source = null, int position = 0)
+        (byte[] sector, int error, int pos) GetSectorWithErrorCode(byte[] data, int sector, bool decode, byte[] ID = null, BitArray source = null, int position = 0)
         {
             source = source ?? new BitArray(Flip_Endian(data));
             ID = ID ?? GetDiskID(true);
@@ -851,20 +851,19 @@ namespace V_Max_Tool
                         (byte[] decoded, int illegal) = Decode_CBM_GCR(sec_data);
                         if (illegal > 6)
                         {
-                            (decoded, chksum) = Decode_eVPL(CopyArray(sec_data, 3));
-                            if (chksum) return (!decode ? sec_data : decoded, error, pos);
+                            (byte[] vpdecoded, bool cksm, int ill) = Decode_eVPL(CopyArray(sec_data, 3));
+                            if (cksm && ill < 10) return (!decode ? sec_data : vpdecoded, error, pos);
+                            //(decoded, chksum) = Decode_eVPL(CopyArray(sec_data, 3));
+                            //if (chksum) return (!decode ? sec_data : decoded, error, pos);
                         }
-                        else
-                        {
-                            int checksum = 0;
-                            for (int i = 1; i < 257; i++) checksum ^= decoded[i];
-                            chksum = checksum == decoded[257];
-                            error = !chksum ? 5 : error;
-                            error = (decoded == null || decoded.Length < 256) ? 4 : error;
-                            if (ID != null) error = (!MatchSeq(id, ID)) ? 11 : error;
-                            /* if Decode is set to true, Send back the un-altered sector data from the track */
-                            return (decode ? decoded : sec_data, error, pos);
-                        }
+                        int checksum = 0;
+                        for (int i = 1; i < 257; i++) checksum ^= decoded[i];
+                        chksum = checksum == decoded[257];
+                        error = !chksum ? 5 : error;
+                        error = (decoded == null || decoded.Length < 256) ? 4 : error;
+                        if (ID != null) error = (!MatchSeq(id, ID)) ? 11 : error;
+                        /* if Decode is set to true, Send back the un-altered sector data from the track */
+                        return (decode ? decoded : sec_data, error, pos);
                     }
                 }
                 catch { }

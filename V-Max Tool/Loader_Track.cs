@@ -36,7 +36,7 @@ namespace V_Max_Tool
                 pos++;
             }
             return filtered.ToArray(); // return (what should be) the real loader GCR data for decoding
-        
+
             void Reposition()
             {
                 // arbitrary sync found, skipping forward to next '0' bit, this is the start of the next real GCR byte
