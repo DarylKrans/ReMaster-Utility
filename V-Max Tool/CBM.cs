@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -292,15 +291,6 @@ namespace V_Max_Tool
                                 {
                                     byte[] ddd = new byte[0];
                                     s_cksm = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3)).checksum;
-                                    //(ddd, s_cksm, _) = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3));
-                                    //if (trk == 0 && sect == 14)
-                                    //{
-                                    //    //File.WriteAllBytes($@"c:\test\t1s15.bin", ddd);
-                                    //    ddd = Decode_CBM_Sector(data, sect, false, source).data;
-                                    //    byte[] poo = Encode_eVpl(File.ReadAllBytes($@"c:\test\t1s15.bin"));
-                                    //    Buffer.BlockCopy(poo, 0, ddd, 3, poo.Length);
-                                    //    NDS.Track_Data[0] = Replace_CBM_Sector(NDS.Track_Data[0], sect, ddd);
-                                    //}
                                 }
                                 if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
                             }

@@ -148,6 +148,48 @@ namespace V_Max_Tool
             File.WriteAllLines(OutputFile, lines);
         }
 
+        void BinToDictionary2(string InputFile, string InputFile2, string OutputFile, string DictionaryName, string field1 = "int", string field2 = "byte", int entriesPerLine = 8, byte[] Omit = null)
+        {
+            byte[] tbl = File.ReadAllBytes(InputFile);
+            byte[] tbl2 = File.ReadAllBytes(InputFile2);
+            List<string> lines = new List<string>
+            {
+                $"Dictionary<{field1}, {field2}> {DictionaryName} = new Dictionary<{field1}, {field2}>",
+                "{"
+            };
+
+            entriesPerLine = entriesPerLine < 1 ? 1 : entriesPerLine;
+            int countInLine = 0;
+            string line = "    ";
+
+            for (int i = 0; i < tbl.Length; i++)
+            {
+                byte b = tbl[i];
+                byte c = tbl2[i];
+                if (Omit == null || Omit.Length == 0 || b != Omit[0])
+                {
+                    string f1 = field1 == "byte" ? $"{{ 0x{Hex_Val(new byte[] { BitConverter.GetBytes((byte)b)[0] })}, " : $"{{ {b}, ";
+                    string f2 = field2 == "byte" ? $"0x{Hex_Val(new byte[] { c })} }}, " : $"{c} }}, ";
+                    line += f1 + f2;
+                    countInLine++;
+                }
+
+                if (countInLine == entriesPerLine)
+                {
+                    lines.Add(line);
+                    line = "    ";
+                    countInLine = 0;
+                }
+            }
+
+            // Add any remaining entries
+            if (countInLine > 0)
+                lines.Add(line.TrimEnd(' ', ','));
+
+            lines.Add("};");
+            File.WriteAllLines(OutputFile, lines);
+        }
+
 
         /// Vorpal sector modifications code
         private void Button1_Click(object sender, EventArgs e)

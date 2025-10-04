@@ -1750,6 +1750,9 @@ namespace V_Max_Tool
 
             void Disp_VMAX(int t, double track, BitArray tdata = null)
             {
+                //List<byte> uni = new List<byte>();
+                //List<byte> list = new List<byte>();
+                //string tbl = string.Empty;
                 byte[] dec = new byte[0];
                 int tlen = 0;
                 string contents = string.Empty;
@@ -1758,6 +1761,18 @@ namespace V_Max_Tool
                 for (int i = 0; i < sectors.Length; i++)
                 {
                     (sectors[i], cksm[i]) = Find_VMax_Sector(NDG.Track_Data[t], tdata, i, NDS.cbm[t], true);
+                    //byte[] tmmmp;
+                    //(tmmmp, cksm[i]) = Find_VMax_Sector(NDG.Track_Data[t], tdata, i, NDS.cbm[t], false);
+                    //foreach (byte b in tmmmp) if (!uni.Any(x => x == vmax_dec_table[b]) || uni.Count == 0) uni.Add(vmax_dec_table[b]);
+                    //foreach (byte b in tmmmp)
+                    //{
+                    //    if (!uni.Any(x => x == b) || uni.Count == 0)
+                    //    {
+                    //        uni.Add(b);
+                    //    }
+                    //}
+                    //uni.Sort();
+                    //sectors[i] = Decode_VmaxGCR(tmmmp);
                     tlen += sectors[i].Length;
                 }
                 if (sectors.Length > 0)
@@ -1780,6 +1795,12 @@ namespace V_Max_Tool
                         }
                     }
                 }
+                //foreach (byte b in uni)
+                //{
+                //    list.Add(vmax_dec_table[b]);
+                //}
+                //File.WriteAllBytes($@"c:\test\track{t}.bin", uni.ToArray());
+                //File.WriteAllBytes($@"c:\test\track{t}_1.bin", list.ToArray());
             }
 
             void Disp_V_ldr(int t, double track, BitArray tdata = null)

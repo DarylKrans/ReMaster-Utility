@@ -136,20 +136,10 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            //BinToDictionary($@"c:\test\300tbl.bin", $@"c:\test\tableTest.txt", "test", "int", "byte", 8);
-            //BinToByte_Table($@"c:\test\evpl_enc.bin", $@"c:\test\tableTest2.txt", "eVorpal_EncodeTable", 16);
-
-            //byte[] poo = new byte[64];
-            //for (int i = 0; i < poo.Length; i++) poo[i] = eVorpal_EncodeTable[i];
-            //
-            //File.WriteAllBytes($@"c:\test\pootable.bin", poo);
-            //BinToDictionary($@"c:\test\pootable.bin", $@"c:\test\pootable.txt", "eVpl_inverse", "byte", "byte", 8);
-
-            File.WriteAllBytes($@"c:\test\encodedtest.bin", Encode_eVpl(File.ReadAllBytes($@"c:\test\enctest.bin"), true));
-            (byte[] dec, bool chk, _) = Decode_eVPL(CopyArray(File.ReadAllBytes($@"c:\test\encodedtest.bin"), 3));
-            Text = $"{chk}";
-            File.WriteAllBytes($@"c:\test\re-encodedtest.bin", dec);
-
+            //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
+            //File.WriteAllBytes($@"c:\test\vm_dec.bin", Decode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_sec.bin")));
+            //File.WriteAllBytes($@"c:\test\vm_dec1.bin", Decode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_renc.bin")));
+            //File.WriteAllBytes($@"c:\test\vm_renc.bin", Encode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_sec1.bin"), true));
             //button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
             button1.Visible = button2.Visible = false;
         }
