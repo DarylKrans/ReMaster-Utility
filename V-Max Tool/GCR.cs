@@ -375,33 +375,34 @@ namespace V_Max_Tool
         byte[] Decode_VmaxGCR(byte[] rawGcr)    // Decode V-Max (custom) Sectors
         {
             if (rawGcr == null) return null;
-            List<byte> output = new List<byte>();
+            int chunks = rawGcr.Length >> 2, b = 0;
+            byte[] output = new byte[chunks * 3];
             for (int i = 0; i < rawGcr.Length; i += 4)
             {
                 try
                 {
                     byte mask = (byte)(VMax_gcrTable.TryGetValue(rawGcr[i], out var val) ? val : 0xff);
-                    for (int j = 1; j < 4; j++) 
-                        output.Add((byte)(mask << (j << 1) ^ (VMax_gcrTable.TryGetValue(rawGcr[i + j], out val) ? val : 0xff)));
+                    output[b] = (byte)(mask << 2 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 1], out val) ? val : 0xff));
+                    output[b + chunks] = (byte)(mask << 4 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 2], out val) ? val : 0xff));
+                    output[b++ + (chunks << 1)] = (byte)(mask << 6 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 3], out val) ? val : 0xff));
                 }
                 catch { }
             }
-            return output.ToArray();
+            return output;
         }
 
         byte[] Encode_VmaxGCR(byte[] data, bool Calculate_Checksum = false)
         {
             if (data == null || data.Length < 3) return null;
             List<byte> output = new List<byte>();
-            if (Calculate_Checksum) data = ArrayConcat(data, new byte[] { Checksum() });
-            int len = (data.Length / 3) * 3;
-            byte g0, g1, g2, g3;
-            for (int i = 0; i < len; i += 3)
+            if (data.Length >= 240 && Calculate_Checksum) Checksum();
+            int offset = (data.Length / 3), len = offset * 3;
+            for (int i = 0; i < offset; i ++)
             {
-                g0 = (byte)((data[i] & 0xc0) ^ ((data[i + 1] & 0xc0) >> 2) ^ ((data[i + 2] & 0xc0) >> 4));
-                g1 = (byte)((data[i] ^ g0) & 0x3f);
-                g2 = (byte)((data[i + 1] ^ (g0 << 2)) & 0x3f);
-                g3 = (byte)((data[i + 2] ^ (g0 << 4)) & 0x3f);
+                byte g0 = (byte)((data[i] & 0xc0) ^ ((data[i + offset] & 0xc0) >> 2) ^ ((data[i + (offset << 1)] & 0xc0) >> 4));
+                byte g1 = (byte)((data[i] ^ g0) & 0x3f);
+                byte g2 = (byte)((data[i + offset] ^ (g0 << 2)) & 0x3f);
+                byte g3 = (byte)((data[i + (offset << 1)] ^ (g0 << 4)) & 0x3f);
                 output.AddRange(new byte[] { Encode((byte)(g0 >> 2)), Encode(g1), Encode(g2), Encode(g3) });
             }
             return output.ToArray();
@@ -411,14 +412,14 @@ namespace V_Max_Tool
                 return VMax_gcrTable.FirstOrDefault(x => x.Value == b).Key; 
             }
 
-            byte Checksum()
+            void Checksum()
             {
                 byte checksum = 0;
-                foreach (byte b in data) checksum ^= b; 
-                return checksum;
+                for (int i = 0; i < 238; i++) checksum ^= data[i];
+                data[238] = checksum; data[239] = 0; 
             }
         }
-
+     
         byte[] Decode_VM_Loader_CBM(byte[] gcrTrack)    // Decode V-Max v0/1 (standard sectors) Loader track
         {
             List<byte> decoded = new List<byte>();

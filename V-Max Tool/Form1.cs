@@ -139,7 +139,7 @@ namespace V_Max_Tool
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
             //File.WriteAllBytes($@"c:\test\vm_dec.bin", Decode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_sec.bin")));
             //File.WriteAllBytes($@"c:\test\vm_dec1.bin", Decode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_renc.bin")));
-            //File.WriteAllBytes($@"c:\test\vm_renc.bin", Encode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_sec1.bin"), true));
+            //File.WriteAllBytes($@"c:\test\vm_renc.bin", Encode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_dec1.bin"), true));
             //button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
             button1.Visible = button2.Visible = false;
         }
