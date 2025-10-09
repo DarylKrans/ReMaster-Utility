@@ -862,7 +862,7 @@ namespace V_Max_Tool
                         error = (decoded == null || decoded.Length < 256) ? 4 : error;
                         if (ID != null) error = (!MatchSeq(id, ID)) ? 11 : error;
                         /* if Decode is set to true, Send back the un-altered sector data from the track */
-                        return (decode ? decoded : sec_data, error, pos);
+                        return (decode ? CopyArray(decoded, 1, 256) : sec_data, error, pos);
                     }
                 }
                 catch { }

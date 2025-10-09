@@ -9,103 +9,28 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        byte[] Get_VmaxLoader_CBM(byte[] data)
-        {
-            byte[] possnc = new byte[] { 0xcb, 0xb3, 0xeb, 0xe3, 0x97, 0xa7, 0xbb, 0xd3, 0xd7 }; // these tend to have arbitrary sync following
-            List<byte> filtered = new List<byte>();
-            BitArray s = new BitArray(Flip_Endian(Get_VmaxLoaderSegment(data, true)));
-            byte window = 0;
-            int pos = 0, bytePos = 0;
-            // filter through array on bit-level to find relevant loader code while removing arbitrary sync obfuscation
-            while (pos < s.Length)
-            {
-                window <<= 1;
-                if (s[pos]) window |= 1;
-                if (++bytePos % 8 == 0)
-                {
-                    filtered.Add(window);
-                    bytePos = 0;
-                    if (possnc.Any(x => x == window))
-                    {
-                        // checking for 6+ '1' bits in a row (more than 5 is invalid GCR, signals arbitrary sync obfuscation)
-                        byte wdw = (byte)(window & 0x07);
-                        if ((wdw == 3 && s[pos + 1] && s[pos + 2] && s[pos + 3] && s[pos + 4]) ||
-                            (wdw == 7 && s[pos + 1] && s[pos + 2] && s[pos + 3])) Reposition();
-                    }
-                }
-                pos++;
-            }
-            return filtered.ToArray(); // return (what should be) the real loader GCR data for decoding
-
-            void Reposition()
-            {
-                // arbitrary sync found, skipping forward to next '0' bit, this is the start of the next real GCR byte
-                while (pos < s.Length && s[pos]) pos++;
-                bytePos = 1; // First '0' bit found of next byte, just need the next 7
-                window = 0; // clear window and set bytePos to 1, continue assembling the next byte
-            }
-        }
-
-        //byte[] Get_VmaxLoader_CBM(byte[] data)
-        //{
-        //    byte[] valid = new byte[]
-        //    {
-        //        0x45, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x59, 0x5A, 0x5B, 0x5C,
-        //        0x5D, 0x5E, 0x63, 0x64, 0x65, 0x66, 0x67, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x72, 0x73, 0x74, 0x75,
-        //        0x76, 0x77, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x93, 0x94, 0x95, 0x96, 0x97, 0x99, 0x9A, 0x9B, 0x9C,
-        //        0x9D, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA9, 0xAA, 0xAC, 0xAD, 0xAE, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB9,
-        //        0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xC5, 0xC7, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xD2, 0xD3, 0xD4, 0xD5,
-        //        0xD7, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE
-        //    };
-        //    byte[] possnc = new byte[] { 0xcb, 0xb3, 0xeb, 0xe3, 0x97, 0xa7, 0xbb, 0xd3, 0xd7 }; // these tend to have arbitrary sync following
-        //    List<byte> fnl = new List<byte>();
-        //    BitArray s = new BitArray(Flip_Endian(Get_VmaxLoaderSegment(data, true)));
-        //    byte window = 0;
-        //    int pos = 0, bytePos = 0;
-        //    // filter through array on bit-level to find relevant loader code while removing arbitrary sync obfuscation
-        //    while (pos < s.Length)
-        //    {
-        //        window <<= 1;
-        //        if (s[pos]) window |= 1;
-        //        if (++bytePos % 8 == 0)
-        //        {
-        //            if (valid.Any(x => x == window))
-        //            {
-        //                fnl.Add(window);
-        //                bytePos = 0;
-        //                if (possnc.Any(x => x == window))
-        //                {
-        //                    // checking for 6+ '1' bits in a row (more than 5 is invalid GCR, signals arbitrary sync obfuscation)
-        //                    byte wdw = (byte)(window & 0x07);
-        //                    if ((wdw == 3 && s[pos + 1] && s[pos + 2] && s[pos + 3] && s[pos + 4]) ||
-        //                        (wdw == 7 && s[pos + 1] && s[pos + 2] && s[pos + 3])) Reposition();
-        //                }
-        //            }
-        //            else Reposition();
-        //        }
-        //        pos++;
-        //    }
-        //    return fnl.ToArray(); // return (what should be) the real loader GCR data for decoding
-        //
-        //    void Reposition()
-        //    {
-        //        // arbitrary sync found, skipping forward to next '0' bit, this is the start of the next real GCR byte
-        //        while (pos < s.Length && s[pos]) pos++;
-        //        bytePos = 1; // First '0' bit found of next byte, just need the next 7
-        //        window = 0; // clear window and set bytePos to 1, continue assembling the next byte
-        //    }
-        //}
-
         byte[] Get_VmaxLoaderSegment(byte[] data, bool cbm = false)
         {
             if (data == null || data.Length == 0) return null;
+
+            byte[] custom = new byte[] // Bytes of loader possibly followed with arbitrary sync on later V-Max v2+ versions
+            {
+                0x27, 0x2B, 0x37, 0x3B, 0x4B, 0x4F, 0x53, 0x57, 0x5B, 0x67, 0x6B, 0x6F, 0x73, 0x77, 0x7B, 0x93,
+                0x9B, 0xA7, 0xAB, 0xAF, 0xB3, 0xB7, 0xBB, 0xCB, 0xCF, 0xD3, 0xD7, 0xDB, 0xE7, 0xEB, 0xF3,
+            };
+
+            byte[] std = new byte[] // early V-Max loader version bytes followed by arbitrary sync
+            {
+                0xcb, 0xb3, 0xeb, 0xe3, 0x97, 0xa7, 0xbb, 0xd3, 0xd7
+            };
+
             BitArray s = new BitArray(0);
             if (!Padding_First())
             {
-                byte[] comp = CopyArray(data, 1, 128);
-                for (int i = 129; i < data.Length; i++)
+                byte[] comp = CopyArray(data, 1, 256); // 128
+                for (int i = 257; i < data.Length; i++)
                 {
-                    if (MatchSeq(data, comp, i)) s = new BitArray(Flip_Endian(Rotate_Loader(CopyArray(data, 1, i - 1))));
+                    if (MatchSeq(data, comp, i)) s = new BitArray(Flip_Endian(Rotate_Loader(CopyArray(data, 1, i - 1), true)));
                 }
             }
             else s = new BitArray(Flip_Endian(data));
@@ -116,18 +41,24 @@ namespace V_Max_Tool
             {
                 compare <<= 1;
                 if (s[pos++]) compare |= 1;
-                if ((compare & 0x00ff00ff) == find && (fiveAchunk.Any(x => x == (compare & 0xff000000) >> 24)))
+                if ((compare & 0x00ff00ff) == find && fiveAchunk.Any(x => x == (compare & 0xff000000) >> 24))
                 {
-                    var temp = Bit2Byte(s, pos, Math.Min(5120 << 3, s.Length - pos));
-                    int rep = 0;
+                    int rep = 0, len = Math.Min(5120 << 3, s.Length - pos);
+                    var temp = Bit2Byte(s, pos, len);
                     for (int i = 1000; i < temp.Length; i++)
                     {
                         if (temp[i] == temp[i - 1]) rep++;
                         else rep = 0;
                         if (rep > 15)
                         {
-                            if (cbm) return CopyArray(temp, 0, i - (rep - 1));
-                            else return CopyArray(temp, 0, i - rep).Where(b => b != 0xff).ToArray();
+                            var tmp = Filter_Sync(BitCopy(s, pos, (i - (rep - (cbm ? 1 : 0))) << 3), cbm ? std : custom)
+                                .Where(b => b != 0xff).ToArray();
+                            len = tmp.Length;
+                            // Trim length to remove trailing garbage data or weak-bits
+                            if (tmp.Length > 2056 && tmp.Length < 2200) len = 2056; // v-max v0-1 loader length
+                            if (tmp.Length > 2701 && tmp.Length < 3000) len = 2701; // v-max v2   loader length
+                            if (tmp.Length > 3089) len = 3089;                      // v-max v3-4 loader length
+                            return CopyArray(tmp, 0, len);
                         }
                     }
                 }
@@ -139,6 +70,48 @@ namespace V_Max_Tool
                 byte chk = data[0];
                 for (int i = 1; i < 5; i++) if (data[i] != chk) return false;
                 return true;
+            }
+        }
+
+        byte[] Filter_Sync(BitArray d, byte[] PossibleSync)
+        {
+            if (d == null || d.Count == 0) return new byte[0];
+            byte[] garbage = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x88 };
+            List<byte> filtered = new List<byte>();
+            byte window = 0;
+            int bytePos = 0, pos = 0;
+            while (pos < d.Length)
+            {
+                window <<= 1;
+                if (d[pos]) window |= 1;
+                if (++bytePos % 8 == 0)
+                {
+                    if (!garbage.Contains(window)) filtered.Add(window);
+                    //filtered.Add(window);
+                    bytePos = 0;
+                    if (PossibleSync.Any(x => x == window))
+                    {
+                        try
+                        {
+                            // checking for 6+ '1' bits in a row (more than 5 is invalid GCR, signals arbitrary sync obfuscation)
+                            byte wdw = (byte)(window & 0x07);
+                            if ((wdw == 3 && d[pos + 1] && d[pos + 2] && d[pos + 3] && d[pos + 4]) ||
+                                (wdw == 7 && d[pos + 1] && d[pos + 2] && d[pos + 3])) Reposition();
+                        }
+                        catch { }
+                    }
+                }
+                pos++;
+            }
+            return filtered.ToArray();
+            
+
+            void Reposition()
+            {
+                // arbitrary sync found, skipping forward to next '0' bit, this is the start of the next real GCR byte
+                while (pos < d.Length && d[pos]) pos++;
+                bytePos = 1; // First '0' bit found of next byte, just need the next 7
+                window = 0; // clear window and set bytePos to 1, continue assembling the next byte
             }
         }
 
@@ -183,7 +156,7 @@ namespace V_Max_Tool
 
         /// ------------------------- Rotate Loader Track -------------------------------------------
 
-        byte[] Rotate_Loader(byte[] temp)
+        byte[] Rotate_Loader(byte[] temp, bool force = false)
         {
             ///------- Checks to see if Loader track contains V-Max Headers (found on Mindscape titles) -----------
             bool rotated = false;
@@ -236,7 +209,7 @@ namespace V_Max_Tool
             }
         ///----------------------------------------------------------------------------------------------------------
         End_rotate:
-            if (!rotated)
+            if (!rotated || force)
             {
                 int start = 0;
                 int longest = 0;

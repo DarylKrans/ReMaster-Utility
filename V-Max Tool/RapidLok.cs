@@ -12,6 +12,8 @@ namespace V_Max_Tool
         private static readonly byte[] RLok = new byte[] { 0xff, 0xff, 0x55, 0x7b }; /// Pattern used to detect if a track is RapidLok protected
         private static readonly byte[] RLok1 = new byte[] { 0x75, 0x90, 0x09 }; /// Pattern used to detect if a track is RapidLok protected
         private static readonly byte[] RLok_7b = new byte[] { 0x55, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b, 0x7b };
+        //private static readonly byte[] RLok_7b = new byte[] { 0x24, 0xf6, 0xf6, 0xf6, 0xf6, 0xf6, 0xf6, 0xf6, 0xf6, 0xf6 };
+
         private static readonly byte[,][] rl6_t18s3 = new byte[5, 2][];
         private static readonly byte[,][] rl6_t18s6 = new byte[1, 2][];
         private static readonly byte[,][] rl2_t18s9 = new byte[2, 2][];
@@ -147,9 +149,23 @@ namespace V_Max_Tool
             }
         }
 
-        (byte[], byte[]) RapidLok_Key_Fix(byte[] data, byte[] new_key = null)
+        (byte[] key_track, byte[] key) RapidLok_Key_Fix(byte[] data, byte[] new_key = null)
         {
-            byte[] newkey = FastArray.Init(7153, 0xff);
+            if (data == null || data.Length == 0) return (new byte[0], new byte[0]);
+            //int[] tbl = new int[]
+            //{
+            //    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 18, 19, 20, 21,
+            //    22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 16, 35, 36, 37, 38, 39 
+            //};
+            int[] tbl = new int[]
+            {
+                //0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 17, 18, 19, 20, 21,
+                //22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 17, 36, 37, 38, 39 
+                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 18, 19, 20, 21,
+                22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 16, 36, 37, 38, 39
+            };
+            string[] sec = new string[38];
+            byte[] newkey = FastArray.Init(7200, 0xff);
             byte[] key = new byte[256];
             byte[] _key = new byte[54];
             int s = 0;
@@ -162,6 +178,24 @@ namespace V_Max_Tool
                     break;
                 }
             }
+            byte[] klen = Decode_RL_Header(CopyArray(key, 1, 53), false).header;
+            byte cc = 0;
+            int a = 0;
+            for (int i = 0; i < klen.Length - 1; i++) cc ^= klen[i];
+            for (int i = 0; i < klen.Length; i++)
+            {
+                if (i == 17)
+                {
+                    //sec[i] = $"Track {i + 1} N/A";
+
+                    sec[a++] = $"Track {i + 1} N/A";
+                }
+                //sec[tbl[i]] = ($"Track {tbl[i] + (i <= 17 ? 1 : 2)} security sector length: {(int)klen[i]}");
+                sec[a++] = ($"Track {i + (i < 18 ? 1 : 2)} security sector length: {(int)klen[i]}");
+            }
+            bool f = RL1_Checksum(CopyArray(key, 1, 53));
+            sec[sec.Length - 1] = $"{f} {(int)cc} {Hex_Val(new byte[] { cc })}";
+            File.WriteAllLines($@"c:\test\decoded_key.txt", sec);
             if (new_key != null) Buffer.BlockCopy(new_key, 0, key, 0, new_key.Length);
             for (int i = 54; i < key.Length; i++)
             {
@@ -173,6 +207,35 @@ namespace V_Max_Tool
             Buffer.BlockCopy(key, 0, _key, 0, _key.Length);
             return (newkey, _key);
         }
+
+        //(byte[], byte[]) RapidLok_Key_Fix(byte[] data, byte[] new_key = null)
+        //{
+        //    //byte[] newkey = FastArray.Init(7153, 0xff);
+        //    byte[] newkey = FastArray.Init(7200, 0xff);
+        //    byte[] key = new byte[256];
+        //    byte[] _key = new byte[54];
+        //    int s = 0;
+        //    if (data[s] == 0x6b) s += 200;
+        //    for (int i = s; i < data.Length; i++)
+        //    {
+        //        if ((data[i] == 0x6b) && (i + 256) < data.Length)
+        //        {
+        //            Buffer.BlockCopy(data, i, key, 0, 256);
+        //            break;
+        //        }
+        //    }
+        //    if (new_key != null) Buffer.BlockCopy(new_key, 0, key, 0, new_key.Length);
+        //    for (int i = 54; i < key.Length; i++)
+        //    {
+        //        if (key[i] != 0xff) key[i] = 0x00;
+        //        if (i >= 250) key[i] = 0xff;
+        //        if (i < 250) key[i] = 0x00;
+        //    }
+        //    //Buffer.BlockCopy(key, 0, newkey, newkey.Length - 286, 256);
+        //    Buffer.BlockCopy(key, 0, newkey, newkey.Length - 768, 256);
+        //    Buffer.BlockCopy(key, 0, _key, 0, _key.Length);
+        //    return (newkey, _key);
+        //}
 
         (byte[], int, int, int, int, int, string[]) RapidLok_Track_Info(byte[] data, int trk, bool build, byte[] track_ID, int rl_7b_len = 0)
         {
@@ -242,10 +305,17 @@ namespace V_Max_Tool
                 using (BinaryWriter write = new BinaryWriter(buffer))
                 {
                     var cursec = (first_sector == sectors || first_sector == -1) ? 0 : first_sector;
+                    //if (sb_sec > 0)
+                    //{
+                    //    write.Write(ArrayConcat(FastArray.Init(snc, 0xff), new byte[] { 0x55 }, (nsb == 0)
+                    //        ? FastArray.Init(sb_sec - 1, 0x7b) : FastArray.Init(nsb, 0x7b)));
+                    //}
                     if (sb_sec > 0)
                     {
                         write.Write(ArrayConcat(FastArray.Init(snc, 0xff), new byte[] { 0x55 }, (nsb == 0)
                             ? FastArray.Init(sb_sec - 1, 0x7b) : FastArray.Init(nsb, 0x7b)));
+                        //write.Write(ArrayConcat(FastArray.Init(snc, 0xff), new byte[] { 0x55 }, (nsb == 0)
+                        //    ? CopyArray(sec_data[0], 0, sb_sec - 1) : CopyArray(sec_data[0], 0, nsb)));
                     }
                     write.Write(ArrayConcat(FastArray.Init(snc << 1, 0xff), Verify_Track_ID(tid), FastArray.Init((snc * 3) - os_sync.Length, 0xff)));
                     var rem = Math.Max((density[den] - ((int)buffer.Length + (sectors * (583 + 7 + (os_sync.Length << 1))))) / (sectors << 1), 5);
@@ -277,6 +347,13 @@ namespace V_Max_Tool
             {
                 if (pos + bitBlockSize >= source.Length) return;
                 var c = Bit2Byte(source, pos, bitBlockSize);
+                byte[] possible = new byte[] { 0x7b, 0xf6, 0xed, 0xdb, 0xb7, 0x6f, 0xde, 0xbd };
+                //if (c[0] != c[1] && possible.Any(x => x == c[1] && c[1] == c[2]))
+                //{
+                //    bool b = true;
+                //    for (int i = 2; i < 10; i++) if (c[i] != c[1]) b = false;
+                //    if (b) HandleRLok7bMatch();
+                //}
                 if (MatchSeq(RLok_7b, c)) HandleRLok7bMatch();
                 else if (trk_id) HandleTrackId(c);
                 else if (c[0] == 0x52 && tid.Length == 0) tid = Bit2Byte(source, pos, 12 << 3);
@@ -316,24 +393,39 @@ namespace V_Max_Tool
 
             void FindSbSec()
             {
-                int sl = 0;
-                int tsnc = 0;
-                for (int i = pos; i < source.Length; i++)
+                byte[] sbs = Bit2Byte(source, pos, Math.Min(210 << 3, source.Length - pos));
+                byte[] possible = new byte[] { 0x7b, 0xf6, 0xed, 0xdb, 0xb7, 0x6f, 0xde, 0xbd };
+                //File.WriteAllBytes($@"c:\test\track{trk}.bin", sbs);
+                int tsnc = 1;
+                while (tsnc < sbs.Length)
                 {
-                    if (source[i]) tsnc++;
-                    else
-                    {
-                        if (tsnc >= 16)
-                        {
-                            sb_sec = (sl - tsnc - 8) >> 3;
-                            a_headers.Add($"Security sector (0x7B) Length {sb_sec}");
-                            break;
-                        }
-                        tsnc = 0;
-                    }
-                    sl++;
+                    if (possible.Any(x => x == sbs[tsnc])) tsnc++;
+                    else break;
                 }
+                sb_sec = tsnc;
+                a_headers.Add($"Security sector (0x7B) Length {sb_sec}");
             }
+
+            //void FindSbSec()
+            //{
+            //    int sl = 0;
+            //    int tsnc = 0;
+            //    for (int i = pos; i < source.Length; i++)
+            //    {
+            //        if (source[i]) tsnc++;
+            //        else
+            //        {
+            //            if (tsnc >= 10)
+            //            {
+            //                sb_sec = (sl - tsnc - 8) >> 3;
+            //                a_headers.Add($"Security sector (0x7B) Length {sb_sec}");
+            //                break;
+            //            }
+            //            tsnc = 0;
+            //        }
+            //        sl++;
+            //    }
+            //}
 
             void HandleC0x75(byte[] d)
             {
@@ -358,7 +450,6 @@ namespace V_Max_Tool
                             case 1: cksm = "OK"; break;
                             case 2: cksm = "Empty Sector, No Data"; break;
                         }
-                        //a_headers.Add($"sector ({Convert.ToInt32(hdr[0])}) Header ID [ {Hex_Val(hdr)} ] Header Checksum ({(headChecksum ? "OK" : "Failed!")}) Sector Checksum ({cksm})");
                         a_headers.Add($"sector ({Convert.ToInt32(hdr[0])}) Header ID [ {Hex_Val(hdr)} ] Header ({(headChecksum ? "OK" : "Failed!")}) Sector ({cksm})");
                         if (ckm < 1) errors++;
                     }
@@ -499,12 +590,13 @@ namespace V_Max_Tool
             return data;
         }
 
-        (byte[] header, bool checksum) Decode_RL_Header(byte[] data)  // Test RapidLok v1 GCR decoding
+        (byte[] header, bool checksum) Decode_RL_Header(byte[] data, bool header = true)  // Test RapidLok v1 GCR decoding
         {
             if (data == null || data.Length < 6) return (null, false);
             int pos = 0;
             List<byte> bytes = new List<byte>();
-            while (pos < 2)
+            while (pos < (header ? 2 : data.Length / 3))
+            //while (pos < data.Length / 3)
             {
                 byte b1 = data[pos * 3];
                 byte b2 = data[(pos * 3) + 1];

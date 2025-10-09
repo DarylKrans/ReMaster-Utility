@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -136,10 +137,9 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
+            //BinToByte_Table($@"c:\test\unique.bin", $@"c:\test\unique.txt", "vmv0", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
-            //File.WriteAllBytes($@"c:\test\vm_dec.bin", Decode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_sec.bin")));
-            //File.WriteAllBytes($@"c:\test\vm_dec1.bin", Decode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_renc.bin")));
-            //File.WriteAllBytes($@"c:\test\vm_renc.bin", Encode_VmaxGCR(File.ReadAllBytes($@"c:\test\vm_dec1.bin"), true));
+
             //button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
             button1.Visible = button2.Visible = false;
         }

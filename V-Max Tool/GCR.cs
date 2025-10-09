@@ -304,23 +304,41 @@ namespace V_Max_Tool
                 }
                 return (buffer.ToArray(), rl_v2_7 ? RL2_7_Checksum(buffer.ToArray(), dec0) : RL1_Checksum(sector), rl_v2_7);
             }
-            bool RL2_7_Checksum(byte[] data, byte value)
-            {
-                int ck = 0;
-                foreach (byte b in data) ck ^= b;
-                ck ^= value;
-                return value == ck;
-            }
+            //bool RL2_7_Checksum(byte[] data, byte value)
+            //{
+            //    int ck = 0;
+            //    foreach (byte b in data) ck ^= b;
+            //    ck ^= value;
+            //    return value == ck;
+            //}
 
-            bool RL1_Checksum(byte[] data)
-            {
-                int ck = 0;
-                for (int i = 1; i < data.Length - 2; i++) ck ^= data[i];
-                byte x = (byte)(data[data.Length - 2] << 3);
-                // quite honestly, I don't know what I'm doing here, but it works
-                byte value = (byte)(ck & 0x03 ^ ck & 0x0c ^ x & 0xc0 ^ (x & 0x18) << 1);
-                return ck == value;
-            }
+            //bool RL1_Checksum(byte[] data)
+            //{
+            //    int ck = 0;
+            //    for (int i = 1; i < data.Length - 2; i++) ck ^= data[i];
+            //    byte x = (byte)(data[data.Length - 2] << 3);
+            //    // quite honestly, I don't know what I'm doing here, but it works
+            //    byte value = (byte)(ck & 0x03 ^ ck & 0x0c ^ x & 0xc0 ^ (x & 0x18) << 1);
+            //    return ck == value;
+            //}
+        }
+
+        bool RL2_7_Checksum(byte[] data, byte value)
+        {
+            int ck = 0;
+            foreach (byte b in data) ck ^= b;
+            ck ^= value;
+            return value == ck;
+        }
+
+        bool RL1_Checksum(byte[] data)
+        {
+            int ck = 0;
+            for (int i = 1; i < data.Length - 2; i++) ck ^= data[i];
+            byte x = (byte)(data[data.Length - 2] << 3);
+            // quite honestly, I don't know what I'm doing here, but it works
+            byte value = (byte)(ck & 0x03 ^ ck & 0x0c ^ x & 0xc0 ^ (x & 0x18) << 1);
+            return ck == value;
         }
 
         byte[] Encode_RLK(byte[] data)
@@ -370,6 +388,8 @@ namespace V_Max_Tool
             { 0xD7, 0x17 }, { 0xD9, 0x14 }, { 0xDB, 0x15 }, { 0xDC, 0x12 }, { 0xDD, 0x13 }, { 0xDE, 0x11 }, { 0xDF, 0x18 }, { 0xE4, 0x0F },
             { 0xE5, 0x10 }, { 0xE6, 0x0E }, { 0xE7, 0x0D }, { 0xE9, 0x0C }, { 0xEA, 0x0A }, { 0xEB, 0x0B }, { 0xEC, 0x08 }, { 0xED, 0x09 },
             { 0xEE, 0x07 }, { 0xEF, 0x06 }, { 0xF2, 0x05 }, { 0xF3, 0x04 }, { 0xF4, 0x02 }, { 0xF5, 0x03 }, { 0xF6, 0x01 }, { 0xF7, 0x00 },
+            // Bytes used by older V-Max v2 (containing weak bits)
+            { 0xA3, 0x2c }, { 0xE2, 0x0A}
         };
 
         byte[] Decode_VmaxGCR(byte[] rawGcr)    // Decode V-Max (custom) Sectors
@@ -397,7 +417,7 @@ namespace V_Max_Tool
             List<byte> output = new List<byte>();
             if (data.Length >= 240 && Calculate_Checksum) Checksum();
             int offset = (data.Length / 3), len = offset * 3;
-            for (int i = 0; i < offset; i ++)
+            for (int i = 0; i < offset; i++)
             {
                 byte g0 = (byte)((data[i] & 0xc0) ^ ((data[i + offset] & 0xc0) >> 2) ^ ((data[i + (offset << 1)] & 0xc0) >> 4));
                 byte g1 = (byte)((data[i] ^ g0) & 0x3f);
@@ -409,62 +429,67 @@ namespace V_Max_Tool
 
             byte Encode(byte b)
             {
-                return VMax_gcrTable.FirstOrDefault(x => x.Value == b).Key; 
+                return VMax_gcrTable.FirstOrDefault(x => x.Value == b).Key;
             }
 
             void Checksum()
             {
                 byte checksum = 0;
                 for (int i = 0; i < 238; i++) checksum ^= data[i];
-                data[238] = checksum; data[239] = 0; 
+                data[238] = checksum; data[239] = 0;
             }
-        }
-     
-        byte[] Decode_VM_Loader_CBM(byte[] gcrTrack)    // Decode V-Max v0/1 (standard sectors) Loader track
-        {
-            List<byte> decoded = new List<byte>();
-            int pos = 0;
-            byte a = 0;
-            while (pos < gcrTrack.Length)
-            {
-                try
-                {
-                    a ^= (byte)(gcrTrack[pos++] ^ gcrTrack[pos++]);
-                    if (pos % 257 != 0) decoded.Add(a); // pos % 514 != 0
-                }
-                catch { }
-            }
-            return decoded.ToArray();
         }
 
-        byte[] Decode_VM_Loader(byte[] data)    // Decode V-Max v2+ (custom sectors) Loader track
+        (byte[][] sectors, bool[] checksums) Decode_VM_Loader_CBM(byte[] gcrTrack)    // Decode V-Max v0/1 (standard sectors) Loader track
         {
-            if (data == null || data.Length < 2) return null;
-            List<byte> result = new List<byte>();
-            int sec = 0;
-            for (int i = 0; i < data.Length; i++)
+            int pos = 0, bpos = 0;
+            byte a = 0;
+            List<bool> Checksums = new List<bool>();
+            List<byte> sec_data = new List<byte>();
+            List<byte[]> sectors = new List<byte[]>();
+            while (pos < gcrTrack.Length)
             {
-                result.Add(data[i]);
-                sec++;
-                if (sec % 387 == 0) i += 2;
-            }
-            data = result.ToArray();
-            using (MemoryStream buffer = new MemoryStream())
-            using (BinaryWriter write = new BinaryWriter(buffer))
-            {
-                try
+                if (pos + 2 > gcrTrack.Length) break;
+                a ^= (byte)(gcrTrack[pos++] ^ gcrTrack[pos++]);
+                if (bpos++ == 256)
                 {
-                    int pos = 0;
-                    while (pos < data.Length)
-                    {
-                        byte fa = (byte)(data[pos++] & 0xB6);
-                        write.Write((byte)((data[pos++] & 0xDB) ^ fa));
-                        write.Write((byte)((data[pos++] & 0x6D) ^ fa));
-                    }
+                    Checksums.Add(a == 0);
+                    sectors.Add(sec_data.ToArray());
+                    sec_data = new List<byte>();
+                    bpos = 0;
                 }
-                catch { }
-                return buffer.ToArray();
+                else sec_data.Add(a);
             }
+            return (sectors.ToArray(), Checksums.ToArray());
+        }
+
+        (byte[][] sectors, bool[] checksums) Decode_VM_Loader(byte[] data)    // Decode V-Max v2+ (custom sectors) Loader track
+        {
+            if (data == null || data.Length < 2) return (new byte[0][], new bool[0]);
+            List<byte> sector = new List<byte>();
+            List<byte[]> sectors = new List<byte[]>();
+            int sec = 0, pos = 0;
+            byte b0, b1, b2, ck = 0;
+            List<bool> checksums = new List<bool>();
+            while (pos < data.Length)
+            {
+                if (sec++ == 128)
+                {
+                    sectors.Add(sector.ToArray());
+                    sector = new List<byte>();
+                    if (pos + 1 < data.Length) checksums.Add((ck ^ (byte)(data[pos++] ^ data[pos++])) == 0);
+                    sec = 0; ck = 0;
+                }
+                else
+                {
+                    if (pos + 2 >= data.Length) break;
+                    b0 = (byte)(data[pos++] & 0xB6);
+                    ck ^= b1 = (byte)((data[pos++] & 0xDB) ^ b0);
+                    ck ^= b2 = (byte)((data[pos++] & 0x6D) ^ b0);
+                    sector.AddRange(new byte[] { b1, b2 });
+                }
+            }
+            return (sectors.ToArray(), checksums.ToArray());
         }
     }
 }

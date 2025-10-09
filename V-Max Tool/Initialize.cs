@@ -662,7 +662,7 @@ namespace V_Max_Tool
             v24e64pal = Decompress(XOR(Resources.v24e64p, 0x64)); // V-Max Custom sectors (PAL Loader)
             v26446ntsc = Decompress(XOR(Resources.v26446n, 0x46)); // V-Max Custom sectors (NTSC Loader) Older version, headers have weak bits and may be incompatible with some 1541's
             v2644entsc = Decompress(XOR(Resources.v2644En, 0x4e)); // V-Max Custom sectors (NTSC Loader) Newer version, headers are compatible with all 1541 versions.
-            //v2_dec_table1 = Decompress(XOR(Resources.vmv2dt1, 0x4e));
+            v2stub = Decompress(XOR(Resources.v2stub, 0x5a));
             vmax_dec_table = Decompress(XOR(Resources.vmctbl, 0x4e));
             /// these loaders are guaranteed to work and the loader code has not been modified from original. (these are not "cracked" loaders)
             rak1 = Decompress(XOR(Resources.rak1, 0xab));
@@ -747,6 +747,7 @@ namespace V_Max_Tool
 
             try
             {
+                //File.WriteAllBytes($@"c:\test\v2stub.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\v2stub")), 0x5a));
                 //File.WriteAllBytes($@"c:\test\compressed\fload.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\fload")), 0xf1));
                 //File.WriteAllBytes($@"c:\test\compressed\cpp_extf.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\DrawArc.dll")), 0xda));
                 //File.WriteAllBytes($@"c:\test\compressed\msvcrt.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\msvcrt")), 0x24));

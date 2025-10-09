@@ -26,6 +26,7 @@ namespace V_Max_Tool
         private static readonly byte[] vv2n = { 0x64, 0xa5, 0xa5, 0xa5 };
         private static readonly byte[] vv2p = { 0x4e, 0xa5, 0xa5, 0xa5 };
         private static byte[] vmax_dec_table = new byte[0];
+        private static byte[] v2stub = new byte[0];
 
         void GetNewHeaders()
         {
