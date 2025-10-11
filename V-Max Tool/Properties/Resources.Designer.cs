@@ -378,16 +378,6 @@ namespace ReMaster_Utility.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] vmctbl {
-            get {
-                object obj = ResourceManager.GetObject("vmctbl", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
         internal static byte[] vmv2dt1 {
             get {
                 object obj = ResourceManager.GetObject("vmv2dt1", resourceCulture);

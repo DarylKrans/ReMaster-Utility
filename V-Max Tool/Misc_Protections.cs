@@ -16,7 +16,7 @@ namespace V_Max_Tool
         private static readonly byte[] rainbowArts_magicBytes = new byte[] { 0xbe, 0x55, 0x5b, 0xe5, 0x55 }; // <- RainbowArts / MagicBytes key signature found on t36
         private static readonly byte[] gma = new byte[] { 0x69, 0x50, 0x50, 0xa0, 0xa0 };
         private static readonly byte[] securispeed = new byte[] { 0xff, 0x56, 0x56, 0xa3, 0xa3 };
-        private static readonly byte[] blank = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x45, 0x14, 0x12, 0x51, 0x88, 0x18, 0x31, 0x23 }; // weak GCR
+        //private static readonly byte[] blank = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x45, 0x14, 0x12, 0x51, 0x88, 0x18, 0x31, 0x23 }; // weak GCR
 
         byte[] Pirate_Slayer(byte[] data, byte[] key, int version)
         {
@@ -75,7 +75,8 @@ namespace V_Max_Tool
                         (temp, f) = Decode_CBM_Sector(data, sector, false, source);
                         for (int j = 0; j < temp.Length - 1; j++)
                         {
-                            if (blank.Any(x => x == temp[j]))
+                            //if (blank.Any(x => x == temp[j]))
+                            if (weakTable[temp[j]])
                             {
                                 rw++;
                                 if (rw > 4) { rad = true; break; }
@@ -90,15 +91,7 @@ namespace V_Max_Tool
 
             void Fix(int sec)
             {
-                (temp, f) = Decode_CBM_Sector(data, sec, false, source);
-                for (int k = 0; k < temp.Length - 1; k++)
-                {
-                    if (blank.Any(x => x == temp[k]) && temp[k] != 0x00)
-                    {
-                        temp[k] = 0x00;
-                    }
-                }
-                data = Replace_CBM_Sector(data, sec, temp);
+                data = Replace_CBM_Sector(data, sec, Remove_Weak_Bits(Decode_CBM_Sector(data, sec, false, source).data));
             }
         }
 
@@ -110,7 +103,8 @@ namespace V_Max_Tool
             int pos = 0;
             for (int i = 0; i < data.Length; i++)
             {
-                if (!blank.Any((x) => x == data[i])) run++;
+                //if (!blank.Any((x) => x == data[i])) run++;
+                if (!weakTable[data[i]]) run++;
                 else
                 {
                     if (run > longest)
@@ -348,7 +342,7 @@ namespace V_Max_Tool
             if (data == null || data.Length < 6000) return data;
             //int track = tracks > 42 ? (trk / 2) + 1 : trk + 1;
             byte[] skip = new byte[] { 0x55, 0xaa };
-            HashSet<byte> BlankSet = new HashSet<byte>(blank);
+            //HashSet<byte> BlankSet = new HashSet<byte>(blank);
             HashSet<byte> Padding = new HashSet<byte>(skip);
             int nb = 0;
             int pad = 0;
@@ -357,7 +351,8 @@ namespace V_Max_Tool
 
             for (int i = 0; i < dataLength; i++)
             {
-                if (!BlankSet.Contains(data[i])) nb++;
+                //if (!BlankSet.Contains(data[i])) nb++;
+                if (!weakTable[data[i]]) nb++;
                 if (data[i] == 0x55 || data[i] == 0xaa) pad++;
                 if (data[i] == 0xff && sncpos != -1) sncpos = i;
             }
@@ -444,7 +439,8 @@ namespace V_Max_Tool
                 int bd = 0;
                 for (int j = 0; j < array.Length; j++)
                 {
-                    if (BlankSet.Contains(array[j])) bd++;
+                    //if (BlankSet.Contains(array[j])) bd++;
+                    if (weakTable[array[j]]) bd++;
                     else ad++;
                     if (include_Padding)
                     {

@@ -39,11 +39,11 @@ namespace V_Max_Tool
             }
         }
 
-        (byte[] sector, bool checksum) Find_VMax_Sector(byte[] data, BitArray source, int sector, int version, bool decode = false, int trk = -1)
+        (byte[] sector, bool checksum, int pos) Find_VMax_Sector(byte[] data, BitArray source, int sector, int version, bool decode = false, int trk = -1)
         {
             byte[] secdata = new byte[0];
             bool checksum = false;
-            if ((data == null && source == null) || sector < 0) return (secdata, false);
+            if ((data == null && source == null) || sector < 0) return (secdata, false, -1);
             if (version == 2)
             {
                 byte[] sb = new byte[] { 0x64, 0x4e };
@@ -74,7 +74,7 @@ namespace V_Max_Tool
                                 secdata = CopyFrom(getsec, dpos + 1, 320);
                                 byte[] dec = Decode_VmaxGCR(secdata);
                                 if (dec != null) checksum = Get_Checksum(dec);
-                                return (decode ? dec : secdata, checksum);
+                                return (decode ? dec : secdata, checksum, pos + (dpos << 3));
                             }
                             else if (t && (a[0] ^ a[1]) < 22) pos += (300 + dpos - 1) << 3;
                             else pos += 8;
@@ -100,14 +100,14 @@ namespace V_Max_Tool
                                 secdata = CopyFrom(data, i, Get_vm3_sectorSize(data, i));
                                 byte[] dec = Decode_VmaxGCR(secdata);
                                 if (dec != null) checksum = Get_Checksum(dec);
-                                return (decode ? dec : secdata, checksum);
+                                return (decode ? dec : secdata, checksum, i + 1);
                             }
                             catch { }
                         }
                     }
                 }
             }
-            return (secdata, false);
+            return (secdata, false, -1);
 
             bool Get_Checksum(byte[] d)
             {

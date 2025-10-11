@@ -104,7 +104,7 @@ namespace V_Max_Tool
                 pos++;
             }
             return filtered.ToArray();
-            
+
 
             void Reposition()
             {

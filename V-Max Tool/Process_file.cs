@@ -552,20 +552,11 @@ namespace V_Max_Tool
                             int tempLength = temp.Length;
 
                             // Avoid using LINQ's .Any() inside a loop, and cache the blank array length
-                            int blankLength = blank.Length;
+                            //int blankLength = blank.Length;
                             for (int i = 0; i < tempLength; i++)
                             {
                                 if (temp[i] == 0x55 || temp[i] == 0xaa) pad++;
-
-                                bool isBlank = false;
-                                for (int j = 0; j < blankLength; j++)
-                                {
-                                    if (temp[i] == blank[j])
-                                    {
-                                        isBlank = true;
-                                        break;
-                                    }
-                                }
+                                bool isBlank = weakTable[temp[i]];
 
                                 if (!isBlank) consecutive++;
                                 else
@@ -1791,7 +1782,7 @@ namespace V_Max_Tool
                 bool[] cksm = new bool[NDS.sectors[t]];
                 for (int i = 0; i < sectors.Length; i++)
                 {
-                    (sectors[i], cksm[i]) = Find_VMax_Sector(NDG.Track_Data[t], tdata, i, NDS.cbm[t], true);
+                    (sectors[i], cksm[i], _) = Find_VMax_Sector(NDG.Track_Data[t], tdata, i, NDS.cbm[t], true);
                     tlen += sectors[i].Length;
                 }
                 if (sectors.Length > 0)
@@ -1823,7 +1814,7 @@ namespace V_Max_Tool
                 string contents = string.Empty;
                 byte[][] sectors = new byte[0][];
                 bool[] checksums = new bool[0];
-                bool version = NDS.cbm.Any(x => x ==2) || NDS.cbm.Any(x => x == 3);
+                bool version = NDS.cbm.Any(x => x == 2) || NDS.cbm.Any(x => x == 3);
                 (sectors, checksums) = version ? Decode_VM_Loader(Get_VmaxLoaderSegment(NDS.Track_Data[t]))
                                                : Decode_VM_Loader_CBM(Get_VmaxLoaderSegment(NDS.Track_Data[t], true));
                 tlen = sectors.Sum(arr => arr.Length);

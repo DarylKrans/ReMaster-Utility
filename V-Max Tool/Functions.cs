@@ -712,10 +712,21 @@ namespace V_Max_Tool
             int weak = 0;
             for (int i = 0; i < data.Length; i++)
             {
-                if (ToBinary(Encoding.ASCII.GetString(data, i, 1)).Contains("000")) weak++;
+                if (weakTable[data[i]]) weak++;
             }
             return weak;
         }
+
+        //int Get_Weak_Bytes(byte[] data)
+        //{
+        //    if (data == null) return -1;
+        //    int weak = 0;
+        //    for (int i = 0; i < data.Length; i++)
+        //    {
+        //        if (ToBinary(Encoding.ASCII.GetString(data, i, 1)).Contains("000")) weak++;
+        //    }
+        //    return weak;
+        //}
 
         (int startPos, int runLength) FindLongestRunLength(byte[] data, byte value)
         {
@@ -892,10 +903,11 @@ namespace V_Max_Tool
         byte[] Remove_Weak_Bits(byte[] data, bool aggressive = false)
         {
             if (data == null) return null;
-            HashSet<byte> blankSet = new HashSet<byte>(blank);
+            //HashSet<byte> blankSet = new HashSet<byte>(blank);
             for (int i = 0; i < data.Length; i++)
             {
-                if (blankSet.Contains(data[i]))
+                //if (blankSet.Contains(data[i]))
+                if (weakTable[data[i]])
                 {
                     if (aggressive && i + 5 <= data.Length)
                     {
@@ -911,6 +923,29 @@ namespace V_Max_Tool
             }
             return data;
         }
+
+        //byte[] Remove_Weak_Bits(byte[] data, bool aggressive = false)
+        //{
+        //    if (data == null) return null;
+        //    HashSet<byte> blankSet = new HashSet<byte>(blank);
+        //    for (int i = 0; i < data.Length; i++)
+        //    {
+        //        if (blankSet.Contains(data[i]))
+        //        {
+        //            if (aggressive && i + 5 <= data.Length)
+        //            {
+        //                data[i] = 0x00;
+        //                data[i + 1] = 0x00;
+        //                data[i + 2] = 0x00;
+        //                data[i + 3] = 0x00;
+        //                data[i + 4] = 0x00;
+        //                i += 4;
+        //            }
+        //            else data[i] = 0x00; // Zero out the byte
+        //        }
+        //    }
+        //    return data;
+        //}
 
         public (bool hasErrors, string tracks) ParseLogFile(string[] logLines)
         {

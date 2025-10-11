@@ -211,6 +211,19 @@ namespace V_Max_Tool
             { 0x59, 'y' }, { 0x5A, 'z' }, { 0xA0, ' ' }, { 0xAB, '-' }, { 0xBC, '=' }
         };
 
+        private static readonly byte[] weakBytes =  // All bytes containing 3 or more '0' bits in a row
+        {
+            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+            0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21,
+            0x22, 0x23, 0x28, 0x30, 0x31, 0x38, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x50, 0x51,
+            0x58, 0x60, 0x61, 0x62, 0x63, 0x68, 0x70, 0x71, 0x78, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
+            0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x98, 0xA0, 0xA1, 0xA2, 0xA3, 0xA8, 0xB0,
+            0xB1, 0xB8, 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xD0, 0xD1, 0xD8, 0xE0, 0xE1, 0xE2,
+            0xE3, 0xE8, 0xF0, 0xF1, 0xF8
+        };
+
+        private static bool[] weakTable = new bool[256];
+
         void Reset_to_Defaults(bool clear_batch_list = true)
         {
             busy = true;
@@ -623,14 +636,6 @@ namespace V_Max_Tool
             /// ------------------ Vorpal Config --------------
             Lead_In.Enabled = VPL_lead.Checked;
             Lead_In.Value = 50;
-            //leadIn_std[9] = true;
-            //bool flip = false;
-            //for (int i = 0; i < leadIn_std.Length; i++)
-            //{
-            //    if (i < 7) leadIn_std[i] = !flip;
-            //    leadIn_alt[i] = flip;
-            //    flip = !flip;
-            //}
             Lead_ptn.DataSource = new string[] { "Default", "0x55", "0xAA" };//pt;
             Lead_ptn.SelectedIndex = 0;
             Lead_ptn.Enabled = VPL_rb.Checked;
@@ -663,7 +668,7 @@ namespace V_Max_Tool
             v26446ntsc = Decompress(XOR(Resources.v26446n, 0x46)); // V-Max Custom sectors (NTSC Loader) Older version, headers have weak bits and may be incompatible with some 1541's
             v2644entsc = Decompress(XOR(Resources.v2644En, 0x4e)); // V-Max Custom sectors (NTSC Loader) Newer version, headers are compatible with all 1541 versions.
             v2stub = Decompress(XOR(Resources.v2stub, 0x5a));
-            vmax_dec_table = Decompress(XOR(Resources.vmctbl, 0x4e));
+            //vmax_dec_table = Decompress(XOR(Resources.vmctbl, 0x4e));
             /// these loaders are guaranteed to work and the loader code has not been modified from original. (these are not "cracked" loaders)
             rak1 = Decompress(XOR(Resources.rak1, 0xab));
             cldr_id = Decompress(XOR(Resources.cyan, 0xc1));
@@ -739,6 +744,7 @@ namespace V_Max_Tool
             if (Cores < 2) Img_Q.SelectedIndex = 0;
             /// ------------------------------------------------------------------------------------------
             Build_BitReverseTable();
+            Build_WeakTable();
             ProtDetectMethod.DataSource = new string[] { "Scan source on add (slower)", "Parse file-name for protection type", "Don't detect" };
             RunBusy(() => LoadSettings());
 
@@ -1084,6 +1090,11 @@ namespace V_Max_Tool
                 b = (byte)((b * 0x0202020202 & 0x010884422010) % 1023);
                 return b;
             }
+        }
+
+        void Build_WeakTable()
+        {
+            foreach (byte w in weakBytes) weakTable[w] = true;
         }
     }
 }

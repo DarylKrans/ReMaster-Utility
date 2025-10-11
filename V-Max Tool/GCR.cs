@@ -36,7 +36,6 @@ namespace V_Max_Tool
             0xff, 0x09, 0x0a, 0x0b, 0xff, 0x0d, 0x0e, 0xff
         };
 
-        //(byte[] decoded, bool illegal) Decode_CBM_GCR(byte[] gcr)
         (byte[] decoded, int illegal) Decode_CBM_GCR(byte[] gcr)
         {
             if (gcr == null) return (null, -1);
@@ -94,11 +93,11 @@ namespace V_Max_Tool
         }
 
         /// <summary>
-        ///  ------------------ Early Vorpal GCR Encode/Decode routines --------------- 
+        ///  ------------------ Vorpal (early) GCR Encode/Decode routines --------------- 
         /// </summary>
         /// 
 
-        Dictionary<byte, byte> eVorpal_DecodeTable = new Dictionary<byte, byte> // GCR byte in, 6-bit nybble out
+        Dictionary<byte, byte> eVPL_gcrTable = new Dictionary<byte, byte> // GCR byte in, 6-bit nybble out
         {
             { 0x49, 0x00 }, { 0x56, 0x01 }, { 0x4B, 0x02 }, { 0x5A, 0x03 }, { 0x99, 0x04 }, { 0xAA, 0x05 }, { 0x9B, 0x06 }, { 0xAD, 0x07 },
             { 0x4E, 0x08 }, { 0x5D, 0x09 }, { 0x53, 0x0A }, { 0x65, 0x0B }, { 0x9E, 0x0C }, { 0xB2, 0x0D }, { 0xA6, 0x0E }, { 0xB5, 0x0F },
@@ -108,14 +107,6 @@ namespace V_Max_Tool
             { 0x52, 0x28 }, { 0x5E, 0x29 }, { 0x55, 0x2A }, { 0x66, 0x2B }, { 0xA5, 0x2C }, { 0xB3, 0x2D }, { 0xA9, 0x2E }, { 0xB6, 0x2F },
             { 0x6A, 0x30 }, { 0x79, 0x31 }, { 0x6D, 0x32 }, { 0x7B, 0x33 }, { 0xBA, 0x34 }, { 0xD2, 0x35 }, { 0xBD, 0x36 }, { 0xD5, 0x37 },
             { 0x72, 0x38 }, { 0x93, 0x39 }, { 0x75, 0x3A }, { 0x96, 0x3B }, { 0xCA, 0x3C }, { 0xD9, 0x3D }, { 0xCD, 0x3E }, { 0xDB, 0x3F },
-        };
-
-        byte[] eVorpal_EncodeTable = new byte[] // 6-bit nybble in, GCR byte out
-        {
-            0x49, 0x56, 0x4B, 0x5A, 0x99, 0xAA, 0x9B, 0xAD, 0x4E, 0x5D, 0x53, 0x65, 0x9E, 0xB2, 0xA6, 0xB5,
-            0x69, 0x76, 0x6B, 0x7A, 0xB9, 0xCE, 0xBB, 0xD3, 0x6E, 0x92, 0x73, 0x95, 0xC9, 0xD6, 0xCB, 0xDA,
-            0x4A, 0x59, 0x4D, 0x5B, 0x9A, 0xAB, 0x9D, 0xAE, 0x52, 0x5E, 0x55, 0x66, 0xA5, 0xB3, 0xA9, 0xB6,
-            0x6A, 0x79, 0x6D, 0x7B, 0xBA, 0xD2, 0xBD, 0xD5, 0x72, 0x93, 0x75, 0x96, 0xCA, 0xD9, 0xCD, 0xDB,
         };
 
         (byte[] sector, bool checksum, int illegal) Decode_eVPL(byte[] data)
@@ -129,7 +120,7 @@ namespace V_Max_Tool
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    gcr[j] = parity = (byte)(eVorpal_DecodeTable.TryGetValue(data[(i << 2) + j], out byte val) ? val ^ parity : 0xff);
+                    gcr[j] = parity = (byte)(eVPL_gcrTable.TryGetValue(data[(i << 2) + j], out byte val) ? val ^ parity : 0xff);
                     if (gcr[j] == 0xff) illegal++;
                 }
                 output.AddRange(new byte[]
@@ -139,7 +130,7 @@ namespace V_Max_Tool
                     (byte)(((gcr[2] >> 4) & 0x03) | (gcr[3] << 2))
                 });
             }
-            return (output.ToArray(), data.Length >= ppos && eVorpal_EncodeTable[parity & 0x3f] == data[ppos], illegal);
+            return (output.ToArray(), data.Length >= ppos && eVPL_gcrTable.FirstOrDefault(x => x.Value == parity).Key == data[ppos], illegal);
         }
 
         byte[] Encode_eVpl(byte[] data, bool full_325 = false)
@@ -155,19 +146,19 @@ namespace V_Max_Tool
                 AddOutput((byte)((((data[i + 1] >> 4) & 0x0f) | ((data[i + 2] & 0x03) << 4)) & 0x3f));
                 AddOutput((byte)((data[i + 2] >> 2) & 0x3f));
             }
-            output.Add(eVorpal_EncodeTable[parity]);
+            output.Add(eVPL_gcrTable.FirstOrDefault(x => x.Value == parity).Key);
             if (full_325) output.Add(0x55);
             return output.ToArray();
 
             void AddOutput(byte gcr)
             {
-                output.Add(eVorpal_EncodeTable[(byte)(gcr ^ parity)]);
+                output.Add(eVPL_gcrTable.FirstOrDefault(x => x.Value == (byte)(gcr ^ parity)).Key);
                 parity = gcr;
             }
         }
 
         /// <summary>
-        ///  ------------------ Vorpal GCR Encode/Decode routines --------------------- 
+        ///  ------------------ Vorpal (newer) GCR Encode/Decode routines --------------------- 
         /// </summary>
 
         private static readonly byte[] VPL_encode = new byte[16]
@@ -304,41 +295,26 @@ namespace V_Max_Tool
                 }
                 return (buffer.ToArray(), rl_v2_7 ? RL2_7_Checksum(buffer.ToArray(), dec0) : RL1_Checksum(sector), rl_v2_7);
             }
-            //bool RL2_7_Checksum(byte[] data, byte value)
-            //{
-            //    int ck = 0;
-            //    foreach (byte b in data) ck ^= b;
-            //    ck ^= value;
-            //    return value == ck;
-            //}
-
-            //bool RL1_Checksum(byte[] data)
-            //{
-            //    int ck = 0;
-            //    for (int i = 1; i < data.Length - 2; i++) ck ^= data[i];
-            //    byte x = (byte)(data[data.Length - 2] << 3);
-            //    // quite honestly, I don't know what I'm doing here, but it works
-            //    byte value = (byte)(ck & 0x03 ^ ck & 0x0c ^ x & 0xc0 ^ (x & 0x18) << 1);
-            //    return ck == value;
-            //}
         }
 
-        bool RL2_7_Checksum(byte[] data, byte value)
+        bool RL2_7_Checksum(byte[] data, byte parity)
         {
-            int ck = 0;
-            foreach (byte b in data) ck ^= b;
-            ck ^= value;
-            return value == ck;
+            if (data == null || data.Length == 0) return false;
+            byte checksum = 0;
+            foreach (byte b in data) checksum ^= b;
+            return (checksum ^ parity) == parity;
         }
 
         bool RL1_Checksum(byte[] data)
         {
-            int ck = 0;
-            for (int i = 1; i < data.Length - 2; i++) ck ^= data[i];
-            byte x = (byte)(data[data.Length - 2] << 3);
-            // quite honestly, I don't know what I'm doing here, but it works
-            byte value = (byte)(ck & 0x03 ^ ck & 0x0c ^ x & 0xc0 ^ (x & 0x18) << 1);
-            return ck == value;
+            if (data == null || data.Length == 0) return false;
+            byte checksum = 0, parity, a = data[data.Length - 1], b = data[data.Length - 2];
+            for (int i = 1; i < data.Length - 2; i++) checksum ^= data[i];
+            // bits from (a) ---43-10 bits from (b) ---43-10 (bits 7,6,5 and 2 from both bytes are discarded)
+            // parity byte becomes x1 x0 x4 x3 a4 a3 a1 a0
+            // if 'checksum' and 'parity' are equal, the sector is valid
+            parity = (byte)((a & 0x03) | ((a & 0x18) >> 1) | ((b & 0x18) << 3) | (b & 0x03) << 4);
+            return checksum == parity;
         }
 
         byte[] Encode_RLK(byte[] data)
@@ -374,11 +350,11 @@ namespace V_Max_Tool
         }
 
         /// <summary>
-        ///  ------------------ V-Max GCR Decode routines --------------------- 
+        ///  ------------------ V-Max GCR Encode/Decode routines --------------------- 
         /// </summary>
         /// 
 
-        Dictionary<byte, byte> VMax_gcrTable = new Dictionary<byte, byte>
+        Dictionary<byte, byte> VMax_gcrTable = new Dictionary<byte, byte> // converts raw GCR (key) into 6-bit nybbles (value)
         {
             { 0x92, 0x3B }, { 0x93, 0x3A }, { 0x96, 0x3C }, { 0x97, 0x35 }, { 0x99, 0x39 }, { 0x9B, 0x34 }, { 0x9C, 0x38 }, { 0x9D, 0x33 },
             { 0x9E, 0x32 }, { 0x9F, 0x31 }, { 0xA4, 0x3E }, { 0xA5, 0x3F }, { 0xA6, 0x3D }, { 0xA7, 0x30 }, { 0xA9, 0x37 }, { 0xAA, 0x36 },
@@ -411,7 +387,7 @@ namespace V_Max_Tool
             return output;
         }
 
-        byte[] Encode_VmaxGCR(byte[] data, bool Calculate_Checksum = false)
+        byte[] Encode_VmaxGCR(byte[] data, bool Calculate_Checksum = false, bool older = false)
         {
             if (data == null || data.Length < 3) return null;
             List<byte> output = new List<byte>();
@@ -429,67 +405,133 @@ namespace V_Max_Tool
 
             byte Encode(byte b)
             {
-                return VMax_gcrTable.FirstOrDefault(x => x.Value == b).Key;
+                // nybbles 0x2c and 0x0a use alternate GCR encoding (0xa3 and 0xe2) for older V-Max version (has weak bits) 
+                if (older && b == 0x2C) return 0xA3;
+                if (older && b == 0x0A) return 0xE2;
+                // All custom sector versions of V-Max use the same table for encoding for all other bytes
+                return VMax_gcrTable.FirstOrDefault(x => x.Value == b).Key; 
             }
 
             void Checksum()
             {
                 byte checksum = 0;
-                for (int i = 0; i < 238; i++) checksum ^= data[i];
-                data[238] = checksum; data[239] = 0;
+                for (int i = 0; i < 239; i++) checksum ^= data[i];
+                data[239] = checksum;
             }
         }
 
-        (byte[][] sectors, bool[] checksums) Decode_VM_Loader_CBM(byte[] gcrTrack)    // Decode V-Max v0/1 (standard sectors) Loader track
+        /*
+                          In memory of Sage. (7/2/14 - 9/15/25)  Rest in peace.
+
+              %%%%%%%%%%%%%%%%%%%%#+=*#%%%%%%%%%%%%#%%%%##%%%%%%%%%%%%%%%%%#%%%%%%%%%%%%%%%%%%
+              %%%%%%%%%%%%%%%%%%#+-----+#%%%%%#%%%%%%%%%%%%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+              %%%%######%%#%%#%#-::::::--#%%######%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+              %%%%%%%%%%%######=::::::::--#%####%###%%%%%#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+              %%#%%##%########=:::::::::---##########%%###%%%%%%%%%%%%%%%#%%%%%%%%%%%%%%%%%%%%
+              %######%#####%#=::::::::-:::-=%#######%%%##%%##%%%%%%%%%%%%%%%%%#*=--=#%%%%%%%%%
+              ##############-:::::-::-:-:::-+%############%%%#%%%%%%%#%###%%*=--:-::-#%%%%%%%%
+              ############*-:---:::-----::::-#################%%#%%%%%###%#=--:::::::=%%%%%%%%
+              ###########*-::---:::::::::::::=#########################%#+--:::::::::-#%%%%%%%
+              ###########+:::-::::-----:::::::+###################%##%%#--:::-::::::::#%##%%%%
+              ###########+:::::::::-+==---::::-*####################%#=-:::-::::::::::*%%####%
+              ###########+-:-:::::--=++=--:::::-+*#################+--:::::::----:::::-####%%%
+              ##########+---::::::---+*++=--::::--*###############=::::::--::::::::::::+######
+              ##########+===--::-----=+=+-::::::::-*%########*#**-::::::-::::--::::--::-#%####
+              #########+=---=--::--===--::::::::::=#%#######%=--::::::--::-===---:::--:-*#####
+              ########*===--==-:::-=+=-:::::::::--=++++*#####=:::::::--==++*=----::-----*#####
+              #######*=-=-----------:=-:::::::::---=====+++++=-:::-::===**+=-:-::::----=#####%
+              #######+-:---:---===--::::::::::---=+=+**+*=-==---:-::::-=+===----::::---+######
+              ######*+-:::::::--------:::::-----=**#%###*===-----:--::::==+=----::::---=######
+              ######*=:::::::::::----=--------==++#%@%%*=---=-----:::::-===-:-:-::-=+===*#####
+              ######+=--:::::::----=====-----=+**#%%@#*=------=------:::--:--:-=-------=######
+              #####*=----:-------==++==----=++++*##%#+=-----:-===----:::::----=-=-------*#####
+              ######=----::-----==+++===---==*+=+#*#+=-----=---===-::-::::---=---=---=-=+#####
+              ####*+----------====++===-----=+*+===+----------------:::::-:::----------=*#####
+              #####*=-----------==-=====--=--++++++------------------:::::--:::::::--:-=*#####
+              ####*+--:::::-----==++***++*##++*==+-:-:----------:::::---:::::---:::::-=*######
+              #####+-::::::::----=+**=+*+*###++*++:::-----------::::----::::-----::::-=*######
+              #####+-::::-:::::-=+=-::--==*#*-+++-::----=*##=------=-:--:::::::::::::=*#######
+              #####+-:-::-+**+*+*+=====--=*#++**=-------*##*+=++-:::::---::::::::::::-=*######
+              ####*+---=*###*==*#+=---:-==**=*#*=------+#*+===+++==-::-----::::::::::-*#######
+              #####+-=*%%%#+==+++*====-===+=+##*=------+*+--::::------------:::::::::-+#######
+              ##%#+==+#%%%+==+++*+++====*+=+*#*+=--=---==--:---==-----:------:::::::--+#######
+              #%%#+-=+*##*=+=-=+=++==**+=+#%%*+==-==--:-=---::----++==---==--::::::---=*######
+              %%#+--===+****+=+++****+++#%%###**=====---====-:--=+==---=+##*=:::::----+*######
+              #%#+=-===++#%%##%%%%#*++#%%%%###**++==+=----+=--======----=*#**+-:::---=**######
+              ##%#+===+**%%%%##%%#*++#%%%%####**+++**+=----=--=-==-------+####+------=*#######
+              #%%*+--=+*##%%%#+*##*#%@@%%##****+***+++=----=+======-----=+*###*=-----=*#%#####
+              %%%#+===***#%%%#****#%@%%%###**###*+***+===--+*****+=---===+****+--::-=+*#######
+              %%%%*+==++*###%%#*##%@@%#***+++***++###*+===-=+*******++=++***+=---::-=+########
+              %%%#*+===++*##%%##%%%%%#*****+*####%#####++==+*###*+++####**+=--:::--==+*#######
+              %%%#**+==+*#%%%%%%%@@%#+++++++++==+#####*##*######**+*####*++=---:::-=+*########
+              %%%###**+*#%%%%%%%%@%#+====--========*##*#%#*##*=+#*++*##***+=------=*##########
+              %#%%####*##%%@%@%%%%%#+=:::---:::-===*#*#####*=-+***#######*++==--=+***#########
+              %#%%##*#####%@@@%%%%%##====----::::=+*#***##=-=*########%####*+*+++=+*##########
+              %%#####***#%%%%%%%%####*=::::::---=+**#**#*-=+#%#############*+++++++*##########
+              %##########*#%%%%@%%#+*+===::---==++*##*+=-=*################*+===+++*##########
+              %###############%@@%%+*****+=++++=+***=---*##################*++===+**######*###
+              ###***#*#####**#%%%%%*##**+==+++++++*---=*#############%###***+===+***####****##
+              %%##*#########*##%%%%%@*++++=**+++**+-=*###############%#**+++===***#####*****##
+              %%#%#####*##%#%#####%*%#**+++****#%+=*#%%######%%%####%##**+==+=+*****#********#
+              %%#####******#######%*=##**+*****%+-=#%########%%########**====++##++*#********#
+              %%***##*##*++*####*##*-=+%######+==+##########%%#########*++==++##*++#**********
+              %%###**####*++++#######-=--------=*#########%#%######**###++*++*#**####*********
+              %%**+++*##****++**######*=-::-=+#%%#%##%#%##%%%%%##**+**#*=++#*#**##%%#*********
+              ##*########**###****#***##########%##%#%%%#%######*+*+++*+***#**+**#%%#*********
+                          
+                            Chase all those squirrels in heaven.  Go get 'em!
+         */
+        (byte[][] sectors, bool[] checksums) Decode_VM_Loader_CBM(byte[] data)    // Decode V-Max v0/1 (standard sectors) Loader track
         {
+            if (data == null) return (new byte[0][], new bool[0]);
             int pos = 0, bpos = 0;
-            byte a = 0;
+            byte parity = 0;
             List<bool> Checksums = new List<bool>();
             List<byte> sec_data = new List<byte>();
             List<byte[]> sectors = new List<byte[]>();
-            while (pos < gcrTrack.Length)
+            while (pos < data.Length)
             {
-                if (pos + 2 > gcrTrack.Length) break;
-                a ^= (byte)(gcrTrack[pos++] ^ gcrTrack[pos++]);
-                if (bpos++ == 256)
+                if (pos + 2 > data.Length) break;            // make sure we have 2 more bytes to process
+                parity ^= (byte)(data[pos++] ^ data[pos++]); // set value of rolling parity byte (which is also the decoded byte) 
+                if (bpos++ == 256)                           // 1 byte decoded per iteration from every 2 bytes GCR
                 {
-                    Checksums.Add(a == 0);
-                    sectors.Add(sec_data.ToArray());
-                    sec_data = new List<byte>();
-                    bpos = 0;
+                    Checksums.Add(parity == 0);         // adds bool to checksums. (parity = 0, passed; parity != 0, failed) 
+                    sectors.Add(sec_data.ToArray());    // add decoded sector to list of 'sectors'
+                    sec_data = new List<byte>();        // clear sec_data and start over for next sector
+                    bpos = 0;                           // reset byte counter to 0
                 }
-                else sec_data.Add(a);
+                else sec_data.Add(parity);  // write decoded value to the sector. (again, the rolling parity is also the decoded byte)
             }
-            return (sectors.ToArray(), Checksums.ToArray());
+            return (sectors.ToArray(), Checksums.ToArray()); // return decoded sectors and if they passed parity check
         }
 
         (byte[][] sectors, bool[] checksums) Decode_VM_Loader(byte[] data)    // Decode V-Max v2+ (custom sectors) Loader track
         {
             if (data == null || data.Length < 2) return (new byte[0][], new bool[0]);
-            List<byte> sector = new List<byte>();
-            List<byte[]> sectors = new List<byte[]>();
-            int sec = 0, pos = 0;
-            byte b0, b1, b2, ck = 0;
+            int pos = 0, bpos = 0;
+            byte b0, b1, b2, parity = 0;
             List<bool> checksums = new List<bool>();
+            List<byte> sec_data = new List<byte>();
+            List<byte[]> sectors = new List<byte[]>();
             while (pos < data.Length)
             {
-                if (sec++ == 128)
+                if (bpos++ == 128) // 2 bytes decoded per 3 bytes GCR processed, counter of 128 = 256 decoded bytes
                 {
-                    sectors.Add(sector.ToArray());
-                    sector = new List<byte>();
-                    if (pos + 1 < data.Length) checksums.Add((ck ^ (byte)(data[pos++] ^ data[pos++])) == 0);
-                    sec = 0; ck = 0;
+                    sectors.Add(sec_data.ToArray()); // add completed decode of 256 byte sector to list of 'sectors'
+                    sec_data = new List<byte>();     // clear list for new sector
+                    if (pos + 1 < data.Length) checksums.Add((parity ^ (byte)(data[pos++] ^ data[pos++])) == 0); // verify sector parity
+                    bpos = 0; parity = 0; // clear parity (which should = 0 anyway) and reset bpos (tracks length of newly decoded sector)
                 }
                 else
                 {
-                    if (pos + 2 >= data.Length) break;
+                    if (pos + 2 >= data.Length) break; // make sure we have at least 3 more bytes of data to decode
                     b0 = (byte)(data[pos++] & 0xB6);
-                    ck ^= b1 = (byte)((data[pos++] & 0xDB) ^ b0);
-                    ck ^= b2 = (byte)((data[pos++] & 0x6D) ^ b0);
-                    sector.AddRange(new byte[] { b1, b2 });
+                    parity ^= b1 = (byte)((data[pos++] & 0xDB) ^ b0);
+                    parity ^= b2 = (byte)((data[pos++] & 0x6D) ^ b0);
+                    sec_data.AddRange(new byte[] { b1, b2 });
                 }
             }
-            return (sectors.ToArray(), checksums.ToArray());
+            return (sectors.ToArray(), checksums.ToArray()); // return decoded sectors and if they passed parity check
         }
     }
 }

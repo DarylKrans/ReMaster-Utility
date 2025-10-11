@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,7 +18,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2c";
+        private static readonly string ver = " v1.2f";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -137,7 +136,11 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            //BinToByte_Table($@"c:\test\unique.bin", $@"c:\test\unique.txt", "vmv0", 16);
+            byte[] a = Decode_RL_Data(File.ReadAllBytes($@"c:\test\rl6sec.bin")).sector;
+            File.WriteAllBytes($@"c:\test\rl6dec.bin", a);
+            //RL1_Checksum_test(File.ReadAllBytes($@"c:\test\rlsectest.bin"));
+
+            //BinToByte_Table($@"c:\test\weak.bin", $@"c:\test\weak.txt", "weakBytes", 17);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
             //button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
