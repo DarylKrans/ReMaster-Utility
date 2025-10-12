@@ -18,7 +18,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2f";
+        private static readonly string ver = " v1.2f Test Build 10122025";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -139,8 +139,8 @@ namespace V_Max_Tool
             //BinToByte_Table($@"c:\test\weak.bin", $@"c:\test\weak.txt", "weakBytes", 17);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
-            //button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
-            button1.Visible = button2.Visible = false;
+            button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
+            //button1.Visible = button2.Visible = false;
         }
 
         private void Drag_Drop(object sender, DragEventArgs e)
@@ -518,7 +518,8 @@ namespace V_Max_Tool
                     if (!batch && ErrorList.Count > 0)
                     {
                         //int[] norep = new int[] { 2, 3, 6 };
-                        int[] norep = new int[] { 2, 3 };
+                        //int[] norep = new int[] { 2, 3 };
+                        int[] norep = new int[] {  };
                         bool norepair = NDS.cbm.Any(x => norep.Contains(x));
                         List<string> list = new List<string>(ErrorList);
                         var s = Sort_Errors(list);

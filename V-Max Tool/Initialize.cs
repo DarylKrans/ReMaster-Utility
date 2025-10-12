@@ -748,7 +748,7 @@ namespace V_Max_Tool
             ProtDetectMethod.DataSource = new string[] { "Scan source on add (slower)", "Parse file-name for protection type", "Don't detect" };
             RunBusy(() => LoadSettings());
 
-            Setup_Database_Window();
+            //Setup_Database_Window();
             //RecoverDatabase();
 
             try

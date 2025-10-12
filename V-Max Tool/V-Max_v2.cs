@@ -74,7 +74,7 @@ namespace V_Max_Tool
                                 secdata = CopyFrom(getsec, dpos + 1, 320);
                                 byte[] dec = Decode_VmaxGCR(secdata);
                                 if (dec != null) checksum = Get_Checksum(dec);
-                                return (decode ? dec : secdata, checksum, pos + (dpos << 3));
+                                return (decode ? dec : secdata, checksum, pos + ((dpos + 1) << 3) + 1);
                             }
                             else if (t && (a[0] ^ a[1]) < 22) pos += (300 + dpos - 1) << 3;
                             else pos += 8;
@@ -86,6 +86,7 @@ namespace V_Max_Tool
             }
             if (version == 3)
             {
+                if (data == null && source.Count > 0) data = Bit2Byte(source);
                 for (int i = 0; i < data.Length; i++)
                 {
                     if (data[i] == 0x49)
@@ -100,7 +101,7 @@ namespace V_Max_Tool
                                 secdata = CopyFrom(data, i, Get_vm3_sectorSize(data, i));
                                 byte[] dec = Decode_VmaxGCR(secdata);
                                 if (dec != null) checksum = Get_Checksum(dec);
-                                return (decode ? dec : secdata, checksum, i + 1);
+                                return (decode ? dec : secdata, checksum, i);
                             }
                             catch { }
                         }
@@ -266,15 +267,11 @@ namespace V_Max_Tool
                             if (!batch)
                             {
                                 string sz = sec == 0 ? "*" : string.Empty;
-                                //var newpos = pos + 1 + (hlen << 3);
                                 if (sec == 0) sec_zero = (pos - 7) >> 3;
                                 if (newpos + secsize < source.Length)
                                 {
-                                    //sec_data[sec] = Bit2Byte(source, newpos, 320 << 3); ;
-                                    //bool cksm = Get_Checksum(Decode_VmaxGCR(Bit2Byte(source, newpos, 320 << 3)));
                                     bool cksm = Get_Checksum(Decode_VmaxGCR(sec_data[sec]));
                                     if (!cksm) err.Add(sec);
-                                    //File.WriteAllBytes($@"c:\test\t{tr}rsec{sec}", Bit2Byte(source, newpos, 320 << 3));
                                     var dhead = new byte[] { start_byte[0], a[1], a[2], end_byte[0] };
                                     all_headers.Add($"Sector ({sec}){sz} pos ({pos >> 3}) Header [ {Hex_Val(dhead)} ] Checksum ({(cksm ? "OK" : "Failed!")})");
                                 }

@@ -1246,7 +1246,7 @@ namespace V_Max_Tool
                 {
                     frsec.Add($"{Convert.ToInt32(freesec[i][0])}, {Convert.ToInt32(freesec[i][1])}");
                 }
-                File.WriteAllLines($@"c:\test\bamtest", frsec.ToArray());
+                //File.WriteAllLines($@"c:\test\bamtest", frsec.ToArray());
                 length = length % 254 == 0 ? length / 254 : length / 254 + 1;
                 if (length <= freesec.Length)
                 {
@@ -1527,27 +1527,27 @@ namespace V_Max_Tool
                         Fix_Errors();
                     }
                 }
-                if (fix)
-                {
-                    ErrorList = new ConcurrentBag<string>();
-                    ScanForErrors();
-                    string t;
-                    if (ErrorList.Count < 1)
-                    {
-                        s = "Sector checksums successfully repaired!";
-                        t = "Success!!";
-                    }
-                    else
-                    {
-                        s = "Image repair failed!";
-                        t = "Failed!";
-                    }
-                    using (Message_Center center = new Message_Center(this)) // center message box
-                    {
-                        DialogResult result = MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    if (errors > ErrorList.Count) Set_BlockMap();
-                }
+                //if (fix)
+                //{
+                //    ErrorList = new ConcurrentBag<string>();
+                //    ScanForErrors();
+                //    string t;
+                //    if (ErrorList.Count < 1)
+                //    {
+                //        s = "Sector checksums successfully repaired!";
+                //        t = "Success!!";
+                //    }
+                //    else
+                //    {
+                //        s = "Image repair failed!";
+                //        t = "Failed!";
+                //    }
+                //    using (Message_Center center = new Message_Center(this)) // center message box
+                //    {
+                //        DialogResult result = MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //    }
+                //    if (errors > ErrorList.Count) Set_BlockMap();
+                //}
             }
         }
     }

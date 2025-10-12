@@ -1861,20 +1861,6 @@ namespace V_Max_Tool
                     {
                         if (window == hdr[0])
                         {
-                            byte[] rs = Bit2Byte(s, pos - 8, 583 << 3);
-                            (byte[] d, bool c, bool v) = Decode_Rapidlok_GCR(rs);
-                            byte[] e = v ? Encode_RLKv2(d) : Encode_RLKv1(d);
-                            BitArray y = new BitArray(Flip_Endian(e));
-                            for (int i = 0; i < y.Length; i++) s[(pos - 8) + i] = y[i];
-                            //bool m = MatchSeq(rs, e);
-                            //match.Add($"source pass ({c}), version {(v ? "2+" : "1")}, Encode matches? ({(m ? "YES!" : "God Damnit!")})");
-                            //if (!m)
-                            //{
-                            //    File.WriteAllBytes($@"c:\test\rltest\t{t}_s{sectors.Count + 1}", rs);
-                            //    //File.WriteAllBytes($@"c:\test\rltest\t{t}_s{sectors.Count + 1}_dec", d);
-                            //    File.WriteAllBytes($@"c:\test\rltest\t{t}_s{sectors.Count + 1}_1", e);
-                            //}
-
                             var (tmp, csm, vs) = Decode_Rapidlok_GCR(Bit2Byte(s, pos - 8, 583 << 3), true);
                             sectors.Add(tmp);
                             version.Add(vs);
@@ -1890,13 +1876,6 @@ namespace V_Max_Tool
                         tlen += sectors[sectors.Count - 1].Length;
                     }
                 }
-
-                //---- Destructive Testing! -----
-                Set_Dest_Arrays(Bit2Byte(s), t);
-                //-------------------------------
-
-                //File.WriteAllLines($@"c:\test\track{t}.txt", match.ToArray());
-
                 if (sectors.Count > 0)
                 {
                     string dec = version.Any(x => x == true) ? " v2+" : " v1";
@@ -2032,8 +2011,9 @@ namespace V_Max_Tool
         private void Fix_Errors()
         {
             Stopwatch sw = Stopwatch.StartNew();
-            bool tfixed = false, success = true;
+            bool tfixed = false;
             string s, t;
+            int err = 0;
             for (int j = 0; j < 2; j++)
             {
                 for (int i = 0; i < tracks; i++)
@@ -2041,6 +2021,8 @@ namespace V_Max_Tool
                     switch (NDS.cbm[i])
                     {
                         case 1: if (CBM_Fix.Checked) FixCBM(i); break;
+                        case 2: FixVMX2(i); break;
+                        case 3: FixVMX3(i); break;
                         case 5: FixVPL(i); break;
                         case 6: FixRLK(i); break;
                         case 10: FixMPS(i); break;
@@ -2048,23 +2030,81 @@ namespace V_Max_Tool
                 }
                 tfixed = true;
             }
-            if (success)
-            {
-                s = "Sector checksums successfully repaired!";
-                t = "Success!!";
-            }
-            else
+            if (err != 0)
             {
                 s = "Image repair failed!";
                 t = "Failed!";
             }
+            else
+            {
+                s = "Sector checksums successfully repaired!";
+                t = "Success!!";
+            }
             sw.Stop();
             MessageForYouSir(t, s);
+
+            void FixVMX2(int track)
+            {
+                var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
+                bool rewrite = false;
+                if (source != null && source.Length > 10)
+                {
+                    HashSet<byte> oldGCRSet = new HashSet<byte> { 0xA3, 0xE2 };
+                    for (int j = 0; j < NDS.sectors[track]; j++)
+                    {
+                        (byte[] sec, bool chk, int pos) = Find_VMax_Sector(null, source, j, 2, false);
+                        if (pos >= 0 && sec != null)
+                        {
+                            if (!chk)
+                            {
+                                if (!tfixed)
+                                {
+                                    bool older = sec.Any(oldGCRSet.Contains);
+                                    var d = Decode_VmaxGCR(sec);
+                                    var e = Encode_VmaxGCR(d, true, older);
+                                    BitArray y = new BitArray(Flip_Endian(e));
+                                    for (int i = 0; i < y.Length; i++) source[pos + i] = y[i];
+                                    rewrite = true;
+                                }
+                                else err++;
+                            }
+                        }
+
+                    }
+                    if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
+                }
+            }
+
+            void FixVMX3(int track)
+            {
+                var source = NDG.Track_Data?[track] != null ? CopyArray(NDG.Track_Data?[track]) : new byte[0];
+                bool rewrite = false;
+                if (source != null && source.Length > 10)
+                {
+                    for (int j = 0; j < NDS.sectors[track]; j++)
+                    {
+                        (byte[] sec, bool chk, int pos) = Find_VMax_Sector(source, null, j, 3, true);
+                        if (pos >= 0 && sec != null)
+                        {
+                            if (!chk)
+                            {
+                                if (!tfixed)
+                                {
+                                    byte[] e = Encode_VmaxGCR(sec, true);
+                                    for (int i = 0; i < e.Length; i++) source[pos + i] = e[i];
+                                    rewrite = true;
+                                }
+                                else err++;
+                            }
+                        }
+                    }
+                    if (rewrite) Set_Dest_Arrays(source, track);
+                }
+            }
 
             void FixVPL(int track)
             {
                 var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
-                //var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                 bool rewrite = false;
                 if (source != null && source.Length > 10)
                 {
@@ -2082,7 +2122,7 @@ namespace V_Max_Tool
                                 }
                                 rewrite = true;
                             }
-                            else success = false;
+                            else err++;
                         }
                     }
                     if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
@@ -2091,18 +2131,24 @@ namespace V_Max_Tool
 
             void FixRLK(int track)
             {
-                int ctr = 0;
                 var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
-                bool rewrite = false;
+                bool rewrite = false, foundRealSector = false;
                 int pos = 0;
-                ushort hdr = 0xff6b, window = 0;
+                uint[] header = new uint[] { 0xffffff75, 0xffffff6b };
+                uint window = 0;
+                byte[] sec;
                 if (source != null && source.Length > 10)
                 {
                     while (pos < source.Length)
                     {
                         window <<= 1;
                         if (source[pos++]) window |= 1;
-                        if (window == hdr)
+                        if (window == header[0] && ((Bit2Byte(source, pos, 8)[0] & 0xF0) == 0x90))
+                        {
+                            sec = Decode_RL_Header(Bit2Byte(source, pos, 48)).header;
+                            foundRealSector = sec[0] <= 12;
+                        }
+                        if (window == header[1] && foundRealSector)
                         {
                             byte[] rs = Bit2Byte(source, pos - 8, 583 << 3);
                             (byte[] d, bool c, bool v) = Decode_Rapidlok_GCR(rs);
@@ -2110,13 +2156,16 @@ namespace V_Max_Tool
                             {
                                 if (!tfixed)
                                 {
-                                    ctr++;
-                                    byte[] e = v ? Encode_RLKv2(d) : Encode_RLKv1(d);
-                                    BitArray y = new BitArray(Flip_Endian(e));
-                                    for (int i = 0; i < y.Length; i++) source[(pos - 8) + i] = y[i];
-                                    rewrite = true;
+                                    try
+                                    {
+                                        byte[] e = v ? Encode_RLKv2(d) : Encode_RLKv1(d);
+                                        BitArray y = new BitArray(Flip_Endian(e));
+                                        for (int i = 0; i < y.Length; i++) source[(pos - 8) + i] = y[i];
+                                        rewrite = true;
+                                    }
+                                    catch { }
                                 }
-                                else success = false;
+                                else err++;
                             }
                         }
                     }
@@ -2127,7 +2176,6 @@ namespace V_Max_Tool
             void FixMPS(int track)
             {
                 var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
-                //var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                 bool rewrite = false;
                 if (source != null && source.Length > 10)
                 {
@@ -2148,7 +2196,7 @@ namespace V_Max_Tool
                                 }
                                 rewrite = true;
                             }
-                            else success = false;
+                            else err++;
                         }
                     }
                     if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
@@ -2159,7 +2207,6 @@ namespace V_Max_Tool
             {
                 int tk = tracks > 42 ? (track / 2) + 1 : track + 1;
                 var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
-                //var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                 bool rewrite = false;
                 if (source != null && source.Length > 10)
                 {
@@ -2174,11 +2221,17 @@ namespace V_Max_Tool
                             {
                                 int csm = 0;
                                 for (int k = 2; k < 6; k++) csm ^= header[k];
-                                header[1] = (byte)csm;
-                                var newheader = new BitArray(Flip_Endian(Encode_CBM_GCR(header)));
-                                for (int k = 0; k < newheader.Length; k++) source[pos + k] = newheader[k];
-                                rewrite = true;
-
+                                if (csm != header[1])
+                                {
+                                    if (!tfixed)
+                                    {
+                                        header[1] = (byte)csm;
+                                        var newheader = new BitArray(Flip_Endian(Encode_CBM_GCR(header)));
+                                        for (int k = 0; k < newheader.Length; k++) source[pos + k] = newheader[k];
+                                        rewrite = true;
+                                    }
+                                }
+                                else err++;
                             }
                         }
 
@@ -2201,7 +2254,7 @@ namespace V_Max_Tool
                                     }
                                     catch { }
                                 }
-                                else success = false;
+                                else err++;
                             }
                         }
                     }

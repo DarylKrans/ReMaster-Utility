@@ -471,7 +471,8 @@ namespace V_Max_Tool
         {
             if (data == null || data.Length < 3) return null;
             List<byte> output = new List<byte>();
-            if (data.Length >= 240 && Calculate_Checksum) Checksum();
+            //if (data.Length >= 240 && Calculate_Checksum) Checksum();
+            if (data.Length >= 3 && Calculate_Checksum) Checksum();
             int offset = (data.Length / 3), len = offset * 3;
             for (int i = 0; i < offset; i++)
             {
@@ -495,8 +496,8 @@ namespace V_Max_Tool
             void Checksum()
             {
                 byte checksum = 0;
-                for (int i = 0; i < 239; i++) checksum ^= data[i];
-                data[239] = checksum;
+                for (int i = 0; i < data.Length - 1; i++) checksum ^= data[i];
+                data[data.Length - 1] = checksum;
             }
         }
 
