@@ -149,68 +149,22 @@ namespace V_Max_Tool
             }
         }
 
-        (byte[] key_track, byte[] key) RapidLok_Key_Fix(byte[] data, byte[] new_key = null)
-        {
-            if (data == null || data.Length == 0) return (new byte[0], new byte[0]);
-            //int[] tbl = new int[]
-            //{
-            //    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 18, 19, 20, 21,
-            //    22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 16, 35, 36, 37, 38, 39 
-            //};
-            int[] tbl = new int[]
-            {
-                //0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 17, 18, 19, 20, 21,
-                //22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 17, 36, 37, 38, 39 
-                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 18, 19, 20, 21,
-                22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 16, 36, 37, 38, 39
-            };
-            string[] sec = new string[38];
-            byte[] newkey = FastArray.Init(7200, 0xff);
-            byte[] key = new byte[256];
-            byte[] _key = new byte[54];
-            int s = 0;
-            if (data[s] == 0x6b) s += 200;
-            for (int i = s; i < data.Length; i++)
-            {
-                if ((data[i] == 0x6b) && (i + 256) < data.Length)
-                {
-                    Buffer.BlockCopy(data, i, key, 0, 256);
-                    break;
-                }
-            }
-            byte[] klen = Decode_RL_Header(CopyArray(key, 1, 53), false).header;
-            byte cc = 0;
-            int a = 0;
-            for (int i = 0; i < klen.Length - 1; i++) cc ^= klen[i];
-            for (int i = 0; i < klen.Length; i++)
-            {
-                if (i == 17)
-                {
-                    //sec[i] = $"Track {i + 1} N/A";
-
-                    sec[a++] = $"Track {i + 1} N/A";
-                }
-                //sec[tbl[i]] = ($"Track {tbl[i] + (i <= 17 ? 1 : 2)} security sector length: {(int)klen[i]}");
-                sec[a++] = ($"Track {i + (i < 18 ? 1 : 2)} security sector length: {(int)klen[i]}");
-            }
-            bool f = RL1_Checksum(CopyArray(key, 1, 53));
-            sec[sec.Length - 1] = $"{f} {(int)cc} {Hex_Val(new byte[] { cc })}";
-            File.WriteAllLines($@"c:\test\decoded_key.txt", sec);
-            if (new_key != null) Buffer.BlockCopy(new_key, 0, key, 0, new_key.Length);
-            for (int i = 54; i < key.Length; i++)
-            {
-                if (key[i] != 0xff) key[i] = 0x00;
-                if (i >= 250) key[i] = 0xff;
-                if (i < 250) key[i] = 0x00;
-            }
-            Buffer.BlockCopy(key, 0, newkey, newkey.Length - 286, 256);
-            Buffer.BlockCopy(key, 0, _key, 0, _key.Length);
-            return (newkey, _key);
-        }
-
-        //(byte[], byte[]) RapidLok_Key_Fix(byte[] data, byte[] new_key = null)
+        //(byte[] key_track, byte[] key) RapidLok_Key_Fix(byte[] data, byte[] new_key = null)
         //{
-        //    //byte[] newkey = FastArray.Init(7153, 0xff);
+        //    if (data == null || data.Length == 0) return (new byte[0], new byte[0]);
+        //    //int[] tbl = new int[]
+        //    //{
+        //    //    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 18, 19, 20, 21,
+        //    //    22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 16, 35, 36, 37, 38, 39 
+        //    //};
+        //    int[] tbl = new int[]
+        //    {
+        //        //0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 17, 18, 19, 20, 21,
+        //        //22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 17, 36, 37, 38, 39 
+        //        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 34, 18, 19, 20, 21,
+        //        22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 16, 36, 37, 38, 39
+        //    };
+        //    string[] sec = new string[38];
         //    byte[] newkey = FastArray.Init(7200, 0xff);
         //    byte[] key = new byte[256];
         //    byte[] _key = new byte[54];
@@ -224,6 +178,24 @@ namespace V_Max_Tool
         //            break;
         //        }
         //    }
+        //    byte[] klen = Decode_RL_Header(CopyArray(key, 1, 53), false).header;
+        //    byte cc = 0;
+        //    int a = 0;
+        //    for (int i = 0; i < klen.Length - 1; i++) cc ^= klen[i];
+        //    for (int i = 0; i < klen.Length; i++)
+        //    {
+        //        if (i == 17)
+        //        {
+        //            //sec[i] = $"Track {i + 1} N/A";
+        //
+        //            sec[a++] = $"Track {i + 1} N/A";
+        //        }
+        //        //sec[tbl[i]] = ($"Track {tbl[i] + (i <= 17 ? 1 : 2)} security sector length: {(int)klen[i]}");
+        //        sec[a++] = ($"Track {i + (i < 18 ? 1 : 2)} security sector length: {(int)klen[i]}");
+        //    }
+        //    bool f = RL1_Checksum(CopyArray(key, 1, 53));
+        //    sec[sec.Length - 1] = $"{f} {(int)cc} {Hex_Val(new byte[] { cc })}";
+        //    File.WriteAllLines($@"c:\test\decoded_key.txt", sec);
         //    if (new_key != null) Buffer.BlockCopy(new_key, 0, key, 0, new_key.Length);
         //    for (int i = 54; i < key.Length; i++)
         //    {
@@ -231,11 +203,39 @@ namespace V_Max_Tool
         //        if (i >= 250) key[i] = 0xff;
         //        if (i < 250) key[i] = 0x00;
         //    }
-        //    //Buffer.BlockCopy(key, 0, newkey, newkey.Length - 286, 256);
-        //    Buffer.BlockCopy(key, 0, newkey, newkey.Length - 768, 256);
+        //    Buffer.BlockCopy(key, 0, newkey, newkey.Length - 286, 256);
         //    Buffer.BlockCopy(key, 0, _key, 0, _key.Length);
         //    return (newkey, _key);
         //}
+
+        (byte[], byte[]) RapidLok_Key_Fix(byte[] data, byte[] new_key = null)
+        {
+            //byte[] newkey = FastArray.Init(7153, 0xff);
+            byte[] newkey = FastArray.Init(7200, 0xff);
+            byte[] key = new byte[256];
+            byte[] _key = new byte[54];
+            int s = 0;
+            if (data[s] == 0x6b) s += 200;
+            for (int i = s; i < data.Length; i++)
+            {
+                if ((data[i] == 0x6b) && (i + 256) < data.Length)
+                {
+                    Buffer.BlockCopy(data, i, key, 0, 256);
+                    break;
+                }
+            }
+            if (new_key != null) Buffer.BlockCopy(new_key, 0, key, 0, new_key.Length);
+            for (int i = 54; i < key.Length; i++)
+            {
+                if (key[i] != 0xff) key[i] = 0x00;
+                if (i >= 250) key[i] = 0xff;
+                if (i < 250) key[i] = 0x00;
+            }
+            //Buffer.BlockCopy(key, 0, newkey, newkey.Length - 286, 256);
+            Buffer.BlockCopy(key, 0, newkey, newkey.Length - 768, 256);
+            Buffer.BlockCopy(key, 0, _key, 0, _key.Length);
+            return (newkey, _key);
+        }
 
         (byte[], int, int, int, int, int, string[]) RapidLok_Track_Info(byte[] data, int trk, bool build, byte[] track_ID, int rl_7b_len = 0)
         {
@@ -578,7 +578,7 @@ namespace V_Max_Tool
             if (sector == null) return (new byte[0], false, false);
             (byte[] decoded, bool cksm, bool rl_v2_7) = Decode_RL_Data(sector);
             if (rl_v2_7) RL_Decrypt(decoded); // if RapidLok version = v2-7 -- Decrypt 'decoded' data after 10 bytes of assembly code
-            return (just_the_sector ? rl_v2_7 ? CopyFrom(decoded, 10) : CopyFrom(decoded, 0, decoded.Length - 4) : decoded, cksm, rl_v2_7);
+            return (just_the_sector ? rl_v2_7 ? CopyFrom(decoded, 10) : CopyFrom(decoded, 0, decoded.Length - 2) : decoded, cksm, rl_v2_7);
         }
 
         byte[] RL_Decrypt(byte[] data)

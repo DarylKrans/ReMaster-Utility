@@ -1848,6 +1848,7 @@ namespace V_Max_Tool
                 List<bool> cksm = new List<bool>();
                 List<bool> version = new List<bool>();
                 List<int> secnum = new List<int>();
+                List<string> match = new List<string>();
                 ushort window = 0, pos = 0;
                 ushort[] hdr = new ushort[] { 0xff6b, 0xff55, 0xff75 };
                 byte[] sec = new byte[0];
@@ -1860,6 +1861,20 @@ namespace V_Max_Tool
                     {
                         if (window == hdr[0])
                         {
+                            byte[] rs = Bit2Byte(s, pos - 8, 583 << 3);
+                            (byte[] d, bool c, bool v) = Decode_Rapidlok_GCR(rs);
+                            byte[] e = v ? Encode_RLKv2(d) : Encode_RLKv1(d);
+                            BitArray y = new BitArray(Flip_Endian(e));
+                            for (int i = 0; i < y.Length; i++) s[(pos - 8) + i] = y[i];
+                            //bool m = MatchSeq(rs, e);
+                            //match.Add($"source pass ({c}), version {(v ? "2+" : "1")}, Encode matches? ({(m ? "YES!" : "God Damnit!")})");
+                            //if (!m)
+                            //{
+                            //    File.WriteAllBytes($@"c:\test\rltest\t{t}_s{sectors.Count + 1}", rs);
+                            //    //File.WriteAllBytes($@"c:\test\rltest\t{t}_s{sectors.Count + 1}_dec", d);
+                            //    File.WriteAllBytes($@"c:\test\rltest\t{t}_s{sectors.Count + 1}_1", e);
+                            //}
+
                             var (tmp, csm, vs) = Decode_Rapidlok_GCR(Bit2Byte(s, pos - 8, 583 << 3), true);
                             sectors.Add(tmp);
                             version.Add(vs);
@@ -1875,6 +1890,13 @@ namespace V_Max_Tool
                         tlen += sectors[sectors.Count - 1].Length;
                     }
                 }
+
+                //---- Destructive Testing! -----
+                Set_Dest_Arrays(Bit2Byte(s), t);
+                //-------------------------------
+
+                //File.WriteAllLines($@"c:\test\track{t}.txt", match.ToArray());
+
                 if (sectors.Count > 0)
                 {
                     string dec = version.Any(x => x == true) ? " v2+" : " v1";
@@ -2010,32 +2032,93 @@ namespace V_Max_Tool
         private void Fix_Errors()
         {
             Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < tracks; i++)
+            bool tfixed = false, success = true;
+            string s, t;
+            for (int j = 0; j < 2; j++)
             {
-                switch (NDS.cbm[i])
+                for (int i = 0; i < tracks; i++)
                 {
-                    case 1: if (CBM_Fix.Checked) FixCBM(i); break;
-                    case 5: FixVPL(i); break;
-                    case 10: FixMPS(i); break;
+                    switch (NDS.cbm[i])
+                    {
+                        case 1: if (CBM_Fix.Checked) FixCBM(i); break;
+                        case 5: FixVPL(i); break;
+                        case 6: FixRLK(i); break;
+                        case 10: FixMPS(i); break;
+                    }
                 }
+                tfixed = true;
+            }
+            if (success)
+            {
+                s = "Sector checksums successfully repaired!";
+                t = "Success!!";
+            }
+            else
+            {
+                s = "Image repair failed!";
+                t = "Failed!";
             }
             sw.Stop();
+            MessageForYouSir(t, s);
 
             void FixVPL(int track)
             {
-                var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
+                //var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                 bool rewrite = false;
-                for (int j = 0; j < NDS.sectors[track]; j++)
+                if (source != null && source.Length > 10)
                 {
-                    (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
-                    if (!cksm)
+                    for (int j = 0; j < NDS.sectors[track]; j++)
                     {
-                        var newsec = Encode_Vorpal_GCR(sector, true, isone);
-                        for (int k = 0; k < newsec.Length; k++)
+                        (byte[] sector, bool cksm, bool isone, int pos) = Decode_Vorpal(source, j);
+                        if (!cksm)
                         {
-                            source[pos + k] = newsec[k];
+                            if (!tfixed)
+                            {
+                                var newsec = Encode_Vorpal_GCR(sector, true, isone);
+                                for (int k = 0; k < newsec.Length; k++)
+                                {
+                                    source[pos + k] = newsec[k];
+                                }
+                                rewrite = true;
+                            }
+                            else success = false;
                         }
-                        rewrite = true;
+                    }
+                    if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
+                }
+            }
+
+            void FixRLK(int track)
+            {
+                int ctr = 0;
+                var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
+                bool rewrite = false;
+                int pos = 0;
+                ushort hdr = 0xff6b, window = 0;
+                if (source != null && source.Length > 10)
+                {
+                    while (pos < source.Length)
+                    {
+                        window <<= 1;
+                        if (source[pos++]) window |= 1;
+                        if (window == hdr)
+                        {
+                            byte[] rs = Bit2Byte(source, pos - 8, 583 << 3);
+                            (byte[] d, bool c, bool v) = Decode_Rapidlok_GCR(rs);
+                            if (!c)
+                            {
+                                if (!tfixed)
+                                {
+                                    ctr++;
+                                    byte[] e = v ? Encode_RLKv2(d) : Encode_RLKv1(d);
+                                    BitArray y = new BitArray(Flip_Endian(e));
+                                    for (int i = 0; i < y.Length; i++) source[(pos - 8) + i] = y[i];
+                                    rewrite = true;
+                                }
+                                else success = false;
+                            }
+                        }
                     }
                 }
                 if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
@@ -2043,67 +2126,83 @@ namespace V_Max_Tool
 
             void FixMPS(int track)
             {
-                var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
+                //var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                 bool rewrite = false;
-                for (int j = 0; j < NDS.sectors[track]; j++)
+                if (source != null && source.Length > 10)
                 {
-                    (byte[] sector, bool checksum, int pos) = Decode_MicroProse_Sector(source, j, false);
-                    if (!checksum && (sector != null && pos >= 0))
+                    for (int j = 0; j < NDS.sectors[track]; j++)
                     {
-                        int start = sector.Length == 335 ? 9 : sector.Length == 325 ? 1 : 0;
-                        int end = sector.Length == 335 ? 266 : sector.Length == 325 ? 257 : 0;
-                        byte[] dec = Decode_CBM_GCR(sector).decoded;
-                        if (dec != null && (dec.Length == 268 || dec.Length == 260) && (start == 9 || start == 1) && (end == 257 || end == 266))
+                        (byte[] sector, bool checksum, int pos) = Decode_MicroProse_Sector(source, j, false);
+                        if (!checksum && (sector != null && pos >= 0))
                         {
-                            var newsec = Fix_Checksum(dec, start, end);
-                            for (int k = 0; k < newsec.Length; k++) source[pos + k] = newsec[k];
+                            if (!tfixed)
+                            {
+                                int start = sector.Length == 335 ? 9 : sector.Length == 325 ? 1 : 0;
+                                int end = sector.Length == 335 ? 266 : sector.Length == 325 ? 257 : 0;
+                                byte[] dec = Decode_CBM_GCR(sector).decoded;
+                                if (dec != null && (dec.Length == 268 || dec.Length == 260) && (start == 9 || start == 1) && (end == 257 || end == 266))
+                                {
+                                    var newsec = Fix_Checksum(dec, start, end);
+                                    for (int k = 0; k < newsec.Length; k++) source[pos + k] = newsec[k];
+                                }
+                                rewrite = true;
+                            }
+                            else success = false;
                         }
-                        rewrite = true;
                     }
+                    if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
                 }
-                if (rewrite) Set_Dest_Arrays(Bit2Byte(source), track);
             }
 
             void FixCBM(int track)
             {
                 int tk = tracks > 42 ? (track / 2) + 1 : track + 1;
-                var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                var source = NDG.Track_Data?[track] != null ? new BitArray(Flip_Endian(NDG.Track_Data?[track])) : new BitArray(0);
+                //var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                 bool rewrite = false;
-                int avail = NDS.sectors[track] > Available_Sectors[tk] ? NDS.sectors[track] : Available_Sectors[tk];
-                for (int j = 0; j < avail; j++)
+                if (source != null && source.Length > 10)
                 {
-                    (bool found, int pos, int blk_pos, _, bool head_chksum) = Find_Sector(source, j, 0, true);
-                    if (found && (pos >= 0 && pos + (10 << 3) < source.Length) && !head_chksum)
+                    int avail = NDS.sectors[track] > Available_Sectors[tk] ? NDS.sectors[track] : Available_Sectors[tk];
+                    for (int j = 0; j < avail; j++)
                     {
-                        var header = Decode_CBM_GCR(Bit2Byte(source, pos, 10 << 3)).decoded;
-                        if (header[2] == j && header[3] == tk)
+                        (bool found, int pos, int blk_pos, _, bool head_chksum) = Find_Sector(source, j, 0, true);
+                        if (found && (pos >= 0 && pos + (10 << 3) < source.Length) && !head_chksum)
                         {
-                            int csm = 0;
-                            for (int k = 2; k < 6; k++) csm ^= header[k];
-                            header[1] = (byte)csm;
-                            var newheader = new BitArray(Flip_Endian(Encode_CBM_GCR(header)));
-                            for (int k = 0; k < newheader.Length; k++) source[pos + k] = newheader[k];
-                            rewrite = true;
-
-                        }
-                    }
-
-                    if (found && blk_pos >= 0)
-                    {
-                        bool checksum = Decode_CBM_Sector(null, j, true, source, pos).checksum;
-                        if (!checksum)
-                        {
-                            try
+                            var header = Decode_CBM_GCR(Bit2Byte(source, pos, 10 << 3)).decoded;
+                            if (header[2] == j && header[3] == tk)
                             {
-                                var secdata = Decode_CBM_GCR(Bit2Byte(source, blk_pos, 325 << 3)).decoded;
-                                if (secdata != null && secdata.Length == 260 && secdata[0] == 0x07)
-                                {
-                                    var newsec = Fix_Checksum(secdata, 1, 257);
-                                    for (int k = 0; k < newsec.Length; k++) source[blk_pos + k] = newsec[k];
-                                    rewrite = true;
-                                }
+                                int csm = 0;
+                                for (int k = 2; k < 6; k++) csm ^= header[k];
+                                header[1] = (byte)csm;
+                                var newheader = new BitArray(Flip_Endian(Encode_CBM_GCR(header)));
+                                for (int k = 0; k < newheader.Length; k++) source[pos + k] = newheader[k];
+                                rewrite = true;
+
                             }
-                            catch { }
+                        }
+
+                        if (found && blk_pos >= 0)
+                        {
+                            bool checksum = Decode_CBM_Sector(null, j, true, source, pos).checksum;
+                            if (!checksum)
+                            {
+                                if (!tfixed)
+                                {
+                                    try
+                                    {
+                                        var secdata = Decode_CBM_GCR(Bit2Byte(source, blk_pos, 325 << 3)).decoded;
+                                        if (secdata != null && secdata.Length == 260 && secdata[0] == 0x07)
+                                        {
+                                            var newsec = Fix_Checksum(secdata, 1, 257);
+                                            for (int k = 0; k < newsec.Length; k++) source[blk_pos + k] = newsec[k];
+                                            rewrite = true;
+                                        }
+                                    }
+                                    catch { }
+                                }
+                                else success = false;
+                            }
                         }
                     }
                 }

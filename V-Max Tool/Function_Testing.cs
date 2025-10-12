@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -41,18 +40,6 @@ namespace V_Max_Tool
             //}));
             //tempthread.Start();
 
-        }
-
-        bool RL1_Checksum_test(byte[] data)
-        {
-            //if (data.All(f => f != 0x55)) File.WriteAllBytes($@"c:\test\rlsectest.bin", data);
-            byte ck = 0;
-            for (int i = 1; i < data.Length - 2; i++) ck ^= data[i];
-            byte x = data[data.Length - 2];
-            byte a = data[data.Length - 1];
-            byte value = (byte)((a & 0x03) | ((a >> 1) & 0x0c) | ((x & 0x18) << 3) | (x & 0x03) << 4);
-            //Text = $"{Hex_Val(new byte[] { ck , x, a , value})}";
-            return ck == value;
         }
 
         void Test_GetFmt()

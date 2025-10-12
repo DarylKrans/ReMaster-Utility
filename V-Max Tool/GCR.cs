@@ -267,34 +267,80 @@ namespace V_Max_Tool
             bool rl_v2_7 = (sector.Length == 583 && sector[195 + pos] == 0xa4);
             byte b1, b2, b3;
             byte dec0 = 0, dec1;
+            byte[] sec_data = rl_v2_7 ? DecodeV2_7() : DecodeV1();
+            return (sec_data, rl_v2_7 ? RL2_7_Checksum(sec_data, dec0) : RL1_Checksum(sector), rl_v2_7);
 
-            using (MemoryStream buffer = new MemoryStream())
-            using (BinaryWriter write = new BinaryWriter(buffer))
+            byte[] DecodeV1()
             {
-                while (pos < sector.Length)
+                using (MemoryStream buffer = new MemoryStream())
+                using (BinaryWriter write = new BinaryWriter(buffer))
                 {
-                    try
+                    while (pos < sector.Length - 6)
                     {
-                        if (pos == 196 && rl_v2_7 && sector[pos] == 0xa4) pos++; // < 300
-                        b1 = sector[pos++];
-                        b2 = sector[pos++];
-                        b3 = pos < sector.Length ? sector[pos++] : (byte)0;
-                        dec0 = rl_v2_7
-                            ? (byte)((b1 & 0x49) | (0xb6 & b2))         // rapidlok v2-7
-                            : (byte)~(((b1 & 0x60) << 1) | (b1 & 0x0c) << 2 | (b1 & 0x01) << 3 | (b2 & 0x80) >> 5 | (b2 & 0x30) >> 4); // version 1
-                        dec1 = rl_v2_7 && b3 != 0
-                            ? dec1 = (byte)((0xdb & b3) | (b1 & 0x24))  // rapidlok v2-7
-                            : (byte)~(((b2 & 0x06) << 5) | (b3 & 0xc0) >> 2 | (b3 & 0x18) >> 1 | (b3 & 0x03)); // version 1
-                        if (b3 != 0)
+                        try
                         {
-                            write.Write(dec0);
-                            write.Write(dec1);
+                            b1 = sector[pos++];
+                            b2 = sector[pos++];
+                            b3 = sector[pos++];
+                            write.Write((byte)~(((b1 & 0x60) << 1) | (b1 & 0x0c) << 2 | (b1 & 0x01) << 3 | (b2 & 0x80) >> 5 | (b2 & 0x30) >> 4));
+                            write.Write((byte)~(((b2 & 0x06) << 5) | (b3 & 0xc0) >> 2 | (b3 & 0x18) >> 1 | (b3 & 0x03)));
                         }
+                        catch { }
                     }
-                    catch { }
+                    while (pos < sector.Length - 2)
+                    {
+                        try
+                        {
+                            b1 = sector[pos++];
+                            b2 = sector[pos++];
+                            write.Write((byte)((b2 & 0x03) | ((b2 & 0x18) >> 1) | ((b1 & 0x18) << 3) | (b1 & 0x03) << 4));
+                        }
+                        catch { }
+                    }
+                    return buffer.ToArray();
                 }
-                return (buffer.ToArray(), rl_v2_7 ? RL2_7_Checksum(buffer.ToArray(), dec0) : RL1_Checksum(sector), rl_v2_7);
             }
+
+            byte[] DecodeV2_7()
+            {
+                using (MemoryStream buffer = new MemoryStream())
+                using (BinaryWriter write = new BinaryWriter(buffer))
+                {
+                    while (pos < sector.Length)
+                    {
+                        try
+                        {
+                            if (pos == 196 && rl_v2_7 && sector[pos] == 0xa4) pos++; // < 300
+                            b1 = sector[pos++];
+                            b2 = sector[pos++];
+                            b3 = pos < sector.Length ? sector[pos++] : (byte)0;
+                            dec0 = (byte)((b1 & 0x49) | (0xb6 & b2));         // rapidlok v2-7
+                            dec1 = b3 != 0 ? (byte)((0xdb & b3) | (b1 & 0x24)) : (byte)0;  // rapidlok v2-7
+                            if (b3 != 0)
+                            {
+                                write.Write(dec0);
+                                write.Write(dec1);
+                            }
+                        }
+                        catch { }
+                    }
+                    return buffer.ToArray();
+                }
+            }
+        }
+
+        bool RL1_Checksum(byte[] data)
+        {
+            if (data == null || data.Length < 2) return false;
+            byte checksum = 0, parity;
+            byte b = data[data.Length - 2];
+            byte a = data[data.Length - 1];
+            for (int i = 1; i < data.Length - 2; i++) checksum ^= data[i];
+            // bits from (a) ---43-10 bits from (b) ---43-10 (bits 7,6,5 and 2 from both bytes are discarded)
+            // parity byte becomes b1 b0 b4 b3 a4 a3 a1 a0
+            // if 'checksum' and 'parity' are equal, the sector is valid
+            parity = (byte)((a & 0x03) | ((a & 0x18) >> 1) | ((b & 0x18) << 3) | (b & 0x03) << 4);
+            return checksum == parity;
         }
 
         bool RL2_7_Checksum(byte[] data, byte parity)
@@ -305,48 +351,82 @@ namespace V_Max_Tool
             return (checksum ^ parity) == parity;
         }
 
-        bool RL1_Checksum(byte[] data)
+        byte[] Encode_RLKv1(byte[] data)
         {
-            if (data == null || data.Length == 0) return false;
-            byte checksum = 0, parity, a = data[data.Length - 1], b = data[data.Length - 2];
-            for (int i = 1; i < data.Length - 2; i++) checksum ^= data[i];
-            // bits from (a) ---43-10 bits from (b) ---43-10 (bits 7,6,5 and 2 from both bytes are discarded)
-            // parity byte becomes x1 x0 x4 x3 a4 a3 a1 a0
-            // if 'checksum' and 'parity' are equal, the sector is valid
-            parity = (byte)((a & 0x03) | ((a & 0x18) >> 1) | ((b & 0x18) << 3) | (b & 0x03) << 4);
-            return checksum == parity;
+            byte cksm = 0, GCR_a, GCR_b, GCR_c;
+            int pos = 0;
+            using (MemoryStream buffer = new MemoryStream())
+            using (BinaryWriter write = new BinaryWriter(buffer))
+            {
+                write.Write((byte)0x6b);
+                while (pos < data.Length - 2)
+                {
+                    write.Write(Encode((byte)~data[pos++], (byte)~data[pos++])); // length - 4
+                }
+                write.Write(encode_tail(data[pos++])); // I'm not sure what these 2 bytes are for, but are encoded
+                write.Write(encode_tail(data[pos++])); // the same way as the parity. These 2 bytes are not the parity
+                var temp = buffer.ToArray();
+                for (int i = 1; i < temp.Length; i++) cksm ^= temp[i];
+                write.Write(encode_tail(cksm)); // this is the parity byte (checksum)
+                return buffer.ToArray();
+            }
+
+            byte[] Encode(byte b1, byte b2)
+            {
+                GCR_a = (byte)(0x92 ^ ((b1 & 0xc0) >> 1) ^ ((b1 & 0x30) >> 2) ^ (b1 & 0x08) >> 3);
+                GCR_b = (byte)(0x49 ^ ((b1 & 0x04) << 5) ^ ((b1 & 0x03) << 4) ^ (b2 & 0xc0) >> 5);
+                GCR_c = (byte)(0x24 ^ ((b2 & 0x30) << 2) ^ ((b2 & 0x0c) << 1) ^ (b2 & 0x03));
+                return Validate_GCR(GCR_a, GCR_b, GCR_c);
+            }
+
+            byte[] encode_tail(byte t)
+            {
+                byte[] tail = new byte[2];
+                tail[0] = (byte)(0xa4 ^ ((t & 0xc0) >> 3) | ((t & 0x30) >> 4));
+                tail[1] = (byte)(0xa4 ^ ((t & 0x03) | ((t & 0x0c) << 1)));
+                if ((tail[0] & 0x1e) == 0x1e) tail[0] &= 0xfb;
+                if ((tail[1] & 0x1e) == 0x1e) tail[1] &= 0xfb;
+                return tail;
+            }
         }
 
-        byte[] Encode_RLK(byte[] data)
+        byte[] Encode_RLKv2(byte[] data, bool fully_decoded = true)
         {
-            int cksm = 0;
-            RL_Decrypt(data);
-            foreach (byte d in data) cksm ^= d;
-            MemoryStream buffer = new MemoryStream();
-            BinaryWriter write = new BinaryWriter(buffer);
+            byte cksm = 0;
             int pos = 0;
-            write.Write((byte)0x6b);
-            while (pos < data.Length)
+            if (fully_decoded) RL_Decrypt(data);
+            for (int i = 0; i < data.Length - 1; i++) cksm ^= data[i];
+            data[data.Length - 1] = cksm;
+            using (MemoryStream buffer = new MemoryStream())
+            using (BinaryWriter write = new BinaryWriter(buffer))
             {
-                write.Write(Encode(data[pos++], data[pos++]));
-                if (buffer.Length == 196) write.Write((byte)0xa4);
+                write.Write((byte)0x6b);
+                while (pos < data.Length)
+                {
+                    write.Write(Encode(data[pos++], data[pos++]));
+                    if (buffer.Length == 196) write.Write((byte)0xa4);
+                }
+                write.Write(new byte[] { 0x55, 0x55 });
+                return buffer.ToArray();
             }
-            write.Write(CopyFrom(Encode((byte)cksm, 0), 0, 2));
-            return buffer.ToArray();
 
             byte[] Encode(byte b1, byte b2)
             {
                 byte GCR_a = (byte)(0x92 | ((byte)((b1 & 0x49) | (b2 & 0x24))));
                 byte GCR_b = (byte)(0x49 | (b1 & 0xb6));
                 byte GCR_c = (byte)(0x24 | (b2 & 0xdb));
-                /// Check to make sure GCR is valid (can't have too many '1' bits in a row)
-                if ((GCR_a & 0x03) == 0x03 && (GCR_b & 0xE0) == 0xE0) GCR_b &= 0xBF;
-                if ((GCR_c & 0x80) == 0x80 && (GCR_b & 0x07) == 0x07) GCR_b &= 0xFE;
-                if ((GCR_a & 0xF8) == 0xF8) GCR_a &= 0xEF;
-                if ((GCR_a & 0x3F) == 0x3F && (GCR_b & 0xC0) == 0xC0) GCR_a &= 0xFE;
-                if ((GCR_c & 0x3E) == 0x3E) GCR_c &= 0xFB;
-                return new byte[] { GCR_a, GCR_b, GCR_c };
+                return Validate_GCR(GCR_a, GCR_b, GCR_c);
             }
+        }
+
+        byte[] Validate_GCR(byte g1, byte g2, byte g3)
+        {
+            /// Check to make sure GCR is valid (can't have too many '1' bits in a row)
+            if ((g1 & 0x03) == 0x03 && (g2 & 0xE0) == 0xE0) g2 &= 0xBF;
+            if ((g3 & 0x80) == 0x80 && (g2 & 0x07) == 0x07) g2 &= 0xFE;
+            if ((g1 & 0xF8) == 0xF8) g1 &= 0xEF;
+            if ((g3 & 0x3E) == 0x3E) g3 &= 0xFB;
+            return new byte[] { g1, g2, g3 };
         }
 
         /// <summary>
@@ -409,7 +489,7 @@ namespace V_Max_Tool
                 if (older && b == 0x2C) return 0xA3;
                 if (older && b == 0x0A) return 0xE2;
                 // All custom sector versions of V-Max use the same table for encoding for all other bytes
-                return VMax_gcrTable.FirstOrDefault(x => x.Value == b).Key; 
+                return VMax_gcrTable.FirstOrDefault(x => x.Value == b).Key;
             }
 
             void Checksum()

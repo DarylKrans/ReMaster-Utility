@@ -136,10 +136,6 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            byte[] a = Decode_RL_Data(File.ReadAllBytes($@"c:\test\rl6sec.bin")).sector;
-            File.WriteAllBytes($@"c:\test\rl6dec.bin", a);
-            //RL1_Checksum_test(File.ReadAllBytes($@"c:\test\rlsectest.bin"));
-
             //BinToByte_Table($@"c:\test\weak.bin", $@"c:\test\weak.txt", "weakBytes", 17);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
@@ -521,7 +517,8 @@ namespace V_Max_Tool
                     }
                     if (!batch && ErrorList.Count > 0)
                     {
-                        int[] norep = new int[] { 2, 3, 6 };
+                        //int[] norep = new int[] { 2, 3, 6 };
+                        int[] norep = new int[] { 2, 3 };
                         bool norepair = NDS.cbm.Any(x => norep.Contains(x));
                         List<string> list = new List<string>(ErrorList);
                         var s = Sort_Errors(list);
