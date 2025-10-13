@@ -53,6 +53,8 @@ namespace V_Max_Tool
                         {
                             var tmp = Filter_Sync(BitCopy(s, pos, (i - (rep - (cbm ? 1 : 0))) << 3), cbm ? std : custom)
                                 .Where(b => b != 0xff).ToArray();
+                            //var tmp = Filter_Sync(BitCopy(s, pos, (i - (rep - (cbm ? 1 : 0))) << 3), cbm ? std : custom)
+                            //    .Where(b => !(b == 0xFF || b == 0x55 || b == 0xAA)).ToArray();
                             len = tmp.Length;
                             // Trim length to remove trailing garbage data or weak-bits
                             if (tmp.Length > 2056 && tmp.Length < 2200) len = 2056; // v-max v0-1 loader length

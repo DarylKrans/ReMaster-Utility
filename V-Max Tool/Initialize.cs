@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
@@ -223,6 +224,7 @@ namespace V_Max_Tool
         };
 
         private static bool[] weakTable = new bool[256];
+        private static byte[] nonWeak = new byte[0];
 
         void Reset_to_Defaults(bool clear_batch_list = true)
         {
@@ -1095,6 +1097,10 @@ namespace V_Max_Tool
         void Build_WeakTable()
         {
             foreach (byte w in weakBytes) weakTable[w] = true;
+            List<byte> list = new List<byte>();
+            for (int i = 0; i < 255; i++) if (!weakBytes.Contains((byte)i)) list.Add((byte)i);
+            list.Sort();
+            nonWeak = list.ToArray();
         }
     }
 }

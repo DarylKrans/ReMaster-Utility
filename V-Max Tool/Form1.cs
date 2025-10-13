@@ -136,7 +136,16 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            //BinToByte_Table($@"c:\test\weak.bin", $@"c:\test\weak.txt", "weakBytes", 17);
+            List<byte[]> loader = new List<byte[]>();
+            for (int i = 0; i < 7; i++)
+            {
+                loader.Add(File.ReadAllBytes($@"c:\test\rltest\v2l_s{i}"));
+            }
+
+            //byte[] l = Encode_VM_Loader(loader.ToArray());
+            //File.WriteAllBytes($@"c:\test\loadertest.bin", l);
+            
+            //BinToByte_Table($@"c:\test\ldrbts.bin", $@"c:\test\allowed.txt", "AllowedGCR", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
             button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
