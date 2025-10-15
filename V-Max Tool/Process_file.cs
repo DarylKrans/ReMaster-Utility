@@ -1225,6 +1225,7 @@ namespace V_Max_Tool
                     Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.SG, 0, NDG.Track_Data[trk].Length);
                     Buffer.BlockCopy(NDA.Track_Data[trk], 0, Original.SA, 0, NDA.Track_Data[trk].Length);
                 }
+
                 try
                 {
                     bool version = NDS.cbm.Any(x => x == 2); // true = V-Max v2, false = V-Max v3/4
@@ -1242,23 +1243,6 @@ namespace V_Max_Tool
                     }
                 }
                 catch (Exception ex) { Invoke(new Action(() => Text = ex.Message)); }
-
-                //try
-                //{
-                //    bool version = NDS.cbm.Any(x => x == 2); // true = V-Max v2, false = V-Max v3/4
-                //    bool notver = !(NDS.cbm.Any(x => x == 2) || NDS.cbm.Any(x => x == 3)); // true = V-Max standard CBM sector variant
-                //    using (MemoryStream buffer = new MemoryStream())
-                //    using (BinaryWriter write = new BinaryWriter(buffer))
-                //    {
-                //        write.Write(FastArray.Init(5, 0xff));
-                //        write.Write(FastArray.Init(notver ? 512 : 255, 0x5a));
-                //        write.Write(new byte[] { (version || notver) ? (byte)0x55 : (byte)0x56, 0x5a, 0xff, 0x37 });
-                //        write.Write(notver ? Get_VmaxLoader_CBM(NDS.Track_Data[trk]) : Get_VmaxLoaderSegment(NDS.Track_Data[trk]));
-                //        write.Write(FastArray.Init((int)(density[1] - buffer.Length), 0x55));
-                //        Set_Dest_Arrays(buffer.ToArray(), trk);
-                //    }
-                //}
-                //catch (Exception ex) { Invoke(new Action(() => Text = ex.Message)); }
 
                 //else
                 //{

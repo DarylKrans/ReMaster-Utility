@@ -574,6 +574,7 @@ namespace V_Max_Tool
                 }
                 else sec_data.Add(parity);  // write decoded value to the sector. (again, the rolling parity is also the decoded byte)
             }
+            //for (int i = 0; i < sectors.Count; i++) File.WriteAllBytes($@"c:\test\rltest\v0l_s{i}", sectors[i].ToArray());
             return (sectors.ToArray(), Checksums.ToArray()); // return decoded sectors and if they passed parity check
         }
 
@@ -603,12 +604,66 @@ namespace V_Max_Tool
                     sec_data.AddRange(new byte[] { b1, b2 });
                 }
             }
+            //for (int i = 0; i < sectors.Count; i++)
+            //{
+            //    File.WriteAllBytes($@"c:\test\rltest\v3l_s{i}", sectors[i].ToArray());
+            //}
             return (sectors.ToArray(), checksums.ToArray()); // return decoded sectors and if they passed parity check
+        }
+
+        byte[] Encode_VM_Loader_CBM(byte[][] data)
+        {
+            if (data == null || data.Length == 0) return null;
+
+            byte[] allowed = new byte[]
+            {
+                0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x59, 0x5A, 0x5B, 0x5C,
+                0x5D, 0x5E, 0x64, 0x65, 0x66, 0x67, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x72, 0x73, 0x74, 0x75,
+                0x76, 0x77, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x93, 0x94, 0x95, 0x96, 0x97, 0x99, 0x9A, 0x9B,
+                0x9C, 0x9D, 0xA4, 0xA5, 0xA6, 0xA7, 0xA9, 0xAA, 0xAC, 0xAD, 0xAE, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7,
+                0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xD2, 0xD3, 0xD4, 0xD5,
+                0xD7, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xE4, 0xE5, 0xE6, 0xE7, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE,
+            };
+
+            List<byte> enc = new List<byte>();
+            byte parity = 0, lastGCR = 0, xor_value;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                for (int j = 0; j < data[i].Length; j++)
+                {
+                    xor_value = (byte)(data[i][j] ^ parity);
+                    byte[] e = EncodeGCR(xor_value, allowed, lastGCR);
+                    enc.AddRange(e);
+                    parity ^= xor_value;
+                    lastGCR = e[1];
+                }
+                enc.AddRange(EncodeGCR(parity, allowed, lastGCR));
+                parity = 0;
+            }
+            return enc.ToArray();
+
+            byte[] EncodeGCR(byte p, byte[] alwd, byte last)
+            {
+                for (int f = 0; f < alwd.Length; f++)
+                {
+                    byte GCR_a = alwd[f];
+                    if ((last & 0x01) == 0 && (GCR_a & 0x80) == 0) continue;
+                    for (int h = 0; h < alwd.Length; h++)
+                    {
+                        byte GCR_b = alwd[h];
+                        byte lowBits = (byte)(GCR_b & 0x03);
+                        if (lowBits != 0x01 && lowBits != 0x02) continue;
+                        if ((GCR_a ^ GCR_b) == p) return new byte[] { GCR_a, GCR_b };
+                    }
+                }
+                return new byte[2]; 
+            }
         }
 
         byte[] Encode_VM_Loader(byte[][] data)
         {
-            byte g0 = 0, g1 = 0, g2 = 0, b0, b1;
+            byte g0, g1, g2, b0, b1;
             List<byte> gcr = new List<byte>();
             for (int i = 0; i < data.Length; i++)
             {
@@ -639,51 +694,50 @@ namespace V_Max_Tool
                 if ((GCR_c & 0x38) == 0x38) GCR_c &= 0xef;
                 return new byte[] { GCR_a, GCR_b, GCR_c };
             }
+        }
 
-            byte[] EncodeParity(byte parity, byte lastGcr)
+        byte[] EncodeParity(byte parity, byte lastGcr)
+        {
+            HashSet<byte> allowed = new HashSet<byte>
             {
-                HashSet<byte> allowed = new HashSet<byte>
-                { 
-                    0x24, 0x25, 0x26, 0x27, 0x2A, 0x2B, 0x2C, 0x2D, 0x34, 0x35, 0x36, 0x37, 0x3A, 0x3B, 0x3C, 0x3D,
-                    0x49, 0x4A, 0x4B, 0x4D, 0x4E, 0x4F, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x59, 0x5A, 0x5B, 0x5C,
-                    0x5D, 0x5E, 0x64, 0x65, 0x66, 0x67, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x72, 0x73, 0x74,
-                    0x75, 0x76, 0x77, 0x79, 0x7A, 0x7B, 0x92, 0x93, 0x95, 0x96, 0x99, 0x9A, 0x9B, 0x9D, 0x9E, 0xA4,
-                    0xA5, 0xA6, 0xA7, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7,
-                    0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6,
-                    0xD7, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xE4, 0xE5, 0xE6, 0xE7, 0xEA, 0xEB, 0xEC, 0xED, 0xEE,
-                    0xF2, 0xF3, 0xF5, 0xF6,
-                };
+                0x24, 0x25, 0x26, 0x27, 0x2A, 0x2B, 0x2C, 0x2D, 0x34, 0x35, 0x36, 0x37, 0x3A, 0x3B, 0x3C, 0x3D,
+                0x49, 0x4A, 0x4B, 0x4D, 0x4E, 0x4F, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x59, 0x5A, 0x5B, 0x5C,
+                0x5D, 0x5E, 0x64, 0x65, 0x66, 0x67, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x72, 0x73, 0x74,
+                0x75, 0x76, 0x77, 0x79, 0x7A, 0x7B, 0x92, 0x93, 0x95, 0x96, 0x99, 0x9A, 0x9B, 0x9D, 0x9E, 0xA4,
+                0xA5, 0xA6, 0xA7, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7,
+                0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6,
+                0xD7, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xE4, 0xE5, 0xE6, 0xE7, 0xEA, 0xEB, 0xEC, 0xED, 0xEE,
+                0xF2, 0xF3, 0xF5, 0xF6,
+            };
 
-                // Rule 1 & 2: determine MSB of a
-                // if last encoded GCR byte ends in 0, first parity byte must start with 1; GCR ends in 1, parity must start with 0
-                bool lastGcrLsb = (lastGcr & 0x01) != 0;
-                Func<byte, bool> aConstraint = lastGcrLsb
-                    ? (Func<byte, bool>)(a => (a & 0x80) == 0)  // MSB == 0
-                    : (a => (a & 0x80) != 0);                   // MSB == 1
+            // if last encoded GCR byte ends in 0, first parity byte must start with 1; GCR ends in 1, parity must start with 0
+            bool lastGcrLsb = (lastGcr & 0x01) != 0;
+            Func<byte, bool> aConstraint = lastGcrLsb
+                ? (Func<byte, bool>)(a => (a & 0x80) == 0)  // MSB == 0
+                : (a => (a & 0x80) != 0);                   // MSB == 1
 
-                // b must end in 01 or 10
-                Func<byte, bool> bEndConstraint = b =>
+            // b must end in 01 or 10
+            Func<byte, bool> bEndConstraint = b =>
+            {
+                int last2 = b & 0x03;
+                return last2 == 0x01 || last2 == 0x02;
+            };
+
+            foreach (var GCR_a in allowed)
+            {
+                // Check a start bit
+                if (!aConstraint(GCR_a) || GCR_a == parity) continue;
+                bool aLsb = (GCR_a & 0x01) != 0;
+                Func<byte, bool> bConstraint = aLsb ? (Func<byte, bool>)(b => (b & 0x80) == 0) : (b => (b & 0x80) != 0);
+                byte GCR_b = (byte)(GCR_a ^ parity);
+
+                // Return only if both bytes are GCR compliant and (GCR_a ^ GCR_b) = parity
+                if (GCR_b != GCR_a && GCR_b != parity && allowed.Contains(GCR_b) && bConstraint(GCR_b) && bEndConstraint(GCR_b))
                 {
-                    int last2 = b & 0x03;
-                    return last2 == 0x01 || last2 == 0x02;
-                };
-
-                foreach (var GCR_a in allowed)
-                {
-                    // Check a start bit
-                    if (!aConstraint(GCR_a) || GCR_a == parity) continue;
-                    // Rule 3 & 4: determine MSB of b based on LSB of a
-                    bool aLsb = (GCR_a & 0x01) != 0;
-                    Func<byte, bool> bConstraint = aLsb ? (Func<byte, bool>)(b => (b & 0x80) == 0) : (b => (b & 0x80) != 0);
-                    byte GCR_b = (byte)(GCR_a ^ parity);
-                    // Return only if both bytes are GCR compliant and (GCR_a ^ GCR_b) = parity
-                    if (GCR_b != GCR_a && GCR_b != parity && allowed.Contains(GCR_b) && bConstraint(GCR_b) && bEndConstraint(GCR_b))
-                    {
-                        return new byte[] { GCR_a, GCR_b };
-                    }
+                    return new byte[] { GCR_a, GCR_b };
                 }
-                return Array.Empty<byte>();
             }
+            return new byte[2]; // Array.Empty<byte>();
         }
     }
 }
