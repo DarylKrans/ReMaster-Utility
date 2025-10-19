@@ -604,10 +604,7 @@ namespace V_Max_Tool
                     sec_data.AddRange(new byte[] { b1, b2 });
                 }
             }
-            //for (int i = 0; i < sectors.Count; i++)
-            //{
-            //    File.WriteAllBytes($@"c:\test\rltest\v3l_s{i}", sectors[i].ToArray());
-            //}
+            //for (int i = 0; i < sectors.Count; i++) File.WriteAllBytes($@"c:\test\rltest\v3l_s{i}", sectors[i].ToArray());
             return (sectors.ToArray(), checksums.ToArray()); // return decoded sectors and if they passed parity check
         }
 
@@ -615,14 +612,14 @@ namespace V_Max_Tool
         {
             if (data == null || data.Length == 0) return null;
 
-            byte[] allowed = new byte[]
+            byte[] allowedGCR = new byte[]
             {
-                0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x59, 0x5A, 0x5B, 0x5C,
-                0x5D, 0x5E, 0x64, 0x65, 0x66, 0x67, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x72, 0x73, 0x74, 0x75,
-                0x76, 0x77, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x93, 0x94, 0x95, 0x96, 0x97, 0x99, 0x9A, 0x9B,
-                0x9C, 0x9D, 0xA4, 0xA5, 0xA6, 0xA7, 0xA9, 0xAA, 0xAC, 0xAD, 0xAE, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7,
-                0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xD2, 0xD3, 0xD4, 0xD5,
-                0xD7, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xE4, 0xE5, 0xE6, 0xE7, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE,
+                0xEE, 0xED, 0xEC, 0xEB, 0xEA, 0xE9, 0xE7, 0xE6, 0xE5, 0xE4, 0xDD, 0xDC, 0xDB, 0xDA, 0xD9, 0xD7,
+                0xD5, 0xD4, 0xD3, 0xD2, 0xCE, 0xCD, 0xCC, 0xCB, 0xCA, 0xC9, 0xBE, 0xBD, 0xBC, 0xBB, 0xBA, 0xB9,
+                0xB7, 0xB6, 0xB5, 0xB4, 0xB3, 0xAE, 0xAD, 0xAC, 0xAA, 0xA9, 0xA7, 0xA6, 0xA5, 0xA4, 0x9D, 0x9C,
+                0x9B, 0x9A, 0x99, 0x97, 0x96, 0x95, 0x94, 0x93, 0x7E, 0x7D, 0x7C, 0x7B, 0x7A, 0x79, 0x77, 0x76,
+                0x75, 0x74, 0x73, 0x72, 0x6E, 0x6D, 0x6C, 0x6B, 0x6A, 0x69, 0x67, 0x66, 0x65, 0x64, 0x5E, 0x5D,
+                0x5C, 0x5B, 0x5A, 0x59, 0x57, 0x56, 0x55, 0x54, 0x53, 0x52, 0x4E, 0x4D, 0x4C, 0x4B, 0x4A, 0x49,
             };
 
             List<byte> enc = new List<byte>();
@@ -633,12 +630,12 @@ namespace V_Max_Tool
                 for (int j = 0; j < data[i].Length; j++)
                 {
                     xor_value = (byte)(data[i][j] ^ parity);
-                    byte[] e = EncodeGCR(xor_value, allowed, lastGCR);
+                    byte[] e = EncodeGCR(xor_value, allowedGCR, lastGCR);
                     enc.AddRange(e);
                     parity ^= xor_value;
                     lastGCR = e[1];
                 }
-                enc.AddRange(EncodeGCR(parity, allowed, lastGCR));
+                enc.AddRange(EncodeGCR(parity, allowedGCR, lastGCR));
                 parity = 0;
             }
             return enc.ToArray();
@@ -653,11 +650,12 @@ namespace V_Max_Tool
                     {
                         byte GCR_b = alwd[h];
                         byte lowBits = (byte)(GCR_b & 0x03);
+                        if ((GCR_a & 0x01) == 0 && (GCR_b & 0x80) == 0) continue;
                         if (lowBits != 0x01 && lowBits != 0x02) continue;
                         if ((GCR_a ^ GCR_b) == p) return new byte[] { GCR_a, GCR_b };
                     }
                 }
-                return new byte[2]; 
+                return new byte[2];
             }
         }
 
@@ -698,7 +696,7 @@ namespace V_Max_Tool
 
         byte[] EncodeParity(byte parity, byte lastGcr)
         {
-            HashSet<byte> allowed = new HashSet<byte>
+            HashSet<byte> allowedGCR = new HashSet<byte>
             {
                 0x24, 0x25, 0x26, 0x27, 0x2A, 0x2B, 0x2C, 0x2D, 0x34, 0x35, 0x36, 0x37, 0x3A, 0x3B, 0x3C, 0x3D,
                 0x49, 0x4A, 0x4B, 0x4D, 0x4E, 0x4F, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x59, 0x5A, 0x5B, 0x5C,
@@ -723,7 +721,7 @@ namespace V_Max_Tool
                 return last2 == 0x01 || last2 == 0x02;
             };
 
-            foreach (var GCR_a in allowed)
+            foreach (var GCR_a in allowedGCR)
             {
                 // Check a start bit
                 if (!aConstraint(GCR_a) || GCR_a == parity) continue;
@@ -732,7 +730,7 @@ namespace V_Max_Tool
                 byte GCR_b = (byte)(GCR_a ^ parity);
 
                 // Return only if both bytes are GCR compliant and (GCR_a ^ GCR_b) = parity
-                if (GCR_b != GCR_a && GCR_b != parity && allowed.Contains(GCR_b) && bConstraint(GCR_b) && bEndConstraint(GCR_b))
+                if (GCR_b != GCR_a && GCR_b != parity && allowedGCR.Contains(GCR_b) && bConstraint(GCR_b) && bEndConstraint(GCR_b))
                 {
                     return new byte[] { GCR_a, GCR_b };
                 }

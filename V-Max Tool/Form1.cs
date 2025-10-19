@@ -136,26 +136,32 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
+            //Stopwatch sw = new Stopwatch();
+            //sw.Start();
             //List<byte[]> loader = new List<byte[]>();
             //for (int i = 0; i < 4; i++)
             //{
             //    loader.Add(File.ReadAllBytes($@"c:\test\rltest\v0l_s{i}"));
             //}
             //
+            ////byte[] l = Encode_VM_Loader(loader.ToArray());
             //byte[] l = Encode_VM_Loader_CBM(loader.ToArray());
+            //sw.Stop();
+            //Text = $"{sw.Elapsed.TotalMilliseconds}";
+            //
             //File.WriteAllBytes($@"c:\test\loadertestCBM.bin", l);
 
-            //Text = $"{Hex_Val(new byte[] { (byte)(0x5c ^ 0x64), (byte)(0x45 ^ 0x7d) })}";
 
             //byte[] l = File.ReadAllBytes($@"c:\test\v0ldr.bin");
             //List<byte> u = new List<byte>();
             //foreach (byte b in l) if (!u.Contains(b)) u.Add(b);
             //u.Sort();
+            //u.Reverse();
             //File.WriteAllBytes($@"c:\test\uniquev0.bin", u.ToArray());
-            //
+            
             //Text = $"{Hex_Val(new byte[] { (byte)(0xee ^ 0x52)  })}";
             
-            //BinToByte_Table($@"c:\test\uniquev0.bin", $@"c:\test\v0allowed.txt", "V0AllowedGCR", 16);
+            BinToByte_Table($@"c:\test\uniquev0.bin", $@"c:\test\v0allowed.txt", "V0AllowedGCR", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
             button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
