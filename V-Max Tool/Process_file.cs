@@ -311,7 +311,7 @@ namespace V_Max_Tool
             {
                 Invoke(new Action(() => V2_swap_headers.Visible = true));
             }
-            else Invoke(new Action(()=> V2_swap_headers.Visible = false));
+            else Invoke(new Action(() => V2_swap_headers.Visible = false));
 
             /// -- Checks for false positive of RapidLok Key track on non-RapidLok images
             if (NDS.cbm.Any(x => x == 7) && !NDS.cbm.Any(x => x == 6))
@@ -1807,7 +1807,7 @@ namespace V_Max_Tool
                     string decoder = "V-Max! Loader";
                     jump_to[(int)trk] = db_Text.Length;
                     if (tr) db_Text.Append($"\n\nTrack ({track}) Format: {secF[NDS.cbm[t]]}, Length ({tlen}) bytes,\nDecoder: {decoder}\n\n");
-            
+
                     for (int i = 0; i < sectors.Length; i++)
                     {
                         if (!se && !VS_dat.Checked) db_Text.Append(Append_Strings(sectors[i], dhex));

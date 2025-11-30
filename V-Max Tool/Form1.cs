@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -19,7 +18,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2g1 Test Build 11272025";
+        private static readonly string ver = " v1.2h Test Build 11302025";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -159,9 +158,9 @@ namespace V_Max_Tool
             //u.Sort();
             //u.Reverse();
             //File.WriteAllBytes($@"c:\test\uniquev0.bin", u.ToArray());
-            
+
             //Text = $"{Hex_Val(new byte[] { (byte)(0xee ^ 0x52)  })}";
-            
+
             //BinToByte_Table($@"c:\test\uniquev0.bin", $@"c:\test\v0allowed.txt", "V0AllowedGCR", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
@@ -546,7 +545,7 @@ namespace V_Max_Tool
                     {
                         //int[] norep = new int[] { 2, 3, 6 };
                         //int[] norep = new int[] { 2, 3 };
-                        int[] norep = new int[] {  };
+                        int[] norep = new int[] { };
                         bool norepair = NDS.cbm.Any(x => norep.Contains(x));
                         List<string> list = new List<string>(ErrorList);
                         var s = Sort_Errors(list);
@@ -635,7 +634,7 @@ namespace V_Max_Tool
                 {
                     if (V3_Custom.Checked)
                     {
-                        V3_Auto_Adj.Checked = v3aa =false;
+                        V3_Auto_Adj.Checked = v3aa = false;
                         V3_hlen.Enabled = true;
                     }
                     else V3_hlen.Enabled = false;
@@ -1229,8 +1228,9 @@ namespace V_Max_Tool
         {
             if (!busy && !batch && CBM_Fix.Checked)
             {
-                ErrorList = new ConcurrentBag<string>();
-                Repair_CBM_Checksums();
+                Fix_Errors();
+                //ErrorList = new ConcurrentBag<string>();
+                //Repair_CBM_Checksums();
                 CBM_Fix.Checked = false;
             }
         }

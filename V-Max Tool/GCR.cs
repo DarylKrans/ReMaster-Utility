@@ -578,7 +578,7 @@ namespace V_Max_Tool
             return (sectors.ToArray(), Checksums.ToArray()); // return decoded sectors and if they passed parity check
         }
 
-        
+
         byte[] Encode_VM_Loader_CBM(byte[][] data)
         {
             if (data == null || data.Length == 0) return null;

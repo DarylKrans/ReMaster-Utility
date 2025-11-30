@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace V_Max_Tool
 {
@@ -61,7 +59,7 @@ namespace V_Max_Tool
             //if (startAddress >= memory.Length || startAddress >= endAddress) return new string[0];
             if (startAddress >= memory.Length || startAddress >= endAddress) return new StringBuilder();
             int offset = 0;
-            
+
             //try { offset = HexStringToDecimal(textBox3.Text); } catch { offset = 0; }
             string[] abs = new string[] { "BNE", "BEQ", "BMI", "BPL", "BCC", "BCS", "BVC", "BVS", };
             Dictionary<byte, Opcode> Opcodes = new Dictionary<byte, Opcode>

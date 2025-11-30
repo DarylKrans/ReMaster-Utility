@@ -203,7 +203,7 @@ namespace V_Max_Tool
                 if (t_dens - (int)buffer.Position > 0) write.Write(FastArray.Init(t_dens - (int)buffer.Position, 0x55));
                 return (buffer.ToArray(), 0, (int)buffer.Length, sectors);
             }
-        
+
             byte[] Build_Header(byte[] ID, int len)
             {
                 var secn = FastArray.Init(len << 1, ID[0]);

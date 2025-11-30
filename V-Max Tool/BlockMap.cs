@@ -144,16 +144,24 @@ namespace V_Max_Tool
                         {
                             bool valid = j < Available_Sectors[trk];
                             (_, int errorCode, _) = GetSectorWithErrorCode(null, j, true, null, tk, start);
-                            bool error = errorCode > 1;
-                            bool available = BlockAllocStatus(bam, trk, j);
-                            usedsec = trk > 34 || !valid ? "* outside BAM range" : !available ? "Block Allocated (Used)" : "Block Available (Free)";
-                            usedsec += (error ? $"\nError {c1541error[errorCode]}" : string.Empty);
-                            Color color = Color.FromArgb(valid && trk < 35 ? 255 : 130, error ? 200 : 30, error ? 30 : !available ? 200 : 75, 30);
-                            blockMap[index].Color = color;
-                            //blockMap[index].Tip = $"Track {trk + 1} Sector {j + 1}" + (usedsec != "" ? $"\n{usedsec}" : "")
-                            //    + (errorCode == 1 ? $"\n{ErrorCodes[errorCode]}" : "");
-                            blockMap[index].Tip = $"Track {trk + 1} Sector {j}" + (usedsec != "" ? $"\n{usedsec}" : "")
-                                + (errorCode == 1 ? $"\n{ErrorCodes[errorCode]}" : "");
+                            //if (trk == 17 && NDS.cbm.Any(x => x == 5) && j > 12)
+                            if (trk == 17 && NDS.cbm.Any(x => x == 5) && errorCode != 1)
+                            {
+                                blockMap[index].Color = Color.FromArgb(100, 200, 200);
+                                blockMap[index].Tip = "Vorpal Loader";
+                            }
+                            else
+                            {
+
+                                bool error = errorCode > 1;
+                                bool available = BlockAllocStatus(bam, trk, j);
+                                usedsec = trk > 34 || !valid ? "* outside BAM range" : !available ? "Block Allocated (Used)" : "Block Available (Free)";
+                                usedsec += (error ? $"\nError {c1541error[errorCode]}" : string.Empty);
+                                Color color = Color.FromArgb(valid && trk < 35 ? 255 : 130, error ? 200 : 30, error ? 30 : !available ? 200 : 75, 30);
+                                blockMap[index].Color = color;
+                                blockMap[index].Tip = $"Track {trk + 1} Sector {j}" + (usedsec != "" ? $"\n{usedsec}" : "")
+                                    + (errorCode == 1 ? $"\n{ErrorCodes[errorCode]}" : "");
+                            }
                         }
                         else
                         {

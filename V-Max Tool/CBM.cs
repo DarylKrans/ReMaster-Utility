@@ -1496,7 +1496,10 @@ namespace V_Max_Tool
                     {
                         var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
                         int tk = tracks > 42 ? (track >> 1) + 1 : track + 1;
-                        int avail = NDS.sectors[track] > Available_Sectors[tk] ? NDS.sectors[track] : Available_Sectors[tk];
+                        //int avail = NDS.sectors[track] > Available_Sectors[tk] ? NDS.sectors[track] : Available_Sectors[tk];
+                        int avail = NDS.sectors[track] != Available_Sectors[tk]
+                            ? Math.Max(NDS.sectors[track], Available_Sectors[tk]) : Available_Sectors[tk];
+                        if (NDS.cbm.Any(x => x == 5) && tk == 18) avail = 13;
                         for (int j = 0; j < avail; j++)
                         {
                             (found, pos, _, _, head_cksm) = Find_Sector(source, j, 0, true);
@@ -1527,27 +1530,6 @@ namespace V_Max_Tool
                         Fix_Errors();
                     }
                 }
-                //if (fix)
-                //{
-                //    ErrorList = new ConcurrentBag<string>();
-                //    ScanForErrors();
-                //    string t;
-                //    if (ErrorList.Count < 1)
-                //    {
-                //        s = "Sector checksums successfully repaired!";
-                //        t = "Success!!";
-                //    }
-                //    else
-                //    {
-                //        s = "Image repair failed!";
-                //        t = "Failed!";
-                //    }
-                //    using (Message_Center center = new Message_Center(this)) // center message box
-                //    {
-                //        DialogResult result = MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                //    }
-                //    if (errors > ErrorList.Count) Set_BlockMap();
-                //}
             }
         }
     }
