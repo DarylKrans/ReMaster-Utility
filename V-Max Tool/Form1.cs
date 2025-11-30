@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -18,7 +19,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2f Test Build 10122025";
+        private static readonly string ver = " v1.2g1 Test Build 11272025";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -161,7 +162,7 @@ namespace V_Max_Tool
             
             //Text = $"{Hex_Val(new byte[] { (byte)(0xee ^ 0x52)  })}";
             
-            BinToByte_Table($@"c:\test\uniquev0.bin", $@"c:\test\v0allowed.txt", "V0AllowedGCR", 16);
+            //BinToByte_Table($@"c:\test\uniquev0.bin", $@"c:\test\v0allowed.txt", "V0AllowedGCR", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
             button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
@@ -204,7 +205,6 @@ namespace V_Max_Tool
             void ClearInfo()
             {
                 Source.Visible = Output.Visible = false;
-                f_load.Text = "Fix Loader";
                 Save_Disk.Visible = false;
                 sl.DataSource = null;
                 out_size.DataSource = null;
@@ -308,9 +308,11 @@ namespace V_Max_Tool
                                         short ts = BitConverter.ToInt16(temp, 0);
                                         byte[] tdata = new byte[ts];
                                         Buffer.BlockCopy(decomp, pos + 2, tdata, 0, ts);
+                                        //int r = FindLongestRun_General(tdata).Item1;
+                                        (int r, int ln) = FindLongestRun_General(tdata);
+                                        if (r > 0 && ln > 0) tdata = Rotate_Left(tdata, r + ln);
                                         NDG.s_len[i] = tdata.Length;
-                                        Buffer.BlockCopy(tdata, 0, NDS.Track_Data[i], 0, ts);
-                                        Buffer.BlockCopy(tdata, 0, NDS.Track_Data[i], ts, MAX_TRACK_SIZE - ts);
+                                        NDS.Track_Data[i] = FillArray(tdata, MAX_TRACK_SIZE);
                                     }
                                     catch { }
                                 }
@@ -581,27 +583,14 @@ namespace V_Max_Tool
             Export_File(end_track);
         }
 
-        private void F_load_CheckedChanged(object sender, EventArgs e)
-        {
-            int i = 100;
-            if (tracks > 0 && NDS.Track_Data.Length > 0)
-            {
-                i = Array.FindIndex(NDS.cbm, s => s == 4);
-                if (i < 100 && i > -1)
-                {
-                    Fix_Loader_Option(!busy, i);
-                }
-            }
-        }
-
         private void V2_Custom_CheckedChanged(object sender, EventArgs e)
         {
             if (!busy)
             {
                 RunBusy(() =>
                 {
-                    V2_hlen.Enabled = V2_Custom.Checked;
-                    if (V2_Custom.Checked) V2_Auto_Adj.Checked = false;
+                    V2_hlen.Enabled = v2cc = V2_Custom.Checked;
+                    if (V2_Custom.Checked) V2_Auto_Adj.Checked = v2aa = false;
                 });
                 V2_Adv_Opts();
             }
@@ -616,7 +605,7 @@ namespace V_Max_Tool
                     //if (V2_Auto_Adj.Checked) V2_Custom.Checked = V2_hlen.Enabled = V2_Add_Sync.Checked = false;
                     if (V2_Auto_Adj.Checked)
                     {
-                        V2_Custom.Checked = V2_hlen.Enabled = false;
+                        V2_Custom.Checked = v2cc = V2_hlen.Enabled = false;
                         V2_Add_Sync.Checked = true;
                     }
                     if (!V2_Auto_Adj.Checked) { v2aa = V2_Add_Sync.Checked = false; }
@@ -631,7 +620,7 @@ namespace V_Max_Tool
             {
                 RunBusy(() =>
                 {
-                    if (V3_Auto_Adj.Checked) V3_Custom.Checked = V3_hlen.Enabled = false;
+                    if (V3_Auto_Adj.Checked) V3_Custom.Checked = v3cc = V3_hlen.Enabled = false;
                     if (!V3_Auto_Adj.Checked) { v3aa = false; }
                 });
                 V3_Auto_Adjust();
@@ -646,7 +635,7 @@ namespace V_Max_Tool
                 {
                     if (V3_Custom.Checked)
                     {
-                        V3_Auto_Adj.Checked = false;
+                        V3_Auto_Adj.Checked = v3aa =false;
                         V3_hlen.Enabled = true;
                     }
                     else V3_hlen.Enabled = false;
@@ -879,7 +868,7 @@ namespace V_Max_Tool
 
         private void V2_Swap_Headers_CheckedChanged(object sender, EventArgs e)
         {
-            V2_swap.Enabled = V2_swap_headers.Checked;
+            if (!busy) V2_Adv_Opts();
         }
 
         private void V2_swap_SelectedIndexChanged(object sender, EventArgs e)

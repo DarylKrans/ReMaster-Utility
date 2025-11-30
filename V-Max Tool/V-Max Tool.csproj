@@ -86,6 +86,9 @@
     <Compile Include="Directory_Editor.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Disassembler.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Function_Testing.cs">
       <SubType>Form</SubType>
     </Compile>

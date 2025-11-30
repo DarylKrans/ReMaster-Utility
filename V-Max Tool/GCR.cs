@@ -263,7 +263,7 @@ namespace V_Max_Tool
 
         (byte[] sector, bool checksum, bool version) Decode_RL_Data(byte[] sector)
         {
-            if (sector == null) return (new byte[0], false, false);
+            if (sector == null || sector.Length < 1) return (new byte[0], false, false);
             int pos = sector[0] == 0x6b ? 1 : 0;
             bool rl_v2_7 = (sector.Length == 583 && sector[195 + pos] == 0xa4);
             byte b1, b2, b3;
@@ -578,36 +578,7 @@ namespace V_Max_Tool
             return (sectors.ToArray(), Checksums.ToArray()); // return decoded sectors and if they passed parity check
         }
 
-        (byte[][] sectors, bool[] checksums) Decode_VM_Loader(byte[] data)    // Decode V-Max v2+ (custom sectors) Loader track
-        {
-            if (data == null || data.Length < 2) return (new byte[0][], new bool[0]);
-            int pos = 0, bpos = 0;
-            byte b0, b1, b2, parity = 0;
-            List<bool> checksums = new List<bool>();
-            List<byte> sec_data = new List<byte>();
-            List<byte[]> sectors = new List<byte[]>();
-            while (pos < data.Length)
-            {
-                if (bpos++ == 128) // 2 bytes decoded per 3 bytes GCR processed, counter of 128 = 256 decoded bytes
-                {
-                    sectors.Add(sec_data.ToArray()); // add completed decode of 256 byte sector to list of 'sectors'
-                    sec_data = new List<byte>();     // clear list for new sector
-                    if (pos + 1 < data.Length) checksums.Add((parity ^ (byte)(data[pos++] ^ data[pos++])) == 0); // verify sector parity
-                    bpos = 0; parity = 0; // clear parity (which should = 0 anyway) and reset bpos (tracks length of newly decoded sector)
-                }
-                else
-                {
-                    if (pos + 2 >= data.Length) break; // make sure we have at least 3 more bytes of data to decode
-                    b0 = (byte)(data[pos++] & 0xB6);
-                    parity ^= b1 = (byte)((data[pos++] & 0xDB) ^ b0);
-                    parity ^= b2 = (byte)((data[pos++] & 0x6D) ^ b0);
-                    sec_data.AddRange(new byte[] { b1, b2 });
-                }
-            }
-            //for (int i = 0; i < sectors.Count; i++) File.WriteAllBytes($@"c:\test\rltest\v3l_s{i}", sectors[i].ToArray());
-            return (sectors.ToArray(), checksums.ToArray()); // return decoded sectors and if they passed parity check
-        }
-
+        
         byte[] Encode_VM_Loader_CBM(byte[][] data)
         {
             if (data == null || data.Length == 0) return null;
@@ -658,6 +629,37 @@ namespace V_Max_Tool
                 return new byte[2];
             }
         }
+
+        (byte[][] sectors, bool[] checksums) Decode_VM_Loader(byte[] data)    // Decode V-Max v2+ (custom sectors) Loader track
+        {
+            if (data == null || data.Length < 2) return (new byte[0][], new bool[0]);
+            int pos = 0, bpos = 0;
+            byte b0, b1, b2, parity = 0;
+            List<bool> checksums = new List<bool>();
+            List<byte> sec_data = new List<byte>();
+            List<byte[]> sectors = new List<byte[]>();
+            while (pos < data.Length)
+            {
+                if (bpos++ == 128) // 2 bytes decoded per 3 bytes GCR processed, counter of 128 = 256 decoded bytes
+                {
+                    sectors.Add(sec_data.ToArray()); // add completed decode of 256 byte sector to list of 'sectors'
+                    sec_data = new List<byte>();     // clear list for new sector
+                    if (pos + 1 < data.Length) checksums.Add((parity ^ (byte)(data[pos++] ^ data[pos++])) == 0); // verify sector parity
+                    bpos = 0; parity = 0; // clear parity (which should = 0 anyway) and reset bpos (tracks length of newly decoded sector)
+                }
+                else
+                {
+                    if (pos + 2 >= data.Length) break; // make sure we have at least 3 more bytes of data to decode
+                    b0 = (byte)(data[pos++] & 0xB6);
+                    parity ^= b1 = (byte)((data[pos++] & 0xDB) ^ b0);
+                    parity ^= b2 = (byte)((data[pos++] & 0x6D) ^ b0);
+                    sec_data.AddRange(new byte[] { b1, b2 });
+                }
+            }
+            //for (int i = 0; i < sectors.Count; i++) File.WriteAllBytes($@"c:\test\rltest\v3l_s{i}", sectors[i].ToArray());
+            return (sectors.ToArray(), checksums.ToArray()); // return decoded sectors and if they passed parity check
+        }
+
 
         byte[] Encode_VM_Loader(byte[][] data)
         {
@@ -714,13 +716,6 @@ namespace V_Max_Tool
                 ? (Func<byte, bool>)(a => (a & 0x80) == 0)  // MSB == 0
                 : (a => (a & 0x80) != 0);                   // MSB == 1
 
-            // b must end in 01 or 10
-            Func<byte, bool> bEndConstraint = b =>
-            {
-                int last2 = b & 0x03;
-                return last2 == 0x01 || last2 == 0x02;
-            };
-
             foreach (var GCR_a in allowedGCR)
             {
                 // Check a start bit
@@ -730,12 +725,21 @@ namespace V_Max_Tool
                 byte GCR_b = (byte)(GCR_a ^ parity);
 
                 // Return only if both bytes are GCR compliant and (GCR_a ^ GCR_b) = parity
-                if (GCR_b != GCR_a && GCR_b != parity && allowedGCR.Contains(GCR_b) && bConstraint(GCR_b) && bEndConstraint(GCR_b))
+                //----------------- Line commented out because it prevented Loaders with $64/46 headers from encoding ----------------
+                //if (GCR_b != GCR_a && GCR_b != parity && allowedGCR.Contains(GCR_b) && bConstraint(GCR_b) && bEndConstraint(GCR_b))
+                //--------------------------------------------------------------------------------------------------------------------
+                if (allowedGCR.Contains(GCR_b) && bConstraint(GCR_b) && bEndConstraint(GCR_b))
                 {
                     return new byte[] { GCR_a, GCR_b };
                 }
             }
             return new byte[2]; // Array.Empty<byte>();
+
+            bool bEndConstraint(byte b)
+            {
+                int last2 = b & 0x03;
+                return last2 == 0x01 || last2 == 0x02;
+            }
         }
     }
 }

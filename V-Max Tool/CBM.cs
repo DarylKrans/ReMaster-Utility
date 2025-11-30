@@ -1512,7 +1512,7 @@ namespace V_Max_Tool
 
             void Attempt_Repair()
             {
-                bool fix = false;
+                //bool fix = false;
                 List<string> list = new List<string>(ErrorList);
                 var s = Sort_Errors(list);
                 s += "\n Would you like to (attempt) repairing?";
@@ -1523,7 +1523,7 @@ namespace V_Max_Tool
                     DialogResult result = MessageBox.Show(s, t, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     if (result == DialogResult.Yes)
                     {
-                        fix = true;
+                        //fix = true;
                         Fix_Errors();
                     }
                 }

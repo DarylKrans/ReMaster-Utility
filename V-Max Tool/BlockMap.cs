@@ -86,7 +86,8 @@ namespace V_Max_Tool
                 BlkMap_sector[i].Location = new Point(left - (i < 9 ? 5 : 0) + (spacing * i), top);
                 BlkMap_sector[i].Size = new Size(26, 27);
                 BlkMap_sector[i].TabIndex = 4;
-                BlkMap_sector[i].Text = $"{spc}{i + 1}";
+                //BlkMap_sector[i].Text = $"{spc}{i + 1}";
+                BlkMap_sector[i].Text = $"{spc}{i}";
                 BlkMap_sector[i].BringToFront();
                 Blk_pan.Width = spacing + (spacing * i) + 2;
             }
@@ -149,7 +150,9 @@ namespace V_Max_Tool
                             usedsec += (error ? $"\nError {c1541error[errorCode]}" : string.Empty);
                             Color color = Color.FromArgb(valid && trk < 35 ? 255 : 130, error ? 200 : 30, error ? 30 : !available ? 200 : 75, 30);
                             blockMap[index].Color = color;
-                            blockMap[index].Tip = $"Track {trk + 1} Sector {j + 1}" + (usedsec != "" ? $"\n{usedsec}" : "")
+                            //blockMap[index].Tip = $"Track {trk + 1} Sector {j + 1}" + (usedsec != "" ? $"\n{usedsec}" : "")
+                            //    + (errorCode == 1 ? $"\n{ErrorCodes[errorCode]}" : "");
+                            blockMap[index].Tip = $"Track {trk + 1} Sector {j}" + (usedsec != "" ? $"\n{usedsec}" : "")
                                 + (errorCode == 1 ? $"\n{ErrorCodes[errorCode]}" : "");
                         }
                         else

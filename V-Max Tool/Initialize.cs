@@ -231,7 +231,6 @@ namespace V_Max_Tool
             busy = true;
             Img_Q.SelectedIndex = 2;
             Set_ListBox_Items(true, true, clear_batch_list);
-            f_load.Visible = false;
             Tabs.Controls.Remove(Advanced_Opts);
             if (clear_batch_list)
             {
@@ -496,8 +495,8 @@ namespace V_Max_Tool
 
         void Set_Auto_Opts()
         {
-            if (Auto_Adjust) V3_Auto_Adj.Checked = V2_Auto_Adj.Checked = VPL_auto_adj.Checked = f_load.Checked = true;
-            else V3_Auto_Adj.Checked = V2_Auto_Adj.Checked = VPL_auto_adj.Checked = f_load.Checked = false;
+            if (Auto_Adjust) V3_Auto_Adj.Checked = V2_Auto_Adj.Checked = VPL_auto_adj.Checked = true;
+            else V3_Auto_Adj.Checked = V2_Auto_Adj.Checked = VPL_auto_adj.Checked = false;
             V2_Add_Sync.Checked = V2_Auto_Adj.Checked;
         }
 
@@ -634,7 +633,6 @@ namespace V_Max_Tool
             AllowDrop = true;
             DragEnter += new DragEventHandler(Drag_Enter);
             DragDrop += new DragEventHandler(Drag_Drop);
-            f_load.Visible = false;
             /// ------------------ Vorpal Config --------------
             Lead_In.Enabled = VPL_lead.Checked;
             Lead_In.Value = 50;
@@ -652,15 +650,13 @@ namespace V_Max_Tool
             /// ----------------- V-Max v2 Config -------------
             Tabs.Controls.Remove(Advanced_Opts);
             V2_hlen.Enabled = false;
-            v2exp.Text = v3exp.Text = string.Empty;
             v2adv.Text = v3adv.Text = $"\u2193        Advanced users ONLY!        \u2193";
             vm2_ver[0] = new string[] { "A5-A5", "A4-A5", "A5-A7", "A5-A6", "A9-AD", "AC-A9", "AD-AB", "A9-AE", "A5-AD", "AC-A5", "AD-A7", "A5-AE", "A5-A9",
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
             vm2_ver[1] = new string[vm2_ver[0].Length];
             Array.Copy(vm2_ver[0], 0, vm2_ver[1], 0, vm2_ver[0].Length);
             vm2_ver[1][6] = "A5-A3"; vm2_ver[1][10] = "A9-A3";
-            V2_swap.DataSource = new string[] { "64-4E (newer)", "64-46 (weak bits)", "4E-64 (alt)" };
-            V2_swap.Enabled = V2_swap_headers.Checked;
+            V2_swap_headers.Visible = false;
             string[] interleave_select = new string[] { "1", "2", "3", "4", "5", "6", "7 JiffyDos 1571", "8 Fastloader", "9", "10 Standard", "11", "12" };
             Sec_Interleave.DataSource = interleave_select; // new string[] { "Standard (10)", "JiffyDos 1571 (7)", "Custom (5)" };
             S_Interleave.DataSource = interleave_select; //new string[] { "Standard (10)", "JiffyDos 1571 (7)", "Custom (5)" };
@@ -703,16 +699,6 @@ namespace V_Max_Tool
             rl1_t18s9[1, 1] = new byte[] { 0x3c, 0xcd, 0x5a, 0xdd, 0x56 };
             RL_Fix.Visible = false;
             RL_success.Text = string.Empty;
-            vm_ldr_ptn[0] = new byte[] { 0xd2, 0x4b, 0xff, 0x64 };
-            vm_ldr_ptn[1] = new byte[] { 0x4d, 0x6d, 0x5b, 0xff };
-            vm_ldr_ptn[2] = new byte[] { 0x92, 0x49, 0x24, 0x92 };
-            vm_ldr_ptn[3] = new byte[] { 0x6b, 0xff, 0x65, 0x53 };
-            vm_ldr_ptn[4] = new byte[] { 0x93, 0xff, 0x69, 0x25 };
-            vm_ldr_ptn[5] = new byte[] { 0x33, 0x33, 0x33, 0x33 };
-            vm_ldr_ptn[6] = new byte[] { 0x52, 0x52, 0x52, 0x52 };
-            vm_ldr_ptn[7] = new byte[] { 0x5a, 0x5a, 0x5a, 0x5a };
-            vm_ldr_ptn[8] = new byte[] { 0x69, 0x69, 0x69, 0x69 };
-            vm_ldr_ptn[9] = new byte[] { 0x4b, 0x4b, 0x4b, 0x4b };
             RM_cyan.Visible = false;
             RM_cyan.Left = 8;
             Img_Q.DataSource = Img_Quality;
@@ -854,7 +840,6 @@ namespace V_Max_Tool
                 tips.SetToolTip(Adj_cbm, "Adjust standard tracks to fit a 300rpm rotation cycle\n" +
                     "Allows for writing images without slowing down the disk drive\n\n" +
                     "Option may not be available on certain Protection types that rely on the extra data");
-                tips.SetToolTip(f_load, "Attempt to (fix) a V-Max loader track\nif a V-Max image gets stuck on track 20, try this option");
                 tips.SetToolTip(Save_Disk, "Export ReMastered file as G64 or NIB");
                 tips.SetToolTip(Circle_View, "Show image of track data representation as it would be on a disk");
                 tips.SetToolTip(Flat_View, "Show image of track data representation in a linear view");

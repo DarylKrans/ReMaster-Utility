@@ -76,9 +76,6 @@ namespace V_Max_Tool
                     }
                 }
             }
-            bool e = busy;
-            RunBusy(() => f_load.Checked = V3_Auto_Adj.Checked);
-            busy = e;
             Clear_Out_Items();
             if (Adj_cbm.Checked && !V3_Auto_Adj.Checked) p = false;
             Process_Nib_Data(true, p, v, true); /// false flag instructs the routine NOT to process CBM tracks again -- p (true/false) process v-max v3 short tracks

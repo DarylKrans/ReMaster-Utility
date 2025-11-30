@@ -31,7 +31,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.f_load = new System.Windows.Forms.CheckBox();
             this.V2_Custom = new System.Windows.Forms.CheckBox();
             this.V2_hlen = new System.Windows.Forms.NumericUpDown();
             this.V2_Add_Sync = new System.Windows.Forms.CheckBox();
@@ -46,6 +45,7 @@
             this.Adj_cbm = new System.Windows.Forms.CheckBox();
             this.VBS_info = new System.Windows.Forms.Panel();
             this.RM_cyan = new System.Windows.Forms.CheckBox();
+            this.V2_swap_headers = new System.Windows.Forms.CheckBox();
             this.Cust_Density = new System.Windows.Forms.Label();
             this.VM_Ver = new System.Windows.Forms.Label();
             this.Reg_info = new System.Windows.Forms.Panel();
@@ -76,13 +76,8 @@
             this.BD_tracks = new System.Windows.Forms.NumericUpDown();
             this.Create_Blank = new System.Windows.Forms.Button();
             this.RL_Fix = new System.Windows.Forms.CheckBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.V2_swap_headers = new System.Windows.Forms.CheckBox();
-            this.V2_swap = new System.Windows.Forms.ComboBox();
             this.Re_Align = new System.Windows.Forms.CheckBox();
-            this.v2exp = new System.Windows.Forms.Label();
             this.v2adv = new System.Windows.Forms.Label();
-            this.v3exp = new System.Windows.Forms.Label();
             this.v3adv = new System.Windows.Forms.Label();
             this.V3_hlen = new System.Windows.Forms.NumericUpDown();
             this.V3_Auto_Adj = new System.Windows.Forms.CheckBox();
@@ -391,18 +386,6 @@
             this.label2.TabIndex = 2;
             this.label2.Text = "label2";
             // 
-            // f_load
-            // 
-            this.f_load.AutoSize = true;
-            this.f_load.Location = new System.Drawing.Point(4, 32);
-            this.f_load.Margin = new System.Windows.Forms.Padding(2);
-            this.f_load.Name = "f_load";
-            this.f_load.Size = new System.Drawing.Size(75, 17);
-            this.f_load.TabIndex = 12;
-            this.f_load.Text = "Fix Loader";
-            this.f_load.UseVisualStyleBackColor = true;
-            this.f_load.CheckedChanged += new System.EventHandler(this.F_load_CheckedChanged);
-            // 
             // V2_Custom
             // 
             this.V2_Custom.AutoSize = true;
@@ -574,9 +557,9 @@
             // 
             this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.VBS_info.Controls.Add(this.RM_cyan);
+            this.VBS_info.Controls.Add(this.V2_swap_headers);
             this.VBS_info.Controls.Add(this.Cust_Density);
             this.VBS_info.Controls.Add(this.VM_Ver);
-            this.VBS_info.Controls.Add(this.f_load);
             this.VBS_info.Location = new System.Drawing.Point(160, 32);
             this.VBS_info.Margin = new System.Windows.Forms.Padding(2);
             this.VBS_info.Name = "VBS_info";
@@ -594,6 +577,17 @@
             this.RM_cyan.Text = "Remove Protection";
             this.RM_cyan.UseVisualStyleBackColor = true;
             this.RM_cyan.CheckedChanged += new System.EventHandler(this.RM_cyan_CheckedChanged);
+            // 
+            // V2_swap_headers
+            // 
+            this.V2_swap_headers.AutoSize = true;
+            this.V2_swap_headers.Location = new System.Drawing.Point(5, 33);
+            this.V2_swap_headers.Name = "V2_swap_headers";
+            this.V2_swap_headers.Size = new System.Drawing.Size(91, 17);
+            this.V2_swap_headers.TabIndex = 14;
+            this.V2_swap_headers.Text = "Fix Weak Bits";
+            this.V2_swap_headers.UseVisualStyleBackColor = true;
+            this.V2_swap_headers.CheckedChanged += new System.EventHandler(this.V2_Swap_Headers_CheckedChanged);
             // 
             // Cust_Density
             // 
@@ -956,40 +950,6 @@
             this.RL_Fix.UseVisualStyleBackColor = true;
             this.RL_Fix.CheckedChanged += new System.EventHandler(this.RL_Fix_CheckedChanged);
             // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label13.Location = new System.Drawing.Point(224, 72);
-            this.label13.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(232, 13);
-            this.label13.TabIndex = 64;
-            this.label13.Text = "*64-46 may not work on some drives. Use 64-4E";
-            // 
-            // V2_swap_headers
-            // 
-            this.V2_swap_headers.AutoSize = true;
-            this.V2_swap_headers.Location = new System.Drawing.Point(220, 52);
-            this.V2_swap_headers.Margin = new System.Windows.Forms.Padding(2);
-            this.V2_swap_headers.Name = "V2_swap_headers";
-            this.V2_swap_headers.Size = new System.Drawing.Size(96, 17);
-            this.V2_swap_headers.TabIndex = 63;
-            this.V2_swap_headers.Text = "Swap Headers";
-            this.V2_swap_headers.UseVisualStyleBackColor = true;
-            this.V2_swap_headers.CheckedChanged += new System.EventHandler(this.V2_Swap_Headers_CheckedChanged);
-            // 
-            // V2_swap
-            // 
-            this.V2_swap.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.V2_swap.FormattingEnabled = true;
-            this.V2_swap.Location = new System.Drawing.Point(324, 50);
-            this.V2_swap.Margin = new System.Windows.Forms.Padding(2);
-            this.V2_swap.Name = "V2_swap";
-            this.V2_swap.Size = new System.Drawing.Size(116, 21);
-            this.V2_swap.TabIndex = 62;
-            this.V2_swap.SelectedIndexChanged += new System.EventHandler(this.V2_swap_SelectedIndexChanged);
-            // 
             // Re_Align
             // 
             this.Re_Align.AutoSize = true;
@@ -1002,17 +962,6 @@
             this.Re_Align.UseVisualStyleBackColor = true;
             this.Re_Align.CheckedChanged += new System.EventHandler(this.Re_Align_CheckedChanged);
             // 
-            // v2exp
-            // 
-            this.v2exp.AutoSize = true;
-            this.v2exp.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.v2exp.Location = new System.Drawing.Point(252, 6);
-            this.v2exp.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.v2exp.Name = "v2exp";
-            this.v2exp.Size = new System.Drawing.Size(67, 13);
-            this.v2exp.TabIndex = 35;
-            this.v2exp.Text = "Experimental";
-            // 
             // v2adv
             // 
             this.v2adv.AutoSize = true;
@@ -1022,17 +971,6 @@
             this.v2adv.Size = new System.Drawing.Size(121, 13);
             this.v2adv.TabIndex = 34;
             this.v2adv.Text = "Advanced Users ONLY!";
-            // 
-            // v3exp
-            // 
-            this.v3exp.AutoSize = true;
-            this.v3exp.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.v3exp.Location = new System.Drawing.Point(254, 7);
-            this.v3exp.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.v3exp.Name = "v3exp";
-            this.v3exp.Size = new System.Drawing.Size(67, 13);
-            this.v3exp.TabIndex = 39;
-            this.v3exp.Text = "Experimental";
             // 
             // v3adv
             // 
@@ -2330,16 +2268,12 @@
             // 
             // V2_Advanced
             // 
-            this.V2_Advanced.Controls.Add(this.label13);
             this.V2_Advanced.Controls.Add(this.V2_Auto_Adj);
-            this.V2_Advanced.Controls.Add(this.V2_swap_headers);
             this.V2_Advanced.Controls.Add(this.V2_Add_Sync);
-            this.V2_Advanced.Controls.Add(this.V2_swap);
             this.V2_Advanced.Controls.Add(this.V2_hlen);
             this.V2_Advanced.Controls.Add(this.V2_Custom);
             this.V2_Advanced.Controls.Add(this.Re_Align);
             this.V2_Advanced.Controls.Add(this.v2adv);
-            this.V2_Advanced.Controls.Add(this.v2exp);
             this.V2_Advanced.Location = new System.Drawing.Point(8, 103);
             this.V2_Advanced.Margin = new System.Windows.Forms.Padding(2);
             this.V2_Advanced.Name = "V2_Advanced";
@@ -2351,7 +2285,6 @@
             // V3_Advanced
             // 
             this.V3_Advanced.Controls.Add(this.V3_Auto_Adj);
-            this.V3_Advanced.Controls.Add(this.v3exp);
             this.V3_Advanced.Controls.Add(this.V3_Custom);
             this.V3_Advanced.Controls.Add(this.v3adv);
             this.V3_Advanced.Controls.Add(this.V3_hlen);
@@ -4015,7 +3948,6 @@
         #endregion
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.CheckBox f_load;
         private System.Windows.Forms.CheckBox V2_Custom;
         private System.Windows.Forms.NumericUpDown V2_hlen;
         private System.Windows.Forms.CheckBox V2_Add_Sync;
@@ -4027,8 +3959,6 @@
         private System.Windows.Forms.CheckBox V3_Auto_Adj;
         private System.Windows.Forms.CheckBox V3_Custom;
         private System.Windows.Forms.Label v2adv;
-        private System.Windows.Forms.Label v2exp;
-        private System.Windows.Forms.Label v3exp;
         private System.Windows.Forms.Label v3adv;
         private System.Windows.Forms.CheckBox Adj_cbm;
         private System.Windows.Forms.CheckBox Re_Align;
@@ -4130,9 +4060,6 @@
         private System.Windows.Forms.NumericUpDown BD_tracks;
         private System.Windows.Forms.TextBox BD_id;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.ComboBox V2_swap;
-        private System.Windows.Forms.CheckBox V2_swap_headers;
-        private System.Windows.Forms.Label label13;
         private System.Windows.Forms.CheckBox DB_core_override;
         private System.Windows.Forms.NumericUpDown DB_cores;
         private System.Windows.Forms.CheckBox RL_Fix;
@@ -4290,5 +4217,6 @@
         private System.Windows.Forms.ComboBox ProtDetectMethod;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox ParseLog;
+        private System.Windows.Forms.CheckBox V2_swap_headers;
     }
 }

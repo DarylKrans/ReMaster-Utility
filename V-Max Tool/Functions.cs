@@ -22,6 +22,30 @@ namespace V_Max_Tool
             busy = false;
         }
 
+        void SaveBin(byte[] data, string name, string def_path = @"c:\test")
+        {
+            if (debug && data != null && name.Length > 0)
+            {
+                try
+                {
+                    File.WriteAllBytes($@"{def_path}\{name}.bin", data);
+                }
+                catch { }
+            }
+        }
+
+        void SaveArrayTxt(string[] data, string name, string def_path = @"c:\test")
+        {
+            if (debug && data != null && name.Length > 0)
+            {
+                try
+                {
+                    File.WriteAllLines($@"{def_path}\{name}.txt", data.ToArray());
+                }
+                catch { }
+            }
+        }
+
         string Get_DirectoryFileType(byte b)
         {
             string fileType = " ";
@@ -182,17 +206,17 @@ namespace V_Max_Tool
                     {
                         if (NDS.v2info[i] != null)
                         {
-                            if (!V2_swap_headers.Checked && !batch)
-                            {
-                                V2_swap.DataSource = new string[] { "64-4E (newer)", "64-46 (weak bits)", "4E-64 (alt)" };
-                                if (Hex_Val(NDS.v2info[i], 0, 2) == "64-4E") { V2_swap.SelectedIndex = 0; break; }
-                                if (Hex_Val(NDS.v2info[i], 0, 2) == "64-46") { V2_swap.SelectedIndex = 1; break; }
-                                if (Hex_Val(NDS.v2info[i], 0, 2) == "4E-64") { V2_swap.SelectedIndex = 2; break; }
-                            }
-                            else
+                            //if (!V2_swap_headers.Checked && !batch)
+                            //{
+                            //    V2_swap.DataSource = new string[] { "64-4E (newer)", "64-46 (weak bits)", "4E-64 (alt)" };
+                            //    if (Hex_Val(NDS.v2info[i], 0, 2) == "64-4E") { V2_swap.SelectedIndex = 0; break; }
+                            //    if (Hex_Val(NDS.v2info[i], 0, 2) == "64-46") { V2_swap.SelectedIndex = 1; break; }
+                            //    if (Hex_Val(NDS.v2info[i], 0, 2) == "4E-64") { V2_swap.SelectedIndex = 2; break; }
+                            //}
+                            //else
                             {
                                 GetNewHeaders();
-                                loader_fixed = false;
+                                //loader_fixed = false;
                                 NDG.L_Rot = false;
                                 break;
                             }
@@ -233,7 +257,7 @@ namespace V_Max_Tool
             }
             if (NDS.cbm.Any(x => x == 4))
             {
-                fl = ((f_load.Checked || batch || V2_swap_headers.Checked) && !loader_fixed);
+                fl = false; // ((f_load.Checked || batch || V2_swap_headers.Checked) && !loader_fixed);
                 sl = NDS.cbm.Any(x => x == 2) || NDS.cbm.Any(x => x == 3);
             }
             if (NDS.cbm.Any(ss => ss == 5))
@@ -613,7 +637,6 @@ namespace V_Max_Tool
         void ClearInfo()
         {
             Source.Visible = Output.Visible = false;
-            f_load.Text = "Fix Loader";
             Save_Disk.Visible = false;
             sl.DataSource = null;
             out_size.DataSource = null;
@@ -668,6 +691,25 @@ namespace V_Max_Tool
             if (length < 0 || start + length > source.Length) return null;
             return source.Skip(start).Take(length).ToArray();
         }
+
+        //public static byte[] ArrayConcat(params byte[][] arrays)
+        //{
+        //    if (arrays == null || arrays.Length == 0) return new byte[0];
+        //
+        //    // Only consider non-null arrays
+        //    int totalLength = arrays.Where(a => a != null).Sum(a => a.Length);
+        //    byte[] result = new byte[totalLength];
+        //    int offset = 0;
+        //
+        //    foreach (byte[] array in arrays)
+        //    {
+        //        if (array == null) continue; // skip null arrays
+        //        Buffer.BlockCopy(array, 0, result, offset, array.Length);
+        //        offset += array.Length;
+        //    }
+        //
+        //    return result;
+        //}
 
         public static byte[] ArrayConcat(params byte[][] arrays)
         {

@@ -34,6 +34,7 @@ namespace V_Max_Tool
                 }
             }
             else s = new BitArray(Flip_Endian(data));
+            //SaveBin(Bit2Byte(s), "v3contra");
             int compare = 0, pos = 0;
             int find = 0x005a0037;
             byte[] fiveAchunk = new byte[] { 0x5a, 0x55, 0x56, 0xff };
@@ -53,13 +54,13 @@ namespace V_Max_Tool
                         {
                             var tmp = Filter_Sync(BitCopy(s, pos, (i - (rep - (cbm ? 1 : 0))) << 3), cbm ? std : custom)
                                 .Where(b => b != 0xff).ToArray();
-                            //var tmp = Filter_Sync(BitCopy(s, pos, (i - (rep - (cbm ? 1 : 0))) << 3), cbm ? std : custom)
-                            //    .Where(b => !(b == 0xFF || b == 0x55 || b == 0xAA)).ToArray();
                             len = tmp.Length;
                             // Trim length to remove trailing garbage data or weak-bits
                             if (tmp.Length > 2056 && tmp.Length < 2200) len = 2056; // v-max v0-1 loader length
                             if (tmp.Length > 2701 && tmp.Length < 3000) len = 2701; // v-max v2   loader length
                             if (tmp.Length > 3089) len = 3089;                      // v-max v3-4 loader length
+                            //File.WriteAllBytes($@"c:\test\ldr_seg.bin", CopyArray(tmp, 0, len));
+                            //SaveBin(CopyArray(tmp, 0, len), "contraseg");
                             return CopyArray(tmp, 0, len);
                         }
                     }
@@ -89,7 +90,6 @@ namespace V_Max_Tool
                 if (++bytePos % 8 == 0)
                 {
                     if (!garbage.Contains(window)) filtered.Add(window);
-                    //filtered.Add(window);
                     bytePos = 0;
                     if (PossibleSync.Any(x => x == window))
                     {
@@ -134,6 +134,7 @@ namespace V_Max_Tool
                 }
             }
             return (q, dataa);
+            
             int find()
             {
                 int p = 0;
@@ -146,10 +147,7 @@ namespace V_Max_Tool
 
                     for (p = skip_length; p < comp.Length; p++)
                     {
-                        if (comp.Skip(p).Take(star.Length).SequenceEqual(star))
-                        {
-                            break;
-                        }
+                        if (comp.Skip(p).Take(star.Length).SequenceEqual(star)) break;
                     }
                 }
                 return p + comp_length;
@@ -234,181 +232,26 @@ namespace V_Max_Tool
             return temp;
         }
 
-        byte[] Pad_Loader(byte[] data, byte padding, int Density)
+        byte[] Mod_Loader_Mod(byte[] data, byte[] headers) // Used when Swap Headers option is checked
         {
-            MemoryStream buffer = new MemoryStream();
-            BinaryWriter write = new BinaryWriter(buffer);
-            var pad_len = (density[Density] - data.Length) / 2;
-            pad();
-            write.Write(data);
-            pad();
-            return buffer.ToArray();
-
-            void pad()
+            if (data == null) return new byte[0];
+            byte[] hdr = new byte[] { 0x64, 0x4e, 0x46 };
+            if (headers == null || headers.Length > 2 || headers[0] == headers[1]) return data;
+            if (hdr.Any(x => x == headers[0]) && hdr.Any(x => x == headers[1]))
             {
-                for (int i = 0; i < pad_len; i++) write.Write((byte)padding);
+                (byte[][] temp, bool[] cksm) = Decode_VM_Loader(data);
+                // Make sure checksums are all OK, and make sure this is a V-Max v2 Loader (7 sectors)
+                if (cksm.Any(x => x == false) || temp.Length != 7) return new byte[0];
+                // Swap header values according to selected values from Advanced Options
+                if (temp[3][86] == 0x64 || temp[3][86] == 0x4e) temp[3][86] = headers[0];
+                if (temp[3][124] == 0x46 || temp[3][124] == 0x4e || temp[3][124] == 0x64) temp[3][124] = headers[1];
+                // Add non-weak GCR conversion references to tables missing these references. ($AD/EA)
+                if (temp[5][173] == 0x00) temp[5][173] = 0x2c;
+                if (temp[5][234] != 0x0a) temp[5][234] = 0x0a;
+                // Re-encode the loader and send it back to the calling function
+                return Encode_VM_Loader(temp);
             }
-        }
-
-        /// ------------------------ Add Sync to Loader Track --------------------------------------------------
-
-
-        void Fix_Loader_Option(bool draw, int i) //, bool swap = false)
-        {
-            var trk_num = 0;
-            if (f_load.Checked)
-            {
-                var tt = 0;
-                if (tracks > 42) trk_num = (i / 2) + 1; else trk_num = i;
-                Original.G = new byte[NDG.Track_Data[i].Length];
-                Original.A = new byte[NDA.Track_Data[i].Length];
-                Buffer.BlockCopy(NDG.Track_Data[i], 0, Original.G, 0, NDG.Track_Data[i].Length);
-                Buffer.BlockCopy(NDA.Track_Data[i], 0, Original.A, 0, NDA.Track_Data[i].Length);
-                var d = Get_Density(NDG.Track_Data[i].Length);
-                if (NDS.cbm.Any(x => x == 3))
-                {
-                    if (NDG.Track_Data[i].Length > density[d]) Shrink_Loader(i);
-                    byte[] temp = Rotate_Loader(NDG.Track_Data[i]);
-                    NDG.L_Rot = true;
-                    Set_Dest_Arrays(Fix_Loader(temp), i);
-                    FL();
-                }
-                if (!(NDS.cbm.Any(x => x == 2) || NDS.cbm.Any(x => x == 3)))
-                {
-                    Set_Dest_Arrays(Pad_Loader(v2ldrcbm, loader_padding, density_map[trk_num]), i);
-                    FL();
-                }
-                if (NDS.cbm.Any(x => x == 2))
-                {
-                    for (int x = 0; i < tracks; x++) if (NDS.v2info[x]?.Length > 0) { tt = x; break; }
-                    if (!V2_swap_headers.Checked)
-                    {
-                        if (Hex_Val(NDS.v2info[tt], 0, 2) == "4E-64") Set_Dest_Arrays(Pad_Loader(v24e64pal, loader_padding, density_map[trk_num]), i);
-                        if (Hex_Val(NDS.v2info[tt], 0, 2) == "64-46") Set_Dest_Arrays(Pad_Loader(v26446ntsc, loader_padding, density_map[trk_num]), i);
-                        if (Hex_Val(NDS.v2info[tt], 0, 2) == "64-4E") Set_Dest_Arrays(Pad_Loader(v2644entsc, loader_padding, density_map[trk_num]), i);
-                    }
-                    else
-                    {
-                        if (Hex_Val(NDG.newheader, 0, 2) == "4E-64") Set_Dest_Arrays(Pad_Loader(v24e64pal, loader_padding, density_map[trk_num]), i);
-                        if (Hex_Val(NDG.newheader, 0, 2) == "64-46") Set_Dest_Arrays(Pad_Loader(v26446ntsc, loader_padding, density_map[trk_num]), i);
-                        if (Hex_Val(NDG.newheader, 0, 2) == "64-4E") Set_Dest_Arrays(Pad_Loader(v2644entsc, loader_padding, density_map[trk_num]), i);
-                    }
-                    FL();
-                }
-                loader_fixed = true;
-            }
-            if (!f_load.Checked)
-            {
-                Invoke(new Action(() =>
-                {
-                    f_load.Text = "Fix Loader";
-                    if (tracks > 0) i = Array.FindIndex(NDS.cbm, s => s == 4);
-                    if (i > -1 && i < 100)
-                    {
-                        if (Original.A.Length > 0) { NDA.Track_Data[i] = Original.A; }
-                        if (Original.G.Length > 0)
-                        {
-                            NDG.Track_Data[i] = Original.G; f_load.Text += " (Restored)";
-                            NDG.L_Rot = false;
-                        }
-                        loader_fixed = false;
-                    }
-                }));
-            }
-            displayed = false;
-            drawn = false;
-            if (draw)
-            {
-                Check_Before_Draw(false);
-                Data_Viewer();
-            }
-
-            void FL()
-            {
-                Invoke(new Action(() => f_load.Text = "Fix Loader (Fixed)"));
-            }
-        }
-
-        byte[] Fix_Loader(byte[] data)
-        {
-            //byte[] tdata = data;
-            byte[] v2 = new byte[] { 0x5b, 0x57, 0x52, 0x4d }; // Cinemaware and some other v2 variants
-            byte[] v3 = new byte[] { 0xaa, 0xaf, 0xda, 0x5f }; // V3 Taito (arkanoid)
-            byte[] v1 = new byte[] { 0xaa, 0xbf, 0xb4, 0xbf }; // v3 Taito (bubble bobble)
-            byte[] v4 = new byte[] { 0x6b, 0xd9, 0xb6, 0xdd }; // Sega
-            //byte[] comp = new byte[4];
-            bool f = false;
-            for (int i = 0; i < data.Length - 4; i++)
-            {
-                //Buffer.BlockCopy(tdata, i, comp, 0, comp.Length);
-                if (MatchSeq(data, v1, i)) { Patch_V3(i - 4); f = true; }
-                if (MatchSeq(data, v2, i)) { Patch_V2(i - 3); f = true; }
-                if (MatchSeq(data, v3, i)) { Patch_V3(i - 4); f = true; }
-                if (MatchSeq(data, v4, i)) { Patch_V2(i - 3); f = true; }
-                if (f) break;
-            }
-            if (f) Invoke(new Action(() => f_load.Text = "Fix Loader (Fixed)"));
             return data;
-
-            void Patch_V2(int pos)
-            {
-                if (pos > 0)
-                {
-                    data[pos] = 0xde;
-                    data[pos + 1] = 0xff;
-                    data[pos + 2] = 0xff;
-                }
-            }
-
-            void Patch_V3(int pos)
-            {
-                if (pos > 0)
-                {
-                    data[pos] = 0x5f;
-                    data[pos + 1] = 0xff;
-                    data[pos + 2] = 0xff;
-                }
-            }
-        }
-
-        byte[] Lengthen_Loader(byte[] data, int Density)
-        {
-            if (data.Length > 0)
-            {
-                byte[] temp = new byte[density[Density]];
-                int current = 0;
-                int longest = 0;
-                int pos = 0;
-                byte fill = 0x00;
-                byte cur = 0x00;
-                int a = temp.Length - data.Length;
-                for (int i = 0; i < data.Length; i++)
-                {
-                    if (data[i] == cur) current++;
-                    else
-                    {
-                        cur = data[i];
-                        if (current > longest)
-                        {
-                            pos = i - 1;
-                            longest = current;
-                            fill = data[i - 1];
-                        }
-                        current = 0;
-                    }
-                }
-                Buffer.BlockCopy(data, 0, temp, 0, pos);
-                for (int i = pos; i < pos + a; i++) temp[i] = fill;
-                Buffer.BlockCopy(data, pos, temp, pos + a, data.Length - pos);
-                return temp;
-            }
-            else return data;
-        }
-
-        void Shrink_Loader(int trk)
-        {
-            byte[] temp = Shrink_Track(NDG.Track_Data[trk], 1);
-            Set_Dest_Arrays(temp, trk);
         }
     }
 }
