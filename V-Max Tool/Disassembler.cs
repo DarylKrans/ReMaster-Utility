@@ -52,13 +52,15 @@ namespace V_Max_Tool
         //}
 
         //string[] Disassemble(byte[] memory, int startAddress = 0x0000, int endAddress = -1)
-        StringBuilder Disassemble(byte[] memory, int startAddress = 0x0000, int endAddress = -1)
+        //StringBuilder Disassemble(byte[] memory, int startAddress = 0x0000, int endAddress = -1)
+        StringBuilder Disassemble(byte[] memory, int offset = 0x0000, int endAddress = -1)
         {
             if (endAddress < 0) endAddress = memory.Length;
-            if (startAddress < 0) startAddress = 0;
+            //if (startAddress < 0) startAddress = 0;
+            int startAddress = 0;
             //if (startAddress >= memory.Length || startAddress >= endAddress) return new string[0];
             if (startAddress >= memory.Length || startAddress >= endAddress) return new StringBuilder();
-            int offset = 0;
+            //int offset = 0;
 
             //try { offset = HexStringToDecimal(textBox3.Text); } catch { offset = 0; }
             string[] abs = new string[] { "BNE", "BEQ", "BMI", "BPL", "BCC", "BCS", "BVC", "BVS", };
@@ -269,7 +271,9 @@ namespace V_Max_Tool
                     case 2: paramString = $"{openpar}{prefix}{param1:X2}{clospar}{ext}"; break;
                     case 3: paramString = $"{openpar}{prefix}{param2:X2}{param1:X2}{clospar}{ext}"; break;
                 }
-                list.Append($"{pcoffset:X6}  {opcodeByte:X2} {(opcode.Length >= 2 ? $"{param1:X2}" : b)} {(opcode.Length == 3 ? $"{param2:X2}" : b)} {opcode.Mnemonic} {(opcode.Absolute ? $"${target:X4}" : paramString)}\n");
+                string addr = $"{pcoffset.ToString("X6").Substring(0,2)}:{pcoffset.ToString("X6").Substring(2)}";
+                //list.Append($"{pcoffset:X6}  {opcodeByte:X2} {(opcode.Length >= 2 ? $"{param1:X2}" : b)} {(opcode.Length == 3 ? $"{param2:X2}" : b)} {opcode.Mnemonic} {(opcode.Absolute ? $"${target:X4}" : paramString)}\n");
+                list.Append($"{addr}  {opcodeByte:X2} {(opcode.Length >= 2 ? $"{param1:X2}" : b)} {(opcode.Length == 3 ? $"{param2:X2}" : b)} {opcode.Mnemonic} {(opcode.Absolute ? $"${target:X4}" : paramString)}\n");
                 //list.Add($"{pcoffset:X4}  {opcodeByte:X2} {(opcode.Length >= 2 ? $"{param1:X2}" : b)} {(opcode.Length == 3 ? $"{param2:X2}" : b)} {opcode.Mnemonic} {(opcode.absolute ? $"${target:X4}" :paramString)}");
                 //list[apos++] = $"{pcoffset:X4}  {opcodeByte:X2} {(opcode.Length >= 2 ? $"{param1:X2}" : b)} {(opcode.Length == 3 ? $"{param2:X2}" : b)} {opcode.Mnemonic} {(opcode.absolute ? $"${target:X4}" : paramString)}";
                 pc += opcode.Length;

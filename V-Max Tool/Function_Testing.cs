@@ -108,6 +108,23 @@ namespace V_Max_Tool
         //    File.WriteAllLines(OutputFile, list.ToArray());
         //}
 
+        void Rotate_andDump(byte[] data)
+        {
+            if (data == null) return;
+            if (debug)
+            {
+                BitArray s = new BitArray(Flip_Endian(data));
+                for (int i = 0; i < 8; i++)
+                {
+                    try
+                    {
+                        SaveBin(Bit2Byte(s, i), $"rotate_{i}");
+                    }
+                    catch { break; }
+                }
+            }
+        }
+
         void BinToDictionary(string InputFile, string OutputFile, string DictionaryName, string field1 = "int", string field2 = "byte", int entriesPerLine = 8, byte[] Omit = null)
         {
             byte[] tbl = File.ReadAllBytes(InputFile);

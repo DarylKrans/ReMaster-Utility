@@ -212,66 +212,6 @@ namespace V_Max_Tool
             }
         }
 
-        //(byte[], int, int, int) Rebuild_V2(byte[] data, int sectors, byte[] t_info, int trk, byte[] new_header, byte[][] sector_data, bool use_new_Headers = false)
-        //{
-        //    /// t_info[0] = start byte, t_info[1] = end byte, t_info[2] = header length, t_info[3] = v-max version (for sector headers)
-        //    int track_num = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-        //    (var found, var pos) = Find_Data(new byte[] { t_info[0], 0xa5, 0xa5 }, data);
-        //    if (found) data = Rotate_Left(data, pos - 1);
-        //    else
-        //    {
-        //        int gap = FindTrackGap(data);
-        //        if (gap > 0) data = Rotate_Left(data, gap);
-        //    }
-        //    bool syncless = t_info[4] == 0x00;
-        //    bool addSync = V2_Add_Sync.Checked;
-        //    int t_dens = density[vm2_density_map[track_num - 1]];
-        //    int t_sync = syncless && !addSync ? v2_sync_marker.Length : v2_sync_marker.Length * sectors;
-        //    byte[][] sec_dat = new byte[sectors][];
-        //    byte[][] header = new byte[sectors][];
-        //    byte[] t_ID = track_num % 2 == 1 ? ArrayConcat(v2_sync_marker, new byte[] { 0xff, 0xff },
-        //        Build_BlockHeader(track_num, 255, NDS.t18_ID)) : new byte[] { 0x7f };
-        //    byte header1 = use_new_Headers ? new_header[0] : t_info[0];
-        //    byte header2 = use_new_Headers ? new_header[1] : t_info[1];
-        //    List<string> sf = new List<string>();
-        //    for (int i = 0; i < sectors; i++)
-        //    {
-        //        header[i] = Hex2Byte(vm2_ver[t_info[3]][i]);
-        //        sec_dat[i] = sector_data[i];
-        //        //(found, pos) = Find_Data(ArrayConcat(new byte[] { t_info[0] }, Hex2Byte(vm2_ver[t_info[3]][i])), data);
-        //        ////(found, pos) = Find_Data(ArrayConcat(new byte[] { t_info[0] }, new byte[] { Hex2Byte(vm2_ver[t_info[3]][i])[0] }), data);
-        //        //if (found)
-        //        //{
-        //        //    while (data[pos] != t_info[1] && (pos + 320 + 1) < data.Length) pos++;
-        //        //    sec_dat[i] = CopyFrom(data, pos + 1, 320);
-        //        //}
-        //    }
-        //    int hlen = (((t_dens - (sec_dat.Where(x => x != null).Sum(x => x.Length) + t_sync + 15)) / sectors) >> 1) - 1;
-        //    using (var buffer = new MemoryStream())
-        //    using (var write = new BinaryWriter(buffer))
-        //    {
-        //        for (int i = 0; i < sectors; i++)
-        //        {
-        //            if (sec_dat[i]?.Length > 0)
-        //            {
-        //                if ((i == 0 && syncless && !addSync) || !syncless || addSync) write.Write(v2_sync_marker);
-        //                write.Write(ArrayConcat(Build_Header(header[i], hlen), sec_dat[i]));
-        //            }
-        //        }
-        //        write.Write(t_ID);
-        //        if (t_dens - (int)buffer.Position > 0) write.Write(FastArray.Init(t_dens - (int)buffer.Position, 0x55));
-        //        return (buffer.ToArray(), 0, (int)buffer.Length, sectors);
-        //    }
-        //
-        //    byte[] Build_Header(byte[] ID, int len)
-        //    {
-        //        var secn = FastArray.Init(len << 1, ID[0]);
-        //        for (int i = 0; i < len << 1; i++) if (i % 2 == 1) secn[i] = ID[1];
-        //        return ArrayConcat(new byte[] { header1 }, secn, new byte[] { header2 });
-        //    }
-        //}
-
-        //(byte[], int, int, int, int, string[], int, int, byte[]) Get_V2_Track_Info(byte[] data, int trk)
         (byte[], int, int, int, int, string[], int, int, byte[], byte[][]) Get_V2_Track_Info(byte[] data, int trk)
         {
             int tr = (tracks > 42) ? (trk / 2) + 1 : trk + 1;
@@ -295,6 +235,7 @@ namespace V_Max_Tool
             //List<byte[]> sec_data = new List<byte[]>();
 
             BitArray source = new BitArray(Flip_Endian(data));
+            if (!batch) all_headers.Add($"Track {tr} Format : {secF[NDS.cbm[trk]]} {ver} {snc}");
             while (pos < source.Length)
             {
                 comp <<= 1;
@@ -353,8 +294,6 @@ namespace V_Max_Tool
                 pos++;
             }
 
-            if (!batch) all_headers.Add($"Track {tr} Format : {secF[NDS.cbm[trk]]} {ver} {snc}");
-
             if (data_end < data_start) data_end = source.Length;
             byte[] tmpdata = Bit2Byte(source, data_start, data_end - data_start);
 
@@ -366,7 +305,6 @@ namespace V_Max_Tool
             }
             catch { }
             if (!batch && err.Count > 0) foreach (var e in err) ErrorList.Add($"Checksum failed on track {tr}, sector {e}");
-            //return (tdata, data_start >> 3, data_end >> 3, sec_zero >> 3, tmpdata.Length << 3, all_headers.ToArray(), headers.Count, 0, m);
             return (tdata, data_start >> 3, data_end >> 3, sec_zero >> 3, tmpdata.Length << 3, all_headers.ToArray(), headers.Count, 0, m, sec_data.ToArray());
 
             void Get_Header_Bytes(byte[] hdr)

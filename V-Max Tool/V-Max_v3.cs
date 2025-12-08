@@ -93,7 +93,6 @@ namespace V_Max_Tool
                 }
             }
             catch { }
-            ;
             return pos;
         }
 
@@ -169,6 +168,122 @@ namespace V_Max_Tool
                 return possible_Filler.Any(x => x != filler) ? (byte)0xff : filler;
             }
         }
+
+        //(string[], int, int, int, int, int, int, int) Get_vmv3_track_length(byte[] data, int trk)
+        //{
+        //    int data_start = 0;
+        //    int data_end = 0;
+        //    int sector_zero = 0;
+        //    int header_total = 0;
+        //    int header_avg = 0;
+        //    int gap_sector = 0;
+        //    int last_sector = 0;
+        //    int sectors = 0;
+        //    bool start_found = false;
+        //    bool end_found = false;
+        //    byte head_end = 0xee; /// V-Max v3 header end byte located directly following the 49-49-49 pattern
+        //    byte[] comp = new byte[2];
+        //    byte[] head = new byte[18];
+        //    List<string> s = new List<string>();
+        //    List<int> ss = new List<int>();
+        //    var err = new List<int>();
+        //    string stats = string.Empty;
+        //
+        //    BitArray src = new BitArray(Flip_Endian(data));
+        //    int compare = 0x00494949;
+        //    int window = 0;
+        //    int pos = 0;
+        //    while (pos < src.Length)
+        //    {
+        //        window <<= 1;
+        //        if (src[pos++]) window |= 1;
+        //        if ((window & 0x00ffffff) == compare)
+        //        {
+        //            byte[] check = Bit2Byte(src, pos - 24, Math.Min(300 << 3, src.Length - pos));
+        //            if (check != null)
+        //            {
+        //                int ppos = pos - 24;
+        //                var a = 0;
+        //                while (check[a] == 0x49) a++;
+        //                pos += a - 3 << 3;
+        //                if (check[a] == head_end)
+        //                {
+        //                    if (a + head.Length < data.Length) Buffer.BlockCopy(check, a, head, 0, head.Length);
+        //                    byte[] decgcr = Decode_VmaxGCR(CopyFrom(check, a + 1, 8));
+        //                    int sec = (decgcr[0] & 0x1f);
+        //                    if (!ss.Contains(sec))
+        //                    {
+        //                        int secsize = Get_vm3_sectorSize(check, a + 1);
+        //                        int embsize = (decgcr[5] + 2 + (check[a + ((decgcr[5] + 2) << 2) + 2] == 0xf7 ? 1 : 0)) << 2;
+        //                        string mismatch = embsize != secsize ? $" ! {embsize}" : string.Empty;
+        //                        byte[] sdat = Decode_VmaxGCR(CopyFrom(check, a + 1, secsize));
+        //                        int csm = 0;
+        //                        foreach (byte b in sdat) csm ^= b;
+        //                        if (csm != 0) err.Add(sec);
+        //                        sectors++;
+        //                        //if ((decgcr[0] & 0x1f) == 0) sector_zero = i - a;
+        //                        if ((decgcr[0] & 0x1f) == 0) sector_zero = ppos;
+        //                        if (!start_found)
+        //                        {
+        //                            data_start = ppos;
+        //                            start_found = true;
+        //                            if (last_sector != 0) gap_sector = last_sector;
+        //                        }
+        //                        if (gap_sector == 0) gap_sector = last_sector;
+        //                        last_sector = ppos;
+        //                        ss.Add(sec);
+        //                        var dhead = FastArray.Init(a + 1, 0x49);
+        //                        dhead[dhead.Length - 1] = 0xee;
+        //                        if (!batch) s.Add($"Sector ({sec}){(sec == 0 ? "*" : string.Empty)} Pos ({ppos}) Size ({secsize}{mismatch}) Header [ {Hex_Val(dhead)} ] Checksum ({(csm == 0 ? "OK" : "Failed!")})");
+        //                        header_total += a;
+        //                    }
+        //                    else
+        //                    {
+        //                        end_found = true;
+        //                        data_end = ppos - 1;
+        //                        if (!batch)
+        //                        {
+        //                            s.Add($"Pos {ppos} **Repeat** sector {sec}");
+        //                            stats = $"Track Length ({data_end - data_start}) Sectors ({ss.Count})";
+        //                        }
+        //                        if (!batch)
+        //                        {
+        //                            stats += $" sector 0 ({sector_zero})  Header Length ({a + 1})";
+        //                            s.Add(stats);
+        //                        }
+        //                    }
+        //                }
+        //                else pos = ppos + 24;
+        //            }
+        //        }
+        //    }
+        //
+        //    if (header_avg > 0 && header_total > 0) header_avg = header_total / ss.Count;
+        //
+        //    if (ss.Count < 16)
+        //    {
+        //        int de = density[Get_Density((data_end - data_start) >> 3)];
+        //        if ((tracks > 42 && trk == 36) || (tracks <= 42 && trk == 18)) de = density[1];
+        //        if (start_found && !end_found)
+        //        {
+        //            if (data_start >> 3 > 500) data_start = 0;
+        //            //data_end = de + 200;
+        //            data_end = 7800 << 3;
+        //        }
+        //        if (start_found && end_found && ((data_end - data_start) >> 3) < 7000)
+        //        {
+        //            var a = de - ((data_end - data_start) >> 3);
+        //            if (data_end >> 3 + a < 8192) data_end += (a << 3);
+        //        }
+        //        //msg = $"Track Length [est] (7400) Sectors ({ss.Count})";
+        //    }
+        //    if (!batch && err.Count > 0)
+        //    {
+        //        var errtk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
+        //        foreach (var e in err) ErrorList.Add($"Checksum failed on track {errtk}, sector {e}");
+        //    }
+        //    return (s.ToArray(), data_start >> 3, data_end >> 3, sector_zero >> 3, ((data_end - data_start) >> 3), ss.Count, header_avg, gap_sector);
+        //}
 
         (string[], int, int, int, int, int, int, int) Get_vmv3_track_length(byte[] data, int trk)
         {

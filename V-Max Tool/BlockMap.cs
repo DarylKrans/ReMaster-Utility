@@ -14,6 +14,27 @@ namespace V_Max_Tool
         private static readonly TaggedRectangle[][] BlkMap_bam = new TaggedRectangle[41][];
         private List<BlockMapInfo> blockMap = new List<BlockMapInfo>();
         private int hoveredIndex = -1;
+        //private readonly Color vmaxv2 = Color.DarkMagenta;
+        //private readonly Color vmaxv3 = Color.Green;
+        //private readonly Color vmloader = Color.Blue;
+        //private readonly Color vorpalnew = Color.DarkCyan;
+        //private readonly Color rapidlok = Color.DarkOrange;
+
+        Dictionary<int, Color> colorMap = new Dictionary<int, Color>
+        {
+            { 0, Color.FromArgb(110, 70, 173) }, { 1, Color.Black }, { 2, Color.DarkMagenta },
+            { 3, Color.Green }, { 4, Color.Blue }, { 5, Color.DarkCyan }, { 6, Color.DarkOrange },
+            { 7, Color.Blue }, { 8, Color.Blue }, { 9, Color.Blue }, { 10, Color.Brown },
+            { 11, Color.Blue }, { 12, Color.Blue }
+        };
+
+        //Dictionary<int, Color> colorMap = new Dictionary<int, Color>
+        //        {
+        //            { 0, Color.FromArgb(110, 70, 173) }, { 1, Color.Black }, { 2, vmaxv2 },
+        //            { 3, vmaxv3 }, { 4, vmloader }, { 5, vorpalnew }, { 6, rapidlok },
+        //            { 7, Color.Blue }, { 8, Color.Blue }, { 9, Color.Blue }, { 10, Color.Brown },
+        //            { 11, Color.Blue }, { 12, Color.Blue }
+        //        };
 
         void BlockMap_Setup()
         {
@@ -125,6 +146,8 @@ namespace V_Max_Tool
             byte[] bam = GetBam();
             bool vbam = bam != null;
             string usedsec = string.Empty;
+            //int max_track = tracks > 42 ? 82 : 41;
+            //for (int i = 0; i < Math.Min(tracks, max_track); i++)
             for (int i = 0; i < tracks; i++)
             {
                 int trk = tracks > 42 ? (i / 2) : i;
@@ -136,11 +159,13 @@ namespace V_Max_Tool
                     int[] c = new int[] { 2, 3, 4, 5, 6 };
                     bool alt = (NDS.cbm.Any(x => c.Any()));
                     int start = trk == 17 || alt ? 0 : NDS.D_Start[i];
+                    int index = -1;
                     BitArray tk = new BitArray(Flip_Endian(trk == 17 || alt ? NDG.Track_Data[i] : NDS.Track_Data[i]));
                     for (int j = 0; j < 21; j++)
                     {
-                        int index = blockMap.FindIndex(b => b.Track == trk + 1 && b.Sector == j + 1);
-                        if (j < sectors)
+                        try { index = blockMap.FindIndex(b => b.Track == trk + 1 && b.Sector == j + 1); }
+                        catch { index = -1; }
+                        if (j < sectors && index >= 0)
                         {
                             bool valid = j < Available_Sectors[trk];
                             (_, int errorCode, _) = GetSectorWithErrorCode(null, j, true, null, tk, start);
@@ -165,8 +190,11 @@ namespace V_Max_Tool
                         }
                         else
                         {
-                            blockMap[index].Color = Color.FromArgb(30, 100, 100, 100);
-                            blockMap[index].Tip = string.Empty;
+                            if (index >= 0)
+                            {
+                                blockMap[index].Color = Color.FromArgb(30, 100, 100, 100);
+                                blockMap[index].Tip = string.Empty;
+                            }
                         }
                     }
                     //File.WriteAllLines($@"c:\test\track{trk}_errors.txt", e.ToArray());
@@ -183,8 +211,13 @@ namespace V_Max_Tool
                             {
                                 int index = blockMap.FindIndex(b => b.Track == trk + 1 && b.Sector == j + 1);
                                 Color color = fmt < 2 || fmt == secF.Length - 1 || j >= sec ? Color.FromArgb(30, 100, 100, 100) : Color.FromArgb(200, 100, 30, 100);
+                                //Color color = fmt < 2 || fmt == secF.Length - 1 || j >= sec
+                                //    ? Color.FromArgb(30, 100, 100, 100) 
+                                //    : colorMap.TryGetValue(NDS.cbm[i], out Color clr) ? clr : Color.Black;
                                 blockMap[index].Color = color;
-                                blockMap[index].Tip = (fmt > 0 && fmt < secF.Length - 1) ? j < sec ? $"Track {trk + 1} {secF[NDS.cbm[i]]}" : string.Empty : string.Empty;
+                                blockMap[index].Tip = (fmt > 0 && fmt < secF.Length - 1)
+                                    ? j < sec ? $"Track {trk + 1} {secF[NDS.cbm[i]]}" :
+                                    string.Empty : string.Empty;
                             }
                         }
                     }

@@ -968,7 +968,7 @@ namespace V_Max_Tool
                 Buffer.BlockCopy(bam, 0, data, 4, bam.Length);
                 byte[] temp = Replace_CBM_Sector(NDG.Track_Data[dirtrack], 0, data);
                 Set_Dest_Arrays(temp, dirtrack);
-                Buffer.BlockCopy(NDA.Track_Data[dirtrack], 0, NDS.Track_Data[dirtrack], 0, MAX_TRACK_SIZE);
+                Buffer.BlockCopy(NDA.Track_Data[dirtrack], 0, NDS.Track_Data[dirtrack], 0, NIB_TRACK_LEN);
             }
         }
 
@@ -1014,7 +1014,7 @@ namespace V_Max_Tool
                     Set_Dest_Arrays(temp, curtrack);
                     foreach (int a in ttrks)
                     {
-                        Buffer.BlockCopy(NDA.Track_Data[a], 0, NDS.Track_Data[a], 0, MAX_TRACK_SIZE);
+                        Buffer.BlockCopy(NDA.Track_Data[a], 0, NDS.Track_Data[a], 0, NIB_TRACK_LEN);
                     }
                     UpdateBam(bam);
                 }
@@ -1062,7 +1062,7 @@ namespace V_Max_Tool
                                     Buffer.BlockCopy(newfile, 0, cursec, tpos, 30);
                                     byte[] temp = Replace_CBM_Sector(NDG.Track_Data[curtrack], cursector, cursec);
                                     Set_Dest_Arrays(temp, curtrack);
-                                    Buffer.BlockCopy(NDA.Track_Data[curtrack], 0, NDS.Track_Data[curtrack], 0, MAX_TRACK_SIZE);
+                                    Buffer.BlockCopy(NDA.Track_Data[curtrack], 0, NDS.Track_Data[curtrack], 0, NIB_TRACK_LEN);
                                     added = true;
                                 }
                                 if (added) break;
@@ -1094,7 +1094,7 @@ namespace V_Max_Tool
                                 Buffer.BlockCopy(newfile, 0, nsector, 2, 30);
                                 stemp = Replace_CBM_Sector(stemp, newsec, nsector);
                                 Set_Dest_Arrays(stemp, dirtrack);
-                                Buffer.BlockCopy(NDA.Track_Data[dirtrack], 0, NDS.Track_Data[dirtrack], 0, MAX_TRACK_SIZE);
+                                Buffer.BlockCopy(NDA.Track_Data[dirtrack], 0, NDS.Track_Data[dirtrack], 0, NIB_TRACK_LEN);
                                 AllocBlock(tbam, 17, newsec, Set);
                                 UpdateBam(tbam);
                                 added = true;

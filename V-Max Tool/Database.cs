@@ -1845,8 +1845,8 @@ namespace V_Max_Tool
                     Set_Arrays(tracks);
                     for (int i = 0; i < tracks; i++)
                     {
-                        NDS.Track_Data[i] = new byte[MAX_TRACK_SIZE];
-                        Buffer.BlockCopy(data, 256 + (i * MAX_TRACK_SIZE), NDS.Track_Data[i], 0, MAX_TRACK_SIZE);
+                        NDS.Track_Data[i] = new byte[NIB_TRACK_LEN];
+                        Buffer.BlockCopy(data, 256 + (i * NIB_TRACK_LEN), NDS.Track_Data[i], 0, NIB_TRACK_LEN);
                         Original.OT[i] = new byte[0];
                     }
                     var head = Encoding.ASCII.GetString(nib_header, 0, 13);

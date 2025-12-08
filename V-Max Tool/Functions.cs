@@ -389,13 +389,17 @@ namespace V_Max_Tool
 
         void View_Jump()
         {
-            if (Data_Box.Text.Length >= 0)
+            try
             {
-                Data_Box.Visible = false;
-                Data_Box.Select(jump_to[Convert.ToInt32(T_jump.Value)], 0);
-                Data_Box.ScrollToCaret();
-                Data_Box.Visible = true;
+                if (Data_Box.Text.Length >= 0)
+                {
+                    Data_Box.Visible = false;
+                    Data_Box.Select(jump_to[Convert.ToInt32(T_jump.Value)], 0);
+                    Data_Box.ScrollToCaret();
+                    Data_Box.Visible = true;
+                }
             }
+            catch { }
         }
 
         void Check_Adv_Opts()

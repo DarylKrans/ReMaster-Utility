@@ -214,16 +214,34 @@ namespace V_Max_Tool
             byte[] newkey = FastArray.Init(7200, 0xff);
             byte[] key = new byte[256];
             byte[] _key = new byte[54];
-            int s = 0;
-            if (data[s] == 0x6b) s += 200;
-            for (int i = s; i < data.Length; i++)
+            //int s = 0;
+            //if (data[s] == 0x6b) s += 200;
+            //for (int i = s; i < data.Length; i++)
+            //{
+            //    if ((data[i] == 0x6b) && (i + 256) < data.Length)
+            //    {
+            //        Buffer.BlockCopy(data, i, key, 0, 256);
+            //        break;
+            //    }
+            //}
+            BitArray s = new BitArray(Flip_Endian(data));
+            int pos = 0;
+            sbyte current = 0;
+            while (pos < s.Length - (54 << 3))
             {
-                if ((data[i] == 0x6b) && (i + 256) < data.Length)
+                current <<= 1;
+                if (s[pos++]) current |= 1;
+                if (current == 0x6b)
                 {
-                    Buffer.BlockCopy(data, i, key, 0, 256);
-                    break;
+                    byte[] temp_key = Bit2Byte(s, pos - 8, 54 << 3);
+                    if (Get_Weak_Bytes(temp_key) == 0)
+                    {
+                        Buffer.BlockCopy(temp_key, 0, key, 0, temp_key.Length);
+                        break;
+                    }
                 }
             }
+
             if (new_key != null) Buffer.BlockCopy(new_key, 0, key, 0, new_key.Length);
             for (int i = 54; i < key.Length; i++)
             {
@@ -236,6 +254,35 @@ namespace V_Max_Tool
             Buffer.BlockCopy(key, 0, _key, 0, _key.Length);
             return (newkey, _key);
         }
+
+        //(byte[], byte[]) RapidLok_Key_Fix(byte[] data, byte[] new_key = null)
+        //{
+        //    //byte[] newkey = FastArray.Init(7153, 0xff);
+        //    byte[] newkey = FastArray.Init(7200, 0xff);
+        //    byte[] key = new byte[256];
+        //    byte[] _key = new byte[54];
+        //    int s = 0;
+        //    if (data[s] == 0x6b) s += 200;
+        //    for (int i = s; i < data.Length; i++)
+        //    {
+        //        if ((data[i] == 0x6b) && (i + 256) < data.Length)
+        //        {
+        //            Buffer.BlockCopy(data, i, key, 0, 256);
+        //            break;
+        //        }
+        //    }
+        //    if (new_key != null) Buffer.BlockCopy(new_key, 0, key, 0, new_key.Length);
+        //    for (int i = 54; i < key.Length; i++)
+        //    {
+        //        if (key[i] != 0xff) key[i] = 0x00;
+        //        if (i >= 250) key[i] = 0xff;
+        //        if (i < 250) key[i] = 0x00;
+        //    }
+        //    //Buffer.BlockCopy(key, 0, newkey, newkey.Length - 286, 256);
+        //    Buffer.BlockCopy(key, 0, newkey, newkey.Length - 768, 256);
+        //    Buffer.BlockCopy(key, 0, _key, 0, _key.Length);
+        //    return (newkey, _key);
+        //}
 
         (byte[], int, int, int, int, int, string[]) RapidLok_Track_Info(byte[] data, int trk, bool build, byte[] track_ID, int rl_7b_len = 0)
         {

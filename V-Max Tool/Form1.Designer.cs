@@ -135,6 +135,7 @@
             this.Data_Sep = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.D_type = new System.Windows.Forms.GroupBox();
+            this.DV_Disassemble = new System.Windows.Forms.CheckBox();
             this.DV_dec = new System.Windows.Forms.RadioButton();
             this.DV_gcr = new System.Windows.Forms.RadioButton();
             this.tabPage3 = new System.Windows.Forms.TabPage();
@@ -1759,6 +1760,7 @@
             // 
             // D_type
             // 
+            this.D_type.Controls.Add(this.DV_Disassemble);
             this.D_type.Controls.Add(this.DV_dec);
             this.D_type.Controls.Add(this.DV_gcr);
             this.D_type.Location = new System.Drawing.Point(84, 3);
@@ -1770,10 +1772,21 @@
             this.D_type.TabStop = false;
             this.D_type.Text = "Data Type";
             // 
+            // DV_Disassemble
+            // 
+            this.DV_Disassemble.AutoSize = true;
+            this.DV_Disassemble.Location = new System.Drawing.Point(4, 51);
+            this.DV_Disassemble.Name = "DV_Disassemble";
+            this.DV_Disassemble.Size = new System.Drawing.Size(88, 17);
+            this.DV_Disassemble.TabIndex = 2;
+            this.DV_Disassemble.Text = "Disassembler";
+            this.DV_Disassemble.UseVisualStyleBackColor = true;
+            this.DV_Disassemble.CheckedChanged += new System.EventHandler(this.DV_Disassemble_CheckedChanged);
+            // 
             // DV_dec
             // 
             this.DV_dec.AutoSize = true;
-            this.DV_dec.Location = new System.Drawing.Point(4, 43);
+            this.DV_dec.Location = new System.Drawing.Point(4, 33);
             this.DV_dec.Margin = new System.Windows.Forms.Padding(2);
             this.DV_dec.Name = "DV_dec";
             this.DV_dec.Size = new System.Drawing.Size(89, 17);
@@ -1786,7 +1799,7 @@
             // DV_gcr
             // 
             this.DV_gcr.AutoSize = true;
-            this.DV_gcr.Location = new System.Drawing.Point(4, 25);
+            this.DV_gcr.Location = new System.Drawing.Point(4, 16);
             this.DV_gcr.Margin = new System.Windows.Forms.Padding(2);
             this.DV_gcr.Name = "DV_gcr";
             this.DV_gcr.Size = new System.Drawing.Size(74, 17);
@@ -4218,5 +4231,6 @@
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox ParseLog;
         private System.Windows.Forms.CheckBox V2_swap_headers;
+        private System.Windows.Forms.CheckBox DV_Disassemble;
     }
 }

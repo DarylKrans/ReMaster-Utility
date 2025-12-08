@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -39,7 +40,8 @@ namespace V_Max_Tool
         private static readonly string[] secF = { "Non-DOS", "CBM", "V-Max v2", "V-Max v3", "Loader", "Vorpal", "RapidLok"
                 , "RL-Key", "EA", "RA/MB", "Microprose", "Securispeed", "GMA" ,"Unformatted" };
         private static int[] jump_to = new int[42];
-        const int MAX_TRACK_SIZE = 8192;
+        const int NIB_TRACK_LEN = 8192;
+        const int NIB_HEADER_LEN = 256;
         const int SAMPLE_SIZE = 1024;
 
         void Batch_Get_File_List(string[] files)
@@ -205,16 +207,16 @@ namespace V_Max_Tool
                 var ext = Path.GetExtension(fn);
                 if (ext.ToLower() == ".nib")
                 {
-                    tracks = (int)(length - 256) / MAX_TRACK_SIZE;
+                    tracks = (int)(length - 256) / NIB_TRACK_LEN;
                     nib_header = new byte[256];
                     Stream.Seek(0, SeekOrigin.Begin);
                     Stream.Read(nib_header, 0, 256);
                     Set_Arrays(tracks);
                     for (int i = 0; i < tracks; i++)
                     {
-                        NDS.Track_Data[i] = new byte[MAX_TRACK_SIZE];
-                        Stream.Seek(256 + (MAX_TRACK_SIZE * i), SeekOrigin.Begin);
-                        Stream.Read(NDS.Track_Data[i], 0, MAX_TRACK_SIZE);
+                        NDS.Track_Data[i] = new byte[NIB_TRACK_LEN];
+                        Stream.Seek(256 + (NIB_TRACK_LEN * i), SeekOrigin.Begin);
+                        Stream.Read(NDS.Track_Data[i], 0, NIB_TRACK_LEN);
                         Original.OT[i] = new byte[0];
                     }
                     Stream.Close();
@@ -227,17 +229,17 @@ namespace V_Max_Tool
                     byte[] decomp = LZdecompress(compressed);
                     nib_header = new byte[256];
                     length = decomp.Length;
-                    tracks = ((int)length - 256) / MAX_TRACK_SIZE;
+                    tracks = ((int)length - 256) / NIB_TRACK_LEN;
                     Set_Arrays(tracks);
                     Buffer.BlockCopy(decomp, 0, nib_header, 0, 256);
                     for (int i = 0; i < tracks; i++)
                     {
-                        NDS.Track_Data[i] = new byte[MAX_TRACK_SIZE];
-                        Buffer.BlockCopy(decomp, 256 + (MAX_TRACK_SIZE * i), NDS.Track_Data[i], 0, MAX_TRACK_SIZE);
+                        NDS.Track_Data[i] = new byte[NIB_TRACK_LEN];
+                        Buffer.BlockCopy(decomp, 256 + (NIB_TRACK_LEN * i), NDS.Track_Data[i], 0, NIB_TRACK_LEN);
                         Original.OT[i] = new byte[0];
                     }
                 }
-                if ((tracks * MAX_TRACK_SIZE) + 256 == length)
+                if ((tracks * NIB_TRACK_LEN) + 256 == length)
                 {
                     var head = Encoding.ASCII.GetString(nib_header, 0, 13);
                     if (head == "MNIB-1541-RAW")
@@ -325,14 +327,6 @@ namespace V_Max_Tool
             bool fat = false;
             if (!batch)
             {
-                Dictionary<int, Color> colorMap = new Dictionary<int, Color>
-                {
-                    { 0, Color.FromArgb(110, 70, 173) }, { 1, Color.Black }, { 2, Color.DarkMagenta },
-                    { 3, Color.Green }, { 4, Color.Blue }, { 5, Color.DarkCyan }, { 6, Color.DarkOrange },
-                    { 7, Color.Blue }, { 8, Color.Blue }, { 9, Color.Blue }, { 10, Color.Brown },
-                    { 11, Color.Blue }, { 12, Color.Blue }
-                };
-
                 var color = Color.Black;
                 Invoke(new Action(() =>
                 {
@@ -410,6 +404,7 @@ namespace V_Max_Tool
                                 break;
 
                             case 2:
+                                //AddTrackInfo(Color.Blue, $"{tr} {t} {fm} : {secF[NDS.cbm[i]]}");
                                 ProcessTrackInfo(2, Color.FromArgb(110, 0, 110)); // Color.Blue);
                                 AddTrackInfo(Color.Black, " ");
                                 break;
@@ -501,6 +496,7 @@ namespace V_Max_Tool
                                                       defaultColor;
                                     AddTrackInfo(infoColor, info);
                                 }
+                                //AddTrackInfo(Color.Black, $"{NDS.Info[i].Length}");
                             }
                         }
 
@@ -1093,6 +1089,8 @@ namespace V_Max_Tool
                             var temp = Adjust_Sync_CBM(NDS.Track_Data[trk], exp_snc, min_snc, ign_snc, NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.Track_Length[trk], trk, ad);
                             if (temp != null)
                             {
+                                //(int a, int b) = FindLongestRun_General(temp);
+                                //temp = Rotate_Left(temp, a + b);
                                 if (Original.OT[trk]?.Length == 0)
                                 {
                                     Original.OT[trk] = new byte[temp.Length];
@@ -1210,9 +1208,9 @@ namespace V_Max_Tool
                 {
                     try
                     {
-                        NDA.Track_Data[trk] = new byte[MAX_TRACK_SIZE];
+                        NDA.Track_Data[trk] = new byte[NIB_TRACK_LEN];
                         Buffer.BlockCopy(NDG.Track_Data[trk], 0, NDA.Track_Data[trk], 0, NDG.Track_Data[trk].Length);
-                        Buffer.BlockCopy(NDG.Track_Data[trk], 0, NDA.Track_Data[trk], NDG.Track_Data[trk].Length, MAX_TRACK_SIZE - NDG.Track_Data[trk].Length);
+                        Buffer.BlockCopy(NDG.Track_Data[trk], 0, NDA.Track_Data[trk], NDG.Track_Data[trk].Length, NIB_TRACK_LEN - NDG.Track_Data[trk].Length);
                         Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
                         Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);
                         NDA.sectors[trk] = NDS.sectors[trk];
@@ -1647,18 +1645,20 @@ namespace V_Max_Tool
         {
             Stopwatch sw = Stopwatch.StartNew();
             sw.Start();
-            int jmp = 0, ds = 0;
+            int jmp = 0, ds = 0, abs_addr = 0;
             string ok = "(OK)", fail = "(Failed!)", na = "N/A", mt = " (Empty, No Data!)";
             StringBuilder db_Text = new StringBuilder();
             Invoke(new Action(() =>
             {
                 busy = true;
-                if (VS_bin.Checked) Data_Box.Font = new Font("Lucida Console", 7.5f); else Data_Box.Font = new Font("Lucida Console", 10, FontStyle.Regular);
+                if (VS_bin.Checked && groupBox1.Enabled) Data_Box.Font = new Font("Lucida Console", 7.5f); else Data_Box.Font = new Font("Lucida Console", 10, FontStyle.Regular);
                 Data_Box.Visible = false;
                 Data_Box.Clear();
                 ds = Data_Sep.SelectedIndex;
             }));
             bool tr = ds >= 1, se = ds == 2;
+            //Invoke(new Action(()=> Text = $"ds {ds} tr {tr} se {se}"));
+            bool dis = DV_Disassemble.Checked;
             double trk = 1;
             bool ht = tracks > 42;
             //bool dhex = VS_hex.Checked;
@@ -1698,7 +1698,7 @@ namespace V_Max_Tool
             }
             Invoke(new Action(() =>
             {
-                T_jump.Maximum = jmp;
+                T_jump.Maximum = Math.Min(jmp, 41);
                 if (ds >= 1 && jmp > 0) { T_jump.Visible = Jump.Visible = true; } else { T_jump.Visible = Jump.Visible = false; }
                 Data_Box.Text = db_Text.ToString();
                 Disp_Data.Text = "Refresh";
@@ -1745,13 +1745,15 @@ namespace V_Max_Tool
                         catch { }
                     }
                 }
-
+                int addr = ds < 1 ? abs_addr : 0;
                 if (sectors.Count > 0)
                 {
+                    var lump = ArrayConcat(sectors.ToArray());
                     jump_to[(int)trk] = db_Text.Length;
                     if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes\n Decoder: (format unknown, Default Standard CBM)\n\n");
-                    if (!VS_dat.Checked) db_Text.Append(Append_Strings(ArrayConcat(sectors.ToArray()), dhex));
+                    if (!VS_dat.Checked) db_Text.Append(dis? Disassemble(lump, addr) : Append_Strings(lump, dhex));
                     else db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(ArrayConcat(sectors.ToArray()))));
+                    abs_addr += lump.Length;
                 }
             }
 
@@ -1771,10 +1773,17 @@ namespace V_Max_Tool
                 {
                     string decoder = "V-Max!";
                     jump_to[(int)trk] = db_Text.Length;
+                    int addr = ds < 1 ? abs_addr : 0;
                     if (tr) db_Text.Append($"\n\nTrack ({track}) Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes, Sectors ({sectors.Length})\nDecoder: {decoder}\n\n");
-                    if (!se && !VS_dat.Checked) db_Text.Append(Append_Strings(ArrayConcat(sectors), dhex));
+                    if (!se && !VS_dat.Checked)
+                    {
+                        var dat = ArrayConcat(sectors);
+                        db_Text.Append(dis ? Disassemble(dat, addr) : Append_Strings(dat, dhex));
+                        abs_addr += dat.Length;
+                    }
                     else
                     {
+                        //addr = ds < 1 ? abs_addr : 0;
                         for (int i = 0; i < sectors.Length; i++)
                         {
                             if (sectors?[i] != null && sectors?[i].Length > 0)
@@ -1782,10 +1791,12 @@ namespace V_Max_Tool
                                 string checksumStatus = cksm[i] ? ok : fail;
                                 //if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {sectors[i].Length}{contents} Checksum {checksumStatus}\n\n");
                                 if (se) db_Text.Append($"\n\nSector ({i}) Length {sectors[i].Length}{contents} Checksum {checksumStatus}\n\n");
-                                if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
-                                else db_Text.Append(Append_Strings(sectors[i], dhex));
+                                if (VS_dat.Checked) db_Text.Append(dis ? Disassemble(sectors[i], se ? 0 : addr).ToString() : Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
+                                else db_Text.Append(dis ? Disassemble(sectors[i], se ? 0 : addr) : Append_Strings(sectors[i], dhex));
+                                addr += sectors[i].Length;
                             }
                         }
+                        abs_addr = addr;
                     }
                 }
             }
@@ -1807,59 +1818,30 @@ namespace V_Max_Tool
                     string decoder = "V-Max! Loader";
                     jump_to[(int)trk] = db_Text.Length;
                     if (tr) db_Text.Append($"\n\nTrack ({track}) Format: {secF[NDS.cbm[t]]}, Length ({tlen}) bytes,\nDecoder: {decoder}\n\n");
-
+                    int addr = ds < 1 ? abs_addr : 0;
                     for (int i = 0; i < sectors.Length; i++)
                     {
-                        if (!se && !VS_dat.Checked) db_Text.Append(Append_Strings(sectors[i], dhex));
+                        if (!se && !VS_dat.Checked)
+                        {
+                            db_Text.Append(dis ? Disassemble(sectors[i], addr) : Append_Strings(sectors[i], dhex));
+                            addr += sectors[i].Length;
+                        }
                         else
                         {
                             if (sectors != null && sectors.Length > 0)
                             {
                                 //if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {sectors[i].Length}{contents} Checksum ({(checksums.Length > i ? checksums[i] ? "OK" : "Failed" : "none")})\n\n");
                                 if (se) db_Text.Append($"\n\nSector ({i}) Length {sectors[i].Length}{contents} Checksum ({(checksums.Length > i ? checksums[i] ? "OK" : "Failed" : "none")})\n\n");
-                                if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
-                                else db_Text.Append(Append_Strings(sectors[i], dhex));
+                                if (VS_dat.Checked) db_Text.Append(dis ? Disassemble(sectors[i], se ? 0 : addr).ToString() : Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
+                                else db_Text.Append(dis ? Disassemble(sectors[i], se ? 0 : addr) : Append_Strings(sectors[i], dhex));
+                                addr += sectors[i].Length;
                             }
                         }
                     }
+                    abs_addr = addr;
                 }
             }
-
-            //void Disp_V_ldr(int t, double track, BitArray tdata = null)
-            //{
-            //    byte[] dec = new byte[0];
-            //    int tlen = 0;
-            //    string contents = string.Empty;
-            //    byte[][] sectors = new byte[0][];
-            //    bool[] checksums = new bool[0];
-            //    bool version = NDS.cbm.Any(x => x == 2) || NDS.cbm.Any(x => x == 3);
-            //    (sectors, checksums) = version ? Decode_VM_Loader(Get_VmaxLoaderSegment(NDS.Track_Data[t]))
-            //                                   : Decode_VM_Loader_CBM(Get_VmaxLoaderSegment(NDS.Track_Data[t], true));
-            //    tlen = sectors.Sum(arr => arr.Length);
-            //    if (sectors != null && sectors.Length > 0)
-            //    {
-            //        string decoder = "V-Max! Loader";
-            //        jump_to[(int)trk] = db_Text.Length;
-            //        if (tr) db_Text.Append($"\n\nTrack ({track}) Format: {secF[NDS.cbm[t]]}, Length ({tlen}) bytes,\nDecoder: {decoder}\n\n");
-            //
-            //        for (int i = 0; i < sectors.Length; i++)
-            //        {
-            //            if (!se && !VS_dat.Checked) db_Text.Append(Append_Strings(sectors[i], dhex));
-            //            else
-            //            {
-            //                if (sectors != null && sectors.Length > 0)
-            //                {
-            //                    //if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {sectors[i].Length}{contents} Checksum ({(checksums.Length > i ? checksums[i] ? "OK" : "Failed" : "none")})\n\n");
-            //                    if (se) db_Text.Append($"\n\nSector ({i}) Length {sectors[i].Length}{contents} Checksum ({(checksums.Length > i ? checksums[i] ? "OK" : "Failed" : "none")})\n\n");
-            //                    if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
-            //                    else db_Text.Append(Disassemble(sectors[i]));
-            //                    //else db_Text.Append(Append_Strings(sectors[i], dhex));
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-
+           
             void Disp_RLK(int t, double track, BitArray s)
             {
                 int sec_limit = (int)trk < 18 ? 12 : 11;
@@ -1906,6 +1888,7 @@ namespace V_Max_Tool
                     if (!se && !VS_dat.Checked) db_Text.Append(Append_Strings(ArrayConcat(sectors.ToArray()), dhex));
                     else
                     {
+                        int addr = ds < 1 ? abs_addr : 0;
                         for (int i = 0; i < sectors.Count; i++)
                         {
                             try
@@ -1916,12 +1899,14 @@ namespace V_Max_Tool
                                     string decoder = contents == mt ? string.Empty : version[i] ? " Decoder: RapidLok v2+" : " Decoder: RapidLok v1";
                                     string checksumStatus = contents != string.Empty ? na : cksm[i] ? ok : fail;
                                     if (se) db_Text.Append($"\n\nSector ({secnum[i]}) Length {sectors[i].Length}{contents} Checksum {checksumStatus}\n\n");
-                                    if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
-                                    else db_Text.Append(Append_Strings(sectors[i], dhex));
+                                    if (VS_dat.Checked) db_Text.Append(dis ? Disassemble(sectors[i], se ? 0 : addr).ToString() : Encoding.ASCII.GetString(Fix_Stops(sectors[i])));
+                                    else db_Text.Append(dis ? Disassemble(sectors[i], se ? 0 : addr) : Append_Strings(sectors[i], dhex));
+                                    addr += sectors[i].Length;
                                 }
                             }
                             catch { }
                         }
+                        abs_addr = addr;
                     }
                 }
             }
@@ -1952,6 +1937,8 @@ namespace V_Max_Tool
                         catch { }
                     }
                     if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({total}) bytes\n\n");
+                    
+                    int addr = ds < 1 ? abs_addr : 0;
                     for (int i = 0; i < NDS.sectors[t]; i++)
                     {
                         try
@@ -1960,12 +1947,14 @@ namespace V_Max_Tool
                             {
                                 //if (se) db_Text.Append($"\n\nSector ({i + 1}) Length {temp[i].Length} Checksum {(valid_checksum[i] ? ok : fail)}{(temp[i].Length > 240 ? std : ev)}\n\n");
                                 if (se) db_Text.Append($"\n\nSector ({i}) Length {temp[i].Length} Checksum {(valid_checksum[i] ? ok : fail)}{(temp[i].Length > 240 ? std : ev)}\n\n");
-                                if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(temp[i])));
-                                else db_Text.Append(Append_Strings(temp[i], dhex));
+                                if (VS_dat.Checked) db_Text.Append(dis ? Disassemble(temp[i], se ? 0 : addr).ToString() : Encoding.ASCII.GetString(Fix_Stops(temp[i])));
+                                else db_Text.Append(dis ? Disassemble(temp[i], se ? 0 : addr) : Append_Strings(temp[i], dhex));
+                                addr += temp[i].Length;
                             }
                         }
                         catch { }
                     }
+                    abs_addr = addr;
                 }
             }
 
@@ -1986,12 +1975,14 @@ namespace V_Max_Tool
                         total += temp[ii].Length;
                     }
                     if (tr) db_Text.Append($"\n\nTrack ({track}) {secF[NDS.cbm[t]]} Sectors ({NDS.sectors[t]}) Length ({total}) bytes\nDecoder: Vorpal Newer\n\n");
+                    int addr = ds < 1 ? abs_addr : 0;
                     for (int ii = 0; ii < NDS.sectors[t]; ii++)
                     {
                         string ck = cksm[current] ? ok : fail;
                         if (se) db_Text.Append($"\n\nSector ({current}) Length ({temp[current].Length}) bytes. Checksum {ck}\n\n");
-                        if (VS_dat.Checked) db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(temp[current])));
-                        else db_Text.Append(Append_Strings(temp[current], dhex));
+                        if (VS_dat.Checked) db_Text.Append(dis ? Disassemble(temp[current], se ? 0 :addr).ToString() : Encoding.ASCII.GetString(Fix_Stops(temp[current])));
+                        else db_Text.Append(dis ? Disassemble(temp[current], se ? 0 : addr) : Append_Strings(temp[current], dhex));
+                        addr += temp[current].Length;
                         current += interleave;
                         if (current > NDS.sectors[t] - 1)
                         {
@@ -1999,6 +1990,7 @@ namespace V_Max_Tool
                             current = 0 + s;
                         }
                     }
+                    abs_addr = addr;
                 }
             }
         }
@@ -2034,8 +2026,9 @@ namespace V_Max_Tool
         private void Fix_Errors()
         {
             Stopwatch sw = Stopwatch.StartNew();
-            bool tfixed = false;
+            bool tfixed = false, rewritten = false;
             string s, t;
+            MessageBoxIcon icon = MessageBoxIcon.Information;
             int err = 0;
             for (int j = 0; j < 2; j++)
             {
@@ -2057,6 +2050,12 @@ namespace V_Max_Tool
             {
                 s = "Image repair failed!";
                 t = "Failed!";
+                icon = MessageBoxIcon.Warning;
+            }
+            else if (!rewritten)
+            {
+                s = "No errors found!";
+                t = "Clean Image!";
             }
             else
             {
@@ -2064,7 +2063,7 @@ namespace V_Max_Tool
                 t = "Success!!";
             }
             sw.Stop();
-            MessageForYouSir(t, s);
+            MessageForYouSir(t, s, icon);
 
             void FixVMX2(int track)
             {
@@ -2087,7 +2086,7 @@ namespace V_Max_Tool
                                     var e = Encode_VmaxGCR(d, true, older);
                                     BitArray y = new BitArray(Flip_Endian(e));
                                     for (int i = 0; i < y.Length; i++) source[pos + i] = y[i];
-                                    rewrite = true;
+                                    rewrite = rewritten = true;
                                 }
                                 else err++;
                             }
@@ -2115,7 +2114,7 @@ namespace V_Max_Tool
                                 {
                                     byte[] e = Encode_VmaxGCR(sec, true);
                                     for (int i = 0; i < e.Length; i++) source[pos + i] = e[i];
-                                    rewrite = true;
+                                    rewrite = rewritten = true;
                                 }
                                 else err++;
                             }
@@ -2143,7 +2142,7 @@ namespace V_Max_Tool
                                 {
                                     source[pos + k] = newsec[k];
                                 }
-                                rewrite = true;
+                                rewrite = rewritten = true;
                             }
                             else err++;
                         }
@@ -2184,7 +2183,7 @@ namespace V_Max_Tool
                                         byte[] e = v ? Encode_RLKv2(d) : Encode_RLKv1(d);
                                         BitArray y = new BitArray(Flip_Endian(e));
                                         for (int i = 0; i < y.Length; i++) source[(pos - 8) + i] = y[i];
-                                        rewrite = true;
+                                        rewrite = rewritten = true;
                                     }
                                     catch { }
                                 }
@@ -2217,7 +2216,7 @@ namespace V_Max_Tool
                                     var newsec = Fix_Checksum(dec, start, end);
                                     for (int k = 0; k < newsec.Length; k++) source[pos + k] = newsec[k];
                                 }
-                                rewrite = true;
+                                rewrite = rewritten = true;
                             }
                             else err++;
                         }
@@ -2251,7 +2250,7 @@ namespace V_Max_Tool
                                         header[1] = (byte)csm;
                                         var newheader = new BitArray(Flip_Endian(Encode_CBM_GCR(header)));
                                         for (int k = 0; k < newheader.Length; k++) source[pos + k] = newheader[k];
-                                        rewrite = true;
+                                        rewrite = rewritten = true;
                                     }
                                 }
                                 else err++;
@@ -2272,7 +2271,7 @@ namespace V_Max_Tool
                                         {
                                             var newsec = Fix_Checksum(secdata, 1, 257);
                                             for (int k = 0; k < newsec.Length; k++) source[blk_pos + k] = newsec[k];
-                                            rewrite = true;
+                                            rewrite = rewritten = true;
                                         }
                                     }
                                     catch { }

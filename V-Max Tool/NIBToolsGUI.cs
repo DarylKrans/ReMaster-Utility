@@ -319,13 +319,13 @@ namespace V_Max_Tool
             }
         }
 
-        void MessageForYouSir(string t, string m)
+        void MessageForYouSir(string t, string m, MessageBoxIcon icon = MessageBoxIcon.Warning)
         {
             MessageBoxButtons b = MessageBoxButtons.OK;
             using (Message_Center center = new Message_Center(this))
             {
-                if (InvokeRequired) Invoke(new Action(() => MessageBox.Show(m, t, b, MessageBoxIcon.Warning)));
-                else MessageBox.Show(m, t, b, MessageBoxIcon.Warning);
+                if (InvokeRequired) Invoke(new Action(() => MessageBox.Show(m, t, b, icon)));
+                else MessageBox.Show(m, t, b, icon);
             }
         }
 

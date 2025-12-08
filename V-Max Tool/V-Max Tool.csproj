@@ -95,6 +95,9 @@
     <Compile Include="GCR.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Import_File.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Initialize.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -121,7 +124,7 @@
     <Compile Include="Visualizer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Make_file.cs">
+    <Compile Include="Export_File.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Process_file.cs">

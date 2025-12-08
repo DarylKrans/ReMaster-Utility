@@ -51,6 +51,16 @@ namespace V_Max_Tool
                         else rep = 0;
                         if (rep > 15)
                         {
+                            /// ------------------------  Test Code ---------------------------
+                            // ---- Check if this is a loader produced by Revolution V ------------------------------------------
+                            var ldr_seg = Bit2Byte(s, pos, (i - (rep - (cbm ? 1 : 0))) << 3);
+                            for (int j = 0; j < ldr_seg.Length; j++)
+                            {   // Revolution V adds $55 gap and $4fffff sync before each loader sector
+                                if (MatchSeq(ldr_seg, new byte[] { 0x55, 0x55, 0x4f, 0xff }, j)) return ldr_seg;
+                            }
+                            // ---- Return un-processed loader if it is. Routines need more work to handle Rev-V loaders --------
+                            /// ------------------ Remove if causes issues --------------------
+                            // This next line filters arbitrary sync from V-Max loader segment to yield the true GCR data
                             var tmp = Filter_Sync(BitCopy(s, pos, (i - (rep - (cbm ? 1 : 0))) << 3), cbm ? std : custom)
                                 .Where(b => b != 0xff).ToArray();
                             len = tmp.Length;
@@ -58,7 +68,6 @@ namespace V_Max_Tool
                             if (tmp.Length > 2056 && tmp.Length < 2200) len = 2056; // v-max v0-1 loader length
                             if (tmp.Length > 2701 && tmp.Length < 3000) len = 2701; // v-max v2   loader length
                             if (tmp.Length > 3089) len = 3089;                      // v-max v3-4 loader length
-                            //File.WriteAllBytes($@"c:\test\ldr_seg.bin", CopyArray(tmp, 0, len));
                             //SaveBin(CopyArray(tmp, 0, len), "contraseg");
                             return CopyArray(tmp, 0, len);
                         }
@@ -240,7 +249,7 @@ namespace V_Max_Tool
             {
                 (byte[][] temp, bool[] cksm) = Decode_VM_Loader(data);
                 // Make sure checksums are all OK, and make sure this is a V-Max v2 Loader (7 sectors)
-                if (cksm.Any(x => x == false) || temp.Length != 7) return new byte[0];
+                if (cksm.Any(x => x == false) || temp.Length != 7) return data;
                 // Swap header values according to selected values from Advanced Options
                 if (temp[3][86] == 0x64 || temp[3][86] == 0x4e) temp[3][86] = headers[0];
                 if (temp[3][124] == 0x46 || temp[3][124] == 0x4e || temp[3][124] == 0x64) temp[3][124] = headers[1];
