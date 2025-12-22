@@ -468,6 +468,50 @@ namespace V_Max_Tool
             return output;
         }
 
+        byte[] Decode_VmaxGCR_Linear(byte[] rawGcr)    // Decode V-Max (custom) Sectors
+        {
+            if (rawGcr == null) return null;
+            int chunks = rawGcr.Length >> 2, b = 0;
+            byte aa, bb, cc;
+            List<byte> output = new List<byte>();
+            //byte[] output = new byte[chunks * 3];
+            for (int i = 0; i < rawGcr.Length; i += 4)
+            {
+                try
+                {
+                    byte mask = (byte)(VMax_gcrTable.TryGetValue(rawGcr[i], out var val) ? val : 0xff);
+                    aa = ((byte)(mask << 2 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 1], out val) ? val : 0xff)));
+                    bb = ((byte)(mask << 4 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 2], out val) ? val : 0xff)));
+                    cc = ((byte)(mask << 6 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 3], out val) ? val : 0xff)));
+                    output.Add(cc);
+                    output.Add(bb);
+                    output.Add(aa);
+                }
+                catch { }
+            }
+            return output.ToArray();
+        }
+
+        byte[] Decode_VmaxGCR_Linear2(byte[] rawGcr)    // Decode V-Max (custom) Sectors
+        {
+            if (rawGcr == null) return null;
+            int chunks = rawGcr.Length >> 2, b = 0;
+            List<byte> output = new List<byte>();
+            //byte[] output = new byte[chunks * 3];
+            for (int i = 0; i < rawGcr.Length; i += 4)
+            {
+                try
+                {
+                    byte mask = (byte)(VMax_gcrTable.TryGetValue(rawGcr[i], out var val) ? val : 0xff);
+                    output.Add((byte)(mask << 2 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 1], out val) ? val : 0xff)));
+                    output.Add((byte)(mask << 4 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 2], out val) ? val : 0xff)));
+                    output.Add((byte)(mask << 6 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 3], out val) ? val : 0xff)));
+                }
+                catch { }
+            }
+            return output.ToArray();
+        }
+
         byte[] Encode_VmaxGCR(byte[] data, bool Calculate_Checksum = false, bool older = false)
         {
             if (data == null || data.Length < 3) return null;

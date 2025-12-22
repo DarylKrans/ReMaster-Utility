@@ -62,6 +62,7 @@ namespace V_Max_Tool
         public static string Prot_Method = string.Empty;
         public static string[][] Info = new string[0][];
         public static byte[][][] Sector = new byte[0][][];
+        public static bool Cart_Protection = false;
     }
 
     public static class NDA  // Global variables for adjusted-sync arrays

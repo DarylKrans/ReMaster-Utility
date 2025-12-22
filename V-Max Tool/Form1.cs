@@ -16,7 +16,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2i Test Build 12082025";
+        private static readonly string ver = " v1.2v Test Build 12222025";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -282,6 +282,8 @@ namespace V_Max_Tool
                         Set_Buttons_Active();
                         Blk_pan.Enabled = true;
                         if (recent) AddRecentFile(file);
+                        P_Cart.Visible = NDS.Cart_Protection;
+
                     }
                     catch (Exception ex)
                     {
@@ -1011,6 +1013,14 @@ namespace V_Max_Tool
             }
             else groupBox1.Enabled = true;
             Data_Viewer();
+        }
+
+        private void P_Cart_CheckedChanged(object sender, EventArgs e)
+        {
+            if (P_Cart.Checked)
+            {
+                V3_Auto_Adjust();
+            }
         }
     }
 }

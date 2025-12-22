@@ -277,8 +277,8 @@ namespace V_Max_Tool
             NDS.t18_ID = new byte[4];
             NDS.Adjust = new bool[len];
             NDS.Info = new string[len][];
-
             NDS.Sector = new byte[len][][];
+            NDS.Cart_Protection = false;
             /// NDA is the destination or output array
             NDA.Track_Data = new byte[len][];
             NDA.Sector_Zero = new int[len];

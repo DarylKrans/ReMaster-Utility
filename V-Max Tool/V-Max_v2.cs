@@ -27,6 +27,7 @@ namespace V_Max_Tool
         private static readonly byte[] vv2p = { 0x4e, 0xa5, 0xa5, 0xa5 };
         private static byte[] vmax_dec_table = new byte[0];
         private static byte[] v2stub = new byte[0];
+        private static readonly byte[] cart_patch_v2 = { 0x39, 0x00, 0xcd, 0xf1, 0xd7 };
 
         void GetNewHeaders()
         {
@@ -186,6 +187,8 @@ namespace V_Max_Tool
                         if (sec_dat[i][j] == 0xe2) sec_dat[i][j] = 0xea;
                     }
                 }
+                //if (track_num == 19 && i == 14 && P_Cart.Checked) sec_dat[i] = Find_Cart_Protection_v2_Compressed(sector_data[i], true, use_new_Headers).Item2;
+                if (P_Cart.Checked) sec_dat[i] = Find_Cart_Protection_v2(sec_dat[i], track_num == 19, use_new_Headers).Item2;
             }
             int hlen = (((t_dens - (sec_dat.Where(x => x != null).Sum(x => x.Length) + t_sync + 15)) / sectors) >> 1) - 1;
             using (var buffer = new MemoryStream())
@@ -212,7 +215,61 @@ namespace V_Max_Tool
             }
         }
 
-        (byte[], int, int, int, int, string[], int, int, byte[], byte[][]) Get_V2_Track_Info(byte[] data, int trk)
+        (bool, byte[]) Find_Cart_Protection_v2(byte[] data, bool t19s14, bool use_newer_GCR = false)
+        {
+            if (data == null) return (false, null);
+            //bool older = !use_newer_GCR;
+            bool older = use_newer_GCR ? false : true;
+            //if (!(V2_swap_headers.Visible && V2_swap_headers.Checked))
+            if (!use_newer_GCR)
+            {
+                for (int i = 0; i < data.Length; i++)
+                {
+                    if (data[i] == 0xe2 || data[i] == 0xa3)
+                    {
+                        older = true;
+                        break;
+                    }
+                }
+            }
+            byte[] temp = Decode_VmaxGCR(data);
+            if (t19s14) // Do Compressed Search & Replace
+            {
+                byte[][] search = new byte[3][];
+                byte[][] replace = new byte[3][];
+                /// Patch bytes (Search for / Repplace with)
+                byte[] offsets = new byte[] { 0x88, 0xd7, 0x76 };   // sector offsets for HCS, BSB, G / GDD
+                search[0] = new byte[] { 0x9c, 0x38 };  // Harrier Combat Simulator
+                replace[0] = new byte[] { 0x15, 0x0b };
+                search[1] = new byte[] { 0x63, 0xd0 };  // Bad Street Brawler
+                replace[1] = new byte[] { 0x66, 0x00 };
+                search[2] = new byte[] { 0xd2, 0xb4 };  // Gauntlet / Gauntlet Deeper Dungeons
+                replace[2] = new byte[] { 0xd8, 0x10 };
+                for (int i = 0; i < search.Length; i++)
+                {
+                    var srch = CopyArray(temp, offsets[i], 2);
+                    if (MatchSeq(search[i], srch))
+                    {
+                        Buffer.BlockCopy(replace[i], 0, temp, offsets[i], 2);
+                        return (true, Encode_VmaxGCR(temp, true, older));
+                    }
+                }
+            }
+            // Code only reachable if Compressed Search failed.  Now doing Uncompressed Search
+            for (int i = 0; i < temp.Length; i++)
+            {
+                if (MatchSeq(temp, cart_patch_v2, i) && i > 2)
+                {
+                    int pos = i + cart_patch_v2.Length;
+                    Buffer.BlockCopy(temp, pos + 1, temp, pos - 2, 2);
+                    return (true, Encode_VmaxGCR(temp, true, older));
+                }
+            }
+
+            return (false, data);
+        }
+
+        (byte[], int, int, int, int, string[], int, int, byte[], byte[][], bool) Get_V2_Track_Info(byte[] data, int trk, bool cartP)
         {
             int tr = (tracks > 42) ? (trk / 2) + 1 : trk + 1;
             int data_start = 0, data_end = 0, sec_zero = 0, pos = 0, vs = 0, co = 0;
@@ -262,6 +319,9 @@ namespace V_Max_Tool
                             while (a[hlen] != end_byte[0]) hlen++;
                             var newpos = pos + 1 + (hlen << 3);
                             sec_data[sec] = Bit2Byte(source, newpos, 320 << 3); ;
+                            byte[] f = new byte[0];
+                            bool t19s14 = (tr == 19 && (a[1] ^ a[2]) == 14);
+                            if (!cartP) (cartP, f) = Find_Cart_Protection_v2(sec_data[sec], t19s14);
                             if (!batch)
                             {
                                 string sz = sec == 0 ? "*" : string.Empty;
@@ -305,7 +365,7 @@ namespace V_Max_Tool
             }
             catch { }
             if (!batch && err.Count > 0) foreach (var e in err) ErrorList.Add($"Checksum failed on track {tr}, sector {e}");
-            return (tdata, data_start >> 3, data_end >> 3, sec_zero >> 3, tmpdata.Length << 3, all_headers.ToArray(), headers.Count, 0, m, sec_data.ToArray());
+            return (tdata, data_start >> 3, data_end >> 3, sec_zero >> 3, tmpdata.Length << 3, all_headers.ToArray(), headers.Count, 0, m, sec_data.ToArray(), cartP);
 
             void Get_Header_Bytes(byte[] hdr)
             {

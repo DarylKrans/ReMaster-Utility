@@ -16,6 +16,7 @@ namespace V_Max_Tool
         private static readonly int v3_max_header = 8; //12;            // adjust the maximum length of the sector header (0x49) bytes
         private static readonly byte[] vm3_pos_sync = { 0x57, 0x5b, 0x5f, 0x7f, 0xff };
         private static readonly byte[] v3a = { 0x49, 0x49, 0x49, 0xee };
+        private static readonly byte[] cart_patch_v3 = { 0x82, 0xe0, 0x23, 0xff, 0x6c };
 
         void V3_Auto_Adjust()
         {
@@ -124,7 +125,14 @@ namespace V_Max_Tool
                         {
                             byte[] getsec = Bit2Byte(source, pos, Math.Min(340 << 3, source.Length - pos)); // take more than we need
                             int secsize = Get_vm3_sectorSize(getsec, 0);        // find exact size of sector
-                            sector.Add(cursec, CopyFrom(getsec, 0, secsize));  // copy relevant sector data into the array
+                            byte[] asec = CopyFrom(getsec, 0, secsize);
+                            /// ------------------------------ Test Section ------------------------------------
+                            //(bool cart, byte[] newsec) = Find_Cart_Protection(Decode_VmaxGCR_Linear(asec));
+                            (bool cart, byte[] newsec) = Find_Cart_Protection_v3(asec);
+                            if (cart && ((P_Cart.Visible && P_Cart.Checked) || batch)) sector.Add(cursec, newsec);
+                            else sector.Add(cursec, asec);  // copy relevant sector data into the array
+                            /// --------------------------------------------------------------------------------
+                            //sector.Add(cursec, CopyFrom(getsec, 0, secsize));  // copy relevant sector data into the array
                             tlen += secsize + 1 + sync;
                             i += secsize << 3; // advance source pointer near the end of sector.
                         }
@@ -167,6 +175,30 @@ namespace V_Max_Tool
                 }
                 return possible_Filler.Any(x => x != filler) ? (byte)0xff : filler;
             }
+        }
+
+        (bool, byte[]) Find_Cart_Protection_v3(byte[] data)
+        {
+            if (data == null) return (false, null);
+            byte[] temp = Decode_VmaxGCR_Linear(data);
+            for (int i = 0; i < temp.Length - cart_patch_v3.Length; i++)
+            {
+                if (MatchSeq(temp, cart_patch_v3, i) && i > 2)
+                {
+                    Buffer.BlockCopy(temp, i - 3, temp, i, 2);
+                    int chunks = temp.Length / 3;
+                    byte[] output = new byte[temp.Length];
+                    for (int j = 0; j < chunks; j++)
+                    {
+                        int src = j * 3;
+                        output[j] = temp[src + 2];
+                        output[j + chunks] = temp[src + 1];
+                        output[j + (chunks * 2)] = temp[src];
+                    }
+                    return (true, Encode_VmaxGCR(output, true));
+                }
+            }
+            return (false, data);
         }
 
         //(string[], int, int, int, int, int, int, int) Get_vmv3_track_length(byte[] data, int trk)
@@ -285,7 +317,7 @@ namespace V_Max_Tool
         //    return (s.ToArray(), data_start >> 3, data_end >> 3, sector_zero >> 3, ((data_end - data_start) >> 3), ss.Count, header_avg, gap_sector);
         //}
 
-        (string[], int, int, int, int, int, int, int) Get_vmv3_track_length(byte[] data, int trk)
+        (string[], int, int, int, int, int, int, int, bool) Get_vmv3_track_length(byte[] data, int trk, bool cartP)
         {
             int data_start = 0;
             int data_end = 0;
@@ -297,6 +329,7 @@ namespace V_Max_Tool
             int sectors = 0;
             bool start_found = false;
             bool end_found = false;
+            //bool cartP = false;
             byte head_end = 0xee; /// V-Max v3 header end byte located directly following the 49-49-49 pattern
             byte[] comp = new byte[2];
             byte[] head = new byte[18];
@@ -323,6 +356,8 @@ namespace V_Max_Tool
                             int embsize = (decgcr[5] + 2 + (data[i + ((decgcr[5] + 2) << 2) + 2] == 0xf7 ? 1 : 0)) << 2;
                             string mismatch = embsize != secsize ? $" ! {embsize}" : string.Empty;
                             byte[] sdat = Decode_VmaxGCR(CopyFrom(data, i + 1, secsize));
+                            //if (!cartP) cartP = Find_Cart_Protection(Decode_VmaxGCR_Linear(CopyFrom(data, i+ 1, secsize))).Item1;
+                            if (!cartP) cartP = Find_Cart_Protection_v3(CopyFrom(data, i + 1, secsize)).Item1;
                             int csm = 0;
                             foreach (byte b in sdat) csm ^= b;
                             if (csm != 0) err.Add(sec);
@@ -385,7 +420,7 @@ namespace V_Max_Tool
                 var errtk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
                 foreach (var e in err) ErrorList.Add($"Checksum failed on track {errtk}, sector {e}");
             }
-            return (s.ToArray(), data_start, data_end, sector_zero, (data_end - data_start), ss.Count, header_avg, gap_sector);
+            return (s.ToArray(), data_start, data_end, sector_zero, (data_end - data_start), ss.Count, header_avg, gap_sector, cartP);
         }
 
         (byte[], int, int) Adjust_Vmax_V3_Sync(byte[] data, int data_start, int data_end, int sector_zero, int sectors = 0)

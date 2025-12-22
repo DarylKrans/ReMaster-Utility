@@ -271,7 +271,7 @@ namespace V_Max_Tool
                     case 2: paramString = $"{openpar}{prefix}{param1:X2}{clospar}{ext}"; break;
                     case 3: paramString = $"{openpar}{prefix}{param2:X2}{param1:X2}{clospar}{ext}"; break;
                 }
-                string addr = $"{pcoffset.ToString("X6").Substring(0,2)}:{pcoffset.ToString("X6").Substring(2)}";
+                string addr = $"{pcoffset.ToString("X6").Substring(0, 2)}:{pcoffset.ToString("X6").Substring(2)}";
                 //list.Append($"{pcoffset:X6}  {opcodeByte:X2} {(opcode.Length >= 2 ? $"{param1:X2}" : b)} {(opcode.Length == 3 ? $"{param2:X2}" : b)} {opcode.Mnemonic} {(opcode.Absolute ? $"${target:X4}" : paramString)}\n");
                 list.Append($"{addr}  {opcodeByte:X2} {(opcode.Length >= 2 ? $"{param1:X2}" : b)} {(opcode.Length == 3 ? $"{param2:X2}" : b)} {opcode.Mnemonic} {(opcode.Absolute ? $"${target:X4}" : paramString)}\n");
                 //list.Add($"{pcoffset:X4}  {opcodeByte:X2} {(opcode.Length >= 2 ? $"{param1:X2}" : b)} {(opcode.Length == 3 ? $"{param2:X2}" : b)} {opcode.Mnemonic} {(opcode.absolute ? $"${target:X4}" :paramString)}");

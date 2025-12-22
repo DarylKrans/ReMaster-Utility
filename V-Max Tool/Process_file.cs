@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -630,6 +629,7 @@ namespace V_Max_Tool
                 }
                 if (NDS.cbm[trk] == 2)
                 {
+                    bool cart = false;
                     int t = tracks > 42 ? (trk / 2) : trk;
                     if (t < 38)
                     {
@@ -643,12 +643,15 @@ namespace V_Max_Tool
                             NDS.Info[trk],
                             NDS.sectors[trk],
                             NDS.Gap_Sector[trk],
-                            NDS.v2info[trk], NDS.Sector[trk]) = Get_V2_Track_Info(NDS.Track_Data[trk], trk);
+                            NDS.v2info[trk], NDS.Sector[trk],
+                            cart) = Get_V2_Track_Info(NDS.Track_Data[trk], trk, NDS.Cart_Protection);
+                        if (!NDS.Cart_Protection && cart) NDS.Cart_Protection = true;
                     }
                     else NDS.cbm[trk] = secF.Length - 1;
                 }
                 if (NDS.cbm[trk] == 3)
                 {
+                    bool cart = false;
                     int t = tracks > 42 ? (trk / 2) : trk;
                     if (t < 38)
                     {
@@ -660,10 +663,12 @@ namespace V_Max_Tool
                             NDS.Sector_Zero[trk],
                             len, NDS.sectors[trk],
                             NDS.Header_Len[trk],
-                            NDS.Gap_Sector[trk]) = Get_vmv3_track_length(NDS.Track_Data[trk], trk);
+                            NDS.Gap_Sector[trk],
+                            cart) = Get_vmv3_track_length(NDS.Track_Data[trk], trk, NDS.Cart_Protection);
                         NDS.Track_Length[trk] = len * 8;
                         NDS.Sector_Zero[trk] *= 8;
                         NDA.sectors[trk] = NDS.sectors[trk];
+                        if (!NDS.Cart_Protection && cart) NDS.Cart_Protection = true;
                     }
                     else NDS.cbm[trk] = secF.Length - 1;
                 }
@@ -855,6 +860,7 @@ namespace V_Max_Tool
             {
                 RunBusy(() =>
                 {
+                    P_Cart.Visible = NDS.Cart_Protection;
                     end_track = tracks;
                     fat_trk = -1;
                     if (!new_disk) (cyan, ctrk) = Check_Cyan_Loader(false);
@@ -1751,7 +1757,7 @@ namespace V_Max_Tool
                     var lump = ArrayConcat(sectors.ToArray());
                     jump_to[(int)trk] = db_Text.Length;
                     if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({tlen}) bytes\n Decoder: (format unknown, Default Standard CBM)\n\n");
-                    if (!VS_dat.Checked) db_Text.Append(dis? Disassemble(lump, addr) : Append_Strings(lump, dhex));
+                    if (!VS_dat.Checked) db_Text.Append(dis ? Disassemble(lump, addr) : Append_Strings(lump, dhex));
                     else db_Text.Append(Encoding.ASCII.GetString(Fix_Stops(ArrayConcat(sectors.ToArray()))));
                     abs_addr += lump.Length;
                 }
@@ -1841,7 +1847,7 @@ namespace V_Max_Tool
                     abs_addr = addr;
                 }
             }
-           
+
             void Disp_RLK(int t, double track, BitArray s)
             {
                 int sec_limit = (int)trk < 18 ? 12 : 11;
@@ -1937,7 +1943,7 @@ namespace V_Max_Tool
                         catch { }
                     }
                     if (tr) db_Text.Append($"\n\nTrack ({track})  Data Format: {secF[NDS.cbm[t]]} Length ({total}) bytes\n\n");
-                    
+
                     int addr = ds < 1 ? abs_addr : 0;
                     for (int i = 0; i < NDS.sectors[t]; i++)
                     {
@@ -1980,7 +1986,7 @@ namespace V_Max_Tool
                     {
                         string ck = cksm[current] ? ok : fail;
                         if (se) db_Text.Append($"\n\nSector ({current}) Length ({temp[current].Length}) bytes. Checksum {ck}\n\n");
-                        if (VS_dat.Checked) db_Text.Append(dis ? Disassemble(temp[current], se ? 0 :addr).ToString() : Encoding.ASCII.GetString(Fix_Stops(temp[current])));
+                        if (VS_dat.Checked) db_Text.Append(dis ? Disassemble(temp[current], se ? 0 : addr).ToString() : Encoding.ASCII.GetString(Fix_Stops(temp[current])));
                         else db_Text.Append(dis ? Disassemble(temp[current], se ? 0 : addr) : Append_Strings(temp[current], dhex));
                         addr += temp[current].Length;
                         current += interleave;
