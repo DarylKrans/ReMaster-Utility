@@ -108,6 +108,157 @@ namespace V_Max_Tool
         //    File.WriteAllLines(OutputFile, list.ToArray());
         //}
 
+        (bool has_prot, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sec)
+        {
+            bool has_prot = false;
+            if (track == 5 && sec == 8) // Paperboy
+            {
+                byte[] offset = new byte[] { 0xb3, 0xc6 };
+                byte[] replace = new byte[] { 0xf0, 0xaa };
+                byte[][] search = new byte[2][];
+                search[0] = new byte[] { 0xe0, 0x5a, 0x61 };
+                search[1] = new byte[] { 0x5a, 0x18, 0xb6 };
+               
+                bool match = true;
+                for (int i = 0; i < offset.Length; i++)
+                {
+                    if (!MatchSeq(data, search[i], offset[i])) match = false;
+                }
+                if (match)
+                { 
+                    for (int i = 0; i < offset.Length; i++) data[offset[i]] = replace[i];
+                    has_prot = true;
+                }
+            }
+
+            return (has_prot, data);
+        }
+
+        byte[] VM0_encodeHigh = new byte[16]
+        {
+             0x0F, 0x0A, 0x1E, 0x12,
+             0x09, 0x17, 0x13, 0x1D,
+             0x15, 0x19, 0x1A, 0x0D,
+             0x1B, 0x16, 0x0E, 0x0B
+        };
+
+        byte[] VM0_encodeLow = new byte[16]
+        {
+            0x0F, 0x0A, 0x1E, 0x12,
+            0x09, 0x17, 0x13, 0x1D,
+            0x15, 0x19, 0x1A, 0x0D,
+            0x1B, 0x16, 0x0E, 0x0B
+        };
+
+        byte[] VM0_highTable = new byte[32]
+        {
+            0xAE,0x00,0x02,0x02,0x2F,0x04,0x3A,0x03,
+            0xFF,0x40,0x10,0xF0,0xFF,0xB0,0xE0,0x00,
+            0xFF,0xFF,0x30,0x60,0xFF,0x80,0xD0,0x50,
+            0xFF,0x90,0xA0,0xC0,0xFF,0x70,0x20,0xFF
+        };
+
+        byte[] VM0_lowTable = new byte[32]
+        {
+            0xFF,0x90,0xA0,0xC0,0xFF,0x70,0x20,0xFF,
+            0xFF,0x04,0x01,0x0F,0xFF,0x0B,0x0E,0x00,
+            0xFF,0xFF,0x03,0x06,0xFF,0x08,0x0D,0x05,
+            0xFF,0x09,0x0A,0x0C,0xFF,0x07,0x02,0xFF
+        };
+
+        byte[] Decode_PB_GCR(byte[] gcr)
+        {
+            byte[] plain = new byte[(gcr.Length / 5) << 2];
+            int chunks = gcr.Length / 5;
+            for (int i = 0; i < chunks; i++)
+            {
+                int baseIndex = i * 5;
+                byte b1 = gcr[baseIndex];
+                byte b2 = gcr[baseIndex + 1];
+                plain[(i << 2) + 0] = CombineNibbles_PB(VM0_highTable[b1 >> 3], VM0_lowTable[((b1 << 2) | (b2 >> 6)) & 0x1f]);
+                b1 = gcr[baseIndex + 1];
+                b2 = gcr[baseIndex + 2];
+                plain[(i << 2) + 1] = CombineNibbles_PB(VM0_highTable[(b1 >> 1) & 0x1f], VM0_lowTable[((b1 << 4) | (b2 >> 4)) & 0x1f]);
+                b1 = gcr[baseIndex + 2];
+                b2 = gcr[baseIndex + 3];
+                plain[(i << 2) + 2] = CombineNibbles_PB(VM0_highTable[((b1 << 1) | (b2 >> 7)) & 0x1f], VM0_lowTable[(b2 >> 2) & 0x1f]);
+                b1 = gcr[baseIndex + 3];
+                b2 = gcr[baseIndex + 4];
+                plain[(i << 2) + 3] = CombineNibbles_PB(VM0_highTable[((b1 << 3) | (b2 >> 5)) & 0x1f], VM0_lowTable[b2 & 0x1f]);
+            }
+            return plain;
+
+            byte CombineNibbles_PB(byte highNibble, byte lowNibble)
+            {
+                if (highNibble == 0xff || lowNibble == 0xff) return 0x00;
+                return (byte)(highNibble | lowNibble);
+            }
+        }
+
+        byte[] Encode_VM0_GCR(byte[] plain)
+        {
+            int l = plain.Length >> 2;
+            byte[] gcr = new byte[l * 5];
+            for (int i = 0; i < l; i++)
+            {
+                int baseIndex = i << 2;
+                byte p1 = plain[baseIndex];
+                byte p2 = plain[baseIndex + 1];
+                byte p3 = plain[baseIndex + 2];
+                byte p4 = plain[baseIndex + 3];
+                gcr[0 + (i * 5)] = (byte)((VM0_encodeHigh[p1 >> 4] << 3) | (VM0_encodeLow[p1 & 0x0f] >> 2));
+                gcr[1 + (i * 5)] = (byte)((VM0_encodeLow[p1 & 0x0f] << 6) | (VM0_encodeHigh[p2 >> 4] << 1) | (VM0_encodeLow[p2 & 0x0f] >> 4));
+                gcr[2 + (i * 5)] = (byte)((VM0_encodeLow[p2 & 0x0f] << 4) | (VM0_encodeHigh[p3 >> 4] >> 1));
+                gcr[3 + (i * 5)] = (byte)((VM0_encodeHigh[p3 >> 4] << 7) | (VM0_encodeLow[p3 & 0x0f] << 2) | (VM0_encodeHigh[p4 >> 4] >> 3));
+                gcr[4 + (i * 5)] = (byte)((VM0_encodeHigh[p4 >> 4] << 5) | VM0_encodeLow[p4 & 0x0f]);
+            }
+            return gcr;
+        }
+
+        static byte DecodePB_Data(byte input)
+        {
+            byte high = (byte)((input >> 4) & 0x0F);
+            byte low = (byte)(input & 0x0F);
+
+            byte result = 0;
+
+            // Take high nibble bits
+            result |= (byte)(((high >> 3) & 1) << 4); // bit 4
+            result |= (byte)(((high >> 1) & 1) << 5); // bit 5
+            result |= (byte)(((high >> 2) & 1) << 6); // bit 6
+            result |= (byte)(((high >> 0) & 1) << 7); // bit 7
+
+            // Take low nibble bits
+            result |= (byte)(((low >> 3) & 1) << 0);  // bit 0
+            result |= (byte)(((low >> 1) & 1) << 1);  // bit 1
+            result |= (byte)(((low >> 2) & 1) << 2);  // bit 2
+            result |= (byte)(((low >> 0) & 1) << 3);  // bit 3
+            return result;
+        }
+
+        static byte EncodePB_Data(byte input)
+        {
+            byte highOut = (byte)((input >> 4) & 0x0F);
+            byte lowOut = (byte)(input & 0x0F);
+
+            byte high = 0;
+            byte low = 0;
+
+            // Rebuild high nibble
+            high |= (byte)(((highOut >> 0) & 1) << 3); // bit 3
+            high |= (byte)(((highOut >> 1) & 1) << 1); // bit 1
+            high |= (byte)(((highOut >> 2) & 1) << 2); // bit 2
+            high |= (byte)(((highOut >> 3) & 1) << 0); // bit 0
+
+            // Rebuild low nibble
+            low |= (byte)(((lowOut >> 0) & 1) << 3); // bit 3
+            low |= (byte)(((lowOut >> 1) & 1) << 1); // bit 1
+            low |= (byte)(((lowOut >> 2) & 1) << 2); // bit 2
+            low |= (byte)(((lowOut >> 3) & 1) << 0); // bit 0
+
+            return (byte)((high << 4) | low);
+        }
+
         void Rotate_andDump(byte[] data)
         {
             if (data == null) return;

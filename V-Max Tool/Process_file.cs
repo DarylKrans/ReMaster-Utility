@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace V_Max_Tool
 {
@@ -26,7 +27,7 @@ namespace V_Max_Tool
         private static string fnappend = "";
         private static int tracks = 0;
         private static bool displayed = false;
-        private static bool loader_fixed = false;
+        //private static bool loader_fixed = false;
         private static byte[] nib_header = new byte[256];
         private static byte[] g64_header = new byte[684];
         private static readonly string[] supported = { ".nib", ".g64", ".d64", ".nbz", ".z64" }; // Supported file extensions list
@@ -119,7 +120,7 @@ namespace V_Max_Tool
                 LB_File_List = new List<string>();
                 for (int i = 0; i < batch_list.Length; i++)
                 {
-                    loader_fixed = false;
+                    //loader_fixed = false;
                     NDG.L_Rot = false;
                     if (!cancel)
                     {
@@ -255,6 +256,8 @@ namespace V_Max_Tool
                                     label2.Text = $"Parse time : {parse.Elapsed.TotalMilliseconds} ms, Process time : {proc.Elapsed.TotalMilliseconds} Total {parse.Elapsed.TotalMilliseconds + proc.Elapsed.TotalMilliseconds} ms";
                                 }));
                                 Make_G64(output, end_track);
+                                /// uncomment below and comment above to only output images with cart protection
+                                //if (NDS.Cart_Protection) Make_G64(output, end_track);
                             }
                         }
                         catch { }
@@ -307,6 +310,7 @@ namespace V_Max_Tool
                     Get_Track_Info(i);
                 }
             }
+
             /// -- checks if V-Max v2 detected, which version it is, and enable 'Fix Weak Bits' option if applicable.  Else disiables option
             if (NDS.cbm.Any(x => x == 2) && NDS.v2info.Any(a => a != null && a.Length > 1 && a[1] == 0x46))
             {
@@ -595,6 +599,7 @@ namespace V_Max_Tool
                     try
                     {
                         bool cksm = !batch;
+                        bool cartP = false;
                         if (NDS.cbm[trk] == 1) cbm++; else mps++;
                         int it = 0;
                         while (NDS.Track_Length[trk] < 6200 << 3 && it < 10)
@@ -613,12 +618,14 @@ namespace V_Max_Tool
                                     NDS.Disk_ID[trk],
                                     _,
                                     NDS.Track_ID[trk],
-                                    NDS.Adjust[trk]) = CBM_Track_Info(NDS.Track_Data[trk], cksm, trk, NDS.cbm[trk] == 1);
+                                    NDS.Adjust[trk],
+                                    cartP) = CBM_Track_Info(NDS.Track_Data[trk], cksm, trk, NDS.cbm[trk] == 1);
                                 if (NDS.Track_Length[trk] > 8000 << 3) break;
                                 it++;
                             }
                             catch { }
                         }
+                        if (!NDS.Cart_Protection && cartP) NDS.Cart_Protection = true;
                         NDA.sectors[trk] = NDS.sectors[trk];
                         if (NDS.sectors[trk] == 1)
                         {
@@ -1150,6 +1157,19 @@ namespace V_Max_Tool
                             if ((track == 40 && NDS.sectors[trk] < 17)) temp = Remove_Weak_Bits(temp);
                             bool nul = false;
                             if (ctrack > 0 && (trk == ctrack)) (temp, nul) = Cyan_t32_GCR_Fix(temp);
+                            // Paperboy Cart-patch testing ----------------
+                            if (P_Cart.Checked && P_Cart.Visible && NDS.Cart_Protection && (!NDS.cbm.Any(x => x == 3) || NDS.cbm.Any(x => x == 2)))
+                            {
+                                if (track == 5)
+                                {
+                                    byte[] sec = Decode_CBM_Sector(temp, 8, true).data;
+                                    (bool has, byte[] patched) = Find_VMax_Cart_CBM(sec, track, 8);
+                                    if (has && patched != null && patched.Length == 256) temp = Replace_CBM_Sector(temp, 8, patched);
+                                }
+                            }
+                            //if (track == 5) File.WriteAllBytes($@"c:\test\paperboy_t5_s8_p.bin", Decode_CBM_Sector(temp, 8, true).data);
+                            //if (track == 5) temp = Replace_CBM_Sector(temp, 8, File.ReadAllBytes($@"c:\test\truetest.bin"));
+                            // --------------------------------------------
                             Set_Dest_Arrays(temp, trk);
                         }
                         catch { error = true; }

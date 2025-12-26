@@ -1877,7 +1877,7 @@ namespace V_Max_Tool
                     Batch_List_Box.Visible = false;
                     Dir_screen.Clear();
                     Dir_screen.Text = "LOAD\"$\",8\nSEARCHING FOR $\nLOADING";
-                    loader_fixed = false;
+                    //loader_fixed = false;
                     Worker_Main?.Abort();
                     Worker_Main = new Thread(new ThreadStart(() => Do_work("", false)));
                     Worker_Main.Start();

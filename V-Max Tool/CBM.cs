@@ -112,7 +112,7 @@ namespace V_Max_Tool
             return buffer.ToArray();
         }
 
-        (int, int, int, int, string[], int, int[], int, byte[], int[], int, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
+        (int, int, int, int, string[], int, int[], int, byte[], int[], int, bool, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
         {
             int track = trk;
             List<string> err = new List<string>();
@@ -136,6 +136,8 @@ namespace V_Max_Tool
             bool dont_adj = true;
             bool s_cksm = false;
             bool h_cksm = false;
+            bool cartP = false;
+            byte[] cartC;
             byte[] dec_hdr;
             byte[] sec_hdr = new byte[10];
             byte[] Disk_ID = new byte[4];
@@ -192,7 +194,7 @@ namespace V_Max_Tool
                 foreach (string s in err) ErrorList.Add($"Checksum failed on track {errtk} sector {s}");
             }
             //File.WriteAllLines($@"c:\test\track{trk}headers.txt", lister.ToArray());
-            return (data_start, data_end, sector_zero, len, headers.ToArray(), sectors, s_st, total_sync, Disk_ID, s_pos, track_id, dont_adj);
+            return (data_start, data_end, sector_zero, len, headers.ToArray(), sectors, s_st, total_sync, Disk_ID, s_pos, track_id, dont_adj, cartP);
 
             void add_total()
             {
@@ -286,13 +288,15 @@ namespace V_Max_Tool
                         {
                             if (cbm)
                             {
-                                s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                //s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
+                                (cartC, s_cksm) = Decode_CBM_Sector(data, sect, true, source, data_start);
                                 if (!s_cksm)
                                 {
                                     byte[] ddd = new byte[0];
                                     s_cksm = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3)).checksum;
                                 }
                                 if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
+                                if (track + 1 == 5 && sect == 8) cartP = Find_VMax_Cart_CBM(cartC, track + 1, sect).has_prot;
                             }
                             else
                             {

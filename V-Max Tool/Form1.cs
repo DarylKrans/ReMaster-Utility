@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 
 
@@ -16,11 +17,11 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2v Test Build 12222025";
+        private static readonly string ver = " v1.2v1 Test Build 12252025";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
-        private static readonly byte loader_padding = 0x55;
+        //private static readonly byte loader_padding = 0x55;
         private static readonly int[] CBM_Standard_Density = { 7692, 7142, 6666, 6250 }; // <- density zone capacity accoriding to CBM specifications
         private static readonly int[] ReMaster_Adjusted_Density = { 7672, 7122, 6646, 6230 }; // <- adjusted capacity to account for minor RPM variation higher than 300
         private static readonly int[] vpl_density = { 7750, 6950, 6585, 6255 }; // <- Vorpal densities used to be more accurate to original disk-reads
@@ -134,32 +135,55 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            //Stopwatch sw = new Stopwatch();
-            //sw.Start();
-            //List<byte[]> loader = new List<byte[]>();
-            //for (int i = 0; i < 4; i++)
+            //byte[] f = Decode_PB_GCR(File.ReadAllBytes($@"c:\test\pbsec.bin"));
+            //File.WriteAllBytes($@"c:\test\1stdec.bin", f);
+
+            //int a = 0;
+            //byte b = 0;
+            //for (int i = 0; i < 256; i++)
             //{
-            //    loader.Add(File.ReadAllBytes($@"c:\test\rltest\v0l_s{i}"));
+            //    if ((i ^ 0x18) == 0x2b) b = (byte)(i);
             //}
+            //Text = $"{Hex_Val(new byte[] { (byte)(0x18 ^ 0x03) })}, {Hex_Val(new byte[] {b})}";
+
+            //Text = $"{Hex_Val(new byte[] { (byte)(0xb6 ^ 0x96)})}";
+
+            ////byte[] ret = Decode_PB_GCR(File.ReadAllBytes($@"c:\test\pbsec.bin"));
+            //byte[] ret = File.ReadAllBytes($@"c:\test\pbsec.bin");
+            ////byte[] dec = CopyArray(ret);
+            ////for (int i = 4; i < dec.Length - 4; i++) dec[i] = DecodePB_Data(dec[i]);
+            ////File.WriteAllBytes($@"c:\test\pbdec.bin", dec);
+            
+            /// Mod Paperboy to skip cartridge check ----------------
+            /// 
+            //byte[] dec = File.ReadAllBytes($@"c:\test\pbdecmod3.bin");
+            //byte c = 0;
+            //for (int i = 1; i < 256; i++) c ^= dec[i];
             //
-            ////byte[] l = Encode_VM_Loader(loader.ToArray());
-            //byte[] l = Encode_VM_Loader_CBM(loader.ToArray());
-            //sw.Stop();
-            //Text = $"{sw.Elapsed.TotalMilliseconds}";
-            //
-            //File.WriteAllBytes($@"c:\test\loadertestCBM.bin", l);
+            //byte[] renc = CopyArray(dec);
+            //for (int i = 4; i < renc.Length - 4; i++) renc[i] = EncodePB_Data(renc[i]);
+            //byte[] enc = Encode_VM0_GCR(renc);
+            //byte[] f = Decode_CBM_GCR(enc).decoded;
+            //byte csm = 0;
+            //for (int i = 1; i < 257; i++) csm ^= f[i];
+            //f[257] = csm;
+            //byte[] g = Encode_CBM_GCR(f);
+            //File.WriteAllBytes($@"c:\test\truetest.bin", g);
+            ///
+            /// -------------------------------------------------------
 
+            
+            //File.WriteAllBytes($@"c:\test\reencV0.bin", enc);
+            //byte csm = 0;
+            
+            //for (int i = 1; i < 256; i++)
+            //{
+            //    csm ^= g[i];
+            //}
+            //Text = $"{Hex_Val(new byte[] { c })}";
+            //File.WriteAllBytes($@"c:\test\pbnib.bin", Decode_PB_GCR(File.ReadAllBytes($@"c:\test\pbsec.bin")));
 
-            //byte[] l = File.ReadAllBytes($@"c:\test\v0ldr.bin");
-            //List<byte> u = new List<byte>();
-            //foreach (byte b in l) if (!u.Contains(b)) u.Add(b);
-            //u.Sort();
-            //u.Reverse();
-            //File.WriteAllBytes($@"c:\test\uniquev0.bin", u.ToArray());
-
-            //Text = $"{Hex_Val(new byte[] { (byte)(0xee ^ 0x52)  })}";
-
-            //BinToByte_Table($@"c:\test\uniquev0.bin", $@"c:\test\v0allowed.txt", "V0AllowedGCR", 16);
+            //BinToByte_Table($@"c:\test\pb700tbl.bin", $@"c:\test\700tbl.txt", "PB_Lookup", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
             button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
@@ -249,7 +273,7 @@ namespace V_Max_Tool
                 Batch_List_Box.Visible = false;
                 Dir_screen.Clear();
                 Dir_screen.Text = "LOAD\"$\",8\nSEARCHING FOR $\nLOADING";
-                loader_fixed = false;
+                //loader_fixed = false;
                 Worker_Main?.Abort();
                 Worker_Main = new Thread(new ThreadStart(() => Do_work(file)));
                 Worker_Main.Start();
@@ -283,7 +307,6 @@ namespace V_Max_Tool
                         Blk_pan.Enabled = true;
                         if (recent) AddRecentFile(file);
                         P_Cart.Visible = NDS.Cart_Protection;
-
                     }
                     catch (Exception ex)
                     {
@@ -1017,10 +1040,7 @@ namespace V_Max_Tool
 
         private void P_Cart_CheckedChanged(object sender, EventArgs e)
         {
-            if (P_Cart.Checked)
-            {
-                V3_Auto_Adjust();
-            }
+            if (P_Cart.Checked) V3_Auto_Adjust();
         }
     }
 }
