@@ -22,14 +22,18 @@ namespace V_Max_Tool
         {
             if (data == null && data.Length != 256) return (false, null);
             byte[] offset = new byte[0];
-            byte[][] replace = new byte[0][];
+            byte[] offset2 = new byte[0];
             byte[][] search = new byte[0][];
-            int matches = 0;
+            byte[][] search2 = new byte[0][];
+            byte[][] replace = new byte[0][];
+            byte[][] replace2 = new byte[0][];
+            //int matches = 0;
 
             if (track == 5)
             {
-                if (sec == 0)   // Into the Eagles Nest
+                if (sec == 0)   
                 {
+                    // Into the Eagles Nest
                     offset = new byte[] { 0xa2, 0xff };
                     replace = new byte[2][];
                     search = new byte[2][];
@@ -37,10 +41,20 @@ namespace V_Max_Tool
                     replace[0] = new byte[] { 0xf0, 0x5f };
                     search[1] = new byte[] { 0x37 };
                     replace[1] = new byte[] { 0xf7 };
+
+                    // Ms. Pac Man
+                    offset2 = new byte[] { 0x5a, 0xff };
+                    replace2 = new byte[2][];
+                    search2 = new byte[2][];
+                    search2[0] = new byte[] { 0xd9, 0xb2, 0xfe };
+                    replace2[0] = new byte[] { 0xd0, 0x75 };
+                    search2[1] = new byte[] { 0x85 };
+                    replace2[1] = new byte[] { 0x6c };
                 }
 
-                if (sec == 6)   // Dig Dug - Pole Position
+                if (sec == 6)
                 {
+                    // Dig Dug - Pole Position
                     offset = new byte[] { 0x55, 0xff };
                     replace = new byte[2][];
                     search = new byte[2][];
@@ -48,6 +62,15 @@ namespace V_Max_Tool
                     replace[0] = new byte[] { 0xa5 };
                     search[1] = new byte[] { 0x34 };
                     replace[1] = new byte[] { 0x54 };
+                    
+                    // Xevious
+                    offset2 = new byte[] { 0xe1, 0xff };
+                    replace2 = new byte[2][];
+                    search2 = new byte[2][];
+                    search2[0] = new byte[] { 0xdc, 0xa0, 0xbe };
+                    replace2[0] = new byte[] { 0xe5, 0x44 };
+                    search2[1] = new byte[] { 0x5e };
+                    replace2[1] = new byte[] { 0xbc };
                 }
 
                 if (sec == 8)   // Paperboy
@@ -97,22 +120,33 @@ namespace V_Max_Tool
 
             if (offset.Length > 0)
             {
+                (bool success, byte[] patched) = patch(offset, search, replace);
+                if (!success && offset2.Length > 0) (success, patched) = patch(offset2, search2, replace2);
+                // Match found, returning (success, patched sector)
+                if (success) return (true, patched);
+            }
+            // No matches found, returning (failure, original sector)
+            return (false, data);
+
+            (bool, byte[]) patch(byte[] ofst, byte[][] srch, byte[][] repl)
+            {
+                int matches = 0;
                 try
                 {
                     byte[] temp = CopyArray(data);
-                    for (int i = 0; i < offset.Length; i++)
+                    for (int i = 0; i < ofst.Length; i++)
                     {
-                        if (MatchSeq(temp, search[i], offset[i]))
+                        if (MatchSeq(temp, srch[i], ofst[i]))
                         {
-                            Buffer.BlockCopy(replace[i], 0, temp, offset[i], replace[i].Length);
+                            Buffer.BlockCopy(repl[i], 0, temp, ofst[i], repl[i].Length);
                             matches++;
                         }
                     }
-                    if (matches == offset.Length) return (true, temp);
+                    if (matches == ofst.Length) return (true, temp);
                 }
                 catch { }
+                return (false, null);
             }
-            return (false, data);
         }
 
         (bool, byte[]) Find_Cart_Protection_v2(byte[] data, bool t19s14, bool use_newer_GCR = false)

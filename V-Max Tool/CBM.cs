@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -115,7 +114,7 @@ namespace V_Max_Tool
 
         (int, int, int, int, string[], int, int[], int, byte[], int[], int, bool, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
         {
-            int[] ptracks = new int[] { 5, 39 }; 
+            int[] ptracks = new int[] { 5, 39 };
             int[] psector = new int[] { 8, 13 };
             List<string> err = new List<string>();
             int track = trk > 42 ? (trk >> 1) + 1 : trk + 1;

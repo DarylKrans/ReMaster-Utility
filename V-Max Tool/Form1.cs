@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
@@ -17,7 +16,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2x Test Build 12282025";
+        private static readonly string ver = " v1.2x Test Build 12292025";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -135,19 +134,23 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            //byte[] f = File.ReadAllBytes($@"c:\test\eaglesecmod.bin");
-            //
-            ///// encrypted sector
-            //byte[] g = Encode_VM0_GCR(f, true, true);
-            //File.WriteAllBytes($@"c:\test\eagleChanges.bin", CopyArray(Decode_CBM_GCR(g).decoded, 1, 256));
-            //File.WriteAllBytes($@"c:\test\eaglerenc.bin", g);
             
+            ///---------- Cart-Patch sector processing helpers
+
+            //byte[] f = File.ReadAllBytes($@"c:\test\mpmsecmod.bin");
+
+            /// encrypted sector
+            //byte[] g = Encode_VM0_GCR(f, true, true);
+            //File.WriteAllBytes($@"c:\test\mpmChanges.bin", CopyArray(Decode_CBM_GCR(g).decoded, 1, 256));
+            //File.WriteAllBytes($@"c:\test\mpmrenc.bin", g);
+
             /// plain sector
             //byte c = 0;
             //for (int i = 1; i < 256; i++) c ^= f[i];
             //f[256] = c;
             //File.WriteAllBytes($@"c:\test\gauntChanges.bin", CopyArray(f, 1, 256));
             //File.WriteAllBytes($@"c:\test\gauntrenc.bin", Build_Sector(CopyArray(f, 1, 256))); //, true));
+            /// ----------------------------------------------
 
             //BinToByte_Table($@"c:\test\pb700tbl.bin", $@"c:\test\700tbl.txt", "PB_Lookup", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);

@@ -214,7 +214,7 @@ namespace V_Max_Tool
                 return ArrayConcat(new byte[] { header1 }, secn, new byte[] { header2 });
             }
         }
-      
+
         (byte[], int, int, int, int, string[], int, int, byte[], byte[][], bool) Get_V2_Track_Info(byte[] data, int trk, bool cartP)
         {
             int tr = (tracks > 42) ? (trk / 2) + 1 : trk + 1;
