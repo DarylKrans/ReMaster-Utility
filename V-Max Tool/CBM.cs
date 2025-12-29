@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -114,9 +115,10 @@ namespace V_Max_Tool
 
         (int, int, int, int, string[], int, int[], int, byte[], int[], int, bool, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
         {
-            int track = trk;
+            int[] ptracks = new int[] { 5, 39 }; 
+            int[] psector = new int[] { 8, 13 };
             List<string> err = new List<string>();
-            if (tracks > 42) track = (trk / 2);
+            int track = trk > 42 ? (trk >> 1) + 1 : trk + 1;
             string[] csm = new string[] { "OK", "Failed!" };
             string decoded_header;
             int sectors = 0;
@@ -248,7 +250,7 @@ namespace V_Max_Tool
                             if (!sec_zero && dec_hdr[2] == 0x00)
                             {
                                 Buffer.BlockCopy(dec_hdr, 4, Disk_ID, 0, 4);
-                                if (track == 17)
+                                if (track == 18) // was 17
                                 {
                                     NDS.t18_ID = new byte[4];
                                     Buffer.BlockCopy(dec_hdr, 4, NDS.t18_ID, 0, 4);
@@ -296,7 +298,11 @@ namespace V_Max_Tool
                                     s_cksm = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3)).checksum;
                                 }
                                 if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
-                                if (track + 1 == 5 && sect == 8) cartP = Find_VMax_Cart_CBM(cartC, track + 1, sect).has_prot;
+                                if (!cartP) cartP = Find_VMax_Cart_CBM(cartC, track, sect).has_prot;
+                                //{
+                                //    int index = Array.IndexOf(ptracks, track);
+                                //    if (sect == psector[index]) cartP = Find_VMax_Cart_CBM(cartC, track, sect).has_prot;
+                                //}
                             }
                             else
                             {

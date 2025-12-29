@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -108,41 +109,7 @@ namespace V_Max_Tool
         //    File.WriteAllLines(OutputFile, list.ToArray());
         //}
 
-        (bool has_prot, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sec)
-        {
-            bool has_prot = false;
-            if (track == 5 && sec == 8) // Paperboy
-            {
-                byte[] offset = new byte[] { 0xb3, 0xc6 };
-                byte[] replace = new byte[] { 0xf0, 0xaa };
-                byte[][] search = new byte[2][];
-                search[0] = new byte[] { 0xe0, 0x5a, 0x61 };
-                search[1] = new byte[] { 0x5a, 0x18, 0xb6 };
-               
-                bool match = true;
-                for (int i = 0; i < offset.Length; i++)
-                {
-                    if (!MatchSeq(data, search[i], offset[i])) match = false;
-                }
-                if (match)
-                { 
-                    for (int i = 0; i < offset.Length; i++) data[offset[i]] = replace[i];
-                    has_prot = true;
-                }
-            }
-
-            return (has_prot, data);
-        }
-
-        byte[] VM0_encodeHigh = new byte[16]
-        {
-             0x0F, 0x0A, 0x1E, 0x12,
-             0x09, 0x17, 0x13, 0x1D,
-             0x15, 0x19, 0x1A, 0x0D,
-             0x1B, 0x16, 0x0E, 0x0B
-        };
-
-        byte[] VM0_encodeLow = new byte[16]
+        byte[] VM0_encode = new byte[16]
         {
             0x0F, 0x0A, 0x1E, 0x12,
             0x09, 0x17, 0x13, 0x1D,
@@ -166,7 +133,87 @@ namespace V_Max_Tool
             0xFF,0x09,0x0A,0x0C,0xFF,0x07,0x02,0xFF
         };
 
-        byte[] Decode_PB_GCR(byte[] gcr)
+        byte[] VM1_encode = new byte[16]
+        {
+            0x0E, 0x0A, 0x09, 0x1D,
+            0x1B, 0x16, 0x1A, 0x19,
+            0x13, 0x17, 0x0F, 0x1E,
+            0x0D, 0x0B, 0x12, 0x15
+        };
+
+        byte[] VM1_highTable = new byte[32]
+        {
+            0x00,0x00,0x86,0x04,0xEE,0x03,0x3A,0x03,
+            0x02,0x20,0x10,0xD0,0xFF,0xC0,0x00,0xA0,
+            0xFF,0x50,0xE0,0x80,0xFF,0xF0,0x50,0x90,
+            0x10,0x70,0x60,0x40,0xFF,0x30,0xB0,0xFF
+        };
+
+        byte[] VM1_lowTable = new byte[32]
+        {
+            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+            0xFF,0x02,0x01,0x0D,0xFF,0x0C,0x00,0x0A,
+            0xFF,0x05,0x0E,0x08,0xFF,0x0F,0x05,0x09,
+            0x01,0x07,0x06,0x04,0xFF,0x03,0x0B,0xFF
+        };
+
+        byte[] Decode_VM1_GCR(byte[] gcr, bool decrypt = false)
+        {
+            byte[] plain = new byte[(gcr.Length / 5) << 2];
+            int chunks = gcr.Length / 5;
+            for (int i = 0; i < chunks; i++)
+            {
+                int baseIndex = i * 5;
+                byte b1 = gcr[baseIndex];
+                byte b2 = gcr[baseIndex + 1];
+                plain[(i << 2) + 0] = CombineNibbles_PB(VM1_highTable[b1 >> 3], VM1_lowTable[((b1 << 2) | (b2 >> 6)) & 0x1f]);
+                b1 = gcr[baseIndex + 1];
+                b2 = gcr[baseIndex + 2];
+                plain[(i << 2) + 1] = CombineNibbles_PB(VM1_highTable[(b1 >> 1) & 0x1f], VM1_lowTable[((b1 << 4) | (b2 >> 4)) & 0x1f]);
+                b1 = gcr[baseIndex + 2];
+                b2 = gcr[baseIndex + 3];
+                plain[(i << 2) + 2] = CombineNibbles_PB(VM1_highTable[((b1 << 1) | (b2 >> 7)) & 0x1f], VM1_lowTable[(b2 >> 2) & 0x1f]);
+                b1 = gcr[baseIndex + 3];
+                b2 = gcr[baseIndex + 4];
+                plain[(i << 2) + 3] = CombineNibbles_PB(VM1_highTable[((b1 << 3) | (b2 >> 5)) & 0x1f], VM1_lowTable[b2 & 0x1f]);
+            }
+            return decrypt ? Decrypt_VM0(plain) : plain;
+
+            byte CombineNibbles_PB(byte highNibble, byte lowNibble)
+            {
+                if (highNibble == 0xff || lowNibble == 0xff) return 0x00;
+                return (byte)(highNibble | lowNibble);
+            }
+        }
+
+        byte[] Encode_VM1_GCR(byte[] plain, bool checksum, bool encrypt = false)
+        {
+            byte csm = 0;
+            int l = plain.Length >> 2;
+            if (encrypt) plain = Encrypt_VM0(plain);
+            if (checksum && plain.Length >= 256)
+            {
+                for (int i = 1; i < 256; i++) csm ^= plain[i];
+                plain[256] = csm;
+            }
+            byte[] gcr = new byte[l * 5];
+            for (int i = 0; i < l; i++)
+            {
+                int baseIndex = i << 2;
+                byte p1 = plain[baseIndex];
+                byte p2 = plain[baseIndex + 1];
+                byte p3 = plain[baseIndex + 2];
+                byte p4 = plain[baseIndex + 3];
+                gcr[0 + (i * 5)] = (byte)((VM1_encode[p1 >> 4] << 3) | (VM1_encode[p1 & 0x0f] >> 2));
+                gcr[1 + (i * 5)] = (byte)((VM1_encode[p1 & 0x0f] << 6) | (VM1_encode[p2 >> 4] << 1) | (VM1_encode[p2 & 0x0f] >> 4));
+                gcr[2 + (i * 5)] = (byte)((VM1_encode[p2 & 0x0f] << 4) | (VM1_encode[p3 >> 4] >> 1));
+                gcr[3 + (i * 5)] = (byte)((VM1_encode[p3 >> 4] << 7) | (VM1_encode[p3 & 0x0f] << 2) | (VM1_encode[p4 >> 4] >> 3));
+                gcr[4 + (i * 5)] = (byte)((VM1_encode[p4 >> 4] << 5) | VM1_encode[p4 & 0x0f]);
+            }
+            return gcr;
+        }
+
+        byte[] Decode_VM0_GCR(byte[] gcr, bool decrypt = false)
         {
             byte[] plain = new byte[(gcr.Length / 5) << 2];
             int chunks = gcr.Length / 5;
@@ -186,7 +233,7 @@ namespace V_Max_Tool
                 b2 = gcr[baseIndex + 4];
                 plain[(i << 2) + 3] = CombineNibbles_PB(VM0_highTable[((b1 << 3) | (b2 >> 5)) & 0x1f], VM0_lowTable[b2 & 0x1f]);
             }
-            return plain;
+            return decrypt ? Decrypt_VM0(plain) : plain;
 
             byte CombineNibbles_PB(byte highNibble, byte lowNibble)
             {
@@ -195,9 +242,16 @@ namespace V_Max_Tool
             }
         }
 
-        byte[] Encode_VM0_GCR(byte[] plain)
+        byte[] Encode_VM0_GCR(byte[] plain, bool checksum, bool encrypt = false)
         {
+            byte csm = 0;
             int l = plain.Length >> 2;
+            if (encrypt) plain = Encrypt_VM0(plain);
+            if (checksum && plain.Length >= 256)
+            {
+                for (int i = 1; i < 256; i++) csm ^= plain[i];
+                plain[256] = csm;
+            }
             byte[] gcr = new byte[l * 5];
             for (int i = 0; i < l; i++)
             {
@@ -206,14 +260,29 @@ namespace V_Max_Tool
                 byte p2 = plain[baseIndex + 1];
                 byte p3 = plain[baseIndex + 2];
                 byte p4 = plain[baseIndex + 3];
-                gcr[0 + (i * 5)] = (byte)((VM0_encodeHigh[p1 >> 4] << 3) | (VM0_encodeLow[p1 & 0x0f] >> 2));
-                gcr[1 + (i * 5)] = (byte)((VM0_encodeLow[p1 & 0x0f] << 6) | (VM0_encodeHigh[p2 >> 4] << 1) | (VM0_encodeLow[p2 & 0x0f] >> 4));
-                gcr[2 + (i * 5)] = (byte)((VM0_encodeLow[p2 & 0x0f] << 4) | (VM0_encodeHigh[p3 >> 4] >> 1));
-                gcr[3 + (i * 5)] = (byte)((VM0_encodeHigh[p3 >> 4] << 7) | (VM0_encodeLow[p3 & 0x0f] << 2) | (VM0_encodeHigh[p4 >> 4] >> 3));
-                gcr[4 + (i * 5)] = (byte)((VM0_encodeHigh[p4 >> 4] << 5) | VM0_encodeLow[p4 & 0x0f]);
+                gcr[0 + (i * 5)] = (byte)((VM0_encode[p1 >> 4] << 3) | (VM0_encode[p1 & 0x0f] >> 2));
+                gcr[1 + (i * 5)] = (byte)((VM0_encode[p1 & 0x0f] << 6) | (VM0_encode[p2 >> 4] << 1) | (VM0_encode[p2 & 0x0f] >> 4));
+                gcr[2 + (i * 5)] = (byte)((VM0_encode[p2 & 0x0f] << 4) | (VM0_encode[p3 >> 4] >> 1));
+                gcr[3 + (i * 5)] = (byte)((VM0_encode[p3 >> 4] << 7) | (VM0_encode[p3 & 0x0f] << 2) | (VM0_encode[p4 >> 4] >> 3));
+                gcr[4 + (i * 5)] = (byte)((VM0_encode[p4 >> 4] << 5) | VM0_encode[p4 & 0x0f]);
             }
             return gcr;
         }
+
+        byte[] Decrypt_VM0(byte[] data)
+        {
+            if (data == null) return null;
+            for (int i = 4; i < data.Length; i++) data[i] = DecodePB_Data(data[i]);
+            return data;
+        }
+
+        byte[] Encrypt_VM0(byte[] data)
+        {
+            if (data == null) return null;
+            for (int i = 4; i < data.Length; i++) data[i] = EncodePB_Data(data[i]);
+            return data;
+        }
+
 
         static byte DecodePB_Data(byte input)
         {

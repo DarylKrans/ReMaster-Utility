@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace V_Max_Tool
@@ -215,57 +214,7 @@ namespace V_Max_Tool
                 return ArrayConcat(new byte[] { header1 }, secn, new byte[] { header2 });
             }
         }
-
-        (bool, byte[]) Find_Cart_Protection_v2(byte[] data, bool t19s14, bool use_newer_GCR = false)
-        {
-            if (data == null) return (false, null);
-            bool older = !use_newer_GCR;
-            if (!use_newer_GCR)
-            {
-                // if 'use_newer_GCR is false, check sector for existence of weak-bits to determine which encoding method to use
-                for (int i = 0; i < data.Length; i++)
-                {
-                    if (data[i] == 0xe2 || data[i] == 0xa3) { older = true; break; }
-                }
-            }
-            byte[] temp = Decode_VmaxGCR(data);
-            //byte[] inp = CopyArray(temp);
-            if (t19s14) // Do Compressed Search & Replace (always resides on Track 19, Sector 14)
-            {
-                byte[] offset = new byte[] { 0x88, 0xd7, 0x76 };   // sector offsets for HCS, BSB, G / GDD
-                byte[][] search = new byte[3][];
-                byte[][] replace = new byte[3][];
-                /// Patch bytes (Search for / Repplace with)
-                search[0] = new byte[] { 0x9c, 0x38 };  // Harrier Combat Simulator
-                replace[0] = new byte[] { 0x15, 0x08 };
-                search[1] = new byte[] { 0x63, 0xd0 };  // Bad Street Brawler
-                replace[1] = new byte[] { 0x66, 0x00 };
-                search[2] = new byte[] { 0xd2, 0xb4 };  // Gauntlet / Gauntlet Deeper Dungeons
-                replace[2] = new byte[] { 0xd8, 0x10 };
-                for (int i = 0; i < search.Length; i++)
-                {
-                    if (MatchSeq(temp, search[i], offset[i]))
-                    {
-                        Buffer.BlockCopy(replace[i], 0, temp, offset[i], 2);
-                        // match found, return true, and encoded sector with checksum
-                        return (true, Encode_VmaxGCR(temp, true, older)); // 'older' specifies which encoding method, true = weak false = non-weak
-                    }
-                }
-            }
-            // Uncompressed Search : only runs if Compressed Search failed.
-            for (int i = 0; i < temp.Length; i++)
-            {
-                if (MatchSeq(temp, cart_patch_v2, i) && i > 2)
-                {
-                    int pos = i + cart_patch_v2.Length;
-                    Buffer.BlockCopy(temp, pos + 1, temp, pos - 2, 2);
-                    return (true, Encode_VmaxGCR(temp, true, older));
-                }
-            }
-            // no match found (return false, original encoded sector)
-            return (false, data);
-        }
-
+      
         (byte[], int, int, int, int, string[], int, int, byte[], byte[][], bool) Get_V2_Track_Info(byte[] data, int trk, bool cartP)
         {
             int tr = (tracks > 42) ? (trk / 2) + 1 : trk + 1;

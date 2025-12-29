@@ -73,9 +73,15 @@ namespace V_Max_Tool
             }
         }
 
-        byte[] Encode_CBM_GCR(byte[] plain)
+        byte[] Encode_CBM_GCR(byte[] plain) //, bool checksum = false)
         {
             int l = plain.Length >> 2;
+            //if (checksum && plain.Length >= 257)
+            //{
+            //    byte c = 0;
+            //    for (int i = 1; i < 256; i++) c ^= plain[i];
+            //    plain[256] = c;
+            //}
             byte[] gcr = new byte[l * 5];
             for (int i = 0; i < l; i++)
             {

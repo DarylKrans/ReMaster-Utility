@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 
 
@@ -17,7 +17,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2v1 Test Build 12252025";
+        private static readonly string ver = " v1.2x Test Build 12282025";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -135,53 +135,19 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            //byte[] f = Decode_PB_GCR(File.ReadAllBytes($@"c:\test\pbsec.bin"));
-            //File.WriteAllBytes($@"c:\test\1stdec.bin", f);
-
-            //int a = 0;
-            //byte b = 0;
-            //for (int i = 0; i < 256; i++)
-            //{
-            //    if ((i ^ 0x18) == 0x2b) b = (byte)(i);
-            //}
-            //Text = $"{Hex_Val(new byte[] { (byte)(0x18 ^ 0x03) })}, {Hex_Val(new byte[] {b})}";
-
-            //Text = $"{Hex_Val(new byte[] { (byte)(0xb6 ^ 0x96)})}";
-
-            ////byte[] ret = Decode_PB_GCR(File.ReadAllBytes($@"c:\test\pbsec.bin"));
-            //byte[] ret = File.ReadAllBytes($@"c:\test\pbsec.bin");
-            ////byte[] dec = CopyArray(ret);
-            ////for (int i = 4; i < dec.Length - 4; i++) dec[i] = DecodePB_Data(dec[i]);
-            ////File.WriteAllBytes($@"c:\test\pbdec.bin", dec);
-            
-            /// Mod Paperboy to skip cartridge check ----------------
-            /// 
-            //byte[] dec = File.ReadAllBytes($@"c:\test\pbdecmod3.bin");
-            //byte c = 0;
-            //for (int i = 1; i < 256; i++) c ^= dec[i];
+            //byte[] f = File.ReadAllBytes($@"c:\test\eaglesecmod.bin");
             //
-            //byte[] renc = CopyArray(dec);
-            //for (int i = 4; i < renc.Length - 4; i++) renc[i] = EncodePB_Data(renc[i]);
-            //byte[] enc = Encode_VM0_GCR(renc);
-            //byte[] f = Decode_CBM_GCR(enc).decoded;
-            //byte csm = 0;
-            //for (int i = 1; i < 257; i++) csm ^= f[i];
-            //f[257] = csm;
-            //byte[] g = Encode_CBM_GCR(f);
-            //File.WriteAllBytes($@"c:\test\truetest.bin", g);
-            ///
-            /// -------------------------------------------------------
-
+            ///// encrypted sector
+            //byte[] g = Encode_VM0_GCR(f, true, true);
+            //File.WriteAllBytes($@"c:\test\eagleChanges.bin", CopyArray(Decode_CBM_GCR(g).decoded, 1, 256));
+            //File.WriteAllBytes($@"c:\test\eaglerenc.bin", g);
             
-            //File.WriteAllBytes($@"c:\test\reencV0.bin", enc);
-            //byte csm = 0;
-            
-            //for (int i = 1; i < 256; i++)
-            //{
-            //    csm ^= g[i];
-            //}
-            //Text = $"{Hex_Val(new byte[] { c })}";
-            //File.WriteAllBytes($@"c:\test\pbnib.bin", Decode_PB_GCR(File.ReadAllBytes($@"c:\test\pbsec.bin")));
+            /// plain sector
+            //byte c = 0;
+            //for (int i = 1; i < 256; i++) c ^= f[i];
+            //f[256] = c;
+            //File.WriteAllBytes($@"c:\test\gauntChanges.bin", CopyArray(f, 1, 256));
+            //File.WriteAllBytes($@"c:\test\gauntrenc.bin", Build_Sector(CopyArray(f, 1, 256))); //, true));
 
             //BinToByte_Table($@"c:\test\pb700tbl.bin", $@"c:\test\700tbl.txt", "PB_Lookup", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);

@@ -177,30 +177,6 @@ namespace V_Max_Tool
             }
         }
 
-        (bool, byte[]) Find_Cart_Protection_v3(byte[] data)
-        {
-            if (data == null) return (false, null);
-            byte[] temp = Decode_VmaxGCR_Linear(data);
-            for (int i = 0; i < temp.Length - cart_patch_v3.Length; i++)
-            {
-                if (MatchSeq(temp, cart_patch_v3, i) && i > 2)
-                {
-                    Buffer.BlockCopy(temp, i - 3, temp, i, 2);
-                    int chunks = temp.Length / 3;
-                    byte[] output = new byte[temp.Length];
-                    for (int j = 0; j < chunks; j++)
-                    {
-                        int src = j * 3;
-                        output[j] = temp[src + 2];
-                        output[j + chunks] = temp[src + 1];
-                        output[j + (chunks * 2)] = temp[src];
-                    }
-                    return (true, Encode_VmaxGCR(output, true));
-                }
-            }
-            return (false, data);
-        }
-
         //(string[], int, int, int, int, int, int, int) Get_vmv3_track_length(byte[] data, int trk)
         //{
         //    int data_start = 0;

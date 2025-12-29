@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace V_Max_Tool
 {
@@ -1160,15 +1159,38 @@ namespace V_Max_Tool
                             // Paperboy Cart-patch testing ----------------
                             if (P_Cart.Checked && P_Cart.Visible && NDS.Cart_Protection && (!NDS.cbm.Any(x => x == 3) || NDS.cbm.Any(x => x == 2)))
                             {
-                                if (track == 5)
+                                int[] patchsec = new int[0];
+                                switch (track)
                                 {
-                                    byte[] sec = Decode_CBM_Sector(temp, 8, true).data;
-                                    (bool has, byte[] patched) = Find_VMax_Cart_CBM(sec, track, 8);
-                                    if (has && patched != null && patched.Length == 256) temp = Replace_CBM_Sector(temp, 8, patched);
+                                    case 5: patchsec = new int[] { 0, 6, 8 }; break;
+                                    case 10: patchsec = new int[] { 0 }; break;
+                                    case 19: patchsec = new int[] { 0 }; break;
+                                    case 39: patchsec = new int[] { 13 }; break;
+                                }
+                                if (patchsec.Length > 0)
+                                {
+                                    for (int i = 0; i < patchsec.Length; i++)
+                                    {
+                                        byte[] sec = Decode_CBM_Sector(temp, patchsec[i], true).data;
+                                        (bool has, byte[] patched) = Find_VMax_Cart_CBM(sec, track, patchsec[i]);
+                                        if (has && patched != null && patched.Length == 256) temp = Replace_CBM_Sector(temp, patchsec[i], patched);
+                                    }
                                 }
                             }
-                            //if (track == 5) File.WriteAllBytes($@"c:\test\paperboy_t5_s8_p.bin", Decode_CBM_Sector(temp, 8, true).data);
+                            //if (track == 19) temp = Replace_CBM_Sector(temp, 0, File.ReadAllBytes($@"c:\test\reenc.bin"));
+                            //if (track == 39) temp = Replace_CBM_Sector(temp, 13, File.ReadAllBytes($@"c:\test\truegaunt.bin"));
+                            //if (track == 19) File.WriteAllBytes($@"c:\test\bnr_19_0.bin", Decode_CBM_Sector(temp, 0, false).data);
                             //if (track == 5) temp = Replace_CBM_Sector(temp, 8, File.ReadAllBytes($@"c:\test\truetest.bin"));
+                            //if (track == 5)
+                            //{
+                            //    byte[] sec = Decode_CBM_Sector(temp, 6, false).data;
+                            //    File.WriteAllBytes($@"c:\test\polesecDEC.bin", CopyArray(Decode_CBM_GCR(sec).decoded, 1, 256));
+                            //    File.WriteAllBytes($@"c:\test\polesecGCR.bin", sec);
+                            //    File.WriteAllBytes($@"c:\test\polesec.bin", Decode_VM0_GCR(sec, true));
+                            //    File.WriteAllBytes($@"c:\test\polesecRE.bin", Encode_VM0_GCR(Decode_VM0_GCR(sec, true), false, true));
+                            //    //File.WriteAllBytes($@"c:\test\gauntsec.bin", Decode_CBM_GCR(sec).decoded);
+                            //
+                            //}
                             // --------------------------------------------
                             Set_Dest_Arrays(temp, trk);
                         }

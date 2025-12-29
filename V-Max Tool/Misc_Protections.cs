@@ -18,6 +18,176 @@ namespace V_Max_Tool
         private static readonly byte[] securispeed = new byte[] { 0xff, 0x56, 0x56, 0xa3, 0xa3 };
         //private static readonly byte[] blank = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x45, 0x14, 0x12, 0x51, 0x88, 0x18, 0x31, 0x23 }; // weak GCR
 
+        (bool has_prot, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sec)
+        {
+            if (data == null && data.Length != 256) return (false, null);
+            byte[] offset = new byte[0];
+            byte[][] replace = new byte[0][];
+            byte[][] search = new byte[0][];
+            int matches = 0;
+
+            if (track == 5)
+            {
+                if (sec == 0)   // Into the Eagles Nest
+                {
+                    offset = new byte[] { 0xa2, 0xff };
+                    replace = new byte[2][];
+                    search = new byte[2][];
+                    search[0] = new byte[] { 0xec, 0x8e, 0xb7 };
+                    replace[0] = new byte[] { 0xf0, 0x5f };
+                    search[1] = new byte[] { 0x37 };
+                    replace[1] = new byte[] { 0xf7 };
+                }
+
+                if (sec == 6)   // Dig Dug - Pole Position
+                {
+                    offset = new byte[] { 0x55, 0xff };
+                    replace = new byte[2][];
+                    search = new byte[2][];
+                    search[0] = new byte[] { 0xb5, 0x54, 0x08 };
+                    replace[0] = new byte[] { 0xa5 };
+                    search[1] = new byte[] { 0x34 };
+                    replace[1] = new byte[] { 0x54 };
+                }
+
+                if (sec == 8)   // Paperboy
+                {
+                    offset = new byte[] { 0xb3, 0xff };
+                    replace = new byte[2][];
+                    search = new byte[2][];
+                    search[0] = new byte[] { 0xe0, 0x5a, 0x61 };
+                    replace[0] = new byte[] { 0xf0 };
+                    search[1] = new byte[] { 0x2a };
+                    replace[1] = new byte[] { 0x9a };
+                }
+            }
+
+            if (track == 10 && sec == 0) // Deja Vu
+            {
+                offset = new byte[] { 0x80, 0xff };
+                replace = new byte[2][];
+                search = new byte[2][];
+                search[0] = new byte[] { 0xd1, 0x47, 0x22 };
+                replace[0] = new byte[] { 0xa4, 0x44 };
+                search[1] = new byte[] { 0xab };
+                replace[1] = new byte[] { 0xd4 };
+            }
+
+            if (track == 19 && sec == 0) // Bop n Rumble
+            {
+                offset = new byte[] { 0xa3, 0xff };
+                replace = new byte[2][];
+                search = new byte[2][];
+                search[0] = new byte[] { 0xb5, 0x54, 0x2b };
+                replace[0] = new byte[] { 0xa5 };
+                search[1] = new byte[] { 0xab };
+                replace[1] = new byte[] { 0xbb };
+            }
+
+            if (track == 39 && sec == 13) // Gauntlet
+            {
+                offset = new byte[] { 0x71, 0xff };
+                search = new byte[2][];
+                replace = new byte[2][];
+                search[0] = new byte[] { 0x42, 0x10, 0xad };
+                replace[0] = new byte[] { 0x48 };
+                search[1] = new byte[] { 0xc5 };
+                replace[1] = new byte[] { 0xcf };
+            }
+
+            if (offset.Length > 0)
+            {
+                try
+                {
+                    byte[] temp = CopyArray(data);
+                    for (int i = 0; i < offset.Length; i++)
+                    {
+                        if (MatchSeq(temp, search[i], offset[i]))
+                        {
+                            Buffer.BlockCopy(replace[i], 0, temp, offset[i], replace[i].Length);
+                            matches++;
+                        }
+                    }
+                    if (matches == offset.Length) return (true, temp);
+                }
+                catch { }
+            }
+            return (false, data);
+        }
+
+        (bool, byte[]) Find_Cart_Protection_v2(byte[] data, bool t19s14, bool use_newer_GCR = false)
+        {
+            if (data == null) return (false, null);
+            bool older = !use_newer_GCR;
+            if (!use_newer_GCR)
+            {
+                // if 'use_newer_GCR is false, check sector for existence of weak-bits to determine which encoding method to use
+                for (int i = 0; i < data.Length; i++)
+                {
+                    if (data[i] == 0xe2 || data[i] == 0xa3) { older = true; break; }
+                }
+            }
+            byte[] temp = Decode_VmaxGCR(data);
+            if (t19s14) // Do Compressed Search & Replace (always resides on Track 19, Sector 14)
+            {
+                byte[] offset = new byte[] { 0x88, 0xd7, 0x76 };   // sector offsets for HCS, BSB, G / GDD
+                byte[][] search = new byte[3][];
+                byte[][] replace = new byte[3][];
+                /// Patch bytes (Search for / Repplace with)
+                search[0] = new byte[] { 0x9c, 0x38 };  // Harrier Combat Simulator
+                replace[0] = new byte[] { 0x15, 0x08 };
+                search[1] = new byte[] { 0x63, 0xd0 };  // Bad Street Brawler
+                replace[1] = new byte[] { 0x66, 0x00 };
+                search[2] = new byte[] { 0xd2, 0xb4 };  // Gauntlet / Gauntlet Deeper Dungeons
+                replace[2] = new byte[] { 0xd8, 0x10 };
+                for (int i = 0; i < search.Length; i++)
+                {
+                    if (MatchSeq(temp, search[i], offset[i]))
+                    {
+                        Buffer.BlockCopy(replace[i], 0, temp, offset[i], 2);
+                        // match found, return true, and encoded sector with checksum
+                        return (true, Encode_VmaxGCR(temp, true, older)); // 'older' specifies which encoding method, true = weak false = non-weak
+                    }
+                }
+            }
+            // Uncompressed Search : only runs if Compressed Search failed.
+            for (int i = 0; i < temp.Length; i++)
+            {
+                if (MatchSeq(temp, cart_patch_v2, i) && i > 2)
+                {
+                    int pos = i + cart_patch_v2.Length;
+                    Buffer.BlockCopy(temp, pos + 1, temp, pos - 2, 2);
+                    return (true, Encode_VmaxGCR(temp, true, older));
+                }
+            }
+            // no match found (return false, original encoded sector)
+            return (false, data);
+        }
+
+        (bool, byte[]) Find_Cart_Protection_v3(byte[] data)
+        {
+            if (data == null) return (false, null);
+            byte[] temp = Decode_VmaxGCR_Linear(data);
+            for (int i = 0; i < temp.Length - cart_patch_v3.Length; i++)
+            {
+                if (MatchSeq(temp, cart_patch_v3, i) && i > 2)
+                {
+                    Buffer.BlockCopy(temp, i - 3, temp, i, 2);
+                    int chunks = temp.Length / 3;
+                    byte[] output = new byte[temp.Length];
+                    for (int j = 0; j < chunks; j++)
+                    {
+                        int src = j * 3;
+                        output[j] = temp[src + 2];
+                        output[j + chunks] = temp[src + 1];
+                        output[j + (chunks * 2)] = temp[src];
+                    }
+                    return (true, Encode_VmaxGCR(output, true));
+                }
+            }
+            return (false, data);
+        }
+
         byte[] Pirate_Slayer(byte[] data, byte[] key, int version)
         {
             if (key == null || version == 0) return data;
