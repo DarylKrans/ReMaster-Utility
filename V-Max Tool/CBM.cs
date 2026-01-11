@@ -74,6 +74,7 @@ namespace V_Max_Tool
             if (!(data?.Length > 0)) return null;
             BitArray tk = new BitArray(Flip_Endian(data));
             sectors = sectors < Available_Sectors[trk] ? Available_Sectors[trk] : sectors;
+
             int dif = cyan ? 3 : 0;
             int errorCode = 1;
             int pos;
@@ -103,6 +104,10 @@ namespace V_Max_Tool
                 if (i != sectors - 1) write.Write(tail_gap);
             }
             //write.Write(ArrayConcat(FastArray.Init(15, 0x55), FastArray.Init(3, 0x00)));
+            if (buffer.Length > density[t_density] && t_density > 0)
+            {
+                while (buffer.Length > density[t_density] && t_density > 0) t_density -= 1;
+            }
             int rem = (int)(density[t_density] - buffer.Length);
             if (rem > 0)
             {
@@ -117,7 +122,7 @@ namespace V_Max_Tool
             int[] ptracks = new int[] { 5, 39 };
             int[] psector = new int[] { 8, 13 };
             List<string> err = new List<string>();
-            int track = trk > 42 ? (trk >> 1) + 1 : trk + 1;
+            int track = tracks > 42 ? (trk / 2) + 1 : trk + 1;
             string[] csm = new string[] { "OK", "Failed!" };
             string decoded_header;
             int sectors = 0;
@@ -293,15 +298,11 @@ namespace V_Max_Tool
                                 (cartC, s_cksm) = Decode_CBM_Sector(data, sect, true, source, data_start);
                                 if (!s_cksm)
                                 {
-                                    byte[] ddd = new byte[0];
+                                    //byte[] ddd = new byte[0];
                                     s_cksm = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3)).checksum;
                                 }
                                 if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
                                 if (!cartP) cartP = Find_VMax_Cart_CBM(cartC, track, sect).has_prot;
-                                //{
-                                //    int index = Array.IndexOf(ptracks, track);
-                                //    if (sect == psector[index]) cartP = Find_VMax_Cart_CBM(cartC, track, sect).has_prot;
-                                //}
                             }
                             else
                             {
@@ -670,45 +671,49 @@ namespace V_Max_Tool
             byte[] lastSector = new byte[2];
             int tnum = Convert.ToInt32(nextSector[0]);
             int snum = Convert.ToInt32(nextSector[1]);
-            while ((tnum != 0 && tnum < 42) && !list.Any(x => x == Hex_Val(nextSector)))
+            try
             {
-                if (tnum != 18)
+                while ((tnum != 0 && tnum < 42) && !list.Any(x => x == Hex_Val(nextSector)))
                 {
-                    if (keepgoing)
+                    if (tnum != 18)
                     {
-                        t18 = new byte[NDG.Track_Data[halftrack].Length];
-                        Buffer.BlockCopy(NDG.Track_Data[halftrack], 0, t18, 0, t18.Length);
+                        if (keepgoing)
+                        {
+                            t18 = new byte[NDG.Track_Data[halftrack].Length];
+                            Buffer.BlockCopy(NDG.Track_Data[halftrack], 0, t18, 0, t18.Length);
+                        }
+                        else break;
                     }
-                    else break;
+                    list.Add(Hex_Val(nextSector));
+                    if (snum < 22 && !(tnum == 18 && snum == 0)) d_sec.Add(Hex_Val(nextSector).Replace("-", ""));
+                    Buffer.BlockCopy(nextSector, 0, lastSector, 0, 2);
+                    byte[] temp = new byte[0];
+                    try
+                    {
+                        //(temp, _) = Decode_CBM_Sector(NDG.Track_Data[halftrack], Convert.ToInt32(nextSector[1]), true);
+                        (temp, _) = Decode_CBM_Sector(t18, Convert.ToInt32(nextSector[1]), true);
+                        if (temp.Length > 0)
+                        {
+                            Buffer.BlockCopy(temp, 0, nextSector, 0, nextSector.Length);
+                            tnum = Convert.ToInt32(nextSector[0]);
+                            snum = Convert.ToInt32(nextSector[1]);
+
+                            if (tracks <= 42) halftrack = tnum - 1;
+                            else halftrack = (tnum - 1) * 2;
+                            wrt.Write(temp);
+
+                        }
+                        else
+                        {
+                            ret = "Error processing directory!";
+                            break;
+                        }
+                    }
+                    catch { }
+
                 }
-                list.Add(Hex_Val(nextSector));
-                if (snum < 22 && !(tnum == 18 && snum == 0)) d_sec.Add(Hex_Val(nextSector).Replace("-", ""));
-                Buffer.BlockCopy(nextSector, 0, lastSector, 0, 2);
-                byte[] temp = new byte[0];
-                try
-                {
-                    //(temp, _) = Decode_CBM_Sector(NDG.Track_Data[halftrack], Convert.ToInt32(nextSector[1]), true);
-                    (temp, _) = Decode_CBM_Sector(t18, Convert.ToInt32(nextSector[1]), true);
-                    if (temp.Length > 0)
-                    {
-                        Buffer.BlockCopy(temp, 0, nextSector, 0, nextSector.Length);
-                        tnum = Convert.ToInt32(nextSector[0]);
-                        snum = Convert.ToInt32(nextSector[1]);
-
-                        if (tracks <= 42) halftrack = tnum - 1;
-                        else halftrack = (tnum - 1) * 2;
-                        wrt.Write(temp);
-
-                    }
-                    else
-                    {
-                        ret = "Error processing directory!";
-                        break;
-                    }
-                }
-                catch { }
-
             }
+            catch { }
 
             if (buff.Length != 0)
             {

@@ -32,7 +32,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.V2_Custom = new System.Windows.Forms.CheckBox();
-            this.V2_hlen = new System.Windows.Forms.NumericUpDown();
+            this.V2_hlenD0 = new System.Windows.Forms.NumericUpDown();
             this.V2_Add_Sync = new System.Windows.Forms.CheckBox();
             this.V2_Auto_Adj = new System.Windows.Forms.CheckBox();
             this.Tabs = new System.Windows.Forms.TabControl();
@@ -46,7 +46,7 @@
             this.VBS_info = new System.Windows.Forms.Panel();
             this.P_Cart = new System.Windows.Forms.CheckBox();
             this.RM_cyan = new System.Windows.Forms.CheckBox();
-            this.V2_swap_headers = new System.Windows.Forms.CheckBox();
+            this.V2_Fix_Weak = new System.Windows.Forms.CheckBox();
             this.Cust_Density = new System.Windows.Forms.Label();
             this.VM_Ver = new System.Windows.Forms.Label();
             this.Reg_info = new System.Windows.Forms.Panel();
@@ -122,7 +122,6 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Data_View = new System.Windows.Forms.TabPage();
-            this.button1 = new System.Windows.Forms.Button();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.VS_bin = new System.Windows.Forms.RadioButton();
@@ -131,7 +130,7 @@
             this.Data_Box = new System.Windows.Forms.RichTextBox();
             this.Disp_Data = new System.Windows.Forms.Button();
             this.D_separate = new System.Windows.Forms.GroupBox();
-            this.T_jump = new System.Windows.Forms.NumericUpDown();
+            this.T_jump = new System.Windows.Forms.ComboBox();
             this.Jump = new System.Windows.Forms.Label();
             this.Data_Sep = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -160,8 +159,14 @@
             this.Dir_screen = new System.Windows.Forms.RichTextBox();
             this.BlockMap = new System.Windows.Forms.TabPage();
             this.BlkMap_Panel = new System.Windows.Forms.Panel();
+            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
+            this.CSTfmt = new V_Max_Tool.CustomLabel();
+            this.ErrorBlk = new V_Max_Tool.CustomLabel();
+            this.AllocBlk = new V_Max_Tool.CustomLabel();
+            this.FreeBlk = new V_Max_Tool.CustomLabel();
             this.label21 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
+            this.track_label = new V_Max_Tool.CustomLabel();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RPL_Advanced = new System.Windows.Forms.GroupBox();
@@ -170,7 +175,16 @@
             this.label14 = new System.Windows.Forms.Label();
             this.RL_ChangeKey = new System.Windows.Forms.CheckBox();
             this.V2_Advanced = new System.Windows.Forms.GroupBox();
+            this.label27 = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.V2_hlenD1 = new System.Windows.Forms.NumericUpDown();
+            this.V2_pad55 = new System.Windows.Forms.CheckBox();
+            this.V2_sync_len = new System.Windows.Forms.NumericUpDown();
+            this.V2_cust_snc = new System.Windows.Forms.CheckBox();
             this.V3_Advanced = new System.Windows.Forms.GroupBox();
+            this.V3_syncLen = new System.Windows.Forms.NumericUpDown();
+            this.V3_Cust_Sync = new System.Windows.Forms.CheckBox();
+            this.V3_Trim = new System.Windows.Forms.CheckBox();
             this.VPL_Advanced = new System.Windows.Forms.GroupBox();
             this.VPL_density_reset = new System.Windows.Forms.LinkLabel();
             this.VPL_mod = new System.Windows.Forms.CheckBox();
@@ -297,13 +311,7 @@
             this.label20 = new System.Windows.Forms.Label();
             this.ND_id = new System.Windows.Forms.TextBox();
             this.ND_name = new System.Windows.Forms.TextBox();
-            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
-            this.CSTfmt = new V_Max_Tool.CustomLabel();
-            this.ErrorBlk = new V_Max_Tool.CustomLabel();
-            this.AllocBlk = new V_Max_Tool.CustomLabel();
-            this.FreeBlk = new V_Max_Tool.CustomLabel();
-            this.track_label = new V_Max_Tool.CustomLabel();
-            ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.V2_hlenD0)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
             this.Other_opts.SuspendLayout();
@@ -331,7 +339,6 @@
             this.Data_View.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.D_separate.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.T_jump)).BeginInit();
             this.D_type.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -340,7 +347,10 @@
             this.panel1.SuspendLayout();
             this.RPL_Advanced.SuspendLayout();
             this.V2_Advanced.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.V2_hlenD1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.V2_sync_len)).BeginInit();
             this.V3_Advanced.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.V3_syncLen)).BeginInit();
             this.VPL_Advanced.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -391,7 +401,7 @@
             // V2_Custom
             // 
             this.V2_Custom.AutoSize = true;
-            this.V2_Custom.Location = new System.Drawing.Point(4, 52);
+            this.V2_Custom.Location = new System.Drawing.Point(4, 64);
             this.V2_Custom.Margin = new System.Windows.Forms.Padding(2);
             this.V2_Custom.Name = "V2_Custom";
             this.V2_Custom.Size = new System.Drawing.Size(150, 17);
@@ -400,44 +410,44 @@
             this.V2_Custom.UseVisualStyleBackColor = true;
             this.V2_Custom.CheckedChanged += new System.EventHandler(this.V2_Custom_CheckedChanged);
             // 
-            // V2_hlen
+            // V2_hlenD0
             // 
-            this.V2_hlen.Increment = new decimal(new int[] {
+            this.V2_hlenD0.Increment = new decimal(new int[] {
             2,
             0,
             0,
             0});
-            this.V2_hlen.Location = new System.Drawing.Point(156, 51);
-            this.V2_hlen.Margin = new System.Windows.Forms.Padding(2);
-            this.V2_hlen.Maximum = new decimal(new int[] {
+            this.V2_hlenD0.Location = new System.Drawing.Point(154, 64);
+            this.V2_hlenD0.Margin = new System.Windows.Forms.Padding(2);
+            this.V2_hlenD0.Maximum = new decimal(new int[] {
             36,
             0,
             0,
             0});
-            this.V2_hlen.Minimum = new decimal(new int[] {
+            this.V2_hlenD0.Minimum = new decimal(new int[] {
             8,
             0,
             0,
             0});
-            this.V2_hlen.Name = "V2_hlen";
-            this.V2_hlen.Size = new System.Drawing.Size(60, 20);
-            this.V2_hlen.TabIndex = 29;
-            this.V2_hlen.Value = new decimal(new int[] {
+            this.V2_hlenD0.Name = "V2_hlenD0";
+            this.V2_hlenD0.Size = new System.Drawing.Size(37, 20);
+            this.V2_hlenD0.TabIndex = 29;
+            this.V2_hlenD0.Value = new decimal(new int[] {
             18,
             0,
             0,
             0});
-            this.V2_hlen.ValueChanged += new System.EventHandler(this.V2_hlen_ValueChanged);
+            this.V2_hlenD0.ValueChanged += new System.EventHandler(this.V2_hlen_ValueChanged);
             // 
             // V2_Add_Sync
             // 
             this.V2_Add_Sync.AutoSize = true;
-            this.V2_Add_Sync.Location = new System.Drawing.Point(4, 70);
+            this.V2_Add_Sync.Location = new System.Drawing.Point(4, 24);
             this.V2_Add_Sync.Margin = new System.Windows.Forms.Padding(2);
             this.V2_Add_Sync.Name = "V2_Add_Sync";
-            this.V2_Add_Sync.Size = new System.Drawing.Size(157, 17);
+            this.V2_Add_Sync.Size = new System.Drawing.Size(164, 17);
             this.V2_Add_Sync.TabIndex = 32;
-            this.V2_Add_Sync.Text = "Add sync to syncless tracks";
+            this.V2_Add_Sync.Text = "Use Sync before each sector";
             this.V2_Add_Sync.UseVisualStyleBackColor = true;
             this.V2_Add_Sync.CheckedChanged += new System.EventHandler(this.V2_Add_Sync_CheckedChanged);
             // 
@@ -560,7 +570,7 @@
             this.VBS_info.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.VBS_info.Controls.Add(this.P_Cart);
             this.VBS_info.Controls.Add(this.RM_cyan);
-            this.VBS_info.Controls.Add(this.V2_swap_headers);
+            this.VBS_info.Controls.Add(this.V2_Fix_Weak);
             this.VBS_info.Controls.Add(this.Cust_Density);
             this.VBS_info.Controls.Add(this.VM_Ver);
             this.VBS_info.Location = new System.Drawing.Point(160, 32);
@@ -592,16 +602,16 @@
             this.RM_cyan.UseVisualStyleBackColor = true;
             this.RM_cyan.CheckedChanged += new System.EventHandler(this.RM_cyan_CheckedChanged);
             // 
-            // V2_swap_headers
+            // V2_Fix_Weak
             // 
-            this.V2_swap_headers.AutoSize = true;
-            this.V2_swap_headers.Location = new System.Drawing.Point(5, 33);
-            this.V2_swap_headers.Name = "V2_swap_headers";
-            this.V2_swap_headers.Size = new System.Drawing.Size(91, 17);
-            this.V2_swap_headers.TabIndex = 14;
-            this.V2_swap_headers.Text = "Fix Weak Bits";
-            this.V2_swap_headers.UseVisualStyleBackColor = true;
-            this.V2_swap_headers.CheckedChanged += new System.EventHandler(this.V2_Swap_Headers_CheckedChanged);
+            this.V2_Fix_Weak.AutoSize = true;
+            this.V2_Fix_Weak.Location = new System.Drawing.Point(5, 33);
+            this.V2_Fix_Weak.Name = "V2_Fix_Weak";
+            this.V2_Fix_Weak.Size = new System.Drawing.Size(91, 17);
+            this.V2_Fix_Weak.TabIndex = 14;
+            this.V2_Fix_Weak.Text = "Fix Weak Bits";
+            this.V2_Fix_Weak.UseVisualStyleBackColor = true;
+            this.V2_Fix_Weak.CheckedChanged += new System.EventHandler(this.V2_Swap_Headers_CheckedChanged);
             // 
             // Cust_Density
             // 
@@ -799,10 +809,11 @@
             this.DB_force.Location = new System.Drawing.Point(8, 115);
             this.DB_force.Margin = new System.Windows.Forms.Padding(2);
             this.DB_force.Name = "DB_force";
-            this.DB_force.Size = new System.Drawing.Size(312, 17);
+            this.DB_force.Size = new System.Drawing.Size(313, 17);
             this.DB_force.TabIndex = 3;
-            this.DB_force.Text = "Force Auto-Adjusting CBM tracks (ignores special conditions)";
+            this.DB_force.Text = "Force allow adjusting CBM tracks (ignores special conditions)";
             this.DB_force.UseVisualStyleBackColor = true;
+            this.DB_force.CheckedChanged += new System.EventHandler(this.DB_force_CheckedChanged);
             // 
             // Pad_Tracks
             // 
@@ -967,29 +978,29 @@
             // Re_Align
             // 
             this.Re_Align.AutoSize = true;
-            this.Re_Align.Location = new System.Drawing.Point(4, 23);
+            this.Re_Align.Location = new System.Drawing.Point(4, 44);
             this.Re_Align.Margin = new System.Windows.Forms.Padding(2);
             this.Re_Align.Name = "Re_Align";
-            this.Re_Align.Size = new System.Drawing.Size(102, 17);
+            this.Re_Align.Size = new System.Drawing.Size(168, 17);
             this.Re_Align.TabIndex = 38;
-            this.Re_Align.Text = "Re-Align Loader";
+            this.Re_Align.Text = "Use original-style Loader track";
             this.Re_Align.UseVisualStyleBackColor = true;
             this.Re_Align.CheckedChanged += new System.EventHandler(this.Re_Align_CheckedChanged);
             // 
             // v2adv
             // 
             this.v2adv.AutoSize = true;
-            this.v2adv.Location = new System.Drawing.Point(110, 36);
+            this.v2adv.Location = new System.Drawing.Point(334, 66);
             this.v2adv.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.v2adv.Name = "v2adv";
-            this.v2adv.Size = new System.Drawing.Size(121, 13);
+            this.v2adv.Size = new System.Drawing.Size(59, 13);
             this.v2adv.TabIndex = 34;
-            this.v2adv.Text = "Advanced Users ONLY!";
+            this.v2adv.Text = "Just for fun";
             // 
             // v3adv
             // 
             this.v3adv.AutoSize = true;
-            this.v3adv.Location = new System.Drawing.Point(30, 53);
+            this.v3adv.Location = new System.Drawing.Point(35, 43);
             this.v3adv.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.v3adv.Name = "v3adv";
             this.v3adv.Size = new System.Drawing.Size(121, 13);
@@ -998,7 +1009,7 @@
             // 
             // V3_hlen
             // 
-            this.V3_hlen.Location = new System.Drawing.Point(162, 71);
+            this.V3_hlen.Location = new System.Drawing.Point(163, 58);
             this.V3_hlen.Margin = new System.Windows.Forms.Padding(2);
             this.V3_hlen.Maximum = new decimal(new int[] {
             12,
@@ -1036,7 +1047,7 @@
             // V3_Custom
             // 
             this.V3_Custom.AutoSize = true;
-            this.V3_Custom.Location = new System.Drawing.Point(4, 73);
+            this.V3_Custom.Location = new System.Drawing.Point(5, 60);
             this.V3_Custom.Margin = new System.Windows.Forms.Padding(2);
             this.V3_Custom.Name = "V3_Custom";
             this.V3_Custom.Size = new System.Drawing.Size(150, 17);
@@ -1586,7 +1597,6 @@
             // Data_View
             // 
             this.Data_View.BackColor = System.Drawing.Color.Silver;
-            this.Data_View.Controls.Add(this.button1);
             this.Data_View.Controls.Add(this.linkLabel3);
             this.Data_View.Controls.Add(this.groupBox1);
             this.Data_View.Controls.Add(this.Data_Box);
@@ -1600,17 +1610,6 @@
             this.Data_View.Size = new System.Drawing.Size(568, 672);
             this.Data_View.TabIndex = 3;
             this.Data_View.Text = "Data View";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(412, 13);
-            this.button1.Margin = new System.Windows.Forms.Padding(2);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(47, 21);
-            this.button1.TabIndex = 8;
-            this.button1.Text = "NO!";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.Button1_Click);
             // 
             // linkLabel3
             // 
@@ -1718,27 +1717,13 @@
             // 
             // T_jump
             // 
+            this.T_jump.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.T_jump.FormattingEnabled = true;
             this.T_jump.Location = new System.Drawing.Point(96, 31);
-            this.T_jump.Margin = new System.Windows.Forms.Padding(2);
-            this.T_jump.Maximum = new decimal(new int[] {
-            42,
-            0,
-            0,
-            0});
-            this.T_jump.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             this.T_jump.Name = "T_jump";
-            this.T_jump.Size = new System.Drawing.Size(60, 20);
+            this.T_jump.Size = new System.Drawing.Size(62, 21);
             this.T_jump.TabIndex = 3;
-            this.T_jump.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.T_jump.ValueChanged += new System.EventHandler(this.Jump_ValueChanged);
+            this.T_jump.SelectedIndexChanged += new System.EventHandler(this.T_jump_SelectedIndexChanged);
             // 
             // Jump
             // 
@@ -2098,6 +2083,72 @@
             this.BlkMap_Panel.Size = new System.Drawing.Size(568, 670);
             this.BlkMap_Panel.TabIndex = 0;
             // 
+            // Blk_pan
+            // 
+            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
+            this.Blk_pan.BorderThickness = 2;
+            this.Blk_pan.Location = new System.Drawing.Point(48, 25);
+            this.Blk_pan.Margin = new System.Windows.Forms.Padding(2);
+            this.Blk_pan.Name = "Blk_pan";
+            this.Blk_pan.Size = new System.Drawing.Size(513, 573);
+            this.Blk_pan.TabIndex = 2;
+            // 
+            // CSTfmt
+            // 
+            this.CSTfmt.AutoSize = true;
+            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
+            this.CSTfmt.Location = new System.Drawing.Point(10, 148);
+            this.CSTfmt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.CSTfmt.Name = "CSTfmt";
+            this.CSTfmt.NewText = "";
+            this.CSTfmt.RotateAngle = 0;
+            this.CSTfmt.Size = new System.Drawing.Size(91, 15);
+            this.CSTfmt.TabIndex = 12;
+            this.CSTfmt.Text = "Custom Format";
+            // 
+            // ErrorBlk
+            // 
+            this.ErrorBlk.AutoSize = true;
+            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
+            this.ErrorBlk.Location = new System.Drawing.Point(10, 253);
+            this.ErrorBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.ErrorBlk.Name = "ErrorBlk";
+            this.ErrorBlk.NewText = "";
+            this.ErrorBlk.RotateAngle = 0;
+            this.ErrorBlk.Size = new System.Drawing.Size(67, 15);
+            this.ErrorBlk.TabIndex = 11;
+            this.ErrorBlk.Text = "Block Error";
+            // 
+            // AllocBlk
+            // 
+            this.AllocBlk.AutoSize = true;
+            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
+            this.AllocBlk.Location = new System.Drawing.Point(8, 341);
+            this.AllocBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.AllocBlk.Name = "AllocBlk";
+            this.AllocBlk.NewText = "";
+            this.AllocBlk.RotateAngle = 0;
+            this.AllocBlk.Size = new System.Drawing.Size(90, 15);
+            this.AllocBlk.TabIndex = 10;
+            this.AllocBlk.Text = "Allocated Block";
+            // 
+            // FreeBlk
+            // 
+            this.FreeBlk.AutoSize = true;
+            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
+            this.FreeBlk.Location = new System.Drawing.Point(8, 453);
+            this.FreeBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.FreeBlk.Name = "FreeBlk";
+            this.FreeBlk.NewText = "";
+            this.FreeBlk.RotateAngle = 0;
+            this.FreeBlk.Size = new System.Drawing.Size(65, 15);
+            this.FreeBlk.TabIndex = 9;
+            this.FreeBlk.Text = "Free Block";
+            // 
             // label21
             // 
             this.label21.AutoSize = true;
@@ -2121,6 +2172,20 @@
             this.label17.Size = new System.Drawing.Size(49, 17);
             this.label17.TabIndex = 1;
             this.label17.Text = "Sector";
+            // 
+            // track_label
+            // 
+            this.track_label.AutoSize = true;
+            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.track_label.Location = new System.Drawing.Point(1, 43);
+            this.track_label.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.track_label.Name = "track_label";
+            this.track_label.NewText = null;
+            this.track_label.RotateAngle = 0;
+            this.track_label.Size = new System.Drawing.Size(109, 20);
+            this.track_label.TabIndex = 0;
+            this.track_label.Text = "customLabel1";
             // 
             // panel1
             // 
@@ -2214,9 +2279,15 @@
             // 
             // V2_Advanced
             // 
+            this.V2_Advanced.Controls.Add(this.label27);
+            this.V2_Advanced.Controls.Add(this.label13);
+            this.V2_Advanced.Controls.Add(this.V2_hlenD1);
+            this.V2_Advanced.Controls.Add(this.V2_pad55);
+            this.V2_Advanced.Controls.Add(this.V2_sync_len);
+            this.V2_Advanced.Controls.Add(this.V2_cust_snc);
             this.V2_Advanced.Controls.Add(this.V2_Auto_Adj);
             this.V2_Advanced.Controls.Add(this.V2_Add_Sync);
-            this.V2_Advanced.Controls.Add(this.V2_hlen);
+            this.V2_Advanced.Controls.Add(this.V2_hlenD0);
             this.V2_Advanced.Controls.Add(this.V2_Custom);
             this.V2_Advanced.Controls.Add(this.Re_Align);
             this.V2_Advanced.Controls.Add(this.v2adv);
@@ -2228,8 +2299,105 @@
             this.V2_Advanced.TabIndex = 60;
             this.V2_Advanced.TabStop = false;
             // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label27.Location = new System.Drawing.Point(214, 73);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(33, 12);
+            this.label27.TabIndex = 44;
+            this.label27.Text = "Tracks";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label13.Location = new System.Drawing.Point(200, 61);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(65, 12);
+            this.label13.TabIndex = 43;
+            this.label13.Text = "< 1-17 / 18-38>";
+            // 
+            // V2_hlenD1
+            // 
+            this.V2_hlenD1.Increment = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.V2_hlenD1.Location = new System.Drawing.Point(279, 64);
+            this.V2_hlenD1.Margin = new System.Windows.Forms.Padding(2);
+            this.V2_hlenD1.Maximum = new decimal(new int[] {
+            40,
+            0,
+            0,
+            0});
+            this.V2_hlenD1.Minimum = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.V2_hlenD1.Name = "V2_hlenD1";
+            this.V2_hlenD1.Size = new System.Drawing.Size(37, 20);
+            this.V2_hlenD1.TabIndex = 42;
+            this.V2_hlenD1.Value = new decimal(new int[] {
+            18,
+            0,
+            0,
+            0});
+            this.V2_hlenD1.ValueChanged += new System.EventHandler(this.V2_hlen_ValueChanged);
+            // 
+            // V2_pad55
+            // 
+            this.V2_pad55.AutoSize = true;
+            this.V2_pad55.Location = new System.Drawing.Point(194, 44);
+            this.V2_pad55.Name = "V2_pad55";
+            this.V2_pad55.Size = new System.Drawing.Size(199, 17);
+            this.V2_pad55.TabIndex = 41;
+            this.V2_pad55.Text = "\"Fix Weak\" pads gap with $55 bytes";
+            this.V2_pad55.UseVisualStyleBackColor = true;
+            this.V2_pad55.CheckedChanged += new System.EventHandler(this.V2_pad55_CheckedChanged);
+            // 
+            // V2_sync_len
+            // 
+            this.V2_sync_len.Location = new System.Drawing.Point(344, 23);
+            this.V2_sync_len.Maximum = new decimal(new int[] {
+            39,
+            0,
+            0,
+            0});
+            this.V2_sync_len.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.V2_sync_len.Name = "V2_sync_len";
+            this.V2_sync_len.Size = new System.Drawing.Size(60, 20);
+            this.V2_sync_len.TabIndex = 40;
+            this.V2_sync_len.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.V2_sync_len.ValueChanged += new System.EventHandler(this.V2_sync_len_ValueChanged);
+            // 
+            // V2_cust_snc
+            // 
+            this.V2_cust_snc.AutoSize = true;
+            this.V2_cust_snc.Location = new System.Drawing.Point(194, 24);
+            this.V2_cust_snc.Name = "V2_cust_snc";
+            this.V2_cust_snc.Size = new System.Drawing.Size(143, 17);
+            this.V2_cust_snc.TabIndex = 39;
+            this.V2_cust_snc.Text = "Use custom sync Length";
+            this.V2_cust_snc.UseVisualStyleBackColor = true;
+            this.V2_cust_snc.CheckedChanged += new System.EventHandler(this.V2_cust_snc_CheckedChanged);
+            // 
             // V3_Advanced
             // 
+            this.V3_Advanced.Controls.Add(this.V3_syncLen);
+            this.V3_Advanced.Controls.Add(this.V3_Cust_Sync);
+            this.V3_Advanced.Controls.Add(this.V3_Trim);
             this.V3_Advanced.Controls.Add(this.V3_Auto_Adj);
             this.V3_Advanced.Controls.Add(this.V3_Custom);
             this.V3_Advanced.Controls.Add(this.v3adv);
@@ -2241,6 +2409,51 @@
             this.V3_Advanced.Size = new System.Drawing.Size(448, 95);
             this.V3_Advanced.TabIndex = 60;
             this.V3_Advanced.TabStop = false;
+            // 
+            // V3_syncLen
+            // 
+            this.V3_syncLen.Location = new System.Drawing.Point(156, 24);
+            this.V3_syncLen.Maximum = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.V3_syncLen.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.V3_syncLen.Name = "V3_syncLen";
+            this.V3_syncLen.Size = new System.Drawing.Size(44, 20);
+            this.V3_syncLen.TabIndex = 41;
+            this.V3_syncLen.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.V3_syncLen.ValueChanged += new System.EventHandler(this.V3_syncLen_ValueChanged);
+            // 
+            // V3_Cust_Sync
+            // 
+            this.V3_Cust_Sync.AutoSize = true;
+            this.V3_Cust_Sync.Location = new System.Drawing.Point(4, 25);
+            this.V3_Cust_Sync.Name = "V3_Cust_Sync";
+            this.V3_Cust_Sync.Size = new System.Drawing.Size(146, 17);
+            this.V3_Cust_Sync.TabIndex = 40;
+            this.V3_Cust_Sync.Text = "Use Custom Sync Length";
+            this.V3_Cust_Sync.UseVisualStyleBackColor = true;
+            this.V3_Cust_Sync.CheckedChanged += new System.EventHandler(this.V3_Cust_Sync_CheckedChanged);
+            // 
+            // V3_Trim
+            // 
+            this.V3_Trim.AutoSize = true;
+            this.V3_Trim.Location = new System.Drawing.Point(256, 25);
+            this.V3_Trim.Name = "V3_Trim";
+            this.V3_Trim.Size = new System.Drawing.Size(128, 17);
+            this.V3_Trim.TabIndex = 39;
+            this.V3_Trim.Text = "Trim Gap to fit density";
+            this.V3_Trim.UseVisualStyleBackColor = true;
+            this.V3_Trim.CheckedChanged += new System.EventHandler(this.V3_Trim_CheckedChanged);
             // 
             // VPL_Advanced
             // 
@@ -3771,86 +3984,6 @@
             this.ND_name.TabIndex = 0;
             this.ND_name.Text = "NEW DISK";
             // 
-            // Blk_pan
-            // 
-            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
-            this.Blk_pan.BorderThickness = 2;
-            this.Blk_pan.Location = new System.Drawing.Point(48, 25);
-            this.Blk_pan.Margin = new System.Windows.Forms.Padding(2);
-            this.Blk_pan.Name = "Blk_pan";
-            this.Blk_pan.Size = new System.Drawing.Size(513, 573);
-            this.Blk_pan.TabIndex = 2;
-            // 
-            // CSTfmt
-            // 
-            this.CSTfmt.AutoSize = true;
-            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
-            this.CSTfmt.Location = new System.Drawing.Point(10, 148);
-            this.CSTfmt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.CSTfmt.Name = "CSTfmt";
-            this.CSTfmt.NewText = "";
-            this.CSTfmt.RotateAngle = 0;
-            this.CSTfmt.Size = new System.Drawing.Size(91, 15);
-            this.CSTfmt.TabIndex = 12;
-            this.CSTfmt.Text = "Custom Format";
-            // 
-            // ErrorBlk
-            // 
-            this.ErrorBlk.AutoSize = true;
-            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
-            this.ErrorBlk.Location = new System.Drawing.Point(10, 253);
-            this.ErrorBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.ErrorBlk.Name = "ErrorBlk";
-            this.ErrorBlk.NewText = "";
-            this.ErrorBlk.RotateAngle = 0;
-            this.ErrorBlk.Size = new System.Drawing.Size(67, 15);
-            this.ErrorBlk.TabIndex = 11;
-            this.ErrorBlk.Text = "Block Error";
-            // 
-            // AllocBlk
-            // 
-            this.AllocBlk.AutoSize = true;
-            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
-            this.AllocBlk.Location = new System.Drawing.Point(8, 341);
-            this.AllocBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.AllocBlk.Name = "AllocBlk";
-            this.AllocBlk.NewText = "";
-            this.AllocBlk.RotateAngle = 0;
-            this.AllocBlk.Size = new System.Drawing.Size(90, 15);
-            this.AllocBlk.TabIndex = 10;
-            this.AllocBlk.Text = "Allocated Block";
-            // 
-            // FreeBlk
-            // 
-            this.FreeBlk.AutoSize = true;
-            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
-            this.FreeBlk.Location = new System.Drawing.Point(8, 453);
-            this.FreeBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.FreeBlk.Name = "FreeBlk";
-            this.FreeBlk.NewText = "";
-            this.FreeBlk.RotateAngle = 0;
-            this.FreeBlk.Size = new System.Drawing.Size(65, 15);
-            this.FreeBlk.TabIndex = 9;
-            this.FreeBlk.Text = "Free Block";
-            // 
-            // track_label
-            // 
-            this.track_label.AutoSize = true;
-            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.track_label.Location = new System.Drawing.Point(1, 43);
-            this.track_label.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.track_label.Name = "track_label";
-            this.track_label.NewText = null;
-            this.track_label.RotateAngle = 0;
-            this.track_label.Size = new System.Drawing.Size(109, 20);
-            this.track_label.TabIndex = 0;
-            this.track_label.Text = "customLabel1";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3872,7 +4005,7 @@
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "V-Max Sync Tool";
-            ((System.ComponentModel.ISupportInitialize)(this.V2_hlen)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.V2_hlenD0)).EndInit();
             this.Tabs.ResumeLayout(false);
             this.Main.ResumeLayout(false);
             this.Main.PerformLayout();
@@ -3914,7 +4047,6 @@
             this.groupBox1.PerformLayout();
             this.D_separate.ResumeLayout(false);
             this.D_separate.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.T_jump)).EndInit();
             this.D_type.ResumeLayout(false);
             this.D_type.PerformLayout();
             this.tabPage3.ResumeLayout(false);
@@ -3930,8 +4062,11 @@
             this.RPL_Advanced.PerformLayout();
             this.V2_Advanced.ResumeLayout(false);
             this.V2_Advanced.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.V2_hlenD1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.V2_sync_len)).EndInit();
             this.V3_Advanced.ResumeLayout(false);
             this.V3_Advanced.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.V3_syncLen)).EndInit();
             this.VPL_Advanced.ResumeLayout(false);
             this.VPL_Advanced.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Drag_pic)).EndInit();
@@ -3975,7 +4110,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox V2_Custom;
-        private System.Windows.Forms.NumericUpDown V2_hlen;
+        private System.Windows.Forms.NumericUpDown V2_hlenD0;
         private System.Windows.Forms.CheckBox V2_Add_Sync;
         private System.Windows.Forms.CheckBox V2_Auto_Adj;
         private System.Windows.Forms.TabControl Tabs;
@@ -4055,7 +4190,6 @@
         private System.Windows.Forms.ComboBox Data_Sep;
         private System.Windows.Forms.Button Disp_Data;
         private System.Windows.Forms.RichTextBox Data_Box;
-        private System.Windows.Forms.NumericUpDown T_jump;
         private System.Windows.Forms.Label Jump;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton VS_bin;
@@ -4139,7 +4273,6 @@
         private System.Windows.Forms.ComboBox S_Interleave;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.CheckBox SortBySize;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
@@ -4243,8 +4376,18 @@
         private System.Windows.Forms.ComboBox ProtDetectMethod;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox ParseLog;
-        private System.Windows.Forms.CheckBox V2_swap_headers;
+        private System.Windows.Forms.CheckBox V2_Fix_Weak;
         private System.Windows.Forms.CheckBox DV_Disassemble;
         private System.Windows.Forms.CheckBox P_Cart;
+        private System.Windows.Forms.CheckBox V2_cust_snc;
+        private System.Windows.Forms.NumericUpDown V2_sync_len;
+        private System.Windows.Forms.CheckBox V2_pad55;
+        private System.Windows.Forms.NumericUpDown V2_hlenD1;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.ComboBox T_jump;
+        private System.Windows.Forms.CheckBox V3_Trim;
+        private System.Windows.Forms.NumericUpDown V3_syncLen;
+        private System.Windows.Forms.CheckBox V3_Cust_Sync;
     }
 }

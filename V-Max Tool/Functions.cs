@@ -276,9 +276,14 @@ namespace V_Max_Tool
             {
                 end_track = tracks > 42 ? 69 : 35;
             }
+            bool f = Check_tlen();
+            int[] fmts = new int[] { 5, 6, 8, 10, 11, 12 };
+            if (!NDS.cbm.Any(x => fmts.Contains(x))) Adj_cbm.Enabled = (!NDS.cbm.Any(x => x == 4) && !NDS.Prot_Method.ToLower().Contains("(cbm)")) || DB_force.Checked;
+            else Adj_cbm.Enabled = true;
             if (Adj_cbm.Checked || v2a || v3a || vpa || batch)
             {
-                if (!DB_force.Checked) cbmadj = Check_tlen(); else cbmadj = true;
+                if (!DB_force.Checked) cbmadj = f; else cbmadj = true;
+                //if (!DB_force.Checked) cbmadj = Check_tlen(); else cbmadj = true;
             }
             //for (int i = end_track; i < tracks; i++) NDS.cbm[i] = secF.Length - 1;
             return (v2a, v3a, vpa, v2adj, v2cust, v3adj, v3cust, cbmadj, sl, fl, vpadj, rb_vm, vpl_lead);
@@ -290,20 +295,20 @@ namespace V_Max_Tool
                 bool c = (VPL_auto_adj.Checked && Tabs.TabPages.Contains(Advanced_Opts));
                 return (a, b, c);
             }
+        }
 
-            bool Check_tlen()
+        bool Check_tlen()
+        {
+            List<int> tl = new List<int>();
+            int tr = 0;
+            if (NDS.cbm.Any(x => x == 10)) return true;
+            for (int i = 0; i < tracks; i++)
             {
-                List<int> tl = new List<int>();
-                int tr = 0;
-                if (NDS.cbm.Any(x => x == 10)) return true;
-                for (int i = 0; i < tracks; i++)
-                {
-                    tr = tracks > 42 ? i / 2 : i;
-                    if (NDS.cbm[i] == 1 && NDS.sectors[i] >= Available_Sectors[tr]) tl.Add(NDS.Track_Length[i]);
-                }
-                if (tl.Count > 0) return tl.Max() >> 3 < 8000;
-                return false;
+                tr = tracks > 42 ? i / 2 : i;
+                if (NDS.cbm[i] == 1 && NDS.sectors[i] >= Available_Sectors[tr]) tl.Add(NDS.Track_Length[i]);
             }
+            if (tl.Count > 0) return tl.Max() >> 3 < 8000;
+            return false;
         }
 
         void SwapDensities(bool update = false)
@@ -393,10 +398,8 @@ namespace V_Max_Tool
             {
                 if (Data_Box.Text.Length >= 0)
                 {
-                    Data_Box.Visible = false;
-                    Data_Box.Select(jump_to[Convert.ToInt32(T_jump.Value)], 0);
+                    Data_Box.Select(jump_to[Convert.ToInt32(T_jump.SelectedIndex)], 0);
                     Data_Box.ScrollToCaret();
-                    Data_Box.Visible = true;
                 }
             }
             catch { }
@@ -696,37 +699,37 @@ namespace V_Max_Tool
             return source.Skip(start).Take(length).ToArray();
         }
 
-        //public static byte[] ArrayConcat(params byte[][] arrays)
-        //{
-        //    if (arrays == null || arrays.Length == 0) return new byte[0];
-        //
-        //    // Only consider non-null arrays
-        //    int totalLength = arrays.Where(a => a != null).Sum(a => a.Length);
-        //    byte[] result = new byte[totalLength];
-        //    int offset = 0;
-        //
-        //    foreach (byte[] array in arrays)
-        //    {
-        //        if (array == null) continue; // skip null arrays
-        //        Buffer.BlockCopy(array, 0, result, offset, array.Length);
-        //        offset += array.Length;
-        //    }
-        //
-        //    return result;
-        //}
-
         public static byte[] ArrayConcat(params byte[][] arrays)
         {
-            int totalLength = arrays.Sum(a => a.Length);
+            if (arrays == null || arrays.Length == 0) return new byte[0];
+
+            // Only consider non-null arrays
+            int totalLength = arrays.Where(a => a != null).Sum(a => a.Length);
             byte[] result = new byte[totalLength];
             int offset = 0;
+
             foreach (byte[] array in arrays)
             {
+                if (array == null) continue; // skip null arrays
                 Buffer.BlockCopy(array, 0, result, offset, array.Length);
                 offset += array.Length;
             }
+
             return result;
         }
+
+        //public static byte[] ArrayConcat(params byte[][] arrays)
+        //{
+        //    int totalLength = arrays.Sum(a => a.Length);
+        //    byte[] result = new byte[totalLength];
+        //    int offset = 0;
+        //    foreach (byte[] array in arrays)
+        //    {
+        //        Buffer.BlockCopy(array, 0, result, offset, array.Length);
+        //        offset += array.Length;
+        //    }
+        //    return result;
+        //}
 
         byte[] FillArray(byte[] source, int length)
         {
@@ -863,15 +866,72 @@ namespace V_Max_Tool
             return run > 5 ? (pos, run) : (0, 0);
         }
 
-        int FindTrackGap(byte[] data)
+        //int FindTrackGap(byte[] data)
+        //{
+        //    int current = 0;
+        //    int run = 0;
+        //    int pos = 0;
+        //    byte[] value = new byte[] { 0x55, 0xaa };
+        //    for (int i = 0; i < data.Length; i++)
+        //    {
+        //        if (data[i] == value[0] || data[i] == value[1]) current++;
+        //        else
+        //        {
+        //            if (current > run)
+        //            {
+        //                run = current;
+        //                pos = i; // - run;
+        //            }
+        //            current = 0;
+        //        }
+        //    }
+        //    if (current > run)
+        //    {
+        //        run = current;
+        //        pos = data.Length - run;
+        //    }
+        //    return pos;
+        //}
+
+        int FindTrackGap(byte[] data, bool include_Weak = false, byte[] include_values = null)
         {
             int current = 0;
             int run = 0;
             int pos = 0;
-            byte[] value = new byte[] { 0x55, 0xaa };
+            //byte[] value = new byte[] { 0x55, 0xaa };
+            byte[] value = ArrayConcat(new byte[] { 0x55, 0xaa }, include_Weak ? weakBytes : null, include_values);
             for (int i = 0; i < data.Length; i++)
             {
-                if (data[i] == value[0] || data[i] == value[1]) current++;
+                if (value.Any(x => x == data[i])) current++;
+                else
+                {
+                    if (current > run)
+                    {
+                        run = current;
+                        pos = i; // - run;
+                    }
+                    current = 0;
+                }
+            }
+            if (current > run)
+            {
+                run = current;
+                pos = data.Length - run;
+            }
+            return pos;
+        }
+
+        int FindTrackGap2(byte[] data)
+        {
+            int current = 0;
+            int run = 0;
+            int pos = 0;
+            byte[] value = ArrayConcat(weakBytes, new byte[] { 0x55, 0xaa });
+            //byte[] value = new byte[] { 0x55, 0xaa, 0x00, 0x11, 0x22, 0x44, 0x88 };
+            for (int i = 0; i < data.Length; i++)
+            {
+                //if (data[i] == value[0] || data[i] == value[1]) current++;
+                if (value.Any(x => x == data[i])) current++;
                 else
                 {
                     if (current > run)
@@ -1089,6 +1149,13 @@ namespace V_Max_Tool
             else return bits;
         }
 
+        List<bool> BitAppend(BitArray bits, List<bool> d)
+        {
+            if (bits == null || bits.Length == 0) return d;
+            for (int i = 0; i < bits.Length; i++) d.Add(bits[i]);
+            return d;
+        }
+
         int FindPos(BitArray source, byte look_for_byte, int pos = 0)
         {
             if (source == null || pos < 0 || pos >= source.Length) return -1;
@@ -1284,7 +1351,9 @@ namespace V_Max_Tool
 
         static bool MatchSeq(byte[] source, byte[] pattern, int startIndex = 0)
         {
-            if ((source != null && pattern != null) && startIndex < 0 || startIndex + pattern.Length > source.Length)
+            //if (source == null || pattern == null || startIndex < 0 || startIndex + pattern.Length > 0) return false;
+            //if ((source != null && pattern != null) && startIndex < 0 || startIndex + pattern.Length > source.Length)
+            if ((source != null || pattern != null) && startIndex < 0 || startIndex + pattern.Length > source.Length)
                 return false;
 
             for (int i = 0; i < pattern.Length; i++)

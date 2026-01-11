@@ -18,6 +18,66 @@ namespace V_Max_Tool
         private static readonly byte[] securispeed = new byte[] { 0xff, 0x56, 0x56, 0xa3, 0xa3 };
         //private static readonly byte[] blank = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x45, 0x14, 0x12, 0x51, 0x88, 0x18, 0x31, 0x23 }; // weak GCR
 
+        //(bool has_prot, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sec)
+        //{
+        //    if (data == null && data.Length != 256) return (false, null);
+        //    byte[] offsets = new byte[] { 0xa2, 0x5a, 0x55, 0xe1, 0xb3, 0x80, 0xa3, 0x71 };
+        //    byte[] checksums = new byte[] { 0x37, 0x85, 0x34, 0x5e, 0x2a, 0xab, 0xab, 0xa5 };
+        //    byte[] newsums = new byte[] { 0xf7, 0x6c, 0x54, 0xbc, 0x9a, 0xd4, 0xbb, 0xcf };
+        //
+        //    byte[][] original = new byte[][]
+        //    {
+        //        new byte[] { 0xec, 0x8e, 0xb7 },
+        //        new byte[] { 0xd9, 0xb2, 0xfe },
+        //        new byte[] { 0xb5, 0x54, 0x08 },
+        //        new byte[] { 0xdc, 0xa0, 0xbe },
+        //        new byte[] { 0xe0, 0x5a, 0x61 },
+        //        new byte[] { 0xd1, 0x47, 0x22 },
+        //        new byte[] { 0xb5, 0x54, 0x2b },
+        //        new byte[] { 0x42, 0x10, 0xad }
+        //    };
+        //
+        //    byte[][] replace = new byte[][]
+        //    {
+        //        new byte[] { 0xf0, 0x5f },
+        //        new byte[] { 0xd0, 0x75 },
+        //        new byte[] { 0xa5 },
+        //        new byte[] { 0xe5, 0x44 },
+        //        new byte[] { 0xf0 },
+        //        new byte[] { 0xa4, 0x44 },
+        //        new byte[] { 0xa5 },
+        //        new byte[] { 0x48 }
+        //    };
+        //
+        //    for (int i = 0; i < offsets.Length; i++)
+        //    {
+        //        (bool success, byte[] patched) = patch(offsets[i], original[i], replace[i], checksums[i], newsums[i]);
+        //        if (success && patched != null)
+        //        {
+        //            //File.WriteAllBytes($@"c:\test\t{track}_s{sec}_{i}", data);
+        //            return (true, patched);
+        //        }
+        //    }
+        //    return (false, data);
+        //
+        //    (bool, byte[]) patch(byte ofst, byte[] srch, byte[] repl, byte cksm, byte newsum)
+        //    {
+        //        try
+        //        {
+        //            if (MatchSeq(data, srch, ofst) && data[255] == cksm)
+        //            {
+        //                byte[] temp = CopyArray(data);
+        //                Buffer.BlockCopy(repl, 0, temp, ofst, repl.Length);
+        //                temp[255] = newsum;
+        //                return (true, temp);
+        //            }
+        //        }
+        //        catch { }
+        //        return (false, null);
+        //    }
+        //
+        //}
+
         (bool has_prot, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sec)
         {
             if (data == null && data.Length != 256) return (false, null);
@@ -31,7 +91,7 @@ namespace V_Max_Tool
 
             if (track == 5)
             {
-                if (sec == 0)   
+                if (sec == 0)
                 {
                     // Into the Eagles Nest
                     offset = new byte[] { 0xa2, 0xff };
@@ -62,7 +122,7 @@ namespace V_Max_Tool
                     replace[0] = new byte[] { 0xa5 };
                     search[1] = new byte[] { 0x34 };
                     replace[1] = new byte[] { 0x54 };
-                    
+
                     // Xevious
                     offset2 = new byte[] { 0xe1, 0xff };
                     replace2 = new byte[2][];
@@ -122,7 +182,6 @@ namespace V_Max_Tool
             {
                 (bool success, byte[] patched) = patch(offset, search, replace);
                 if (!success && offset2.Length > 0) (success, patched) = patch(offset2, search2, replace2);
-                // Match found, returning (success, patched sector)
                 if (success) return (true, patched);
             }
             // No matches found, returning (failure, original sector)

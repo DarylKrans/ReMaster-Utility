@@ -359,9 +359,10 @@ namespace V_Max_Tool
                     col = Color.FromArgb(d, d, 30);
                 }
             }
-
+            byte[] eb = new byte[] { 0x64, 0x4e, 0x46 };
             if (trackFmt == 2 && d == v2info[0]) v2 = true;
-            if (v2 && d == v2info[1]) v2 = false;
+            //if (v2 && d == v2info[1]) v2 = false;
+            if (v2 && (d != v2info[0] && eb.Any(x => x == d))) v2 = false;
             if (Show_sec.Checked && ((trackFmt == 3 && d == 0x49) || v2)) col = Color.FromArgb(30, 30, 255);
 
             if (trackFmt == 5 && Show_sec.Checked && position <= density[Density])
@@ -417,9 +418,16 @@ namespace V_Max_Tool
                     Buffer.BlockCopy(NDS.Track_Data[track], 0, temp, 0, length);
                 }
 
-                if (NDS.cbm[track] > 1 && NDS.cbm[track] < 5 && length >= min_t_len)
+                if (NDS.Track_Data[track] != null && NDS.cbm[track] > 1 && NDS.cbm[track] < 5 && length >= min_t_len)
                 {
-                    length = NDS.D_End[track] - NDS.D_Start[track];
+                    if (NDS.cbm[track] == 4)
+                    {
+                        length = NDS.Track_Length[track];
+                        start = 0;
+                    }
+                    else
+                        length = (NDS.D_End[track] - NDS.D_Start[track]);
+                    if (length > (4000 << 3)) length >>= 3; // (length >> 3);
                     temp = new byte[length];
                     Buffer.BlockCopy(NDS.Track_Data[track], start, temp, 0, length);
                 }

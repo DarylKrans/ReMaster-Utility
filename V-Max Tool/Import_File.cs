@@ -25,7 +25,7 @@ namespace V_Max_Tool
                 if ((tracks * NIB_TRACK_LEN) + NIB_HEADER_LEN == length)
                 {
                     tracks = tracks > 42 ? Math.Min(tracks, 82) : Math.Min(tracks, 41);
-                    Set_ListBox_Items(true, false);
+                    if (!batch) Set_ListBox_Items(true, false);
                     nib_header = CopyArray(data, 0, NIB_HEADER_LEN);
                     if (Encoding.ASCII.GetString(nib_header, 0, 13) == "MNIB-1541-RAW")
                     {
@@ -38,7 +38,10 @@ namespace V_Max_Tool
                         }
                         return true;
                     }
-                    else Display_Error();
+                    else
+                    {
+                        if (!batch) Display_Error();
+                    }
                 }
             }
             return false;

@@ -8,9 +8,10 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        byte[] Get_VmaxLoaderSegment(byte[] data, bool cbm = false)
+        //byte[] Get_VmaxLoaderSegment(byte[] data, bool cbm = false)
+        (byte[] segment, bool obfuscated) Get_VmaxLoaderSegment(byte[] data, bool cbm = false)
         {
-            if (data == null || data.Length == 0) return null;
+            if (data == null || data.Length == 0) return (null, false);
 
             byte[] custom = new byte[] // Bytes of loader possibly followed with arbitrary sync on later V-Max v2+ versions
             {
@@ -23,6 +24,7 @@ namespace V_Max_Tool
                 0xcb, 0xb3, 0xeb, 0xe3, 0x97, 0xa7, 0xbb, 0xd3, 0xd7
             };
 
+            int async = 0;
             BitArray s = new BitArray(0);
             if (!Padding_First())
             {
@@ -45,6 +47,8 @@ namespace V_Max_Tool
                 {
                     int rep = 0, len = Math.Min(5120 << 3, s.Length - pos);
                     var temp = Bit2Byte(s, pos, len);
+                    //var tmppp = Bit2Byte(s, pos - (512 << 3), len);
+                    //File.WriteAllBytes($@"c:\test\v3l.bin", tmppp);
                     for (int i = 1000; i < temp.Length; i++)
                     {
                         if (temp[i] == temp[i - 1]) rep++;
@@ -56,7 +60,7 @@ namespace V_Max_Tool
                             var ldr_seg = Bit2Byte(s, pos, (i - (rep - (cbm ? 1 : 0))) << 3);
                             for (int j = 0; j < ldr_seg.Length; j++)
                             {   // Revolution V adds $55 gap and $4fffff sync before each loader sector
-                                if (MatchSeq(ldr_seg, new byte[] { 0x55, 0x55, 0x4f, 0xff }, j)) return ldr_seg;
+                                if (MatchSeq(ldr_seg, new byte[] { 0x55, 0x55, 0x4f, 0xff }, j)) return (ldr_seg, false);
                             }
                             // ---- Return un-processed loader if it is. Routines need more work to handle Rev-V loaders --------
                             /// ------------------ Remove if causes issues --------------------
@@ -69,12 +73,12 @@ namespace V_Max_Tool
                             if (tmp.Length > 2701 && tmp.Length < 3000) len = 2701; // v-max v2   loader length
                             if (tmp.Length > 3089) len = 3089;                      // v-max v3-4 loader length
                             //SaveBin(CopyArray(tmp, 0, len), "contraseg");
-                            return CopyArray(tmp, 0, len);
+                            return (CopyArray(tmp, 0, len), async > 1);
                         }
                     }
                 }
             }
-            return null;
+            return (null, false);
 
             bool Padding_First()
             {
@@ -82,49 +86,49 @@ namespace V_Max_Tool
                 for (int i = 1; i < 5; i++) if (data[i] != chk) return false;
                 return true;
             }
-        }
 
-        byte[] Filter_Sync(BitArray d, byte[] PossibleSync)
-        {
-            if (d == null || d.Count == 0) return new byte[0];
-            byte[] garbage = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x88 };
-            List<byte> filtered = new List<byte>();
-            byte window = 0;
-            int bytePos = 0, pos = 0;
-            while (pos < d.Length)
+            byte[] Filter_Sync(BitArray d, byte[] PossibleSync)
             {
-                window <<= 1;
-                if (d[pos]) window |= 1;
-                if (++bytePos % 8 == 0)
+                if (d == null || d.Count == 0) return new byte[0];
+                byte[] garbage = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x88 };
+                List<byte> filtered = new List<byte>();
+                byte window = 0;
+                int bytePos = 0, posi = 0;
+                while (posi < d.Length)
                 {
-                    if (!garbage.Contains(window)) filtered.Add(window);
-                    bytePos = 0;
-                    if (PossibleSync.Any(x => x == window))
+                    window <<= 1;
+                    if (d[posi]) window |= 1;
+                    if (++bytePos % 8 == 0)
                     {
-                        try
+                        if (!garbage.Contains(window)) filtered.Add(window);
+                        bytePos = 0;
+                        if (PossibleSync.Any(x => x == window))
                         {
-                            // checking for 6+ '1' bits in a row (more than 5 is invalid GCR, signals arbitrary sync obfuscation)
-                            byte wdw = (byte)(window & 0x07);
-                            if ((wdw == 3 && d[pos + 1] && d[pos + 2] && d[pos + 3] && d[pos + 4]) ||
-                                (wdw == 7 && d[pos + 1] && d[pos + 2] && d[pos + 3])) Reposition();
+                            try
+                            {
+                                // checking for 6+ '1' bits in a row (more than 5 is invalid GCR, signals arbitrary sync obfuscation)
+                                byte wdw = (byte)(window & 0x07);
+                                if ((wdw == 3 && d[posi + 1] && d[posi + 2] && d[posi + 3] && d[posi + 4]) ||
+                                    (wdw == 7 && d[posi + 1] && d[posi + 2] && d[posi + 3])) Reposition();
+                            }
+                            catch { }
                         }
-                        catch { }
                     }
+                    posi++;
                 }
-                pos++;
-            }
-            return filtered.ToArray();
+                return filtered.ToArray();
 
 
-            void Reposition()
-            {
-                // arbitrary sync found, skipping forward to next '0' bit, this is the start of the next real GCR byte
-                while (pos < d.Length && d[pos]) pos++;
-                bytePos = 1; // First '0' bit found of next byte, just need the next 7
-                window = 0; // clear window and set bytePos to 1, continue assembling the next byte
+                void Reposition()
+                {
+                    // arbitrary sync found, skipping forward to next '0' bit, this is the start of the next real GCR byte
+                    while (posi < d.Length && d[posi]) posi++;
+                    bytePos = 1; // First '0' bit found of next byte, just need the next 7
+                    window = 0; // clear window and set bytePos to 1, continue assembling the next byte
+                    async++;
+                }
             }
         }
-
 
         /// ---------------------------------- Get_LeadIn_Position Length of Loader Track ---------------------------------------------
         (int, byte[]) Get_Loader_Len(byte[] data, int start_pos, int comp_length, int skip_length)

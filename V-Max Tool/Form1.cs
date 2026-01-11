@@ -16,7 +16,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.2x Test Build 12292025";
+        private static readonly string ver = " v1.3 beta (experimental) 01112026";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -32,6 +32,7 @@ namespace V_Max_Tool
         private static bool batch = false;
         private static bool nib_error = false;
         private static bool g64_error = false;
+        private static bool VM_c_fix = false;
         private static bool exitConfirmed = false;
         private static string nib_err_msg;
         private static string g64_err_msg;
@@ -43,7 +44,7 @@ namespace V_Max_Tool
         private static byte[] v2644entsc = new byte[0];
         private static byte[] fastloader = new byte[0];
         private static readonly int fldOffset = 184;
-        private static readonly int min_t_len = 6000;
+        private static readonly int min_t_len = 3000; // was 6000
         private static int end_track = -1;
         private static int fat_trk = -1;
         System.Windows.Forms.Panel lastHoveredButton = null;
@@ -134,15 +135,14 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
-            
             ///---------- Cart-Patch sector processing helpers
 
-            //byte[] f = File.ReadAllBytes($@"c:\test\mpmsecmod.bin");
-
-            /// encrypted sector
-            //byte[] g = Encode_VM0_GCR(f, true, true);
-            //File.WriteAllBytes($@"c:\test\mpmChanges.bin", CopyArray(Decode_CBM_GCR(g).decoded, 1, 256));
-            //File.WriteAllBytes($@"c:\test\mpmrenc.bin", g);
+            //byte[] f = File.ReadAllBytes($@"c:\test\xev2secmod.bin");
+            //
+            ///// encrypted sector
+            //byte[] g = Encode_VM1_GCR(f, true, true);
+            //File.WriteAllBytes($@"c:\test\xev2Changes.bin", CopyArray(Decode_CBM_GCR(g).decoded, 1, 256));
+            //File.WriteAllBytes($@"c:\test\xev2renc.bin", g);
 
             /// plain sector
             //byte c = 0;
@@ -155,7 +155,7 @@ namespace V_Max_Tool
             //BinToByte_Table($@"c:\test\pb700tbl.bin", $@"c:\test\700tbl.txt", "PB_Lookup", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
-            button1.Visible = button2.Visible = EnableDBMenu.Checked = false;
+            button2.Visible = EnableDBMenu.Checked = false;
             //button1.Visible = button2.Visible = false;
         }
 
@@ -337,8 +337,9 @@ namespace V_Max_Tool
             {
                 RunBusy(() =>
                 {
-                    V2_hlen.Enabled = v2cc = V2_Custom.Checked;
+                    V2_hlenD0.Enabled = V2_hlenD1.Enabled = v2cc = V2_Custom.Checked;
                     if (V2_Custom.Checked) V2_Auto_Adj.Checked = v2aa = false;
+                    V2_pad55.Enabled = !V2_Auto_Adj.Checked;
                 });
                 V2_Adv_Opts();
             }
@@ -353,10 +354,16 @@ namespace V_Max_Tool
                     //if (V2_Auto_Adj.Checked) V2_Custom.Checked = V2_hlen.Enabled = V2_Add_Sync.Checked = false;
                     if (V2_Auto_Adj.Checked)
                     {
-                        V2_Custom.Checked = v2cc = V2_hlen.Enabled = false;
+                        V2_Custom.Checked = v2cc = V2_hlenD0.Enabled = V2_hlenD1.Enabled = V2_cust_snc.Checked =
+                        V2_pad55.Enabled = V2_cust_snc.Checked = V2_sync_len.Enabled = false;
                         V2_Add_Sync.Checked = true;
                     }
-                    if (!V2_Auto_Adj.Checked) { v2aa = V2_Add_Sync.Checked = false; }
+                    if (!V2_Auto_Adj.Checked)
+                    {
+                        v2aa = V2_Add_Sync.Checked = false;
+                        V2_pad55.Enabled = true;
+                        V2_sync_len.Enabled = V2_cust_snc.Checked;
+                    }
                 });
                 V2_Adv_Opts();
             }
@@ -368,8 +375,9 @@ namespace V_Max_Tool
             {
                 RunBusy(() =>
                 {
-                    if (V3_Auto_Adj.Checked) V3_Custom.Checked = v3cc = V3_hlen.Enabled = false;
-                    if (!V3_Auto_Adj.Checked) { v3aa = false; }
+                    if (V3_Auto_Adj.Checked) V3_Custom.Checked = v3cc = V3_hlen.Enabled = V3_Trim.Enabled = 
+                        V3_Cust_Sync.Checked = V3_syncLen.Enabled =  false;
+                    if (!V3_Auto_Adj.Checked) { v3aa = false; V3_Trim.Enabled = true; }
                 });
                 V3_Auto_Adjust();
             }
@@ -386,8 +394,14 @@ namespace V_Max_Tool
                         V3_Auto_Adj.Checked = v3aa = false;
                         V3_hlen.Enabled = true;
                     }
-                    else V3_hlen.Enabled = false;
+                    else
+                    {
+                        V3_hlen.Enabled = false;
+                        v3cc = false;
+                    }
                 });
+                V3_hlen.Enabled = V3_Custom.Checked;
+                V3_Trim.Enabled = !V3_Auto_Adj.Checked;
                 V3_Auto_Adjust();
             }
         }
@@ -505,10 +519,10 @@ namespace V_Max_Tool
             else Data_Viewer();
         }
 
-        private void Jump_ValueChanged(object sender, EventArgs e)
-        {
-            View_Jump();
-        }
+        //private void Jump_ValueChanged(object sender, EventArgs e)
+        //{
+        //    View_Jump();
+        //}
 
         private void DV_gcr_CheckedChanged(object sender, EventArgs e)
         {
@@ -565,42 +579,43 @@ namespace V_Max_Tool
 
         private void Re_Align_CheckedChanged(object sender, EventArgs e)
         {
-            for (int t = 0; t < tracks; t++)
-            {
-                if (NDS.cbm[t] == 4)
-                {
-                    if (Original.OT[t].Length == 0)
-                    {
-                        Original.OT[t] = new byte[NDG.Track_Data[t].Length];
-                        Buffer.BlockCopy(NDG.Track_Data[t], 0, Original.OT[t], 0, NDG.Track_Data[t].Length);
-                    }
-                    if (!NDG.L_Rot)
-                    {
-                        Set_Dest_Arrays(Rotate_Loader(NDG.Track_Data[t]), t);
-                        NDG.L_Rot = true;
-                    }
-                    else
-                    {
-                        if (Original.OT[t].Length != 0)
-                        {
-                            NDG.Track_Data[t] = new byte[Original.OT[t].Length];
-                            Buffer.BlockCopy(Original.OT[t], 0, NDG.Track_Data[t], 0, Original.OT[t].Length);
-                            Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], 0, Original.OT[t].Length);
-                            Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], Original.OT[t].Length, NIB_TRACK_LEN - Original.OT[t].Length);
-                        }
-                        NDG.Track_Length[t] = NDG.Track_Data[t].Length;
-                        NDA.Track_Length[t] = NDG.Track_Length[t] * 8;
-                        NDG.L_Rot = false;
-                    }
-                    displayed = false;
-                    drawn = false;
-                    if (!busy && !batch)
-                    {
-                        Check_Before_Draw(false, true);
-                        Data_Viewer();
-                    }
-                }
-            }
+            V2_Adv_Opts();
+            //for (int t = 0; t < tracks; t++)
+            //{
+            //    if (NDS.cbm[t] == 4)
+            //    {
+            //        if (Original.OT[t].Length == 0)
+            //        {
+            //            Original.OT[t] = new byte[NDG.Track_Data[t].Length];
+            //            Buffer.BlockCopy(NDG.Track_Data[t], 0, Original.OT[t], 0, NDG.Track_Data[t].Length);
+            //        }
+            //        if (!NDG.L_Rot)
+            //        {
+            //            Set_Dest_Arrays(Rotate_Loader(NDG.Track_Data[t]), t);
+            //            NDG.L_Rot = true;
+            //        }
+            //        else
+            //        {
+            //            if (Original.OT[t].Length != 0)
+            //            {
+            //                NDG.Track_Data[t] = new byte[Original.OT[t].Length];
+            //                Buffer.BlockCopy(Original.OT[t], 0, NDG.Track_Data[t], 0, Original.OT[t].Length);
+            //                Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], 0, Original.OT[t].Length);
+            //                Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], Original.OT[t].Length, NIB_TRACK_LEN - Original.OT[t].Length);
+            //            }
+            //            NDG.Track_Length[t] = NDG.Track_Data[t].Length;
+            //            NDA.Track_Length[t] = NDG.Track_Length[t] * 8;
+            //            NDG.L_Rot = false;
+            //        }
+            //        displayed = false;
+            //        drawn = false;
+            //        if (!busy && !batch)
+            //        {
+            //            Check_Before_Draw(false, true);
+            //            Data_Viewer();
+            //        }
+            //    }
+            //}
         }
 
         private void DB_vpl_CheckedChanged(object sender, EventArgs e)
@@ -1009,7 +1024,80 @@ namespace V_Max_Tool
 
         private void P_Cart_CheckedChanged(object sender, EventArgs e)
         {
-            if (P_Cart.Checked) V3_Auto_Adjust();
+            VM_c_fix = P_Cart.Visible && P_Cart.Checked;
+            //NDS.Cart_Fix = P_Cart.Visible && P_Cart.Checked;
+            //if (P_Cart.Checked) V3_Auto_Adjust();
+            V3_Auto_Adjust();
+        }
+
+        private void DB_force_CheckedChanged(object sender, EventArgs e)
+        {
+            if (DB_force.Checked) Adj_cbm.Enabled = true;
+            else
+            {
+                if (tracks > 0)
+                {
+                    int[] fmts = new int[] { 5, 6, 8, 10, 11, 12 };
+                    if (!NDS.cbm.Any(x => fmts.Contains(x))) Adj_cbm.Enabled = (!NDS.cbm.Any(x => x == 4) && !NDS.Prot_Method.ToLower().Contains("(cbm)"));
+                    else Adj_cbm.Enabled = true;
+                    if (!Adj_cbm.Enabled && Adj_cbm.Checked)
+                    {
+                        Adj_cbm.Checked = false;
+                        Clear_Out_Items();
+                        Process_Nib_Data(true, false, false, true);
+                    }
+                }
+            }
+        }
+
+        private void V2_cust_snc_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!busy)
+            {
+                V2_sync_len.Enabled = V2_cust_snc.Checked;
+                if (V2_cust_snc.Checked) V2_Auto_Adj.Checked = false;
+                V2_Adv_Opts();
+            }
+        }
+
+        private void V2_sync_len_ValueChanged(object sender, EventArgs e)
+        {
+            if (V2_cust_snc.Checked) V2_Adv_Opts();
+        }
+
+        private void V2_pad55_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!V2_Auto_Adj.Checked) V2_Adv_Opts();
+        }
+
+        private void T_jump_SelectedItemChanged(object sender, EventArgs e)
+        {
+            View_Jump();
+        }
+
+        private void T_jump_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            View_Jump();
+        }
+
+        private void V3_Trim_CheckedChanged(object sender, EventArgs e)
+        {
+            V3_Auto_Adjust();
+        }
+
+        private void V3_Cust_Sync_CheckedChanged(object sender, EventArgs e)
+        {
+            RunBusy(() =>
+            {
+                if (V3_Cust_Sync.Checked) V3_Auto_Adj.Checked = v3aa = false;
+                V3_syncLen.Enabled = V3_Cust_Sync.Checked;
+            });
+            V3_Auto_Adjust();
+        }
+
+        private void V3_syncLen_ValueChanged(object sender, EventArgs e)
+        {
+            V3_Auto_Adjust();
         }
     }
 }

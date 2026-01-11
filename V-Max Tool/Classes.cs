@@ -63,6 +63,8 @@ namespace V_Max_Tool
         public static string[][] Info = new string[0][];
         public static byte[][][] Sector = new byte[0][][];
         public static bool Cart_Protection = false;
+        //public static bool Cart_Fix = false;
+        public static byte[] V3_sectors = new byte[0];
     }
 
     public static class NDA  // Global variables for adjusted-sync arrays
@@ -101,6 +103,18 @@ namespace V_Max_Tool
         public static byte[][] Sectors = new byte[0][];
         public static byte[][] Entry = new byte[0][];
         public static string[] FileName = new string[0];
+    }
+
+    public class VM
+    {
+        public bool Sync = false;
+        public bool Double = false;
+        public byte[] Header = new byte[0];
+        public byte[] Data = new byte[0];
+        public int Len = 0;
+        public byte Start = 0;
+        public byte End = 0;
+        public int Sector = -1;
     }
 
     class LineColor

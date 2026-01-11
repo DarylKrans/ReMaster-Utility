@@ -279,6 +279,8 @@ namespace V_Max_Tool
             NDS.Info = new string[len][];
             NDS.Sector = new byte[len][][];
             NDS.Cart_Protection = false;
+            //NDS.Cart_Fix = false;
+            NDS.V3_sectors = new byte[0];
             /// NDA is the destination or output array
             NDA.Track_Data = new byte[len][];
             NDA.Sector_Zero = new int[len];
@@ -306,6 +308,8 @@ namespace V_Max_Tool
             DiskDir.Entry = new byte[0][];
             DiskDir.FileName = new string[0];
             Dir_Box.Items.Clear();
+            tj_sidx = -1;
+            T_jump.Items.Clear();
         }
 
         void AddRecentFile(string filePath)
@@ -648,14 +652,20 @@ namespace V_Max_Tool
             V3_hlen.Enabled = false;
             /// ----------------- V-Max v2 Config -------------
             Tabs.Controls.Remove(Advanced_Opts);
-            V2_hlen.Enabled = false;
-            v2adv.Text = v3adv.Text = $"\u2193        Advanced users ONLY!        \u2193";
+            V2_hlenD0.Enabled = V2_hlenD1.Enabled = false;
+            //var a = V2_adv.Text;
+            v2adv.Text = $"\u2193       {v2adv.Text}       \u2193";
+            v3adv.Text = $"\u2193       {v3adv.Text}       \u2193";
+            V3_Trim.Enabled = false;
             vm2_ver[0] = new string[] { "A5-A5", "A4-A5", "A5-A7", "A5-A6", "A9-AD", "AC-A9", "AD-AB", "A9-AE", "A5-AD", "AC-A5", "AD-A7", "A5-AE", "A5-A9",
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
             vm2_ver[1] = new string[vm2_ver[0].Length];
             Array.Copy(vm2_ver[0], 0, vm2_ver[1], 0, vm2_ver[0].Length);
             vm2_ver[1][6] = "A5-A3"; vm2_ver[1][10] = "A9-A3";
-            V2_swap_headers.Visible = false;
+            V2_Fix_Weak.Visible = false;
+            V2_sync_len.Enabled = V2_cust_snc.Checked;
+            V2_cust_snc.Enabled = !V2_Auto_Adj.Checked;
+            V2_pad55.Enabled = false;
             string[] interleave_select = new string[] { "1", "2", "3", "4", "5", "6", "7 JiffyDos 1571", "8 Fastloader", "9", "10 Standard", "11", "12" };
             Sec_Interleave.DataSource = interleave_select; // new string[] { "Standard (10)", "JiffyDos 1571 (7)", "Custom (5)" };
             S_Interleave.DataSource = interleave_select; //new string[] { "Standard (10)", "JiffyDos 1571 (7)", "Custom (5)" };
@@ -851,19 +861,22 @@ namespace V_Max_Tool
                 tips.SetToolTip(Save_Circle_btn, "Save currently displayed image as BMP or JPG");
                 tips.SetToolTip(label4, "Change Disk-View image resolution\nLow = 1000 x 1000, Insanity = 7000 x 7000");
                 tips.SetToolTip(Img_Q, "Change Disk-View image resolution\nLow = 1000 x 1000, Insanity = 7000 x 7000");
-                tips.SetToolTip(Re_Align, "Attempt to center the V-Max loader data in the track to prevent the track gap from being placed within the data");
+                //tips.SetToolTip(Re_Align, "Attempt to center the V-Max loader data in the track to prevent the track gap from being placed within the data");
+                tips.SetToolTip(Re_Align, "Pads loader track with $4B bytes and adds sync obfuscation to GCR (if present on original loader)");
                 tips.SetToolTip(V2_Auto_Adj, "Adjust all tracks to fit on a disk without slowing down the drive motor");
                 tips.SetToolTip(V2_Custom, "Manually set the sector header length (applies to all tracks)\n" +
                     "this isn't very useful, but it could be fun! or dangerous. Who knows?");
                 tips.SetToolTip(V3_Auto_Adj, "Adjust all tracks to fit on a disk without slowing down the drive motor");
                 tips.SetToolTip(V3_Custom, "Manually set the sector header length (applies to all tracks)\n" +
                     "this isn't very useful, but it could be fun! or dangerous. Who knows?");
-                tips.SetToolTip(V2_swap_headers, "Changes the sector headers (must use the same headers on all sides)\n" +
-                    "64-46 contains weak-bits that might not work on older 1541 drives.\n" +
-                    "Change headers to 64-4E if your drive has any issues with loading\n" +
-                    "*4E-64 is only found on European versions of V-Max, but they also work");
-                tips.SetToolTip(V2_Add_Sync, "Adds 10 bits of sync before each sector on syncless tracks\n" +
-                    "This doesn't have any affect on loading and the protection doesn't check for it");
+                tips.SetToolTip(V2_Fix_Weak, "Changes the sector headers (must use the same headers on all sides)\n" +
+                    "64-46 contains weak-bits that might not work on older 1541 drives.");
+                tips.SetToolTip(V2_cust_snc, $"Adjust sync length in bits (min {V2_sync_len.Minimum}, max {V2_sync_len.Maximum}) -- 10 is standard, < 16 recommended\n");
+                tips.SetToolTip(V2_pad55, $"Pads track gap with $55 bytes if they contain weak-bits");
+                //"Change headers to 64-4E if your drive has any issues with loading\n" +
+                //"*4E-64 is only found on European versions of V-Max, but they also work");
+                tips.SetToolTip(V2_Add_Sync, "Adds sync before each sector if none present\n" +
+                    "This may not have any affect on loading and the protection doesn't check for it");
                 tips.SetToolTip(VPL_auto_adj, "Adjust all tracks for best success on write");
                 tips.SetToolTip(VPL_rb, "Adjust all (Vorpal) tracks for best success on write, leaves standard tracks un-altered");
                 tips.SetToolTip(VPL_lead, "Adjust sector data placement (in bytes) from the start of the track");
@@ -905,7 +918,7 @@ namespace V_Max_Tool
             if (dbg)
             {
                 debug = !debug;
-                button1.Visible = button2.Visible = CBM_Fix.Visible = debug;
+                button2.Visible = CBM_Fix.Visible = debug;
             }
             else
             {

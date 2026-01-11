@@ -303,6 +303,7 @@ namespace V_Max_Tool
             List<byte[]> sec_data = new List<byte[]>();
             List<byte[]> sec_head = new List<byte[]>();
             BitArray source = new BitArray(Flip_Endian(data));
+            SaveBin(data, $"t{track}");
             byte[] adata = null;
             Compare();
             while (pos < source.Length)
@@ -394,7 +395,7 @@ namespace V_Max_Tool
             {
                 if (pos + bitBlockSize >= source.Length) return;
                 var c = Bit2Byte(source, pos, bitBlockSize);
-                byte[] possible = new byte[] { 0x7b, 0xf6, 0xed, 0xdb, 0xb7, 0x6f, 0xde, 0xbd };
+                //byte[] possible = new byte[] { 0x7b, 0xf6, 0xed, 0xdb, 0xb7, 0x6f, 0xde, 0xbd };
                 //if (c[0] != c[1] && possible.Any(x => x == c[1] && c[1] == c[2]))
                 //{
                 //    bool b = true;
@@ -497,7 +498,8 @@ namespace V_Max_Tool
                             case 1: cksm = "OK"; break;
                             case 2: cksm = "Empty Sector, No Data"; break;
                         }
-                        a_headers.Add($"sector ({Convert.ToInt32(hdr[0])}) Header ID [ {Hex_Val(hdr)} ] Header ({(headChecksum ? "OK" : "Failed!")}) Sector ({cksm})");
+                        //a_headers.Add($"sector ({Convert.ToInt32(hdr[0])}) Header ID [ {Hex_Val(hdr)} ] Header ({(headChecksum ? "OK" : "Failed!")}) Sector ({cksm})");
+                        a_headers.Add($"sector ({Convert.ToInt32(hdr[0])}) Header ID [ {Hex_Val(hdr)} ] Header ({(headChecksum ? "OK" : "Failed!")}) Sector ({cksm}) pos ({pos >> 3})");
                         if (ckm < 1) errors++;
                     }
                     sectors++;
@@ -550,24 +552,28 @@ namespace V_Max_Tool
                 int tsnc = 0;
                 while (tpos < source.Length - 16)
                 {
-                    if (source[tpos]) tsnc++;
-                    else
+                    try
                     {
-                        if (tsnc > 24)
+                        if (source[tpos]) tsnc++;
+                        else
                         {
-                            var cc = Bit2Byte(source, tpos, 16);
-                            var sdt = DetermineSectorData(cc, tpos);
-                            if (sdt != null)
+                            if (tsnc > 24)
                             {
-                                sec_data.Add(sdt);
-                                secds_pos.Add(tpos);
-                                secde_pos.Add(tpos + (rl_seclen << 3));
-                                break;
+                                var cc = Bit2Byte(source, tpos, 16);
+                                var sdt = DetermineSectorData(cc, tpos);
+                                if (sdt != null)
+                                {
+                                    sec_data.Add(sdt);
+                                    secds_pos.Add(tpos);
+                                    secde_pos.Add(tpos + (rl_seclen << 3));
+                                    break;
+                                }
                             }
+                            tsnc = 0;
                         }
-                        tsnc = 0;
+                        tpos++;
                     }
-                    tpos++;
+                    catch { }
                 }
             }
 
