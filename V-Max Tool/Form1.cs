@@ -16,7 +16,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.3 beta (experimental) 01112026";
+        private static readonly string ver = " v1.3 beta 01122026";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -580,42 +580,6 @@ namespace V_Max_Tool
         private void Re_Align_CheckedChanged(object sender, EventArgs e)
         {
             V2_Adv_Opts();
-            //for (int t = 0; t < tracks; t++)
-            //{
-            //    if (NDS.cbm[t] == 4)
-            //    {
-            //        if (Original.OT[t].Length == 0)
-            //        {
-            //            Original.OT[t] = new byte[NDG.Track_Data[t].Length];
-            //            Buffer.BlockCopy(NDG.Track_Data[t], 0, Original.OT[t], 0, NDG.Track_Data[t].Length);
-            //        }
-            //        if (!NDG.L_Rot)
-            //        {
-            //            Set_Dest_Arrays(Rotate_Loader(NDG.Track_Data[t]), t);
-            //            NDG.L_Rot = true;
-            //        }
-            //        else
-            //        {
-            //            if (Original.OT[t].Length != 0)
-            //            {
-            //                NDG.Track_Data[t] = new byte[Original.OT[t].Length];
-            //                Buffer.BlockCopy(Original.OT[t], 0, NDG.Track_Data[t], 0, Original.OT[t].Length);
-            //                Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], 0, Original.OT[t].Length);
-            //                Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], Original.OT[t].Length, NIB_TRACK_LEN - Original.OT[t].Length);
-            //            }
-            //            NDG.Track_Length[t] = NDG.Track_Data[t].Length;
-            //            NDA.Track_Length[t] = NDG.Track_Length[t] * 8;
-            //            NDG.L_Rot = false;
-            //        }
-            //        displayed = false;
-            //        drawn = false;
-            //        if (!busy && !batch)
-            //        {
-            //            Check_Before_Draw(false, true);
-            //            Data_Viewer();
-            //        }
-            //    }
-            //}
         }
 
         private void DB_vpl_CheckedChanged(object sender, EventArgs e)
@@ -1096,6 +1060,11 @@ namespace V_Max_Tool
         }
 
         private void V3_syncLen_ValueChanged(object sender, EventArgs e)
+        {
+            V3_Auto_Adjust();
+        }
+
+        private void ReAlign_v3_CheckedChanged(object sender, EventArgs e)
         {
             V3_Auto_Adjust();
         }

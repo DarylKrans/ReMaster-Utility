@@ -442,11 +442,9 @@ namespace V_Max_Tool
                                 if ((times == 0 && sb0 == 0x7f && sb1 == 0x7f) || times == 2) dbl = true;
 
                                 while (a[hlen] != end_byte) hlen++;
-                                //var headlen = V2_Custom.Checked ? (int)V2_hlenD0.Value : hlen - 1;
                                 var headlen = V2_Custom.Checked ? sector_header : hlen - 1;
                                 var newpos = posi + 1 + (hlen << 3);
                                 if (addsnc && !cursnc) headlen -= 2;
-                                //var sec_data = Bit2Byte(source, newpos, 320 << 3);
                                 var sec_data = sectors[sec];
                                 bool t19s14 = track == 19; // && sec == 14;
                                 if (patch_Cart) sec_data = Find_Cart_Protection_v2(sec_data, t19s14, fix_weak).Item2;

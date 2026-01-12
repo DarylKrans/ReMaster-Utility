@@ -253,6 +253,17 @@ namespace V_Max_Tool
                     return (true, Encode_VmaxGCR(temp, true, older));
                 }
             }
+            // Gauntlet Deeper Dungeons Patch (remove check for original Gauntlet)
+            byte[] gddOffset = new byte[] { 0x0e, 0x2c };
+            byte[] replaceWith = new byte[] { 0x9d, 0x60 };
+            byte[] search0 = new byte[] { 0x42, 0x88, 0xd0 };
+            byte[] search1 = new byte[] { 0x30, 0x00, 0xb9 };
+            if (MatchSeq(temp, search0, gddOffset[0]) && MatchSeq(temp, search1, gddOffset[1]))
+            {
+                temp[gddOffset[0]] = replaceWith[0];
+                temp[gddOffset[1]] = replaceWith[1];
+                return (true, Encode_VmaxGCR(temp, true, older));
+            }
             // no match found (return false, original encoded sector)
             return (false, data);
         }

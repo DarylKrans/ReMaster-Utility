@@ -1321,12 +1321,13 @@ namespace V_Max_Tool
             void Process_VMAX_V3(int trk, bool av3a, bool cv3c, bool rbv, bool short_sec)
             {
                 bool patch = VM_c_fix; // NDS.Cart_Fix;
+                bool fix = !av3a;
                 if (rbv || cv3c)
                 {
                     if (!(short_sec && NDS.sectors[trk] < 16))
                     {
                         (NDG.Track_Data[trk], NDA.Track_Length[trk], NDA.Sector_Zero[trk]) =
-                        Adjust_Vmax_V3_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.sectors[trk], patch, trk);
+                        Adjust_Vmax_V3_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.Sector_Zero[trk], NDS.sectors[trk], fix, patch, trk);
                     }
                     else Shrink_Short_Sector(trk);
                 }
@@ -1379,7 +1380,7 @@ namespace V_Max_Tool
                     }
 
                     /// -- Test section ------- add arbitrary sync to loader
-                    bool orig = Re_Align.Checked;
+                    bool orig = Re_Align.Checked || ReAlign_v3.Checked;
                     byte padding = 0x55;
                     //orig = true;  asnc = true;
                     if (orig && asnc)
@@ -1571,9 +1572,8 @@ namespace V_Max_Tool
                 }
             }
             // If not enough positive header matches found, double check some specific conditions
-            //if (noData) return secF.Length - 1;
             if (noData || (!modNDS && weak_bits > 6000)) return secF.Length - 1;
-            if (sync_run == source.Count) return 0;   // track is all '0's or all '1's (nothing here, it's blank)
+            if (sync_run == source.Count) return 0;             // track is all '0's or all '1's (nothing here, it's blank)
             if (tk == 20 && Check_VMaxLoader()) return 4;       // Checks for specific repeating patterns found on V-Max Loader track (20)
             if (sync_run > 26000 && tk == 36) return 7;         // If it's mostly sync and it's track 36, it's most likely a RapidLok Key track
             bool padding = CheckPadding();                      // Check the track to see if it's mostly padding (0x55/0xaa)
@@ -1612,7 +1612,8 @@ namespace V_Max_Tool
                             for (int i = 1; i < sz.Length; i++) header[i] &= sz[i];
                             return valid_cbm.Any(x => x == Hex_Val(header));
                         }, ref cbm);
-                        if (!Check_for_Block_Sync(32 << 3)) // checks for CBM data block sync
+                        //if (!Check_for_Block_Sync(32 << 3)) // checks for CBM data block sync
+                        if (tk != 18 && !Check_for_Block_Sync(32 << 3)) // checks for CBM data block sync
                         {
                             microprose++;  // if no sync was found, It's a MicroProse sector
                             cbm--;  // Adjust CBM count
@@ -1788,7 +1789,7 @@ namespace V_Max_Tool
                 return 0;
             }
 
-            bool CheckPadding()
+            bool CheckPadding(int max = 3000)
             {
                 for (int i = 0; i < 7; i++)
                 {
@@ -1798,7 +1799,7 @@ namespace V_Max_Tool
                     {
                         //if (cpad.Any(x => x == tdat[j])) pad++;
                         if (tdat[j] == 0x55 || tdat[j] == 0xaa) pad++;
-                        if (pad == 3000) return true;
+                        if (pad == max) return true;
                     }
                 }
                 return false;
@@ -2090,8 +2091,9 @@ namespace V_Max_Tool
 
             void Disp_CBM(int t, double track, BitArray tdata, bool mps)
             {
-                int tk = t > 42 ? (t / 2) : t;
-                int sectors = NDS.sectors[t] > Available_Sectors[t] ? NDS.sectors[t] : Available_Sectors[t];
+                //int tk = t > 42 ? (t / 2) : t;
+                int tk = tracks > 42 ? (t / 2) : t;
+                int sectors = NDS.sectors[t] > Available_Sectors[tk] ? NDS.sectors[t] : Available_Sectors[tk];
                 byte[][] temp = new byte[sectors][];
                 bool[] valid_checksum = new bool[sectors];
                 string ev = " Decoder: Early Vorpal (4:3)", std = " Decoder: Standard CBM (5:4)";

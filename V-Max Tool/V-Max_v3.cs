@@ -283,19 +283,11 @@ namespace V_Max_Tool
             if (ss.Count < 16)
             {
                 int d = (maxHlen <= 4 && v4) ? density[density_map[track]] : density[1];
-                //int d = NDS.Prot_Method.ToLower().Contains("v4") ? density[density_map[track]] : density[1];
-                //File.WriteAllText($@"c:\test\v3\prot.txt", $"{v4} {maxHlen} {(maxHlen <= 5 && v4)}");
                 if ((start_found && !end_found) || end_found && data_end - data_start < (d << 3))
-                //if (start_found)
                 {
                     if ((data_start >> 3) > (500)) data_start = 0; // (500 << 3)
                     data_end = data_start + (d << 3);
                 }
-                //if (end_found && data_end - data_start < (d << 3))
-                //{
-                //    if ((data_start >> 3) > 500) data_start = 0;
-                //    data_end = data_start + d << 3;
-                //}
             }
             if (!batch && err.Count > 0)
             {
@@ -314,111 +306,7 @@ namespace V_Max_Tool
             return (s.ToArray(), data_start, data_end, sector_zero, (data_end - data_start), ss.Count, header_avg, gap_sector, cartP);
         }
 
-        //(string[], int, int, int, int, int, int, int, bool) Get_vmv3_track_length(byte[] data, int trk, bool cartP)
-        //{
-        //    int data_start = 0, data_end = 0, sector_zero = 0, header_total = 0, header_avg = 0, gap_sector = 0, last_sector = 0, sectors = 0;
-        //    int track = tracks > 42 ? (trk / 2) : trk;
-        //    int curpos, secsize, embsize, sec, csm, secpos, pos = 0;
-        //    uint compare = 0;
-        //    bool start_found = false, end_found = false, v4 = false;
-        //    byte[] v4id = FastArray.Init(4, 0xf7), rawsec, tsec, decgcr, sdat;
-        //    string stats = string.Empty;
-        //    List<string> s = new List<string>();
-        //    List<int> ss = new List<int>();
-        //    List<int> err = new List<int>();
-        //    BitArray source = new BitArray(Flip_Endian(data));
-        //    while (pos < source.Length)
-        //    {
-        //        compare <<= 1;
-        //        if (source[pos]) compare |= 1;
-        //        if ((compare & 0xffff) == 0x4949 && (((compare & 0xff0000) >> 16) != 0x49))
-        //        {
-        //            try
-        //            {
-        //                curpos = pos - 15;
-        //                var header = Bit2Byte(source, curpos, (v3_max_header + 8) << 3);
-        //                int hlen = 0;
-        //                while (hlen < header.Length && header[hlen] == 0x49) hlen++;
-        //                if (header[hlen] == 0xee)
-        //                {
-        //                    secpos = curpos + ((hlen + 1) << 3);
-        //                    decgcr = Decode_VmaxGCR(Bit2Byte(source, secpos, 8 << 3));
-        //                    sec = (decgcr[0] & 0x1f);
-        //                    if (!ss.Contains(sec))
-        //                    {
-        //                        tsec = Bit2Byte(source, secpos, Math.Min(285 << 3, source.Length - secpos));
-        //                        secsize = Get_vm3_sectorSize(tsec); // find the true end of the V-Max sector
-        //                        embsize = decgcr[5] << 2;           // find the embeded size of the sector (GCR-decoded byte 5 (x4)
-        //                        //embsize = (decgcr[5] + 2 + (tsec[((decgcr[5] + 2) << 2) + 2] == 0xf7 ? 1 : 0)) << 2;
-        //                        if (embsize <= secsize)             // if embeded sector size roughly the same size, continue.
-        //                        {
-        //                            string mismatch = embsize != secsize ? $" ! {embsize}" : string.Empty;
-        //                            rawsec = CopyFrom(tsec, 0, secsize);
-        //                            v4 = MatchSeq(CopyFrom(rawsec, rawsec.Length - 4, 4), v4id);
-        //                            sdat = Decode_VmaxGCR(rawsec);
-        //                            if (!cartP) cartP = Find_Cart_Protection_v3(rawsec).Item1;
-        //                            csm = 0;
-        //                            foreach (byte b in sdat) csm ^= b;
-        //                            if (csm != 0) err.Add(sec);
-        //                            sectors++;
-        //                            if (sec == 0) sector_zero = curpos;
-        //                            if (!start_found)
-        //                            {
-        //                                data_start = curpos;
-        //                                start_found = true;
-        //                                if (last_sector != 0) gap_sector = last_sector;
-        //                            }
-        //                            last_sector = curpos;
-        //                            ss.Add(sec);
-        //                            var dhead = FastArray.Init(hlen + 1, 0x49);
-        //                            dhead[dhead.Length - 1] = 0xee;
-        //                            if (!batch) s.Add($"Sector ({sec}){(sec == 0 ? "*" : string.Empty)} Pos ({curpos >> 3}) Size ({secsize}{mismatch}) Header [ {Hex_Val(dhead)} ] Checksum ({(csm == 0 ? "OK" : "Failed!")})");
-        //                            header_total += hlen;
-        //                            pos += secsize << 3;
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        end_found = true;
-        //                        data_end = curpos;
-        //                        if (!batch)
-        //                        {
-        //                            s.Add($"Pos {curpos >> 3} **Repeat** sector {sec}");
-        //                            stats = $"Track Length ({(data_end - data_start) >> 3}) Sectors ({ss.Count})";
-        //                        }
-        //                        if (!batch)
-        //                        {
-        //                            stats += $" sector 0 ({sector_zero >> 3})  Header Length ({hlen + 1})";
-        //                            s.Add(stats);
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            catch { }
-        //        }
-        //        if (end_found) break;
-        //        pos++;
-        //    }
-        //
-        //    if (header_avg > 0 && header_total > 0) header_avg = header_total / ss.Count;
-        //
-        //    if (ss.Count < 16)
-        //    {
-        //        if (start_found && !end_found)
-        //        {
-        //            int d = v4 ? density[density_map[track]] : density[1];
-        //            if ((data_start >> 3) > (500 << 3)) data_start = 0;
-        //            data_end = data_start + (d << 3);
-        //        }
-        //    }
-        //    if (!batch && err.Count > 0)
-        //    {
-        //        foreach (var e in err) ErrorList.Add($"Checksum failed on track {track + 1}, sector {e}");
-        //    }
-        //    return (s.ToArray(), data_start, data_end, sector_zero, (data_end - data_start), ss.Count, header_avg, gap_sector, cartP);
-        //}
-
-        (byte[], int, int) Adjust_Vmax_V3_Sync(byte[] data, int data_start, int data_end, int sector_zero, int sectors = 0, bool patch_cart = false, int trk = -1)
+        (byte[], int, int) Adjust_Vmax_V3_Sync(byte[] data, int data_start, int data_end, int sector_zero, int sectors = 0, bool fix = false, bool patch_cart = false, int trk = -1)
         {
             if (data == null) { return (null, 0, 0); }
             int track = tracks > 42 ? (trk >> 1) + 1 : trk + 1;
@@ -433,6 +321,8 @@ namespace V_Max_Tool
                 if (st == data_end) st = data_start;
             }
             byte[] bdata = Bit2Byte(source);
+            if (!fix) return (bdata, bdata.Length << 3, 0);
+
             int retdensity = density[Get_Density(bdata.Length)];
             //File.WriteAllBytes($@"c:\test\v3\pre_adj_{track}.bin", bdata);
             //BitArray sync = new BitArray(11);

@@ -654,8 +654,8 @@ namespace V_Max_Tool
             Tabs.Controls.Remove(Advanced_Opts);
             V2_hlenD0.Enabled = V2_hlenD1.Enabled = false;
             //var a = V2_adv.Text;
-            v2adv.Text = $"\u2193       {v2adv.Text}       \u2193";
-            v3adv.Text = $"\u2193       {v3adv.Text}       \u2193";
+            //v2adv.Text = $"\u2193       {v2adv.Text}       \u2193";
+            //v3adv.Text = $"\u2193       {v3adv.Text}       \u2193";
             V3_Trim.Enabled = false;
             vm2_ver[0] = new string[] { "A5-A5", "A4-A5", "A5-A7", "A5-A6", "A9-AD", "AC-A9", "AD-AB", "A9-AE", "A5-AD", "AC-A5", "AD-A7", "A5-AE", "A5-A9",
             "A4-A9", "A5-AB", "A5-AA", "A5-B5", "B4-A5", "A5-B7", "A5-B6", "A9-BD", "BC-A9" };
