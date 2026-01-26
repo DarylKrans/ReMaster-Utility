@@ -16,196 +16,176 @@ namespace V_Max_Tool
         private static readonly byte[] rainbowArts_magicBytes = new byte[] { 0xbe, 0x55, 0x5b, 0xe5, 0x55 }; // <- RainbowArts / MagicBytes key signature found on t36
         private static readonly byte[] gma = new byte[] { 0x69, 0x50, 0x50, 0xa0, 0xa0 };
         private static readonly byte[] securispeed = new byte[] { 0xff, 0x56, 0x56, 0xa3, 0xa3 };
-        //private static readonly byte[] blank = new byte[] { 0x00, 0x11, 0x22, 0x44, 0x45, 0x14, 0x12, 0x51, 0x88, 0x18, 0x31, 0x23 }; // weak GCR
 
-        //(bool has_prot, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sec)
-        //{
-        //    if (data == null && data.Length != 256) return (false, null);
-        //    byte[] offsets = new byte[] { 0xa2, 0x5a, 0x55, 0xe1, 0xb3, 0x80, 0xa3, 0x71 };
-        //    byte[] checksums = new byte[] { 0x37, 0x85, 0x34, 0x5e, 0x2a, 0xab, 0xab, 0xa5 };
-        //    byte[] newsums = new byte[] { 0xf7, 0x6c, 0x54, 0xbc, 0x9a, 0xd4, 0xbb, 0xcf };
-        //
-        //    byte[][] original = new byte[][]
-        //    {
-        //        new byte[] { 0xec, 0x8e, 0xb7 },
-        //        new byte[] { 0xd9, 0xb2, 0xfe },
-        //        new byte[] { 0xb5, 0x54, 0x08 },
-        //        new byte[] { 0xdc, 0xa0, 0xbe },
-        //        new byte[] { 0xe0, 0x5a, 0x61 },
-        //        new byte[] { 0xd1, 0x47, 0x22 },
-        //        new byte[] { 0xb5, 0x54, 0x2b },
-        //        new byte[] { 0x42, 0x10, 0xad }
-        //    };
-        //
-        //    byte[][] replace = new byte[][]
-        //    {
-        //        new byte[] { 0xf0, 0x5f },
-        //        new byte[] { 0xd0, 0x75 },
-        //        new byte[] { 0xa5 },
-        //        new byte[] { 0xe5, 0x44 },
-        //        new byte[] { 0xf0 },
-        //        new byte[] { 0xa4, 0x44 },
-        //        new byte[] { 0xa5 },
-        //        new byte[] { 0x48 }
-        //    };
-        //
-        //    for (int i = 0; i < offsets.Length; i++)
-        //    {
-        //        (bool success, byte[] patched) = patch(offsets[i], original[i], replace[i], checksums[i], newsums[i]);
-        //        if (success && patched != null)
-        //        {
-        //            //File.WriteAllBytes($@"c:\test\t{track}_s{sec}_{i}", data);
-        //            return (true, patched);
-        //        }
-        //    }
-        //    return (false, data);
-        //
-        //    (bool, byte[]) patch(byte ofst, byte[] srch, byte[] repl, byte cksm, byte newsum)
-        //    {
-        //        try
-        //        {
-        //            if (MatchSeq(data, srch, ofst) && data[255] == cksm)
-        //            {
-        //                byte[] temp = CopyArray(data);
-        //                Buffer.BlockCopy(repl, 0, temp, ofst, repl.Length);
-        //                temp[255] = newsum;
-        //                return (true, temp);
-        //            }
-        //        }
-        //        catch { }
-        //        return (false, null);
-        //    }
-        //
-        //}
-
-        (bool has_prot, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sec)
+        ///  ---- Microprose Manual Protection Patches ---------
+        static readonly SectorPatch[] MicroproseManualPatches =
         {
-            if (data == null && data.Length != 256) return (false, null);
-            byte[] offset = new byte[0];
-            byte[] offset2 = new byte[0];
-            byte[][] search = new byte[0][];
-            byte[][] search2 = new byte[0][];
-            byte[][] replace = new byte[0][];
-            byte[][] replace2 = new byte[0][];
-            //int matches = 0;
+            new SectorPatch {
+                Title   = "Airborne Ranger",
+                Track   = 24,
+                Sector  = 12,
+                Offset  = 0x17,
+                Search  = new byte[] { 0xcd, 0xc6, 0x76 },
+                Replace = new byte[] { 0x60 },
+                Parity  = 0x66
+            },
 
-            if (track == 5)
+            new SectorPatch {
+                Title   = "Airborne Ranger (alt version)",
+                Track   = 24,
+                Sector  = 16,
+                Offset  = 0x106,
+                Search  = new byte[] { 0xcd, 0xb7, 0x76 },
+                Replace = new byte[] { 0x60 },
+                Parity  = 0x1b
+            },
+
+            new SectorPatch {
+                Title   = "Project Stealth Fighter",
+                Track   = 15,
+                Sector  = 7,
+                Offset  = 0x9d,
+                Search  = new byte[] { 0xcd, 0xe5, 0x0a },
+                Replace = new byte[] { 0x4c, 0xa4 },
+                Parity  = 0xa5
+            },
+
+            new SectorPatch {
+                Title   = "Red Storm Rising",
+                Track   = 17,
+                Sector  = 7,
+                Offset  = 0xc6,
+                Search  = new byte[] { 0xd0, 0x08, 0xa9 },
+                Replace = new byte[] { 0xa9 },
+                Parity  = 0x15
+            },
+        };
+
+        SectorPatch[] VMaxCartPatches =
+        {
+            new SectorPatch
             {
-                if (sec == 0)
-                {
-                    // Into the Eagles Nest
-                    offset = new byte[] { 0xa2, 0xff };
-                    replace = new byte[2][];
-                    search = new byte[2][];
-                    search[0] = new byte[] { 0xec, 0x8e, 0xb7 };
-                    replace[0] = new byte[] { 0xf0, 0x5f };
-                    search[1] = new byte[] { 0x37 };
-                    replace[1] = new byte[] { 0xf7 };
+                Title   = "Into the Eagles Nest",
+                Track   = 5,
+                Sector  = 0,
+                Offset  = 0xA2,
+                Search  = new byte[] { 0xEC, 0x8E, 0xB7 },
+                Replace = new byte[] { 0xF0, 0x5F },
+                Parity      = 0x37,
+                NewParity   = 0xF7
+            },
 
-                    // Ms. Pac Man
-                    offset2 = new byte[] { 0x5a, 0xff };
-                    replace2 = new byte[2][];
-                    search2 = new byte[2][];
-                    search2[0] = new byte[] { 0xd9, 0xb2, 0xfe };
-                    replace2[0] = new byte[] { 0xd0, 0x75 };
-                    search2[1] = new byte[] { 0x85 };
-                    replace2[1] = new byte[] { 0x6c };
-                }
-
-                if (sec == 6)
-                {
-                    // Dig Dug - Pole Position
-                    offset = new byte[] { 0x55, 0xff };
-                    replace = new byte[2][];
-                    search = new byte[2][];
-                    search[0] = new byte[] { 0xb5, 0x54, 0x08 };
-                    replace[0] = new byte[] { 0xa5 };
-                    search[1] = new byte[] { 0x34 };
-                    replace[1] = new byte[] { 0x54 };
-
-                    // Xevious
-                    offset2 = new byte[] { 0xe1, 0xff };
-                    replace2 = new byte[2][];
-                    search2 = new byte[2][];
-                    search2[0] = new byte[] { 0xdc, 0xa0, 0xbe };
-                    replace2[0] = new byte[] { 0xe5, 0x44 };
-                    search2[1] = new byte[] { 0x5e };
-                    replace2[1] = new byte[] { 0xbc };
-                }
-
-                if (sec == 8)   // Paperboy
-                {
-                    offset = new byte[] { 0xb3, 0xff };
-                    replace = new byte[2][];
-                    search = new byte[2][];
-                    search[0] = new byte[] { 0xe0, 0x5a, 0x61 };
-                    replace[0] = new byte[] { 0xf0 };
-                    search[1] = new byte[] { 0x2a };
-                    replace[1] = new byte[] { 0x9a };
-                }
-            }
-
-            if (track == 10 && sec == 0) // Deja Vu
+            new SectorPatch
             {
-                offset = new byte[] { 0x80, 0xff };
-                replace = new byte[2][];
-                search = new byte[2][];
-                search[0] = new byte[] { 0xd1, 0x47, 0x22 };
-                replace[0] = new byte[] { 0xa4, 0x44 };
-                search[1] = new byte[] { 0xab };
-                replace[1] = new byte[] { 0xd4 };
-            }
+                Title   = "Ms. Pac-Man",
+                Track   = 5,
+                Sector  = 0,
+                Offset  = 0x5A,
+                Search  = new byte[] { 0xD9, 0xB2, 0xFE },
+                Replace = new byte[] { 0xD0, 0x75 },
+                Parity      = 0x85,
+                NewParity   = 0x6C
+            },
 
-            if (track == 19 && sec == 0) // Bop n Rumble
+            new SectorPatch
             {
-                offset = new byte[] { 0xa3, 0xff };
-                replace = new byte[2][];
-                search = new byte[2][];
-                search[0] = new byte[] { 0xb5, 0x54, 0x2b };
-                replace[0] = new byte[] { 0xa5 };
-                search[1] = new byte[] { 0xab };
-                replace[1] = new byte[] { 0xbb };
-            }
+                Title   = "Dig Dug / Pole Position",
+                Track   = 5,
+                Sector  = 6,
+                Offset  = 0x55,
+                Search  = new byte[] { 0xB5, 0x54, 0x08 },
+                Replace = new byte[] { 0xA5 },
+                Parity      = 0x34,
+                NewParity   = 0x54
+            },
 
-            if (track == 39 && sec == 13) // Gauntlet
+            new SectorPatch
             {
-                offset = new byte[] { 0x71, 0xff };
-                search = new byte[2][];
-                replace = new byte[2][];
-                search[0] = new byte[] { 0x42, 0x10, 0xad };
-                replace[0] = new byte[] { 0x48 };
-                search[1] = new byte[] { 0xc5 };
-                replace[1] = new byte[] { 0xcf };
-            }
+                Title   = "Xevious",
+                Track   = 5,
+                Sector  = 6,
+                Offset  = 0xE1,
+                Search  = new byte[] { 0xDC, 0xA0, 0xBE },
+                Replace = new byte[] { 0xE5, 0x44 },
+                Parity      = 0x5E,
+                NewParity   = 0xBC
+            },
 
-            if (offset.Length > 0)
+            new SectorPatch
             {
-                (bool success, byte[] patched) = patch(offset, search, replace);
-                if (!success && offset2.Length > 0) (success, patched) = patch(offset2, search2, replace2);
-                if (success) return (true, patched);
+                Title   = "Paperboy",
+                Track   = 5,
+                Sector  = 8,
+                Offset  = 0xB3,
+                Search  = new byte[] { 0xE0, 0x5A, 0x61 },
+                Replace = new byte[] { 0xF0 },
+                Parity      = 0x2A,
+                NewParity   = 0x9A
+            },
+
+            new SectorPatch
+            {
+                Title   = "Deja Vu",
+                Track   = 10,
+                Sector  = 0,
+                Offset  = 0x80,
+                Search  = new byte[] { 0xD1, 0x47, 0x22 },
+                Replace = new byte[] { 0xA4, 0x44 },
+                Parity      = 0xAB,
+                NewParity   = 0xD4
+            },
+
+            new SectorPatch
+            {
+                Title   = "Bop n Rumble",
+                Track   = 19,
+                Sector  = 0,
+                Offset  = 0xA3,
+                Search  = new byte[] { 0xB5, 0x54, 0x2B },
+                Replace = new byte[] { 0xA5 },
+                Parity      = 0xAB,
+                NewParity   = 0xBB
+            },
+
+            new SectorPatch
+            {
+                Title   = "Gauntlet",
+                Track   = 39,
+                Sector  = 13,
+                Offset  = 0x71,
+                Search  = new byte[] { 0x42, 0x10, 0xAD },
+                Replace = new byte[] { 0x48 },
+                Parity      = 0xC5,
+                NewParity   = 0xCF
             }
-            // No matches found, returning (failure, original sector)
+        };
+
+        (bool has_manual, byte[] patched) Find_MPS_Manual(byte[] data, int track, int sector)
+        {
+            if (data == null || data.Length != 335) return (false, data);
+            var patch = MicroproseManualPatches.FirstOrDefault(p => p.Track == track && p.Sector == sector);
+            if (patch == null) return (false, data);
+            var decoded = Decode_CBM_GCR(data).decoded;
+            if (!MatchSeq(decoded, patch.Search, patch.Offset) || decoded[0x109] != patch.Parity) return (false, data);
+            Buffer.BlockCopy(patch.Replace, 0, decoded, patch.Offset, patch.Replace.Length);
+            byte csm = 0;
+            for (int i = 9; i < 265; i++) csm ^= decoded[i];
+            decoded[265] = csm;
+            return (true, Encode_CBM_GCR(decoded));
+        }
+
+        (bool has_cart, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sector)
+        {
+            if (data == null || data.Length != 256) return (false, data);
+            foreach (var patch in VMaxCartPatches.Where(p => p.Track == track && p.Sector == sector))
+            {
+                if (!MatchSeq(data, patch.Search, patch.Offset) || data[0xFF] != patch.Parity) continue;
+                byte[] patched = CopyArray(data);
+                Buffer.BlockCopy(patch.Replace, 0, patched, patch.Offset, patch.Replace.Length);
+                patched[0xff] = patch.NewParity;
+                return (true, patched);
+            }
             return (false, data);
-
-            (bool, byte[]) patch(byte[] ofst, byte[][] srch, byte[][] repl)
-            {
-                int matches = 0;
-                try
-                {
-                    byte[] temp = CopyArray(data);
-                    for (int i = 0; i < ofst.Length; i++)
-                    {
-                        if (MatchSeq(temp, srch[i], ofst[i]))
-                        {
-                            Buffer.BlockCopy(repl[i], 0, temp, ofst[i], repl[i].Length);
-                            matches++;
-                        }
-                    }
-                    if (matches == ofst.Length) return (true, temp);
-                }
-                catch { }
-                return (false, null);
-            }
         }
 
         (bool, byte[]) Find_Cart_Protection_v2(byte[] data, bool t19s14, bool use_newer_GCR = false)
@@ -226,7 +206,7 @@ namespace V_Max_Tool
                 byte[] offset = new byte[] { 0x88, 0xd7, 0x76 };   // sector offsets for HCS, BSB, G / GDD
                 byte[][] search = new byte[3][];
                 byte[][] replace = new byte[3][];
-                /// Patch bytes (Search for / Repplace with)
+                // Patch bytes (Search for / Repplace with)
                 search[0] = new byte[] { 0x9c, 0x38 };  // Harrier Combat Simulator
                 replace[0] = new byte[] { 0x15, 0x08 };
                 search[1] = new byte[] { 0x63, 0xd0 };  // Bad Street Brawler
@@ -349,7 +329,6 @@ namespace V_Max_Tool
                         (temp, f) = Decode_CBM_Sector(data, sector, false, source);
                         for (int j = 0; j < temp.Length - 1; j++)
                         {
-                            //if (blank.Any(x => x == temp[j]))
                             if (weakTable[temp[j]])
                             {
                                 rw++;
@@ -369,7 +348,7 @@ namespace V_Max_Tool
             }
         }
 
-        byte[] JvB(byte[] data)
+        byte[] JvB(byte[] data) // Jordan vs. Bird  - Do any other titles use this particular protection method??
         {
             byte[] temp = FastArray.Init(density[3], 0x00);
             int run = 0;
@@ -377,7 +356,6 @@ namespace V_Max_Tool
             int pos = 0;
             for (int i = 0; i < data.Length; i++)
             {
-                //if (!blank.Any((x) => x == data[i])) run++;
                 if (!weakTable[data[i]]) run++;
                 else
                 {
@@ -616,7 +594,6 @@ namespace V_Max_Tool
             if (data == null || data.Length < 6000) return data;
             //int track = tracks > 42 ? (trk / 2) + 1 : trk + 1;
             byte[] skip = new byte[] { 0x55, 0xaa };
-            //HashSet<byte> BlankSet = new HashSet<byte>(blank);
             HashSet<byte> Padding = new HashSet<byte>(skip);
             int nb = 0;
             int pad = 0;
@@ -625,7 +602,6 @@ namespace V_Max_Tool
 
             for (int i = 0; i < dataLength; i++)
             {
-                //if (!BlankSet.Contains(data[i])) nb++;
                 if (!weakTable[data[i]]) nb++;
                 if (data[i] == 0x55 || data[i] == 0xaa) pad++;
                 if (data[i] == 0xff && sncpos != -1) sncpos = i;
@@ -702,7 +678,6 @@ namespace V_Max_Tool
                 byte[] temp = new byte[Check_Valid_Data(data, false, true) < 1000 ? density[2] : density[3]];
                 Buffer.BlockCopy(data, 0, temp, 0, temp.Length);
                 if (actual_data > 500 && snc < 1000) temp = Remove_Weak_Bits(temp, true);
-                //temp = Add_Weak_Bit(temp);
                 return temp;
             }
             return data;
@@ -713,7 +688,6 @@ namespace V_Max_Tool
                 int bd = 0;
                 for (int j = 0; j < array.Length; j++)
                 {
-                    //if (BlankSet.Contains(array[j])) bd++;
                     if (weakTable[array[j]]) bd++;
                     else ad++;
                     if (include_Padding)
@@ -725,31 +699,6 @@ namespace V_Max_Tool
                 if (only_blank) return bd;
                 return ad;
             }
-
-            //byte[] Add_Weak_Bit(byte[] input)
-            //{
-            //    int run = 0;
-            //    byte g = 0x00;
-            //    for (int j = 0; j < input.Length; j++)
-            //    {
-            //        if (input[j] == g) run++;
-            //        else
-            //        {
-            //            g = input[j];
-            //            if (run > 300)
-            //            {
-            //                input[j] = 0x00;
-            //                if (j + 1 < input.Length) input[j + 1] = 0x00;
-            //                byte[] output = new byte[density[3]];
-            //                int start = (input.Length - density[3]) / 2;
-            //                Buffer.BlockCopy(input, start, output, 0, density[3]);
-            //                return output;
-            //            }
-            //            run = 0;
-            //        }
-            //    }
-            //    return input;
-            //}
         }
     }
 }

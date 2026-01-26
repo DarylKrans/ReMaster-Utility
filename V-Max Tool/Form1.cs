@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
@@ -16,7 +17,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.3 beta 01122026";
+        private static readonly string ver = " v1.3 beta 01252026 (bossdos test)";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -134,9 +135,46 @@ namespace V_Max_Tool
             this.Text = $"ReMaster {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
+            LDR_test(File.ReadAllBytes($@"c:\test\ldr_test.bin"));
+            //byte[] a = new byte[256];
+            //List<string> poo = new List<string>();
+            //for (int i = 0; i < a.Length; i++)
+            //{
+            //    a[i] = (byte)i;
+            //    byte b = BDS_AA[i];
+            //    poo.Add($"{Hex_Val(new byte[] {b})} = {i}");
+            //}
+            //poo.Sort();
+            //File.WriteAllLines($@"c:\test\AA.txt", poo.ToArray());
+            //string a = "conan";
+            //byte[] b = Encoding.ASCII.GetBytes(a);
+            //byte[] c = Encode_BDS_GCR(b, false, false);
+            //byte[] d = Decode_BDS_GCR(c, true, false).decoded;
+            //string e = Encoding.ASCII.GetString(d);
+            //Text = e;
+
+            //byte[] o = File.ReadAllBytes($@"c:\test\c1.bin");
+            //byte[] dec = Decode_BDS_GCR(o, true, false).decoded;
+            //byte[] dec = File.ReadAllBytes($@"c:\test\c1_dec.bin");
+            ////File.WriteAllBytes($@"c:\test\c1_dec.bin", dec);
+            //byte[] renc = Encode_BDS_GCR(dec, false, true);
+            //File.WriteAllBytes($@"c:\test\c1_enc.bin", renc);
+
+
+            //byte[] e = File.ReadAllBytes($@"c:\test\tsecmod.bin");
+            //int pos = 0;
+            //List<byte> dec = new List<byte>();
+            //byte c = 0;
+            //while (pos < e.Length)
+            //{
+            //    byte a = (byte)(c ^= Decode_BDS_Pair(e[pos++], e[pos++]));
+            //    dec.Add(a);
+            //}
+            //File.WriteAllBytes($@"c:\test\tsec_dec1.bin", dec.ToArray());
 
             ///---------- Cart-Patch sector processing helpers
-
+            //Bossdos(File.ReadAllBytes($@"c:\test\bd_raw4.bin"));
+            //secF
             //byte[] f = File.ReadAllBytes($@"c:\test\xev2secmod.bin");
             //
             ///// encrypted sector
@@ -152,7 +190,7 @@ namespace V_Max_Tool
             //File.WriteAllBytes($@"c:\test\gauntrenc.bin", Build_Sector(CopyArray(f, 1, 256))); //, true));
             /// ----------------------------------------------
 
-            //BinToByte_Table($@"c:\test\pb700tbl.bin", $@"c:\test\700tbl.txt", "PB_Lookup", 16);
+            //BinToByte_Table($@"c:\test\bds_dec.bin", $@"c:\test\bds_tbl.txt", "BDS_LUT", 16);
             //BinToDictionary2($@"c:\test\track1.bin", $@"c:\test\track1_1.bin", $@"c:\test\vm_table.txt", "VMax_DecodeTable", "byte", "byte", 8);
 
             button2.Visible = EnableDBMenu.Checked = false;
@@ -275,7 +313,7 @@ namespace V_Max_Tool
                         Set_Buttons_Active();
                         Blk_pan.Enabled = true;
                         if (recent) AddRecentFile(file);
-                        P_Cart.Visible = NDS.Cart_Protection;
+                        P_Cart.Visible = NDS.Cart_Protection || (RemMan && NDS.External_Protection);
                     }
                     catch (Exception ex)
                     {
@@ -292,8 +330,6 @@ namespace V_Max_Tool
                     }
                     if (!batch && ErrorList.Count > 0)
                     {
-                        //int[] norep = new int[] { 2, 3, 6 };
-                        //int[] norep = new int[] { 2, 3 };
                         int[] norep = new int[] { };
                         bool norepair = NDS.cbm.Any(x => norep.Contains(x));
                         List<string> list = new List<string>(ErrorList);
@@ -375,8 +411,8 @@ namespace V_Max_Tool
             {
                 RunBusy(() =>
                 {
-                    if (V3_Auto_Adj.Checked) V3_Custom.Checked = v3cc = V3_hlen.Enabled = V3_Trim.Enabled = 
-                        V3_Cust_Sync.Checked = V3_syncLen.Enabled =  false;
+                    if (V3_Auto_Adj.Checked) V3_Custom.Checked = v3cc = V3_hlen.Enabled = V3_Trim.Enabled =
+                        V3_Cust_Sync.Checked = V3_syncLen.Enabled = false;
                     if (!V3_Auto_Adj.Checked) { v3aa = false; V3_Trim.Enabled = true; }
                 });
                 V3_Auto_Adjust();

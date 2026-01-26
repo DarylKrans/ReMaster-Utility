@@ -1,12 +1,9 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Microsoft.Win32;
 
 namespace V_Max_Tool
 {
@@ -277,9 +274,9 @@ namespace V_Max_Tool
                 if (end_found) break;
                 pos++;
             }
-        
+
             if (header_avg > 0 && header_total > 0) header_avg = header_total / ss.Count;
-        
+
             if (ss.Count < 16)
             {
                 int d = (maxHlen <= 4 && v4) ? density[density_map[track]] : density[1];
@@ -341,7 +338,8 @@ namespace V_Max_Tool
                 if (source[pos]) comp |= 1;
                 if ((comp & 0xffff) == 0x4949 && ((comp & 0x00ff0000) >> 16) != 0x49)
                 {
-                    try {
+                    try
+                    {
                         curpos = pos - 15;
                         var header = Bit2Byte(source, curpos, (v3_max_header + 8) << 3);
                         int hlen = 0;
@@ -382,7 +380,7 @@ namespace V_Max_Tool
                         }
                     }
                     catch { }
-                    }
+                }
                 pos++;
 
             }

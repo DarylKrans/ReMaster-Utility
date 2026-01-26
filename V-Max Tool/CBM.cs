@@ -25,7 +25,7 @@ using System.Windows.Forms;
 /// 
 /// byte 0          0x07 (always 07) Sector marker?
 /// byte 1-256      (sector data) 256 bytes
-/// byte 257        Checksum (0 ^ bytes 1-257)
+/// byte 257        Parity (0 ^ bytes 1-257)
 /// byte 258-260    0x00 (not used)
 /// 
 /// Standard CBM sector
@@ -117,7 +117,8 @@ namespace V_Max_Tool
             return buffer.ToArray();
         }
 
-        (int, int, int, int, string[], int, int[], int, byte[], int[], int, bool, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
+        //(int, int, int, int, string[], int, int[], int, byte[], int[], int, bool, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
+        (int, int, int, int, string[], int, int[], int, byte[], int[], int, bool, bool, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
         {
             int[] ptracks = new int[] { 5, 39 };
             int[] psector = new int[] { 8, 13 };
@@ -143,6 +144,7 @@ namespace V_Max_Tool
             bool s_cksm = false;
             bool h_cksm = false;
             bool cartP = false;
+            bool manP = false;
             byte[] cartC;
             byte[] dec_hdr;
             byte[] sec_hdr = new byte[10];
@@ -197,10 +199,10 @@ namespace V_Max_Tool
             if (!batch && !cbm && err.Count > 0)
             {
                 int errtk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-                foreach (string s in err) ErrorList.Add($"Checksum failed on track {errtk} sector {s}");
+                foreach (string s in err) ErrorList.Add($"Parity failed on track {errtk} sector {s}");
             }
             //File.WriteAllLines($@"c:\test\track{trk}headers.txt", lister.ToArray());
-            return (data_start, data_end, sector_zero, len, headers.ToArray(), sectors, s_st, total_sync, Disk_ID, s_pos, track_id, dont_adj, cartP);
+            return (data_start, data_end, sector_zero, len, headers.ToArray(), sectors, s_st, total_sync, Disk_ID, s_pos, track_id, dont_adj, cartP, manP);
 
             void add_total()
             {
@@ -302,11 +304,16 @@ namespace V_Max_Tool
                                     s_cksm = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3)).checksum;
                                 }
                                 if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
-                                if (!cartP) cartP = Find_VMax_Cart_CBM(cartC, track, sect).has_prot;
+                                if (!cartP) cartP = Find_VMax_Cart_CBM(cartC, track, sect).has_cart;
                             }
                             else
                             {
-                                s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
+                                //s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
+                                byte[] s_dat = new byte[0];
+                                (s_dat, s_cksm, _) = Decode_MicroProse_Sector(source, sect, false);
+                                (bool hp, byte[] ns) = Find_MPS_Manual(s_dat, track, sect);
+                                if (!manP && hp) manP = true;
+                                //if (hp) File.WriteAllBytes($@"c:\test\t{track}_s{sect}.bin", s_dat);
                                 if (!s_cksm) err.Add($"{sect}");
                             }
                         }
@@ -543,6 +550,35 @@ namespace V_Max_Tool
             }
         }
 
+        byte[] Replace_MPS_Sector(byte[] data, int sector, byte[] new_sector)
+        {
+            if (data == null) return null;
+            if (new_sector == null || sector < 0) return data;
+            BitArray source = new BitArray(Flip_Endian(data));
+            (var fsec, _, var pos) = Decode_MicroProse_Sector(source, sector, false);
+            if (pos > -1 && fsec != null)
+            {
+                if (new_sector.Length == 256) new_sector = Build_MPS_Sector(Decode_CBM_GCR(fsec).decoded, new_sector);
+                if (new_sector != null)
+                {
+                    BitArray nsec = new BitArray(Flip_Endian(new_sector));
+                    for (int i = 0; i < nsec.Length; i++) source[pos + i] = nsec[i];
+                    return Bit2Byte(source);
+                }
+            }
+            return data;
+
+            byte[] Build_MPS_Sector(byte[] old_sec, byte[] sect)
+            {
+                if (sect == null || old_sec == null) return null;
+                byte checksum = 0;
+                for (int i = 0; i < sect.Length; i++) checksum ^= sect[i];
+                Buffer.BlockCopy(sect, 0, old_sec, 9, sect.Length);
+                old_sec[265] = checksum;
+                return Encode_CBM_GCR(old_sec);
+            }
+        }
+
         byte[] Build_Sector(byte[] sect, bool badChecksum = false)
         {
             if (sect == null) return null;
@@ -551,6 +587,8 @@ namespace V_Max_Tool
             if (badChecksum) checksum = Flip_Endian(new byte[] { (byte)checksum })[0];
             return Encode_CBM_GCR(ArrayConcat(new byte[] { 0x07 }, sect, new byte[] { (byte)checksum, 0x00, 0x00 }));
         }
+
+
 
         (bool found, int header_pos, int block_pos, byte[] ID, bool checksum) Find_Sector(BitArray source, int sector, int pos = -1, bool bit_pos = false)
         {

@@ -63,6 +63,7 @@ namespace V_Max_Tool
         public static string[][] Info = new string[0][];
         public static byte[][][] Sector = new byte[0][][];
         public static bool Cart_Protection = false;
+        public static bool External_Protection = false;
         //public static bool Cart_Fix = false;
         public static byte[] V3_sectors = new byte[0];
     }
@@ -115,6 +116,20 @@ namespace V_Max_Tool
         public byte Start = 0;
         public byte End = 0;
         public int Sector = -1;
+    }
+
+    class SectorPatch
+    {
+        public int Track;
+        public int Sector;
+
+        public ushort Offset;
+        public byte[] Search;
+        public byte[] Replace;
+
+        public byte Parity;
+        public byte NewParity;
+        public string Title;
     }
 
     class LineColor

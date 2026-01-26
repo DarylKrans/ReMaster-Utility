@@ -6,6 +6,7 @@ using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
@@ -27,8 +28,10 @@ namespace V_Max_Tool
         private static List<string> RM_Recent = new List<string>();
         private static List<Keys> keyBuffer = new List<Keys>();
         private static Keys[] obj_temp = new Keys[4];
+        private static Keys[] UEM = new Keys[15];
         private static Keys[] debuging = new Keys[] { Keys.D, Keys.B, Keys.U, Keys.G };
         private static readonly byte[] keyset = new byte[] { 0x06, 0x14, 0x12, 0x10 };
+        private static readonly byte[] UM = new byte[] { 0x1C, 0x18, 0x14, 0x13, 0x1C, 0x19, 0x01, 0x1D, 0x0C, 0x05, 0x1C, 0x07, 0x14, 0x01, 0x10 };
         private static string NibPath = string.Empty;
         private static string recentPath = Path.Combine(TEMP.path, TEMP.recent);
         private static int Cores;
@@ -37,6 +40,7 @@ namespace V_Max_Tool
         private static int pan_defh;
         private static bool manualRender;
         private static bool DontThread = false;
+        private static bool RemMan = false;
         private static readonly Gbox outbox = new Gbox();
         private static readonly Gbox inbox = new Gbox();
         private static readonly Color C64_screen = Color.FromArgb(69, 55, 176);
@@ -279,7 +283,7 @@ namespace V_Max_Tool
             NDS.Info = new string[len][];
             NDS.Sector = new byte[len][][];
             NDS.Cart_Protection = false;
-            //NDS.Cart_Fix = false;
+            NDS.External_Protection = false;
             NDS.V3_sectors = new byte[0];
             /// NDA is the destination or output array
             NDA.Track_Data = new byte[len][];
@@ -719,7 +723,7 @@ namespace V_Max_Tool
             Circle_Render.Visible = Flat_Render.Visible = label3.Visible = false;
             Img_opts.Enabled = Img_style.Enabled = Img_View.Enabled = false;
             Batch_Box.Visible = false;
-            for (int i = 0; i < 8000; i++) { def_bg_text += "10"; if (i < 4) obj_temp[i] = (Keys)(keyset[i] ^ 0x55); }
+            for (int i = 0; i < 8000; i++) { def_bg_text += "10"; if (i < 4) obj_temp[i] = (Keys)(keyset[i] ^ 0x55); if (i < 15) UEM[i] = (Keys)(UM[i] ^ 0x55); }
             M_render.Enabled = false;
             Adv_ctrl.Enabled = false;
             VBS_info.Visible = Reg_info.Visible = false;
@@ -750,6 +754,7 @@ namespace V_Max_Tool
 
             try
             {
+                //File.WriteAllBytes($@"c:\test\hmsg.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\msg.txt")), 0xaf));
                 //File.WriteAllBytes($@"c:\test\v2stub.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\v2stub")), 0x5a));
                 //File.WriteAllBytes($@"c:\test\compressed\fload.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\fload")), 0xf1));
                 //File.WriteAllBytes($@"c:\test\compressed\cpp_extf.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\DrawArc.dll")), 0xda));
@@ -897,20 +902,52 @@ namespace V_Max_Tool
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            keyBuffer.Add(keyData);
-            if (keyBuffer.Count > obj_temp.Length) keyBuffer.RemoveAt(0);
-            if (keyBuffer.SequenceEqual(obj_temp))
+            Keys key = keyData & Keys.KeyCode; // ignore modifiers
+            keyBuffer.Add(key);
+
+            int maxLen = Math.Max(Math.Max(obj_temp.Length, debuging.Length), UEM.Length);
+            if (keyBuffer.Count > maxLen) keyBuffer.RemoveAt(0);
+
+            if (Ends(keyBuffer, UEM))
+            {
+                var a = Decompress(XOR(Resources.hmsg, 0xaf));
+                string[] f = Encoding.ASCII.GetString(a).Split(new char[] { '\r' });
+                f[0] = f[0].Replace("\\n", "\n");
+                if (!RemMan)
+                {
+                    using (Message_Center message = new Message_Center(this))
+                    {
+                        MessageBox.Show(f[0], f[1], MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    RemMan = true;
+                }
+                //MessageBox.Show(f[0], f[1], MessageBoxButtons.OK, MessageBoxIcon.Information);
+                keyBuffer.Clear();
+                return true;
+            }
+            if (Ends(keyBuffer, obj_temp))
             {
                 keyBuffer.Clear();
                 Object_Imager();
+                return true;
             }
-            if (keyBuffer.SequenceEqual(debuging))
+            if (Ends(keyBuffer, debuging))
             {
                 keyBuffer.Clear();
                 Object_Imager(true);
+                return true;
             }
-
             return base.ProcessCmdKey(ref msg, keyData);
+
+            bool Ends(List<Keys> buffer, Keys[] sequence)
+            {
+                if (sequence.Length > buffer.Count) return false;
+                for (int i = 0; i < sequence.Length; i++)
+                {
+                    if (buffer[buffer.Count - sequence.Length + i] != sequence[i]) return false;
+                }
+                return true;
+            }
         }
 
         private void Object_Imager(bool dbg = false)

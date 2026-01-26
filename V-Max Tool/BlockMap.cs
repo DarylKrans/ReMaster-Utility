@@ -25,7 +25,7 @@ namespace V_Max_Tool
             { 0, Color.FromArgb(110, 70, 173) }, { 1, Color.Black }, { 2, Color.DarkMagenta },
             { 3, Color.Green }, { 4, Color.Blue }, { 5, Color.DarkCyan }, { 6, Color.DarkOrange },
             { 7, Color.Blue }, { 8, Color.Blue }, { 9, Color.Blue }, { 10, Color.Brown },
-            { 11, Color.Blue }, { 12, Color.Blue }
+            { 11, Color.Blue }, { 12, Color.Blue }, { 13, Color.FromArgb(84, 128, 255) }, { 14, Color.Blue } 
         };
 
         //Dictionary<int, Color> colorMap = new Dictionary<int, Color>

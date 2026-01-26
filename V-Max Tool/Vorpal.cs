@@ -342,7 +342,7 @@ namespace V_Max_Tool
                 catch { }
             }
             var tdata = Bit2Byte(temp);
-            if (!batch && err.Count > 0) foreach (var s in err) ErrorList.Add($"Checksum failed on track {track}");
+            if (!batch && err.Count > 0) foreach (var s in err) ErrorList.Add($"Sector failed on track {track}");
             return (tdata, data_start, data_end, track_len, sec_zero_pos, sectors, sec_pos.ToArray(), sec_hdr.ToArray());
 
             int Find_LeadIn(BitArray gap, bool leadout = false)

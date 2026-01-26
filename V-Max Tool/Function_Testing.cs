@@ -42,6 +42,58 @@ namespace V_Max_Tool
 
         }
 
+        void Bossdos(byte[] data)
+        {
+            if (data[0] == 0x52)
+            {
+                List<byte> list = new List<byte>();
+                byte[] dec = Decode_CBM_GCR(CopyArray(data, 0, 10)).decoded;
+                int pos = Decode_BDS_Pair(data[12], data[13]) < 3 ? 10 : 8;
+                int ipos = pos;
+                //int pos = 8; // skip past CBM sector header?  7 bytes wasn't enough
+                //byte poo = Decode_BDS_Pair(data[12], data[13]);
+                byte track = Decode_BDS_Pair(data[pos++], data[pos++]); // = track - 1
+                byte sector = Decode_BDS_Pair(data[pos++], data[pos++]); // = sector
+                int i;
+                for (i = pos; i < 2048 + pos; i += 2) // decode 1024 pairs starting at (pos) -- sector payload
+                {
+                    list.Add(Decode_BDS_Pair(data[i], data[i + 1]));
+                }
+                byte parity = Decode_BDS_Pair(data[i++], data[i++]); // 1 pair at the end = sector parity
+                byte checksum = 0;
+                foreach (byte p in list) checksum ^= p; // calculate the parity
+                // write in title bar (checksum, parity , checksum ^ parity)
+                // checksum should = parity and checksum ^ parity shoule = 0
+                Text = $"{ipos} {Hex_Val(new byte[] { track, sector, checksum, parity, (byte)(checksum ^ parity) })}, {Hex_Val(dec)}"; // verify csm and parity
+                File.WriteAllBytes($@"c:\test\bd_t{track}_s{sector}_dec", list.ToArray());
+            }
+
+            //byte DecodePair(byte a, byte b)
+            //{
+            //    return (byte)((a | 0x55) & (b | 0xaa));
+            //}
+        }
+
+        //byte Decode_BDS_Pair(byte a, byte b)
+        //{
+        //    return (byte)((a | 0x55) & (b | 0xaa));
+        //}
+
+        void LDR_test(byte[] data)
+        {
+            int pos = 1;
+            int sl = 1538;
+            List<string> list = new List<string>();
+            for (int i = 0; i < 3; i++)
+            {
+                int pp = pos + (i * sl);
+                (byte[] dec, bool par) = Decode_BDS_GCR(CopyArray(data, pp + i, sl), true, true);
+                File.WriteAllBytes($@"c:\test\sec_{i}", dec);
+                list.Add($"sector {i} : Pos : {pp} Parity ({par})");
+            }
+            File.WriteAllLines($@"c:\test\ldec.txt", list.ToArray());
+        }
+
         void Test_GetFmt()
         {
             Stopwatch sw = Stopwatch.StartNew();

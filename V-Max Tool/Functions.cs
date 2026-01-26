@@ -162,7 +162,7 @@ namespace V_Max_Tool
 
         void Query_Track_Formats()
         {
-            int ldr = 0, vpl = 0, rlk = 0, mps = 0, vmx = 0, cb = 0;
+            int ldr = 0, vpl = 0, rlk = 0, mps = 0, vmx = 0, cb = 0, bds = 0;
             for (int i = 0; i < tracks; i++) { }
             foreach (var format in NDS.cbm)
             {
@@ -176,6 +176,8 @@ namespace V_Max_Tool
                     case 6: rlk++; break;
                     case 7: rlk++; break;
                     case 10: mps++; break;
+                    case 13: bds++; break;
+                    case 14: ldr++; break;
                 }
             }
 
@@ -185,7 +187,8 @@ namespace V_Max_Tool
             if (NDS.cbm.Any(x => x == 5)) Protected_Tracks.Text = $"Vorpal Tracks : {vpl}";
             if (NDS.cbm.Any(x => x == 6)) Protected_Tracks.Text = $"RapidLok Tracks : {rlk}";
             if (NDS.cbm.Any(x => x == 10)) Protected_Tracks.Text = $"MicroPros Tracks : {mps}";
-            Protected_Tracks.Visible = (vmx > 0 || vpl > 0 || rlk > 0 || mps > 0);
+            if (NDS.cbm.Any(x => x == 13)) Protected_Tracks.Text = $"BossDos Tracks : {bds}";
+            Protected_Tracks.Visible = (vmx > 0 || vpl > 0 || rlk > 0 || mps > 0 || bds > 0);
         }
 
         (bool v2a, bool vpa, bool v3a, bool v2adj, bool v2cust, bool v3adj, bool v3cust, bool cbmadj, bool sl, bool fl, bool vpadj, bool rb_vm, int vpl_lead) Set_Adjust_Options(bool rb_vm, bool cynldr = false)
@@ -195,6 +198,7 @@ namespace V_Max_Tool
             int vpl_lead = 0;
             (v2a, v3a, vpa) = Check_Tabs();
             Advanced_Opts.Enabled = !batch;
+            if (NDS.cbm.Any(x => x == 13) || NDS.cbm.Any(x => x == 14)) end_track = tracks > 42 ? 69 : 35;
             if (NDS.cbm.Any(x => x == 2))
             {
                 V2_Auto_Adj.Checked = (v2aa || V2_Auto_Adj.Checked);
@@ -666,6 +670,7 @@ namespace V_Max_Tool
 
         byte[] Rotate_Left(byte[] data, int pos)
         {
+            if (data == null) return null;
             if (pos > 0 && pos < data.Length)
             {
                 int length = data.Length;
