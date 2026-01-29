@@ -28,6 +28,7 @@ namespace V_Max_Tool
             byte[][] dsec = new byte[3][];
             byte[] tdata = CopyArray(data);
             BitArray source = new BitArray(Flip_Endian(tdata));
+            int rpos = -1;
             while (pos < source.Length)
             {
                 comp <<= 1;
@@ -51,7 +52,6 @@ namespace V_Max_Tool
                             if (curpos + sec_len < source.Length) sec_data = Bit2Byte(source, curpos, sec_len);
                             else
                             {
-                                int rpos = 0;
                                 (sec_data, rpos) = HandleIncompleteSector(source, curpos, sec_len);
                                 if (start_found && !end_found && sectors >= 2)
                                 {
@@ -80,11 +80,11 @@ namespace V_Max_Tool
                                 if (!start_found)
                                 {
                                     start_found = true;
-                                    data_start = curpos;
+                                    data_start = curpos - snc; // curpos;
                                 }
                                 if (sc == 2)
                                 {
-                                    secz = pos - snc;
+                                    secz = curpos - snc;
                                     szf = "*";
                                 }
                                 byte[] dec_sec = new byte[1024];
@@ -117,7 +117,7 @@ namespace V_Max_Tool
                             {
                                 end_found = true;
                                 data_start = ostart;
-                                data_end = curpos; // - 1;
+                                data_end = curpos - snc; // curpos; // - 1;
                                 info.Add($"** Repeat Sector ({sc}) pos ({pos >> 3})");
                                 break;
                             }
@@ -142,6 +142,8 @@ namespace V_Max_Tool
                 adata = buffer.ToArray();
             }
             Set_Dest_Arrays(adata, trk);
+            //File.WriteAllBytes($@"c:\test\t{tk}", Bit2Byte(source, data_start, (data_end - data_start)));
+            //info.Add($@"start {data_start >> 3} end {data_end >> 3} len {(data_end - data_start) >> 3} sz {secz} rp {rpos >> 3}");
             if (!batch && err.Count > 0) foreach (var s in err) ErrorList.Add($"Sector {sc} failed on track {track + 1}");
             return (adata, data_start, data_end, data_end - data_start, secz, info.ToArray(), sectors);
         }
@@ -149,10 +151,10 @@ namespace V_Max_Tool
         (byte[] data, int start, int end, int length, int sec_zero, string[] info, int sectors, byte[][] sector) Get_BD_Loader_Info(byte[] data, int trk)
         {
             if (data == null) return (new byte[0], 0, 0, 0, 0, new string[1], 0, new byte[0][]);
-            int track = tracks > 42 ? (trk / 2) : trk, header_len = 10 << 3, sec_len = 4618 << 3;
+            int track = tracks > 42 ? (trk / 2) : trk, sec_len = 4618 << 3;
             int d = density[density_map[track]];
-            int data_start = 0, data_end = 0, sectors = 0, pos = 0, curpos = 0, secz = -1, snc = 0, offset = 10, ostart = 0;
-            bool start_found = false, end_found = false, weak = false, csm = false;
+            int data_start = 0, data_end = 0, sectors = 0, pos = 0, curpos = 0, secz = -1, snc = 0, ostart = 0;
+            bool start_found = false, end_found = false;
             ushort comp = 0;
             string bad = "Failed!";
             string ok = "OK";
@@ -162,7 +164,6 @@ namespace V_Max_Tool
             byte[] tdata = CopyArray(data);
             BitArray source = new BitArray(Flip_Endian(tdata));
             List<byte[]> decsec = new List<byte[]>();
-            //File.WriteAllBytes($@"c:\test\loader", Bit2Byte(source));
             while (pos < source.Length)
             {
                 comp <<= 1;
@@ -172,76 +173,74 @@ namespace V_Max_Tool
                     snc++;
                 }
                 else snc = 0;
-                if (!start_found && comp == 0xffff && Bit2Byte(source, pos + 1, 8)[0] == 0x52)
+                if (comp == 0xffff && Bit2Byte(source, pos + 1, 8)[0] == 0x52)
                 {
-                    start_found = true;
-                    data_start = pos - snc;
-                    secz = data_start;
-                    curpos = pos + 1;
-                    BitArray nsnc = BitCopy(source, curpos, 32 << 3);
-                    snc = 0;
-                    for (int i = 0; i < nsnc.Length; i++)
+                    if (!start_found)
                     {
-                        if (nsnc[i]) snc++;
+                        start_found = true;
+                        data_start = pos - snc;
+                        secz = data_start;
+                        curpos = pos + 1;
+                        BitArray nsnc = BitCopy(source, curpos, 32 << 3);
+                        snc = 0;
+                        for (int i = 0; i < nsnc.Length; i++)
+                        {
+                            if (nsnc[i]) snc++;
+                            else
+                            {
+                                if (snc >= 10)
+                                {
+                                    curpos += i;
+                                    break;
+                                }
+                                snc = 0;
+                            }
+                        }
+
+                        byte[] sec_data; // = new byte[0];
+                        if (curpos + sec_len < source.Length) sec_data = Bit2Byte(source, curpos, sec_len);
                         else
                         {
-                            if (snc >= 10)
+                            int rpos = 0;
+                            (sec_data, rpos) = HandleIncompleteSector(source, curpos, sec_len);
+                            if (start_found && !end_found) // && sectors >= 2)
                             {
-                                curpos += i;
-                                break;
+                                ostart = data_start;
+                                data_start = rpos;
+                                data_end = (source.Length >> 3) << 3;
+                                end_found = true;
                             }
-                            snc = 0;
+                        }
+                        sectors = 3;
+                        int spos = 1;
+                        int sl = 1538;
+                        for (int i = 0; i < 3; i++)
+                        {
+                            int pp = spos + (i * sl);
+                            byte[] csec = CopyArray(sec_data, pp + i, sl);
+                            (byte[] dec, bool par) = Decode_BDS_GCR(csec, true, true);
+                            decsec.Add(csec);
+                            info.Add($"sector ({i}) pos ({(pos >> 3) + pp}), Length {dec.Length}, Sector ({(par ? ok : bad)})");
+                            if (!par) err.Add(i);
                         }
                     }
-
-                    byte[] sec_data = new byte[0];
-                    if (curpos + sec_len < source.Length) sec_data = Bit2Byte(source, curpos, sec_len);
                     else
                     {
-                        int rpos = 0;
-                        (sec_data, rpos) = HandleIncompleteSector(source, curpos, sec_len);
-                        if (start_found && !end_found) // && sectors >= 2)
+                        if (start_found)
                         {
-                            ostart = data_start;
-                            data_start = rpos;
-                            data_end = (source.Length >> 3) << 3;
+                            data_end = pos;
                             end_found = true;
+                            break;
                         }
-                    }
-                    sectors = 3;
-                    int spos = 1;
-                    int sl = 1538;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        int pp = spos + (i * sl);
-                        byte[] csec = CopyArray(sec_data, pp + i, sl);
-                        //(byte[] dec, bool par) = Decode_BDS_GCR(CopyArray(sec_data, pp + i, sl), true, true);
-                        (byte[] dec, bool par) = Decode_BDS_GCR(csec, true, true);
-                        decsec.Add(csec);
-                        info.Add($"sector ({i}) pos ({(pos >> 3) + pp}), Length {dec.Length}, Sector ({(par ? ok : bad)})");
-
-                        if (!par) err.Add(i);
-                    }
-                    //dsec = CopyArray(sec_data);
-                }
-                else
-                {
-                    if (start_found)
-                    {
-                        data_end = pos;
-                        end_found = true;
-                        break;
                     }
                 }
                 if (end_found) break;
-                    pos++;
+                pos++;
             }
             if (!end_found) data_end = (source.Count >> 3) << 3;
 
-            //BitArray dest = new BitArray(data_end - data_start);
             BitArray dest = new BitArray(d << 3);
             pos = secz;
-            //for (int i = 0; i < dest.Length; i++)
             for (int i = 0; i < data_end - data_start; i++)
             {
                 dest[i] = source[pos++];
@@ -254,93 +253,7 @@ namespace V_Max_Tool
             if (!batch && err.Count > 0) foreach (var s in err) ErrorList.Add($"Sector {s} failed on track {track + 1}");
             return (adata, data_start, data_end, data_end - data_start, secz, info.ToArray(), sectors, decsec.ToArray());
         }
-
-        //(byte[] data, int start, int end, int length, int sec_zero, string[] info, int sectors) Get_BD_Loader_Info(byte[] data, int trk)
-        //{
-        //    if (data == null) return (new byte[0], 0, 0, 0, 0, new string[1], 0);
-        //    int track = tracks > 42 ? (trk / 2) : trk, header_len = 10 << 3, sec_len = 4618 << 3;
-        //    int d = density[density_map[track]];
-        //    int data_start = 0, data_end = 0, sectors = 0, pos = 0, curpos = 0, secz = -1, snc = 0, offset = 10, ostart = 0;
-        //    bool start_found = false, end_found = false, weak = false, csm = false;
-        //    ushort comp = 0;
-        //    string bad = "Failed!";
-        //    string ok = "OK";
-        //    List<string> info = new List<string>();
-        //    List<string> headers = new List<string>();
-        //    List<int> err = new List<int>();
-        //    byte[] dsec = new byte[0];
-        //    byte[] tdata = CopyArray(data);
-        //    BitArray source = new BitArray(Flip_Endian(tdata));
-        //    while (pos < source.Length)
-        //    {
-        //        comp <<= 1;
-        //        if (source[pos])
-        //        {
-        //            comp |= 1;
-        //            snc++;
-        //        }
-        //        else snc = 0;
-        //        if (comp == 0xffff && Bit2Byte(source, pos + 1, 8)[0] == 0x52)
-        //        {
-        //            if (start_found)
-        //            {
-        //                end_found = true;
-        //                data_end = pos - snc;
-        //                break;
-        //            }
-        //            if (!start_found)
-        //            {
-        //                secz = pos - snc;
-        //                start_found = true;
-        //                data_start = secz;
-        //            }
-        //        }
-        //        if (!end_found && comp == 0xffff && (MatchSeq(Bit2Byte(source, pos + 1, 16), new byte[] { 0x55, 0x55 })))
-        //        {
-        //            curpos = pos + 1;
-        //            byte[] sec_data = new byte[0];
-        //            if (curpos + sec_len < source.Length) sec_data = Bit2Byte(source, curpos, sec_len);
-        //            else
-        //            {
-        //                int rpos = 0;
-        //                (sec_data, rpos) = HandleIncompleteSector(source, curpos, sec_len);
-        //            }
-        //            sectors = 3;
-        //            int spos = 1;
-        //            int sl = 1538;
-        //            for (int i = 0; i < 3; i++)
-        //            {
-        //                int pp = spos + (i * sl);
-        //                (byte[] dec, bool par) = Decode_BDS_GCR(CopyArray(sec_data, pp + i, sl), true, true);
-        //                info.Add($"sector ({i}) pos ({(pos >> 3) + pp}), Length {dec.Length}, Sector ({(par ? ok : bad)})");
-        //                if (!par) err.Add(i);
-        //            }
-        //            dsec = CopyArray(sec_data);
-        //        }
-        //        pos++;
-        //    }
-        //    if (!end_found) data_end = (source.Count >> 3) << 3;
-        //
-        //    byte[] adata = new byte[0];
-        //    //using (MemoryStream buffer = new MemoryStream())
-        //    //using (BinaryWriter write = new BinaryWriter(buffer))
-        //    //{
-        //    //    for (int i = 2; i >= 0; i--)
-        //    //    {
-        //    //        write.Write(FastArray.Init(i == 2 ? 9 : 5, 0xff));
-        //    //        write.Write(dsec[i]);
-        //    //    }
-        //    //    int rem = d - (int)buffer.Length;
-        //    //    if (rem > 0) write.Write(FastArray.Init(rem, 0x55));
-        //    //    adata = buffer.ToArray();
-        //    //}
-        //    
-        //    Set_Dest_Arrays(adata, trk);
-        //    info.Add($"start {data_start >> 3} end {data_end >> 3} len {(data_end - data_start) >> 3} sz {secz >> 3}");
-        //    if (!batch && err.Count > 0) foreach (var s in err) ErrorList.Add($"Sector {s} failed on track {track + 1}");
-        //    return (adata, data_start, data_end, data_end - data_start, secz, info.ToArray(), sectors);
-        //}
-
+        
         (byte, byte) Get_Current_Sector(byte[] sec, int spos)
         {
             byte tck = Decode_BDS_Pair(sec[spos++], sec[spos++]);

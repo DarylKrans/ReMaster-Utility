@@ -86,8 +86,10 @@ namespace V_Max_Tool
                             {
                                 short ts = BitConverter.ToInt16(decomp, pos);
                                 var tdata = CopyArray(decomp, pos + 2, ts);
-                                (int r, int ln) = FindLongestRun_General(tdata);
-                                if (r > 0 && ln > 0) tdata = Rotate_Left(tdata, r + ln);
+                                //(int r, int ln) = FindLongestRun_General(tdata);
+                                //if (r > 0 && ln > 0) tdata = Rotate_Left(tdata, r + ln);
+                                int r = FindLongestRun_Specific(tdata, 0xff);
+                                if (r > 0) tdata = Rotate_Left(tdata, r);
                                 NDG.s_len[i] = tdata.Length;
                                 NDS.Track_Data[i] = FillArray(tdata, NIB_TRACK_LEN);
                             }

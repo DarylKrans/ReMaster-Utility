@@ -55,6 +55,7 @@ namespace V_Max_Tool
         //StringBuilder Disassemble(byte[] memory, int startAddress = 0x0000, int endAddress = -1)
         StringBuilder Disassemble(byte[] memory, int offset = 0x0000, int endAddress = -1)
         {
+            if (memory == null) return new StringBuilder();
             if (endAddress < 0) endAddress = memory.Length;
             //if (startAddress < 0) startAddress = 0;
             int startAddress = 0;

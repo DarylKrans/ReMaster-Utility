@@ -79,20 +79,20 @@ namespace V_Max_Tool
         //    return (byte)((a | 0x55) & (b | 0xaa));
         //}
 
-        void LDR_test(byte[] data)
-        {
-            int pos = 1;
-            int sl = 1538;
-            List<string> list = new List<string>();
-            for (int i = 0; i < 3; i++)
-            {
-                int pp = pos + (i * sl);
-                (byte[] dec, bool par) = Decode_BDS_GCR(CopyArray(data, pp + i, sl), true, true);
-                File.WriteAllBytes($@"c:\test\sec_{i}", dec);
-                list.Add($"sector {i} : Pos : {pp} Parity ({par})");
-            }
-            File.WriteAllLines($@"c:\test\ldec.txt", list.ToArray());
-        }
+        //void LDR_test(byte[] data)
+        //{
+        //    int pos = 1;
+        //    int sl = 1538;
+        //    List<string> list = new List<string>();
+        //    for (int i = 0; i < 3; i++)
+        //    {
+        //        int pp = pos + (i * sl);
+        //        (byte[] dec, bool par) = Decode_BDS_GCR(CopyArray(data, pp + i, sl), true, true);
+        //        File.WriteAllBytes($@"c:\test\sec_{i}", dec);
+        //        list.Add($"sector {i} : Pos : {pp} Parity ({par})");
+        //    }
+        //    File.WriteAllLines($@"c:\test\ldec.txt", list.ToArray());
+        //}
 
         void Test_GetFmt()
         {

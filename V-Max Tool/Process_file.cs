@@ -1191,7 +1191,7 @@ namespace V_Max_Tool
             void Process_CBM(int trk, bool acbm, bool bmc, bool cyn_ldr, int ctrack)
             {
                 bool ad = NDS.Adjust[trk] && !NDS.cbm.Any(x => x == 9);
-                if (!acbm && NDS.cbm.Any(x => x == 14)) acbm = true;
+                //if (!acbm && NDS.cbm.Any(x => x == 14)) acbm = true;
                 //bool ad = NDS.Adjust[trk] || NDS.cbm.Any(x => x == 14) && !NDS.cbm.Any(x => x == 9);
                 //ad = false;
                 int htk = tracks > 42 ? 2 : 1;
@@ -1223,7 +1223,7 @@ namespace V_Max_Tool
                 {
                     int exp_snc = 40;   /// expected sync length.  (sync will be adjusted to this value if it is >= minimum value (or) =< ignore value
                     int min_snc = 35;   /// minimum sync length to signal this is a sync marker that needs adjusting (* original value : 16)
-                    int ign_snc = 100;  /// ignore sync if it is >= to value // was 80
+                    int ign_snc = 60;  /// ignore sync if it is >= to value // was 80
                     var d = 0;
                     if (track == 18 && NDS.cbm.Any(x => x == 6)) acbm = true;
 

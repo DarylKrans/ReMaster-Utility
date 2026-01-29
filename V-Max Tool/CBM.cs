@@ -261,7 +261,8 @@ namespace V_Max_Tool
                                     NDS.t18_ID = new byte[4];
                                     Buffer.BlockCopy(dec_hdr, 4, NDS.t18_ID, 0, 4);
                                 }
-                                sector_zero = pos;
+                                //sector_zero = pos;
+                                sector_zero = pos - sync_count;
                                 sec_zero = true;
                             }
                             if (checksums) GetChecksum();
@@ -395,7 +396,8 @@ namespace V_Max_Tool
                         }
                         Pad_Bits(dest_pos - (y + expected_sync + 8), (8 - y) + 1, d);
                     }
-                    return Rotate_Right(Bit2Byte(d, 0, bcnt << 3), 6);
+                    //return Rotate_Right(Bit2Byte(d, 0, bcnt << 3), 6);
+                    return Bit2Byte(d, 0, bcnt << 3);
                 }
             }
             return data;
