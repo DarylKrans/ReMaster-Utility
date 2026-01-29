@@ -41,7 +41,7 @@ namespace V_Max_Tool
         private static byte[] cldr_id = new byte[0];
         private static byte[] v2ldrcbm = new byte[0];
         private static byte[] v24e64pal = new byte[0];
-        private static byte[] v26446ntsc = new byte[0];
+        private static byte[] v26446ntsc = new byte[0]; // comment
         private static byte[] v2644entsc = new byte[0];
         private static byte[] fastloader = new byte[0]; //
         private static readonly int fldOffset = 184;
