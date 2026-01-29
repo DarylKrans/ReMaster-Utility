@@ -43,7 +43,7 @@ namespace V_Max_Tool
         private static byte[] v24e64pal = new byte[0];
         private static byte[] v26446ntsc = new byte[0];
         private static byte[] v2644entsc = new byte[0];
-        private static byte[] fastloader = new byte[0];
+        private static byte[] fastloader = new byte[0]; //
         private static readonly int fldOffset = 184;
         private static readonly int min_t_len = 3000; // was 6000
         private static int end_track = -1;
