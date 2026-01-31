@@ -1680,8 +1680,9 @@ namespace V_Max_Tool
             }
             //File.WriteAllText($@"c:\test\det_{tk}.txt", $"bds {bossdos} mps {microprose} cbm {cbm}");
             // If not enough positive header matches found, double check some specific conditions
+            if (bossdos == 1 || bossdos == 4) return 14;
             if (bossdos >= 3 && cbm < 10) return 13;
-            if (bossdos >= 1 && bossdos <= 2 && cbm < 3) return 14;
+            //if (bossdos >= 1 && bossdos <= 2 && cbm < 3) return 14;
             if (noData || (!modNDS && weak_bits > 6000)) return secF.Length - 1;
             if (sync_run == source.Count) return 0;             // track is all '0's or all '1's (nothing here, it's blank)
             if (tk == 20 && Check_VMaxLoader()) return 4;       // Checks for specific repeating patterns found on V-Max Loader track (20)

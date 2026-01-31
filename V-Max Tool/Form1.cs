@@ -17,7 +17,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.3 beta 01272026 (bossdos test)";
+        private static readonly string ver = " v1.3";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
