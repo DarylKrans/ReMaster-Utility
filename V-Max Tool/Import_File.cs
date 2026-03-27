@@ -33,8 +33,8 @@ namespace V_Max_Tool
                         Set_Arrays(tracks);
                         for (int i = 0; i < tracks; i++)
                         {
-                            NDS.Track_Data[i] = CopyArray(data, NIB_HEADER_LEN + (NIB_TRACK_LEN * i), NIB_TRACK_LEN);
-                            Original.OT[i] = new byte[0];
+                            Disk.Source.Track[i].Data = CopyArray(data, NIB_HEADER_LEN + (NIB_TRACK_LEN * i), NIB_TRACK_LEN);
+                            Disk.Original.TrackData[i] = new byte[0];
                         }
                         return true;
                     }
@@ -78,7 +78,7 @@ namespace V_Max_Tool
                     Set_Arrays(tracks);
                     for (int i = 0; i < tracks; i++)
                     {
-                        Original.OT[i] = new byte[0];
+                        Disk.Original.TrackData[i] = new byte[0];
                         int pos = BitConverter.ToInt32(g64_header, 12 + (i * 4));
                         if (pos != 0)
                         {
@@ -90,12 +90,12 @@ namespace V_Max_Tool
                                 //if (r > 0 && ln > 0) tdata = Rotate_Left(tdata, r + ln);
                                 int r = FindLongestRun_Specific(tdata, 0xff);
                                 if (r > 0) tdata = Rotate_Left(tdata, r);
-                                NDG.s_len[i] = tdata.Length;
-                                NDS.Track_Data[i] = FillArray(tdata, NIB_TRACK_LEN);
+                                Disk.G64.Track[i].Spec.PreDeterminedLength = tdata.Length;
+                                Disk.Source.Track[i].Data = FillArray(tdata, NIB_TRACK_LEN);
                             }
                             catch { }
                         }
-                        else NDS.Track_Data[i] = FastArray.Init(NIB_TRACK_LEN, 0x00);
+                        else Disk.Source.Track[i].Data = FastArray.Init(NIB_TRACK_LEN, 0x00);
                     }
                     return true;
                 }
@@ -161,7 +161,7 @@ namespace V_Max_Tool
                     for (int i = 0; i < tracks; i++)
                     {
 
-                        NDS.Track_Data[i] = FastArray.Init(NIB_TRACK_LEN, 0x00);
+                        Disk.Source.Track[i].Data = FastArray.Init(NIB_TRACK_LEN, 0x00);
                         int tsec = Available_Sectors[i];
                         int len = density[density_map[i]];
                         byte[] gap = SetSectorGap(sector_gap_length[i]);
@@ -186,7 +186,7 @@ namespace V_Max_Tool
                             int dif = len - (int)buffer.Length;
                             if (dif > 0) write.Write(FastArray.Init(dif, 0x55));
                             byte[] temp = buffer.ToArray();
-                            NDS.Track_Data[i] = FillArray(temp, NIB_TRACK_LEN);
+                            Disk.Source.Track[i].Data = FillArray(temp, NIB_TRACK_LEN);
                         }
                     }
                     return true;

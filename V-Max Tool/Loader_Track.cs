@@ -172,12 +172,12 @@ namespace V_Max_Tool
         {
             ///------- Checks to see if Loader track contains V-Max Headers (found on Mindscape titles) -----------
             bool rotated = false;
-            if (NDS.Loader.Length > 0)
+            if (Disk.Loader.Length > 0)
             {
                 byte[] sb = new byte[1]; byte[] eb = new byte[1];
-                sb[0] = NDS.Loader[0];
-                eb[0] = NDS.Loader[1];
-                int vs = Convert.ToInt32(NDS.Loader[2]);
+                sb[0] = Disk.Loader[0];
+                eb[0] = Disk.Loader[1];
+                int vs = Convert.ToInt32(Disk.Loader[2]);
                 byte[] comp = new byte[2];
                 for (int j = 0; j < 8; j++)
                 {

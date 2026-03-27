@@ -23,11 +23,11 @@ namespace V_Max_Tool
         string RL_Remove_Protection()
         {
             byte[] f = new byte[0];
-            if (NDS.cbm.Any(x => x == 7) && RL_Fix.Checked)
+            if (Disk.Source.Track.Any(x => x.Format == 7) && RL_Fix.Checked)
             {
                 int track = 17;
                 if (tracks > 43) track = 34;
-                (byte[] temp, int rem) = Patch_RapidLok(NDG.Track_Data[track], 0);
+                (byte[] temp, int rem) = Patch_RapidLok(Disk.G64.Track[track].Data, 0);
                 Set_Dest_Arrays(temp, track);
                 switch (rem)
                 {

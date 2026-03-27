@@ -15,14 +15,14 @@ namespace V_Max_Tool
             {
                 for (int t = 0; t < tracks; t++)
                 {
-                    if (NDG.Track_Data[t] != null)
+                    if (Disk.G64.Track[t].Data != null)
                     {
-                        if (NDS.cbm[t] == 1)
+                        if (Disk.Source.Track[t].Format == 1)
                         {
-                            if (Original.OT[t].Length == 0)
+                            if (Disk.Original.TrackData[t].Length == 0)
                             {
-                                Original.OT[t] = new byte[NDG.Track_Data[t].Length];
-                                Buffer.BlockCopy(NDG.Track_Data[t], 0, Original.OT[t], 0, NDG.Track_Data[t].Length);
+                                Disk.Original.TrackData[t] = new byte[Disk.G64.Track[t].Data.Length];
+                                Buffer.BlockCopy(Disk.G64.Track[t].Data, 0, Disk.Original.TrackData[t], 0, Disk.G64.Track[t].Data.Length);
                             }
                         }
                     }
@@ -31,23 +31,23 @@ namespace V_Max_Tool
             if (VPL_auto_adj.Checked) p = true;
             for (int t = 0; t < tracks; t++)
             {
-                if (NDG.Track_Data[t] != null)
+                if (Disk.G64.Track[t].Data != null)
                 {
-                    if (NDS.cbm[t] == 5 || NDS.cbm[t] == 1)
+                    if (Disk.Source.Track[t].Format == 5 || Disk.Source.Track[t].Format == 1)
                     {
-                        if (Original.OT[t].Length > 6000)
+                        if (Disk.Original.TrackData[t].Length > 6000)
                         {
                             try
                             {
-                                NDG.Track_Data[t] = new byte[Original.OT[t].Length];
-                                Buffer.BlockCopy(Original.OT[t], 0, NDG.Track_Data[t], 0, Original.OT[t].Length);
-                                Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], 0, Original.OT[t].Length);
-                                Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], Original.OT[t].Length, NDA.Track_Data[t].Length - Original.OT[t].Length);
+                                Disk.G64.Track[t].Data = new byte[Disk.Original.TrackData[t].Length];
+                                Buffer.BlockCopy(Disk.Original.TrackData[t], 0, Disk.G64.Track[t].Data, 0, Disk.Original.TrackData[t].Length);
+                                Buffer.BlockCopy(Disk.Original.TrackData[t], 0, Disk.Adjusted.Track[t].Data, 0, Disk.Original.TrackData[t].Length);
+                                Buffer.BlockCopy(Disk.Original.TrackData[t], 0, Disk.Adjusted.Track[t].Data, Disk.Original.TrackData[t].Length, Disk.Adjusted.Track[t].Data.Length - Disk.Original.TrackData[t].Length);
                             }
                             catch { }
                         }
-                        NDG.Track_Length[t] = NDG.Track_Data[t].Length;
-                        NDA.Track_Length[t] = NDG.Track_Length[t] * 8;
+                        Disk.G64.Track[t].Length = Disk.G64.Track[t].Data.Length;
+                        Disk.Adjusted.Track[t].Length = Disk.G64.Track[t].Length * 8;
                     }
                 }
             }

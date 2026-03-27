@@ -253,7 +253,7 @@ namespace V_Max_Tool
             if (!batch && err.Count > 0) foreach (var s in err) ErrorList.Add($"Sector {s} failed on track {track + 1}");
             return (adata, data_start, data_end, data_end - data_start, secz, info.ToArray(), sectors, decsec.ToArray());
         }
-        
+
         (byte, byte) Get_Current_Sector(byte[] sec, int spos)
         {
             byte tck = Decode_BDS_Pair(sec[spos++], sec[spos++]);

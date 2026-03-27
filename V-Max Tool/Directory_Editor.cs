@@ -19,21 +19,21 @@ namespace V_Max_Tool
         private static byte[][] d_temp = new byte[0][];
         private static int dropIndex = -1;
         private static readonly string dir_def = "0 \"DRAG NIB/G64 TO \"START\n664 BLOCKS FREE.";
-        private static readonly byte[] Reverse_Endian_Table = new byte[256];
+        public static readonly byte[] Reverse_Endian_Table = new byte[256];
         private static readonly CustomCheckedListBox Dir_Box = new CustomCheckedListBox();
 
         void Update_Dir_Items()
         {
-            f_temp = new string[DiskDir.Entries];
-            d_temp = new byte[DiskDir.Entries][];
+            f_temp = new string[Disk.Directory.Entries];
+            d_temp = new byte[Disk.Directory.Entries][];
             for (int i = 0; i < Dir_Box.Items.Count; i++)
             {
-                for (int j = 0; j < DiskDir.Entries; j++)
+                for (int j = 0; j < Disk.Directory.Entries; j++)
                 {
-                    if (DiskDir.FileName[j] == Dir_Box.Items[i].ToString())
+                    if (Disk.Directory.FileName[j] == Dir_Box.Items[i].ToString())
                     {
-                        f_temp[i] = DiskDir.FileName[j];
-                        d_temp[i] = DiskDir.Entry[j];
+                        f_temp[i] = Disk.Directory.FileName[j];
+                        d_temp[i] = Disk.Directory.Entry[j];
                     }
                 }
             }
@@ -160,14 +160,14 @@ namespace V_Max_Tool
 
         private void Dir_Cancel_Click(object sender, EventArgs e)
         {
-            if (DiskDir.Entries > 0)
+            if (Disk.Directory.Entries > 0)
             {
                 Dir_Box.Items.Clear();
-                for (int i = 0; i < DiskDir.Entries; ++i)
+                for (int i = 0; i < Disk.Directory.Entries; ++i)
                 {
-                    Dir_Box.Items.Add(DiskDir.FileName[i]);
-                    d_temp[i] = DiskDir.Entry[i];
-                    f_temp[i] = DiskDir.FileName[i];
+                    Dir_Box.Items.Add(Disk.Directory.FileName[i]);
+                    d_temp[i] = Disk.Directory.Entry[i];
+                    f_temp[i] = Disk.Directory.FileName[i];
                 }
             }
             groupBox3.Visible = false;
@@ -178,26 +178,26 @@ namespace V_Max_Tool
             int tot = 0;
             try
             {
-                while (tot < DiskDir.Entries)
+                while (tot < Disk.Directory.Entries)
                 {
-                    for (int i = 0; i < DiskDir.Sectors.Length; i++)
+                    for (int i = 0; i < Disk.Directory.Sectors.Length; i++)
                     {
                         int entry = 0;
-                        int track = Convert.ToInt32(DiskDir.Sectors[i][0]);
-                        int sector = Convert.ToInt32(DiskDir.Sectors[i][1]);
+                        int track = Convert.ToInt32(Disk.Directory.Sectors[i][0]);
+                        int sector = Convert.ToInt32(Disk.Directory.Sectors[i][1]);
                         track -= 1;
                         if (tracks > 42) track *= 2;
-                        (byte[] decoded_sector, bool valid) = Decode_CBM_Sector(NDG.Track_Data[track], sector, true);
+                        (byte[] decoded_sector, bool valid) = Decode_CBM_Sector(Disk.G64.Track[track].Data, sector, true);
                         if (valid)
                         {
-                            while (entry < 8 && tot < DiskDir.Entries)
+                            while (entry < 8 && tot < Disk.Directory.Entries)
                             {
                                 if (entry == 0) Buffer.BlockCopy(d_temp[tot], 2, decoded_sector, 2 + (entry * 32), 30);
                                 else Buffer.BlockCopy(d_temp[tot], 0, decoded_sector, 0 + (entry * 32), 32);
                                 entry++;
                                 tot++;
                             }
-                            byte[] temp = Replace_CBM_Sector(NDG.Track_Data[track], sector, decoded_sector);
+                            byte[] temp = Replace_CBM_Sector(Disk.G64.Track[track].Data, sector, decoded_sector);
                             Set_Dest_Arrays(temp, track);
                         }
                     }
@@ -356,10 +356,10 @@ namespace V_Max_Tool
 
         void ReCopyArray()
         {
-            d_temp = new byte[DiskDir.Entries][];
-            for (int i = 0; i < DiskDir.Entries; i++)
+            d_temp = new byte[Disk.Directory.Entries][];
+            for (int i = 0; i < Disk.Directory.Entries; i++)
             {
-                d_temp[i] = DiskDir.Entry[i];
+                d_temp[i] = Disk.Directory.Entry[i];
             }
         }
 
@@ -385,10 +385,10 @@ namespace V_Max_Tool
                 int strk = track;
                 track -= 1;
                 if (tracks > 42) track *= 2;
-                if ((track >= 0 && track < tracks) && NDS.cbm?[track] == 1)
+                if ((track >= 0 && track < tracks) && Disk.Source.Track[track].Format == 1)
                 {
                     //(byte[] decoded_sector, bool valid) = Decode_CBM_Sector(NDS.Track_Data[track], sector, true);
-                    (byte[] decoded_sector, _) = Decode_CBM_Sector(NDG.Track_Data[track], sector, true);
+                    (byte[] decoded_sector, _) = Decode_CBM_Sector(Disk.G64.Track[track].Data, sector, true);
                     if (decoded_sector != null)
                     {
                         string hex = $"{Hex_Val(decoded_sector, 3, 1)}" + $"{Hex_Val(decoded_sector, 2, 1)}";

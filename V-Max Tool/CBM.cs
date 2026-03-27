@@ -79,7 +79,8 @@ namespace V_Max_Tool
             int errorCode = 1;
             int pos;
             int[] c = new int[] { 2, 3, 4, 5, 6 };
-            bool alt = (NDS.cbm.Any(x => c.Any()));
+            bool alt = (Disk.Source.Track.Any(x => c.Contains(x.Format)));
+
             byte[] nosync = FastArray.Init(5, cbm_gap);
             byte[] noheader = FastArray.Init(10, cbm_gap);
             byte[] emptySector = Encode_CBM_GCR(Create_Empty_Sector());
@@ -258,8 +259,8 @@ namespace V_Max_Tool
                                 Buffer.BlockCopy(dec_hdr, 4, Disk_ID, 0, 4);
                                 if (track == 18) // was 17
                                 {
-                                    NDS.t18_ID = new byte[4];
-                                    Buffer.BlockCopy(dec_hdr, 4, NDS.t18_ID, 0, 4);
+                                    Disk.DiskID = new byte[4];
+                                    Buffer.BlockCopy(dec_hdr, 4, Disk.DiskID, 0, 4);
                                 }
                                 //sector_zero = pos;
                                 sector_zero = pos - sync_count;
@@ -700,10 +701,10 @@ namespace V_Max_Tool
             }
 
             //if (NDS.cbm[halftrack] == 1)
-            if (t18 == null && NDS.cbm[halftrack] == 1)
+            if (t18 == null && Disk.Source.Track[halftrack].Format == 1)
             {
-                t18 = new byte[NDG.Track_Data[halftrack].Length];
-                Buffer.BlockCopy(NDG.Track_Data[halftrack], 0, t18, 0, t18.Length);
+                t18 = new byte[Disk.G64.Track[halftrack].Data.Length];
+                Buffer.BlockCopy(Disk.G64.Track[halftrack].Data, 0, t18, 0, t18.Length);
             }
 
             List<string> list = new List<string>();
@@ -719,8 +720,8 @@ namespace V_Max_Tool
                     {
                         if (keepgoing)
                         {
-                            t18 = new byte[NDG.Track_Data[halftrack].Length];
-                            Buffer.BlockCopy(NDG.Track_Data[halftrack], 0, t18, 0, t18.Length);
+                            t18 = new byte[Disk.G64.Track[halftrack].Data.Length];
+                            Buffer.BlockCopy(Disk.G64.Track[halftrack].Data, 0, t18, 0, t18.Length);
                         }
                         else break;
                     }
@@ -802,7 +803,7 @@ namespace V_Max_Tool
                             Buffer.BlockCopy(directory, 256 * i + (j * 32), file, 0, file.Length);
                             if (file[2] != 0x00)
                             {
-                                DiskDir.Entries++;
+                                Disk.Directory.Entries++;
                                 file[0] = 0x00; file[1] = 0x00;
                                 d_files.Add(Hex_Val(file).Replace("-", ""));
                                 string sz = Get_FileName(file);
@@ -814,20 +815,20 @@ namespace V_Max_Tool
                     ret += $"\n{blocksFree} BLOCKS FREE.";
                     if (keepgoing)
                     {
-                        DiskDir.Entry = new byte[DiskDir.Entries][];
-                        d_temp = new byte[DiskDir.Entries][];
-                        DiskDir.Sectors = new byte[d_sec.Count][];
-                        for (int i = 0; i < DiskDir.Entries; i++)
+                        Disk.Directory.Entry = new byte[Disk.Directory.Entries][];
+                        d_temp = new byte[Disk.Directory.Entries][];
+                        Disk.Directory.Sectors = new byte[d_sec.Count][];
+                        for (int i = 0; i < Disk.Directory.Entries; i++)
                         {
-                            DiskDir.Entry[i] = Hex2Byte(d_files[i]);
+                            Disk.Directory.Entry[i] = Hex2Byte(d_files[i]);
                             d_temp[i] = Hex2Byte(d_files[i]);
                         }
                         for (int i = 0; i < d_sec.Count; i++)
                         {
-                            DiskDir.Sectors[i] = Hex2Byte(d_sec[i]);
+                            Disk.Directory.Sectors[i] = Hex2Byte(d_sec[i]);
                         }
                         f_temp = filename.ToArray();
-                        DiskDir.FileName = filename.ToArray();
+                        Disk.Directory.FileName = filename.ToArray();
                         Dir_Box.Items.Clear();
                         for (int k = 0; k < filename.Count; k++) Dir_Box.Items.Add(filename[k]);
                     }
@@ -881,8 +882,8 @@ namespace V_Max_Tool
                 if (rem > 0) write.Write(FastArray.Init(rem, cbm_gap));
                 var nt = buffer.ToArray();
                 Set_Dest_Arrays(nt, i);
-                NDS.Track_Data[i] = new byte[8192];
-                Buffer.BlockCopy(NDA.Track_Data[i], 0, NDS.Track_Data[i], 0, 8192);
+                Disk.Source.Track[i].Data = new byte[8192];
+                Buffer.BlockCopy(Disk.Adjusted.Track[i].Data, 0, Disk.Source.Track[i].Data, 0, 8192);
             }
             if (!DontThread)
             {
@@ -1003,9 +1004,9 @@ namespace V_Max_Tool
         byte[] GetBam()
         {
             int dirtrack = tracks > 42 ? 34 : 17;
-            if (NDS.cbm[dirtrack] == 1)
+            if (Disk.Source.Track[dirtrack].Format == 1)
             {
-                (byte[] data, _) = Decode_CBM_Sector(NDG.Track_Data[dirtrack], 0, true);
+                (byte[] data, _) = Decode_CBM_Sector(Disk.G64.Track[dirtrack].Data, 0, true);
                 byte[] bam = new byte[140];
                 Buffer.BlockCopy(data, 4, bam, 0, bam.Length);
                 return bam;
@@ -1016,13 +1017,13 @@ namespace V_Max_Tool
         void UpdateBam(byte[] bam)
         {
             int dirtrack = tracks > 42 ? 34 : 17;
-            if (NDS.cbm[dirtrack] == 1)
+            if (Disk.Source.Track[dirtrack].Format == 1)
             {
-                (byte[] data, _) = Decode_CBM_Sector(NDG.Track_Data[dirtrack], 0, true);
+                (byte[] data, _) = Decode_CBM_Sector(Disk.G64.Track[dirtrack].Data, 0, true);
                 Buffer.BlockCopy(bam, 0, data, 4, bam.Length);
-                byte[] temp = Replace_CBM_Sector(NDG.Track_Data[dirtrack], 0, data);
+                byte[] temp = Replace_CBM_Sector(Disk.G64.Track[dirtrack].Data, 0, data);
                 Set_Dest_Arrays(temp, dirtrack);
-                Buffer.BlockCopy(NDA.Track_Data[dirtrack], 0, NDS.Track_Data[dirtrack], 0, NIB_TRACK_LEN);
+                Buffer.BlockCopy(Disk.Adjusted.Track[dirtrack].Data, 0, Disk.Source.Track[dirtrack].Data, 0, NIB_TRACK_LEN);
             }
         }
 
@@ -1045,8 +1046,8 @@ namespace V_Max_Tool
                         if (prevTrack != curtrack)
                         {
                             if (!(prevTrack < 0)) Set_Dest_Arrays(temp, prevTrack);
-                            temp = new byte[NDG.Track_Data[curtrack].Length];
-                            Buffer.BlockCopy(NDG.Track_Data[curtrack], 0, temp, 0, temp.Length);
+                            temp = new byte[Disk.G64.Track[curtrack].Data.Length];
+                            Buffer.BlockCopy(Disk.G64.Track[curtrack].Data, 0, temp, 0, temp.Length);
                             prevTrack = curtrack;
                         }
                         if (!ttrks.Contains(curtrack)) ttrks.Add(curtrack);
@@ -1068,7 +1069,7 @@ namespace V_Max_Tool
                     Set_Dest_Arrays(temp, curtrack);
                     foreach (int a in ttrks)
                     {
-                        Buffer.BlockCopy(NDA.Track_Data[a], 0, NDS.Track_Data[a], 0, NIB_TRACK_LEN);
+                        Buffer.BlockCopy(Disk.Adjusted.Track[a].Data, 0, Disk.Source.Track[a].Data, 0, NIB_TRACK_LEN);
                     }
                     UpdateBam(bam);
                 }
@@ -1082,7 +1083,7 @@ namespace V_Max_Tool
             int atrack = 17;
             bool newsector = false;
             bool added = false;
-            if (NDS.cbm[dirtrack] == 1)
+            if (Disk.Source.Track[dirtrack].Format == 1)
             {
                 int nexttrack = dirtrack;
                 int nextsector = 1;
@@ -1092,7 +1093,7 @@ namespace V_Max_Tool
                 {
                     int curtrack = nexttrack;
                     int cursector = nextsector;
-                    (byte[] cursec, _) = Decode_CBM_Sector(NDG.Track_Data[curtrack], nextsector, true);
+                    (byte[] cursec, _) = Decode_CBM_Sector(Disk.G64.Track[curtrack].Data, nextsector, true);
                     if (cursec != null && cursec.Length == 256)
                     {
                         nexttrack = Convert.ToInt32(cursec[0] - 1);
@@ -1114,9 +1115,9 @@ namespace V_Max_Tool
                                 if (cursec[tpos] == 0x00 && !added)
                                 {
                                     Buffer.BlockCopy(newfile, 0, cursec, tpos, 30);
-                                    byte[] temp = Replace_CBM_Sector(NDG.Track_Data[curtrack], cursector, cursec);
+                                    byte[] temp = Replace_CBM_Sector(Disk.G64.Track[curtrack].Data, cursector, cursec);
                                     Set_Dest_Arrays(temp, curtrack);
-                                    Buffer.BlockCopy(NDA.Track_Data[curtrack], 0, NDS.Track_Data[curtrack], 0, NIB_TRACK_LEN);
+                                    Buffer.BlockCopy(Disk.Adjusted.Track[curtrack].Data, 0, Disk.Source.Track[curtrack].Data, 0, NIB_TRACK_LEN);
                                     added = true;
                                 }
                                 if (added) break;
@@ -1142,13 +1143,13 @@ namespace V_Max_Tool
                             {
                                 cursec[0] = (byte)(18);
                                 cursec[1] = (byte)(newsec);
-                                byte[] stemp = Replace_CBM_Sector(NDG.Track_Data[dirtrack], cursector, cursec);
+                                byte[] stemp = Replace_CBM_Sector(Disk.G64.Track[dirtrack].Data, cursector, cursec);
                                 byte[] nsector = FastArray.Init(256, 0x00);
                                 nsector[1] = 0xff;
                                 Buffer.BlockCopy(newfile, 0, nsector, 2, 30);
                                 stemp = Replace_CBM_Sector(stemp, newsec, nsector);
                                 Set_Dest_Arrays(stemp, dirtrack);
-                                Buffer.BlockCopy(NDA.Track_Data[dirtrack], 0, NDS.Track_Data[dirtrack], 0, NIB_TRACK_LEN);
+                                Buffer.BlockCopy(Disk.Adjusted.Track[dirtrack].Data, 0, Disk.Source.Track[dirtrack].Data, 0, NIB_TRACK_LEN);
                                 AllocBlock(tbam, 17, newsec, Set);
                                 UpdateBam(tbam);
                                 added = true;
@@ -1169,7 +1170,7 @@ namespace V_Max_Tool
             int atrack = 17;
             bool stop = false;
             List<byte[]> entries = new List<byte[]>();
-            if (NDS.cbm[dirtrack] == 1)
+            if (Disk.Source.Track[dirtrack].Format == 1)
             {
                 int nexttrack = dirtrack;
                 int nextsector = 0;
@@ -1177,7 +1178,7 @@ namespace V_Max_Tool
                 int i = 0;
                 while (!stop)
                 {
-                    (byte[] cursec, _) = Decode_CBM_Sector(NDG.Track_Data[nexttrack], nextsector, true);
+                    (byte[] cursec, _) = Decode_CBM_Sector(Disk.G64.Track[nexttrack].Data, nextsector, true);
                     if (cursec != null && cursec.Length == 256)
                     {
                         nexttrack = Convert.ToInt32(cursec[0] - 1);
@@ -1231,7 +1232,7 @@ namespace V_Max_Tool
             {
                 for (int i = 0; i < 35; i++)
                 {
-                    if (NDS.cbm[i * ht] == 1)
+                    if (Disk.Source.Track[i * ht].Format == 1)
                     {
                         HashSet<int> processedSectors = new HashSet<int>();
                         int max = Available_Sectors[strk];
@@ -1546,14 +1547,14 @@ namespace V_Max_Tool
                 int pos; // = 0
                 for (int track = 0; track < tracks; track++)
                 {
-                    if (NDS.cbm[track] == 1)
+                    if (Disk.Source.Track[track].Format == 1)
                     {
-                        var source = new BitArray(Flip_Endian(NDG.Track_Data[track]));
+                        var source = new BitArray(Flip_Endian(Disk.G64.Track[track].Data));
                         int tk = tracks > 42 ? (track >> 1) + 1 : track + 1;
                         //int avail = NDS.sectors[track] > Available_Sectors[tk] ? NDS.sectors[track] : Available_Sectors[tk];
-                        int avail = NDS.sectors[track] != Available_Sectors[tk]
-                            ? Math.Max(NDS.sectors[track], Available_Sectors[tk]) : Available_Sectors[tk];
-                        if (NDS.cbm.Any(x => x == 5) && tk == 18) avail = 13;
+                        int avail = Disk.Source.Track[track].Sectors != Available_Sectors[tk]
+                            ? Math.Max(Disk.Source.Track[track].Sectors, Available_Sectors[tk]) : Available_Sectors[tk];
+                        if (Disk.Source.Track.Any(x => x.Format == 5) && tk == 18) avail = 13;
                         for (int j = 0; j < avail; j++)
                         {
                             (found, pos, _, _, head_cksm) = Find_Sector(source, j, 0, true);

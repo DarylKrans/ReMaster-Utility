@@ -42,68 +42,9 @@ namespace V_Max_Tool
 
     public static class NDS  // Global variables for Nib file source data
     {
-        public static byte[][] Track_Data = new byte[0][];
-        public static int[] Track_Length = new int[0];
-        public static int[] Sector_Zero = new int[0];
-        public static int[] D_Start = new int[0];
-        public static int[] D_End = new int[0];
-        public static int[] cbm = new int[0];
-        public static int[] sectors = new int[0];
         public static int[] Header_Len = new int[0];
         public static int[][] cbm_sector = new int[0][];
-        public static byte[][] v2info = new byte[0][];
-        public static byte[] Loader = new byte[0];
-        public static int[] Total_Sync = new int[0];
-        public static byte[][] Disk_ID = new byte[0][];
-        public static byte[] t18_ID = new byte[0];
-        public static int[] Gap_Sector = new int[0];
-        public static int[] Track_ID = new int[0];
-        public static bool[] Adjust = new bool[0];
-        public static string Prot_Method = string.Empty;
-        public static string[][] Info = new string[0][];
         public static byte[][][] Sector = new byte[0][][];
-        public static bool Cart_Protection = false;
-        public static bool External_Protection = false;
-        //public static bool Cart_Fix = false;
-        public static byte[] V3_sectors = new byte[0];
-    }
-
-    public static class NDA  // Global variables for adjusted-sync arrays
-    {
-        public static byte[][] Track_Data = new byte[0][];
-        public static int[] Track_Length = new int[0];
-        public static int[] Sector_Zero = new int[0];
-        public static int[] D_Start = new int[0];
-        public static int[] D_End = new int[0];
-        public static int[] sectors = new int[0];
-        public static int[] Total_Sync = new int[0];
-    }
-
-    public static class NDG  // Global variables for G64 array data
-    {
-        public static byte[][] Track_Data = new byte[0][];
-        public static int[] Track_Length = new int[0];
-        public static bool L_Rot = false;
-        public static int[] s_len = new int[0];
-        public static byte[] newheader = new byte[0];
-        public static bool[] Fat_Track = new bool[0];
-    }
-
-    public static class Original  // Global variable for retaining original track data
-    {
-        public static byte[] G = new byte[0];
-        public static byte[] A = new byte[0];
-        public static byte[] SG = new byte[0];
-        public static byte[] SA = new byte[0];
-        public static byte[][] OT = new byte[0][];
-    }
-
-    public static class DiskDir
-    {
-        public static int Entries = 0;
-        public static byte[][] Sectors = new byte[0][];
-        public static byte[][] Entry = new byte[0][];
-        public static string[] FileName = new string[0];
     }
 
     public class VM
@@ -705,7 +646,7 @@ namespace V_Max_Tool
 
     public class DoubleBufferedListView : ListView
     {
-        public int[] vColumns { get; private set; } = new int[0];
+        public int[] VColumns { get; private set; } = new int[0];
 
         public DoubleBufferedListView()
         {
@@ -721,14 +662,14 @@ namespace V_Max_Tool
         {
             if (this.Columns.Count == 0)
             {
-                vColumns = Array.Empty<int>();
+                VColumns = Array.Empty<int>();
                 return;
             }
 
-            vColumns = new int[this.Columns.Count];
+            VColumns = new int[this.Columns.Count];
             for (int i = 0; i < this.Columns.Count; i++)
             {
-                vColumns[i] = this.Columns[i].Width;
+                VColumns[i] = this.Columns[i].Width;
             }
             this.Invalidate();
         }
@@ -736,16 +677,16 @@ namespace V_Max_Tool
         public Rectangle GetSubItemBounds(ListViewItem item, int subItemIndex)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            if (subItemIndex < 0 || subItemIndex >= vColumns.Length)
+            if (subItemIndex < 0 || subItemIndex >= VColumns.Length)
                 throw new ArgumentOutOfRangeException(nameof(subItemIndex));
 
             Rectangle itemBounds = item.GetBounds(ItemBoundsPortion.Entire);
             int x = itemBounds.Left;
 
             for (int i = 0; i < subItemIndex; i++)
-                x += vColumns[i];
+                x += VColumns[i];
 
-            return new Rectangle(x, itemBounds.Top, vColumns[subItemIndex], itemBounds.Height);
+            return new Rectangle(x, itemBounds.Top, VColumns[subItemIndex], itemBounds.Height);
         }
     }
 

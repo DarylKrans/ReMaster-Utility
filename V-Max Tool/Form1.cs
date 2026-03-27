@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using ReMaster_Utility.Properties;
@@ -135,7 +134,7 @@ namespace V_Max_Tool
             this.Text = $"ReMaster {ver}";
             RunBusy(Init);
             Set_ListBox_Items(true, true);
-            
+
             ///---------- Cart-Patch sector processing helpers
             //Bossdos(File.ReadAllBytes($@"c:\test\bd_raw4.bin"));
             //secF
@@ -277,7 +276,7 @@ namespace V_Max_Tool
                         Set_Buttons_Active();
                         Blk_pan.Enabled = true;
                         if (recent) AddRecentFile(file);
-                        P_Cart.Visible = NDS.Cart_Protection || (RemMan && NDS.External_Protection);
+                        P_Cart.Visible = Disk.Cart_Protection || (RemMan && Disk.External_Protection);
                     }
                     catch (Exception ex)
                     {
@@ -295,7 +294,7 @@ namespace V_Max_Tool
                     if (!batch && ErrorList.Count > 0)
                     {
                         int[] norep = new int[] { };
-                        bool norepair = NDS.cbm.Any(x => norep.Contains(x));
+                        bool norepair = Disk.Source.Track.Any(x => norep.Contains(x.Format));
                         List<string> list = new List<string>(ErrorList);
                         var s = Sort_Errors(list);
                         s += norepair ? "\nThis image cannot be repaired (yet)\nOutput image may not work" : "\n Would you like to (attempt) repairing?";
@@ -526,10 +525,13 @@ namespace V_Max_Tool
 
         private void DV_gcr_CheckedChanged(object sender, EventArgs e)
         {
-            if (((RadioButton)sender).Checked)
+            if (busy) Data_Viewer(true);
             {
-                if ((RadioButton)sender == DV_gcr) DV_Disassemble.Checked = false;
-                Data_Viewer();
+                if (((RadioButton)sender).Checked)
+                {
+                    if ((RadioButton)sender == DV_gcr) DV_Disassemble.Checked = false;
+                    Data_Viewer();
+                }
             }
         }
 
@@ -691,7 +693,7 @@ namespace V_Max_Tool
             RL_success.Visible = RL_Fix.Checked;
             if (!busy && RL_Fix.Checked)
             {
-                if (NDS.cbm.Any(x => x == 6)) RL_success.Text = RL_Remove_Protection();
+                if (Disk.Source.Track.Any(x => x.Format == 6)) RL_success.Text = RL_Remove_Protection();
             }
         }
 
@@ -735,16 +737,16 @@ namespace V_Max_Tool
         private void RM_cyan_CheckedChanged(object sender, EventArgs e)
         {
             int tk = tracks > 42 ? 8 : 4;
-            if (NDG.Track_Data?[tk] != null && RM_cyan.Checked)
+            if (Disk.G64.Track?[tk].Data != null && RM_cyan.Checked)
             {
-                byte[] temp = Cyan_Loader_Patch(NDG.Track_Data[tk]);
+                byte[] temp = Cyan_Loader_Patch(Disk.G64.Track[tk].Data);
                 Set_Dest_Arrays(temp, tk);
             }
         }
 
         private void Density_Range_CheckedChanged(object sender, EventArgs e)
         {
-            SwapDensities(tracks > 0 && !NDS.cbm.Any(x => x == 5));
+            SwapDensities(tracks > 0 && !Disk.Source.Track.Any(x => x.Format == 5));
             if (!busy)
             {
                 Clear_Out_Items();
@@ -977,12 +979,16 @@ namespace V_Max_Tool
 
         private void DV_Disassemble_CheckedChanged(object sender, EventArgs e)
         {
-            if (DV_Disassemble.Checked)
+            if (busy) Data_Viewer(true);
+            RunBusy(() =>
             {
-                DV_dec.Checked = true;
-                groupBox1.Enabled = false;
-            }
-            else groupBox1.Enabled = true;
+                if (DV_Disassemble.Checked)
+                {
+                    DV_dec.Checked = true;
+                    groupBox1.Enabled = false;
+                }
+                else groupBox1.Enabled = true;
+            });
             Data_Viewer();
         }
 
@@ -1002,7 +1008,8 @@ namespace V_Max_Tool
                 if (tracks > 0)
                 {
                     int[] fmts = new int[] { 5, 6, 8, 10, 11, 12 };
-                    if (!NDS.cbm.Any(x => fmts.Contains(x))) Adj_cbm.Enabled = (!NDS.cbm.Any(x => x == 4) && !NDS.Prot_Method.ToLower().Contains("(cbm)"));
+                    //if (!NDS.cbm.Any(x => fmts.Contains(x))) Adj_cbm.Enabled = (!NDS.cbm.Any(x => x == 4) && !NDS.Prot_Method.ToLower().Contains("(cbm)"));
+                    if (!Disk.Source.Track.Any(x => fmts.Contains(x.Format))) Adj_cbm.Enabled = (!Disk.Source.Track.Any(x => x.Format == 4) && !Disk.ProtectionType.ToLower().Contains("(cbm)"));
                     else Adj_cbm.Enabled = true;
                     if (!Adj_cbm.Enabled && Adj_cbm.Checked)
                     {

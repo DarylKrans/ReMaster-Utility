@@ -665,15 +665,15 @@ namespace V_Max_Tool
                             int subItemIndex = -1;
                             int left = hit.Item.Bounds.Left;
 
-                            for (int i = 0; i < dbView.vColumns.Length; i++)
+                            for (int i = 0; i < dbView.VColumns.Length; i++)
                             {
-                                var colRect = new Rectangle(left, hit.Item.Bounds.Top, dbView.vColumns[i], hit.Item.Bounds.Height);
+                                var colRect = new Rectangle(left, hit.Item.Bounds.Top, dbView.VColumns[i], hit.Item.Bounds.Height);
                                 if (colRect.Contains(e.Location))
                                 {
                                     subItemIndex = i;
                                     break;
                                 }
-                                left += dbView.vColumns[i];
+                                left += dbView.VColumns[i];
                             }
 
                             // Handle only virtual column 2 ("edit") clicks
@@ -696,15 +696,15 @@ namespace V_Max_Tool
                             int xPos = itemBounds.Left;
                             Rectangle vCol2 = Rectangle.Empty;
 
-                            for (int i = 0; i < view.vColumns.Length; i++)
+                            for (int i = 0; i < view.VColumns.Length; i++)
                             {
-                                Rectangle colRect = new Rectangle(xPos, itemBounds.Top, view.vColumns[i], itemBounds.Height);
+                                Rectangle colRect = new Rectangle(xPos, itemBounds.Top, view.VColumns[i], itemBounds.Height);
                                 if (i == 2)
                                 {
                                     vCol2 = colRect;
                                     break;
                                 }
-                                xPos += view.vColumns[i];
+                                xPos += view.VColumns[i];
                             }
 
                             if (vCol2.Contains(e.Location) && !disk[index].Locked)
@@ -1845,9 +1845,9 @@ namespace V_Max_Tool
                     Set_Arrays(tracks);
                     for (int i = 0; i < tracks; i++)
                     {
-                        NDS.Track_Data[i] = new byte[NIB_TRACK_LEN];
-                        Buffer.BlockCopy(data, 256 + (i * NIB_TRACK_LEN), NDS.Track_Data[i], 0, NIB_TRACK_LEN);
-                        Original.OT[i] = new byte[0];
+                        Disk.Source.Track[i].Data = new byte[NIB_TRACK_LEN];
+                        Buffer.BlockCopy(data, 256 + (i * NIB_TRACK_LEN), Disk.Source.Track[i].Data, 0, NIB_TRACK_LEN);
+                        Disk.Original.TrackData[i] = new byte[0];
                     }
                     var head = Encoding.ASCII.GetString(nib_header, 0, 13);
                     var hm = "Bad Header";
@@ -2436,7 +2436,9 @@ namespace V_Max_Tool
 
                 void CheckFormats()
                 {
-                    int m = Find_Most_Frequent_Format(NDS.cbm);
+                    //List<int> frq = new List<int>();
+                    //foreach (var _fmt in Disk.Source.Track) frq.Add(_fmt.Format);
+                    int m = Find_Most_Frequent_Format(Disk);
                     int[] skip = new int[] { 0, 1, 4, 7, 8, 9, 11, secF.Length - 1 };
                     if (!(skip.Any(x => x == m)))
                     {
@@ -2906,12 +2908,12 @@ namespace V_Max_Tool
             };
             bool chked = e.Item.Checked;
             // Compute column rectangles
-            Rectangle[] cols = new Rectangle[view.vColumns.Length];
+            Rectangle[] cols = new Rectangle[view.VColumns.Length];
             int x = e.Bounds.Left;
-            for (int i = 0; i < view.vColumns.Length; i++)
+            for (int i = 0; i < view.VColumns.Length; i++)
             {
-                cols[i] = new Rectangle(x, e.Bounds.Top, view.vColumns[i], e.Bounds.Height);
-                x += view.vColumns[i];
+                cols[i] = new Rectangle(x, e.Bounds.Top, view.VColumns[i], e.Bounds.Height);
+                x += view.VColumns[i];
             }
 
             // Background color
@@ -3055,15 +3057,15 @@ namespace V_Max_Tool
                 int subItemIndex = -1;
                 int left = hit.Item.Bounds.Left;
 
-                for (int i = 0; i < dbView.vColumns.Length; i++)
+                for (int i = 0; i < dbView.VColumns.Length; i++)
                 {
-                    var colRect = new Rectangle(left, hit.Item.Bounds.Top, dbView.vColumns[i], hit.Item.Bounds.Height);
+                    var colRect = new Rectangle(left, hit.Item.Bounds.Top, dbView.VColumns[i], hit.Item.Bounds.Height);
                     if (colRect.Contains(e.Location))
                     {
                         subItemIndex = i;
                         break;
                     }
-                    left += dbView.vColumns[i];
+                    left += dbView.VColumns[i];
                 }
 
                 // Only proceed if the double-click wasn't on the "edit" (column 2) area
@@ -3094,15 +3096,15 @@ namespace V_Max_Tool
                         int subItemIndex = -1;
                         int left = item.Bounds.Left;
 
-                        for (int i = 0; i < dbView.vColumns.Length; i++)
+                        for (int i = 0; i < dbView.VColumns.Length; i++)
                         {
-                            var colRect = new Rectangle(left, item.Bounds.Top, dbView.vColumns[i], item.Bounds.Height);
+                            var colRect = new Rectangle(left, item.Bounds.Top, dbView.VColumns[i], item.Bounds.Height);
                             if (colRect.Contains(e.Location))
                             {
                                 subItemIndex = i;
                                 break;
                             }
-                            left += dbView.vColumns[i];
+                            left += dbView.VColumns[i];
                         }
 
                         // Proceed with logic
@@ -3169,15 +3171,15 @@ namespace V_Max_Tool
                         int colX = itemBounds.Left;
                         Rectangle vCol2 = Rectangle.Empty;
 
-                        for (int i = 0; i < view.vColumns.Length; i++)
+                        for (int i = 0; i < view.VColumns.Length; i++)
                         {
-                            Rectangle colRect = new Rectangle(colX, itemBounds.Top, view.vColumns[i], itemBounds.Height);
+                            Rectangle colRect = new Rectangle(colX, itemBounds.Top, view.VColumns[i], itemBounds.Height);
                             if (i == 2) // Edit/Recover icon column
                             {
                                 vCol2 = colRect;
                                 break;
                             }
-                            colX += view.vColumns[i];
+                            colX += view.VColumns[i];
                         }
 
                         if (vCol2.Contains(e.Location))

@@ -120,12 +120,12 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.Track_Info = new System.Windows.Forms.ListBox();
             this.Data_View = new System.Windows.Forms.TabPage();
+            this.Data_Box = new System.Windows.Forms.RichTextBox();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.VS_bin = new System.Windows.Forms.RadioButton();
             this.VS_hex = new System.Windows.Forms.RadioButton();
             this.VS_dat = new System.Windows.Forms.RadioButton();
-            this.Data_Box = new System.Windows.Forms.RichTextBox();
             this.Disp_Data = new System.Windows.Forms.Button();
             this.D_separate = new System.Windows.Forms.GroupBox();
             this.T_jump = new System.Windows.Forms.ComboBox();
@@ -157,8 +157,14 @@
             this.Dir_screen = new System.Windows.Forms.RichTextBox();
             this.BlockMap = new System.Windows.Forms.TabPage();
             this.BlkMap_Panel = new System.Windows.Forms.Panel();
+            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
+            this.CSTfmt = new V_Max_Tool.CustomLabel();
+            this.ErrorBlk = new V_Max_Tool.CustomLabel();
+            this.AllocBlk = new V_Max_Tool.CustomLabel();
+            this.FreeBlk = new V_Max_Tool.CustomLabel();
             this.label21 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
+            this.track_label = new V_Max_Tool.CustomLabel();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RPL_Advanced = new System.Windows.Forms.GroupBox();
@@ -304,12 +310,6 @@
             this.label20 = new System.Windows.Forms.Label();
             this.ND_id = new System.Windows.Forms.TextBox();
             this.ND_name = new System.Windows.Forms.TextBox();
-            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
-            this.CSTfmt = new V_Max_Tool.CustomLabel();
-            this.ErrorBlk = new V_Max_Tool.CustomLabel();
-            this.AllocBlk = new V_Max_Tool.CustomLabel();
-            this.FreeBlk = new V_Max_Tool.CustomLabel();
-            this.track_label = new V_Max_Tool.CustomLabel();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlenD0)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -1576,9 +1576,9 @@
             // Data_View
             // 
             this.Data_View.BackColor = System.Drawing.Color.Silver;
+            this.Data_View.Controls.Add(this.Data_Box);
             this.Data_View.Controls.Add(this.linkLabel3);
             this.Data_View.Controls.Add(this.groupBox1);
-            this.Data_View.Controls.Add(this.Data_Box);
             this.Data_View.Controls.Add(this.Disp_Data);
             this.Data_View.Controls.Add(this.D_separate);
             this.Data_View.Controls.Add(this.D_type);
@@ -1589,6 +1589,16 @@
             this.Data_View.Size = new System.Drawing.Size(568, 672);
             this.Data_View.TabIndex = 3;
             this.Data_View.Text = "Data View";
+            // 
+            // Data_Box
+            // 
+            this.Data_Box.DetectUrls = false;
+            this.Data_Box.Location = new System.Drawing.Point(4, 75);
+            this.Data_Box.Margin = new System.Windows.Forms.Padding(2);
+            this.Data_Box.Name = "Data_Box";
+            this.Data_Box.Size = new System.Drawing.Size(568, 594);
+            this.Data_Box.TabIndex = 8;
+            this.Data_Box.Text = "";
             // 
             // linkLabel3
             // 
@@ -1655,18 +1665,6 @@
             this.VS_dat.Text = "Data";
             this.VS_dat.UseVisualStyleBackColor = true;
             this.VS_dat.CheckedChanged += new System.EventHandler(this.DV_gcr_CheckedChanged);
-            // 
-            // Data_Box
-            // 
-            this.Data_Box.DetectUrls = false;
-            this.Data_Box.Font = new System.Drawing.Font("Courier New", 7.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Data_Box.Location = new System.Drawing.Point(4, 75);
-            this.Data_Box.Margin = new System.Windows.Forms.Padding(2);
-            this.Data_Box.Name = "Data_Box";
-            this.Data_Box.ReadOnly = true;
-            this.Data_Box.Size = new System.Drawing.Size(568, 594);
-            this.Data_Box.TabIndex = 4;
-            this.Data_Box.Text = "";
             // 
             // Disp_Data
             // 
@@ -2062,6 +2060,72 @@
             this.BlkMap_Panel.Size = new System.Drawing.Size(568, 670);
             this.BlkMap_Panel.TabIndex = 0;
             // 
+            // Blk_pan
+            // 
+            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
+            this.Blk_pan.BorderThickness = 2;
+            this.Blk_pan.Location = new System.Drawing.Point(48, 25);
+            this.Blk_pan.Margin = new System.Windows.Forms.Padding(2);
+            this.Blk_pan.Name = "Blk_pan";
+            this.Blk_pan.Size = new System.Drawing.Size(513, 573);
+            this.Blk_pan.TabIndex = 2;
+            // 
+            // CSTfmt
+            // 
+            this.CSTfmt.AutoSize = true;
+            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
+            this.CSTfmt.Location = new System.Drawing.Point(10, 148);
+            this.CSTfmt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.CSTfmt.Name = "CSTfmt";
+            this.CSTfmt.NewText = "";
+            this.CSTfmt.RotateAngle = 0;
+            this.CSTfmt.Size = new System.Drawing.Size(91, 15);
+            this.CSTfmt.TabIndex = 12;
+            this.CSTfmt.Text = "Custom Format";
+            // 
+            // ErrorBlk
+            // 
+            this.ErrorBlk.AutoSize = true;
+            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
+            this.ErrorBlk.Location = new System.Drawing.Point(10, 253);
+            this.ErrorBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.ErrorBlk.Name = "ErrorBlk";
+            this.ErrorBlk.NewText = "";
+            this.ErrorBlk.RotateAngle = 0;
+            this.ErrorBlk.Size = new System.Drawing.Size(67, 15);
+            this.ErrorBlk.TabIndex = 11;
+            this.ErrorBlk.Text = "Block Error";
+            // 
+            // AllocBlk
+            // 
+            this.AllocBlk.AutoSize = true;
+            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
+            this.AllocBlk.Location = new System.Drawing.Point(8, 341);
+            this.AllocBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.AllocBlk.Name = "AllocBlk";
+            this.AllocBlk.NewText = "";
+            this.AllocBlk.RotateAngle = 0;
+            this.AllocBlk.Size = new System.Drawing.Size(90, 15);
+            this.AllocBlk.TabIndex = 10;
+            this.AllocBlk.Text = "Allocated Block";
+            // 
+            // FreeBlk
+            // 
+            this.FreeBlk.AutoSize = true;
+            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
+            this.FreeBlk.Location = new System.Drawing.Point(8, 453);
+            this.FreeBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.FreeBlk.Name = "FreeBlk";
+            this.FreeBlk.NewText = "";
+            this.FreeBlk.RotateAngle = 0;
+            this.FreeBlk.Size = new System.Drawing.Size(65, 15);
+            this.FreeBlk.TabIndex = 9;
+            this.FreeBlk.Text = "Free Block";
+            // 
             // label21
             // 
             this.label21.AutoSize = true;
@@ -2085,6 +2149,20 @@
             this.label17.Size = new System.Drawing.Size(49, 17);
             this.label17.TabIndex = 1;
             this.label17.Text = "Sector";
+            // 
+            // track_label
+            // 
+            this.track_label.AutoSize = true;
+            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.track_label.Location = new System.Drawing.Point(1, 43);
+            this.track_label.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.track_label.Name = "track_label";
+            this.track_label.NewText = null;
+            this.track_label.RotateAngle = 0;
+            this.track_label.Size = new System.Drawing.Size(109, 20);
+            this.track_label.TabIndex = 0;
+            this.track_label.Text = "customLabel1";
             // 
             // panel1
             // 
@@ -3894,86 +3972,6 @@
             this.ND_name.TabIndex = 0;
             this.ND_name.Text = "NEW DISK";
             // 
-            // Blk_pan
-            // 
-            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
-            this.Blk_pan.BorderThickness = 2;
-            this.Blk_pan.Location = new System.Drawing.Point(48, 25);
-            this.Blk_pan.Margin = new System.Windows.Forms.Padding(2);
-            this.Blk_pan.Name = "Blk_pan";
-            this.Blk_pan.Size = new System.Drawing.Size(513, 573);
-            this.Blk_pan.TabIndex = 2;
-            // 
-            // CSTfmt
-            // 
-            this.CSTfmt.AutoSize = true;
-            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
-            this.CSTfmt.Location = new System.Drawing.Point(10, 148);
-            this.CSTfmt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.CSTfmt.Name = "CSTfmt";
-            this.CSTfmt.NewText = "";
-            this.CSTfmt.RotateAngle = 0;
-            this.CSTfmt.Size = new System.Drawing.Size(91, 15);
-            this.CSTfmt.TabIndex = 12;
-            this.CSTfmt.Text = "Custom Format";
-            // 
-            // ErrorBlk
-            // 
-            this.ErrorBlk.AutoSize = true;
-            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
-            this.ErrorBlk.Location = new System.Drawing.Point(10, 253);
-            this.ErrorBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.ErrorBlk.Name = "ErrorBlk";
-            this.ErrorBlk.NewText = "";
-            this.ErrorBlk.RotateAngle = 0;
-            this.ErrorBlk.Size = new System.Drawing.Size(67, 15);
-            this.ErrorBlk.TabIndex = 11;
-            this.ErrorBlk.Text = "Block Error";
-            // 
-            // AllocBlk
-            // 
-            this.AllocBlk.AutoSize = true;
-            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
-            this.AllocBlk.Location = new System.Drawing.Point(8, 341);
-            this.AllocBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.AllocBlk.Name = "AllocBlk";
-            this.AllocBlk.NewText = "";
-            this.AllocBlk.RotateAngle = 0;
-            this.AllocBlk.Size = new System.Drawing.Size(90, 15);
-            this.AllocBlk.TabIndex = 10;
-            this.AllocBlk.Text = "Allocated Block";
-            // 
-            // FreeBlk
-            // 
-            this.FreeBlk.AutoSize = true;
-            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
-            this.FreeBlk.Location = new System.Drawing.Point(8, 453);
-            this.FreeBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.FreeBlk.Name = "FreeBlk";
-            this.FreeBlk.NewText = "";
-            this.FreeBlk.RotateAngle = 0;
-            this.FreeBlk.Size = new System.Drawing.Size(65, 15);
-            this.FreeBlk.TabIndex = 9;
-            this.FreeBlk.Text = "Free Block";
-            // 
-            // track_label
-            // 
-            this.track_label.AutoSize = true;
-            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.track_label.Location = new System.Drawing.Point(1, 43);
-            this.track_label.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.track_label.Name = "track_label";
-            this.track_label.NewText = null;
-            this.track_label.RotateAngle = 0;
-            this.track_label.Size = new System.Drawing.Size(109, 20);
-            this.track_label.TabIndex = 0;
-            this.track_label.Text = "customLabel1";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -4177,7 +4175,6 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox Data_Sep;
         private System.Windows.Forms.Button Disp_Data;
-        private System.Windows.Forms.RichTextBox Data_Box;
         private System.Windows.Forms.Label Jump;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton VS_bin;
@@ -4378,5 +4375,6 @@
         private System.Windows.Forms.NumericUpDown V3_syncLen;
         private System.Windows.Forms.CheckBox V3_Cust_Sync;
         private System.Windows.Forms.CheckBox ReAlign_v3;
+        private System.Windows.Forms.RichTextBox Data_Box;
     }
 }

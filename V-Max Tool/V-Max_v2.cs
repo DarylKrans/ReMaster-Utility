@@ -26,8 +26,8 @@ namespace V_Max_Tool
 
         void GetNewHeaders()
         {
-            if (V2_Fix_Weak.Checked) NDG.newheader = new byte[] { 0x64, 0x4e };
-            else NDG.newheader = new byte[] { 0x64, 0x46 };
+            if (V2_Fix_Weak.Checked) Disk.G64.NewHeader = new byte[] { 0x64, 0x4e };
+            else Disk.G64.NewHeader = new byte[] { 0x64, 0x46 };
         }
 
         (byte[] sector, bool checksum, int pos) Find_VMax_Sector(byte[] data, BitArray source, int sector, int version, bool decode = false, int trk = -1)
@@ -129,22 +129,22 @@ namespace V_Max_Tool
             {
                 for (int t = 0; t < tracks; t++)
                 {
-                    if (NDS.cbm[t] == 4) if (Original.OT[t].Length == 0) Original.OT[t] = CopyFrom(NDG.Track_Data[t]);
+                    if (Disk.Source.Track[t].Format == 4) if (Disk.Original.TrackData[t].Length == 0) Disk.Original.TrackData[t] = CopyFrom(Disk.G64.Track[t].Data);
                 }
             }
             else
             {
                 for (int t = 0; t < tracks; t++)
                 {
-                    if (NDS.cbm[t] == 4 || NDS.cbm[t] == 1)
+                    if (Disk.Source.Track[t].Format == 4 || Disk.Source.Track[t].Format == 1)
                     {
-                        if (Original.OT[t].Length != 0)
+                        if (Disk.Original.TrackData[t].Length != 0)
                         {
-                            NDG.Track_Data[t] = CopyFrom(Original.OT[t]);
-                            NDA.Track_Data[t] = FillArray(Original.OT[t], 8192);
+                            Disk.G64.Track[t].Data = CopyFrom(Disk.Original.TrackData[t]);
+                            Disk.Adjusted.Track[t].Data = FillArray(Disk.Original.TrackData[t], 8192);
                         }
-                        NDG.Track_Length[t] = NDG.Track_Data[t].Length;
-                        NDA.Track_Length[t] = NDG.Track_Length[t] << 3;
+                        Disk.G64.Track[t].Length = Disk.G64.Track[t].Data.Length;
+                        Disk.Adjusted.Track[t].Length = Disk.G64.Track[t].Length << 3;
                     }
                 }
             }
@@ -174,7 +174,7 @@ namespace V_Max_Tool
             byte[][] sec_dat = new byte[sectors][];
             byte[][] header = new byte[sectors][];
             byte[] t_ID = track_num % 2 == 1 ? ArrayConcat(v2_sync_marker, new byte[] { 0xff, 0xff },
-                Build_BlockHeader(track_num, 255, NDS.t18_ID)) : new byte[] { 0x7f };
+                Build_BlockHeader(track_num, 255, Disk.DiskID)) : new byte[] { 0x7f };
             byte header1 = use_new_Headers ? new_header[0] : t_info[0];
             byte header2 = use_new_Headers ? new_header[1] : t_info[1];
             List<string> sf = new List<string>();
@@ -242,7 +242,7 @@ namespace V_Max_Tool
             byte[] eb = new byte[] { 0x46, 0x64, 0x4e };
             byte[][] sec_data = new byte[22][];
             BitArray source = new BitArray(Flip_Endian(data));
-            all_headers.Add($"Track {tr} Format : {secF[NDS.cbm[trk]]} {ver}");
+            all_headers.Add($"Track {tr} Format : {secF[Disk.Source.Track[trk].Format]} {ver}");
             while (pos < source.Length)
             {
                 comp <<= 1;

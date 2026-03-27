@@ -92,6 +92,7 @@
     <Compile Include="Disassembler.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="DiskImage.cs" />
     <Compile Include="Function_Testing.cs">
       <SubType>Form</SubType>
     </Compile>

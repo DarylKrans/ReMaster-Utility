@@ -485,10 +485,10 @@ namespace V_Max_Tool
             Stopwatch sw = Stopwatch.StartNew();
             for (int i = 0; i < tracks; i++)
             {
-                if (NDS.cbm[i] == 5)
+                if (Disk.Source.Track[i].Format == 5)
                 {
-                    BitArray source = new BitArray(Flip_Endian(NDG.Track_Data[i]));
-                    for (int j = 0; j < NDS.sectors[i]; j++)
+                    BitArray source = new BitArray(Flip_Endian(Disk.G64.Track[i].Data));
+                    for (int j = 0; j < Disk.Source.Track[i].Sectors; j++)
                     {
                         (byte[] sector, _, bool isone, int pos) = Decode_Vorpal(source, j);
 

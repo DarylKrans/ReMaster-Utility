@@ -52,12 +52,12 @@ namespace V_Max_Tool
                 for (int i = 0; i < tracks; i++)
                 {
                     write.Write((byte)(halfTracks ? i + 2 : (i + 2) << 1));
-                    write.Write((byte)(NDS.cbm[i] < secF.Length - 1 ? (3 - Get_Density(NDG.Track_Length[i])) : 0x00));
+                    write.Write((byte)(Disk.Source.Track[i].Format < secF.Length - 1 ? (3 - Get_Density(Disk.G64.Track[i].Length)) : 0x00));
                 }
                 write.Write(FastArray.Init(256 - (int)buffer.Length, 0x00));
                 for (int i = 0; i < tracks; i++)
                 {
-                    write.Write((i < NDA.Track_Data?.Length && NDA.Track_Data[i] != null) ? NDA.Track_Data[i] : empty);
+                    write.Write((i < Disk.Adjusted.Track[i].Data.Length && Disk.Adjusted.Track[i].Data != null) ? Disk.Adjusted.Track[i].Data : empty);
                 }
                 try
                 {
@@ -78,8 +78,11 @@ namespace V_Max_Tool
             if (!Directory.Exists(Path.GetDirectoryName(fname))) Directory.CreateDirectory(Path.GetDirectoryName(fname));
             List<int> WritableTracks = new List<int>();
             int defaultTracks = 84; // tracks > 42 ? last_track : last_track << 1;
-            short MaxLen = (short)Math.Max(NDS.cbm.Select((val, i) => (val >= 0 && val < secF.Length - 1)
-            ? NDG.Track_Length[i] : 0).Take(last_track).Max(), 7928);
+            //short MaxLen = (short)Math.Max(NDS.cbm.Select((val, i) => (val >= 0 && val < secF.Length - 1)
+            //? NDG.Track_Length[i] : 0).Take(last_track).Max(), 7928);
+            short MaxLen = (short)Math.Max(Disk.Source.Track.Take(last_track).Select((t, i)
+               => (t != null && t.Format >= 0 && t.Format < secF.Length - 1) ? Disk.G64.Track[i].Length : 0).Max(), 7928);
+
             byte[] header = Encoding.ASCII.GetBytes("GCR-1541");
             byte[] TotalTracks = BitConverter.GetBytes((short)defaultTracks).Reverse().ToArray();
             byte[] MaxTrkLen = BitConverter.GetBytes(MaxLen);
@@ -92,20 +95,20 @@ namespace V_Max_Tool
             int skip = tracks > 42 ? 1 : 0;
             for (int i = 0; i < last_track; i++)
             {
-                if (NDG.Track_Length[i] > 6000 && NDS.cbm[i] >= 0 && NDS.cbm[i] < secF.Length - 1)
+                if (Disk.G64.Track[i].Length > 6000 && Disk.Source.Track[i].Format >= 0 && Disk.Source.Track[i].Format < secF.Length - 1)
                 {
                     int pointerOffset = WritableTracks.Count << 1;
                     int pairedTrackOffset = skip == 1 ? 2 : 1;
                     int trackSkip = skip == 0 ? 2 : 1;
-                    int density = 3 - Get_Density(NDG.Track_Length[i]);
+                    int density = 3 - Get_Density(Disk.G64.Track[i].Length);
                     SetPointer(TrackPointers, i * trackSkip, dataOffset + pointerOffset);
                     SetPointer(TrackDensities, i * trackSkip, density);
-                    if (i + pairedTrackOffset < tracks && NDG.Fat_Track[i])
+                    if (i + pairedTrackOffset < tracks && Disk.G64.Track[i].Spec.FatTrack)
                     {
                         SetPointer(TrackPointers, (i * trackSkip) + 1, dataOffset + pointerOffset);
                         SetPointer(TrackDensities, (i * trackSkip) + 1, density);
                     }
-                    dataOffset += Pad_Tracks.Checked ? MaxLen : NDG.Track_Length[i];
+                    dataOffset += Pad_Tracks.Checked ? MaxLen : Disk.G64.Track[i].Length;
                     WritableTracks.Add(i);
                 }
             }
@@ -117,10 +120,10 @@ namespace V_Max_Tool
                     write.Write(ArrayConcat(header, TotalTracks, MaxTrkLen, TrackPointers, TrackDensities, watermark));
                     for (int i = 0; i < WritableTracks.Count; i++)
                     {
-                        short trk_len = (short)NDG.Track_Data[WritableTracks[i]].Length;
+                        short trk_len = (short)Disk.G64.Track[WritableTracks[i]].Data.Length;
                         int fillLength = MaxLen - trk_len;
                         write.Write(trk_len);
-                        write.Write(NDG.Track_Data[WritableTracks[i]]);
+                        write.Write(Disk.G64.Track[WritableTracks[i]].Data);
                         if (Pad_Tracks.Checked && fillLength > 0) write.Write(FastArray.Init(fillLength, 0));
                     }
                     try
@@ -149,7 +152,9 @@ namespace V_Max_Tool
         void Make_D64(string path, int endTrack)
         {
             int halfTrack = tracks > 42 ? 2 : 1;
-            int stop = Array.FindLastIndex(NDS.cbm, x => x == 1);
+            int stop = Array.FindLastIndex(Disk.Source.Track, x => x.Format == 1);
+
+            //int stop = Array.FindLastIndex(NDS.cbm, x => x == 1);
             int adjustedEndTrack = Math.Min(stop, endTrack + 2);
             int lastTrack = Math.Max(Math.Min(stop, adjustedEndTrack), 34);
             stop = halfTrack == 2 ? stop / halfTrack : stop;
@@ -166,12 +171,12 @@ namespace V_Max_Tool
             {
                 for (int i = 0; i <= endTrack; i += halfTrack, currentTrack++)
                 {
-                    if (NDS.cbm?[i] == 1 && NDG.Track_Data?[i] != null)
+                    if (Disk.Source.Track[i].Format == 1 && Disk.G64.Track?[i].Data != null)
                     {
-                        var source = new BitArray(Flip_Endian(NDG.Track_Data[i]));
+                        var source = new BitArray(Flip_Endian(Disk.G64.Track[i].Data));
                         for (int j = 0; j < Available_Sectors[currentTrack]; j++)
                         {
-                            (byte[] sector, int errorCode, _) = GetSectorWithErrorCode(NDG.Track_Data[i], j, true, ID, source);
+                            (byte[] sector, int errorCode, _) = GetSectorWithErrorCode(Disk.G64.Track[i].Data, j, true, ID, source);
                             errorMap[currentSector++] = (byte)errorCode;
                             write.Write((sector != null && !(errorCode == 2 || errorCode == 4)) ? sector : empty_sector);
                         }

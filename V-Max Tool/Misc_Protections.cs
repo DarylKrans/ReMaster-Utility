@@ -382,23 +382,23 @@ namespace V_Max_Tool
             try
             {
                 if (tracks < 43) { c_cyn = 4; c_gcr = 31; c_v1 = 39; w_trk = 38; }
-                if (NDS.cbm[c_cyn] == 1) cyan = Find_Cyan_Sector(NDS.Track_Data[c_cyn]);
+                if (Disk.Source.Track[c_cyn].Format == 1) cyan = Find_Cyan_Sector(Disk.Source.Track[c_cyn].Data);
                 if (cyan && !patch)
                 {
-                    NDS.Prot_Method = "Protection: Cyan Loader";
-                    if (NDS.cbm[c_v1] != 1) (NDS.Track_Data[c_gcr], cpt) = Cyan_t32_GCR_Fix(NDS.Track_Data[c_gcr]);
-                    if (NDS.cbm[w_trk] == 1 && NDS.Track_ID[w_trk] == 40)
+                    Disk.ProtectionType = "Protection: Cyan Loader";
+                    if (Disk.Source.Track[c_v1].Format != 1) (Disk.Source.Track[c_gcr].Data, cpt) = Cyan_t32_GCR_Fix(Disk.Source.Track[c_gcr].Data);
+                    if (Disk.Source.Track[w_trk].Format == 1 && Disk.Source.Track[w_trk].CBMTrack == 40)
                     {
-                        NDS.cbm[c_v1] = 1;
-                        NDS.Track_Data[c_v1] = NDS.Track_Data[w_trk];
-                        NDS.Track_ID[c_v1] = NDS.Track_ID[w_trk];
-                        NDS.Track_Length[c_v1] = NDS.Track_Length[w_trk];
-                        NDS.Track_Data[w_trk] = FastArray.Init(8192, 0x00);
-                        NDS.Track_ID[w_trk] = 0;
-                        NDS.cbm[w_trk] = 0;
-                        NDS.Track_Length[w_trk] = 0;
+                        Disk.Source.Track[c_v1].Format = 1;
+                        Disk.Source.Track[c_v1].Data = Disk.Source.Track[w_trk].Data;
+                        Disk.Source.Track[c_v1].CBMTrack = Disk.Source.Track[w_trk].CBMTrack;
+                        Disk.Source.Track[c_v1].Length = Disk.Source.Track[w_trk].Length;
+                        Disk.Source.Track[w_trk].Data = FastArray.Init(8192, 0x00);
+                        Disk.Source.Track[w_trk].CBMTrack = 0;
+                        Disk.Source.Track[w_trk].Format = 0;
+                        Disk.Source.Track[w_trk].Length = 0;
                     }
-                    else if ((((NDS.cbm[c_v1] == 1 && NDS.Track_ID[c_v1] != 40) || NDS.cbm[c_v1] != 1) && !cpt) || (NDS.cbm[c_v1] == 1 && NDS.sectors[c_v1] < 16))
+                    else if ((((Disk.Source.Track[c_v1].Format == 1 && Disk.Source.Track[c_v1].CBMTrack != 40) || Disk.Source.Track[c_v1].Format != 1) && !cpt) || (Disk.Source.Track[c_v1].Format == 1 && Disk.Source.Track[c_v1].Sectors < 16))
                     {
                         if (!batch)
                         {
@@ -414,18 +414,18 @@ namespace V_Max_Tool
                     }
                 }
                 if (cyan && patch) Remove_Protection();
-                if (NDS.cbm[c_v1] == 1) c_gcr = -1;
+                if (Disk.Source.Track[c_v1].Format == 1) c_gcr = -1;
             }
             catch { }
             return (cyan, c_gcr);
 
             void Remove_Protection()
             {
-                NDS.Track_Data[c_cyn] = Cyan_Loader_Patch(NDS.Track_Data[c_cyn]);
-                if (NDS.cbm[c_v1] == 1)
+                Disk.Source.Track[c_cyn].Data = Cyan_Loader_Patch(Disk.Source.Track[c_cyn].Data);
+                if (Disk.Source.Track[c_v1].Format == 1)
                 {
-                    NDS.Track_Length[c_v1] = 0;
-                    NDS.cbm[c_v1] = 0;
+                    Disk.Source.Track[c_v1].Length = 0;
+                    Disk.Source.Track[c_v1].Format = 0;
                 }
             }
 

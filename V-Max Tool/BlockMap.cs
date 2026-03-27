@@ -12,7 +12,7 @@ namespace V_Max_Tool
         private static readonly Label[] BlkMap_track = new Label[41];
         private static readonly Label[] BlkMap_sector = new Label[21];
         private static readonly TaggedRectangle[][] BlkMap_bam = new TaggedRectangle[41][];
-        private List<BlockMapInfo> blockMap = new List<BlockMapInfo>();
+        private readonly List<BlockMapInfo> blockMap = new List<BlockMapInfo>();
         private int hoveredIndex = -1;
         //private readonly Color vmaxv2 = Color.DarkMagenta;
         //private readonly Color vmaxv3 = Color.Green;
@@ -20,12 +20,12 @@ namespace V_Max_Tool
         //private readonly Color vorpalnew = Color.DarkCyan;
         //private readonly Color rapidlok = Color.DarkOrange;
 
-        Dictionary<int, Color> colorMap = new Dictionary<int, Color>
+        readonly Dictionary<int, Color> colorMap = new Dictionary<int, Color>
         {
             { 0, Color.FromArgb(110, 70, 173) }, { 1, Color.Black }, { 2, Color.DarkMagenta },
             { 3, Color.Green }, { 4, Color.Blue }, { 5, Color.DarkCyan }, { 6, Color.DarkOrange },
             { 7, Color.Blue }, { 8, Color.Blue }, { 9, Color.Blue }, { 10, Color.Brown },
-            { 11, Color.Blue }, { 12, Color.Blue }, { 13, Color.FromArgb(84, 128, 255) }, { 14, Color.Blue } 
+            { 11, Color.Blue }, { 12, Color.Blue }, { 13, Color.FromArgb(84, 128, 255) }, { 14, Color.Blue }
         };
 
         //Dictionary<int, Color> colorMap = new Dictionary<int, Color>
@@ -151,16 +151,16 @@ namespace V_Max_Tool
             for (int i = 0; i < tracks; i++)
             {
                 int trk = tracks > 42 ? (i / 2) : i;
-                if (NDS.cbm[i] == 1)
+                if (Disk.Source.Track[i].Format == 1)
                 {
                     int validSectors = Available_Sectors[trk];
-                    int sectors = NDS.sectors[i] < validSectors ? validSectors : NDS.sectors[i];
+                    int sectors = Disk.Source.Track[i].Sectors < validSectors ? validSectors : Disk.Source.Track[i].Sectors;
 
                     int[] c = new int[] { 2, 3, 4, 5, 6 };
-                    bool alt = (NDS.cbm.Any(x => c.Any()));
-                    int start = trk == 17 || alt ? 0 : NDS.D_Start[i];
+                    bool alt = (Disk.Source.Track.Any(x => c.Contains(x.Format)));
+                    int start = trk == 17 || alt ? 0 : Disk.Source.Track[i].Start;
                     int index = -1;
-                    BitArray tk = new BitArray(Flip_Endian(trk == 17 || alt ? NDG.Track_Data[i] : NDS.Track_Data[i]));
+                    BitArray tk = new BitArray(Flip_Endian(trk == 17 || alt ? Disk.G64.Track[i].Data : Disk.Source.Track[i].Data));
                     for (int j = 0; j < 21; j++)
                     {
                         try { index = blockMap.FindIndex(b => b.Track == trk + 1 && b.Sector == j + 1); }
@@ -170,7 +170,7 @@ namespace V_Max_Tool
                             bool valid = j < Available_Sectors[trk];
                             (_, int errorCode, _) = GetSectorWithErrorCode(null, j, true, null, tk, start);
                             //if (trk == 17 && NDS.cbm.Any(x => x == 5) && j > 12)
-                            if (trk == 17 && NDS.cbm.Any(x => x == 5) && errorCode != 1)
+                            if (trk == 17 && Disk.Source.Track.Any(x => x.Format == 5) && errorCode != 1)
                             {
                                 blockMap[index].Color = Color.FromArgb(100, 200, 200);
                                 blockMap[index].Tip = "Vorpal Loader";
@@ -203,10 +203,10 @@ namespace V_Max_Tool
                 {
                     try
                     {
-                        var fmt = NDS.cbm[i];
-                        if (fmt < secF.Length - 1 && NDG.Track_Data[i] != null)
+                        var fmt = Disk.Source.Track[i].Format;
+                        if (fmt < secF.Length - 1 && Disk.G64.Track[i].Data != null)
                         {
-                            int sec = Sectors_by_density[Get_Density(NDG.Track_Data[i].Length)];
+                            int sec = Sectors_by_density[Get_Density(Disk.G64.Track[i].Data.Length)];
                             for (int j = 0; j < 21; j++)
                             {
                                 int index = blockMap.FindIndex(b => b.Track == trk + 1 && b.Sector == j + 1);
@@ -216,7 +216,7 @@ namespace V_Max_Tool
                                 //    : colorMap.TryGetValue(NDS.cbm[i], out Color clr) ? clr : Color.Black;
                                 blockMap[index].Color = color;
                                 blockMap[index].Tip = (fmt > 0 && fmt < secF.Length - 1)
-                                    ? j < sec ? $"Track {trk + 1} {secF[NDS.cbm[i]]}" :
+                                    ? j < sec ? $"Track {trk + 1} {secF[Disk.Source.Track[i].Format]}" :
                                     string.Empty : string.Empty;
                             }
                         }
@@ -271,7 +271,7 @@ namespace V_Max_Tool
                     int sector = tag.Sector;
                     int index = blockMap.FindIndex(r => r.Contains(e.Location));
                     int actualTrack = tracks > 42 ? track << 1 : track;
-                    if (NDS.cbm[actualTrack] == 1 && (track < 35 && sector < Available_Sectors[track]))
+                    if (Disk.Source.Track[actualTrack].Format == 1 && (track < 35 && sector < Available_Sectors[track]))
                     {
                         Color used = Color.FromArgb(255, 30, 200, 30);
                         Color avail = Color.FromArgb(255, 30, 75, 30);

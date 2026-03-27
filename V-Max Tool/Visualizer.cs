@@ -72,7 +72,7 @@ namespace V_Max_Tool
                 // Count valid tracks
                 for (int h = 0; h < tracks; h++)
                 {
-                    if (NDG.Track_Length[h] > min_t_len && NDS.cbm[h] < secF.Length - 1) actualTracks++;
+                    if (Disk.G64.Track[h].Length > min_t_len && Disk.Source.Track[h].Format < secF.Length - 1) actualTracks++;
                 }
 
                 if (actualTracks > 0)
@@ -88,21 +88,22 @@ namespace V_Max_Tool
 
                 for (int i = 0; i < tracks; i++)
                 {
+                    var v2nfo = Disk.Source.Track[i].Spec.VMax.V2.GetV2Info();
                     bool shouldDrawTrack = false;
-                    if (Out_view.Checked && NDG.Track_Length[i] > min_t_len && NDS.cbm[i] < secF.Length - 1)
+                    if (Out_view.Checked && Disk.G64.Track[i].Length > min_t_len && Disk.Source.Track[i].Format < secF.Length - 1)
                     {
-                        d = Get_Density(NDG.Track_Data[i].Length);
-                        t = Draw_Track(flat_large, (42 * 14), NDG.Track_Data[i], (int)ht, 0, 0, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked, NDS.cbm_sector[i]);
+                        d = Get_Density(Disk.G64.Track[i].Data.Length);
+                        t = Draw_Track(flat_large, (42 * 14), Disk.G64.Track[i].Data, (int)ht, 0, 0, Disk.Source.Track[i].Format, v2nfo, d, Out_view.Checked, NDS.cbm_sector[i]);
                         ext = "(flat_tracks).g64";
                         shouldDrawTrack = true;
                     }
                     else if (Src_view.Checked)
                     {
-                        int ds = NDS.D_Start[i], de = NDS.D_End[i];
-                        d = (NDS.Track_Length?[i] != 0) ? Get_Density(NDS.Track_Length[i] >> 3) : density_map[i / trk];
-                        if (NDS.Track_Data[i].Any(s => s != 0x00)) // View all tracks that aren't all 0x00 bytes
+                        int ds = Disk.Source.Track[i].Start, de = Disk.Source.Track[i].End;
+                        d = (Disk.Source.Track?[i].Length != 0) ? Get_Density(Disk.Source.Track[i].Length >> 3) : density_map[i / trk];
+                        if (Disk.Source.Track[i].Data.Any(s => s != 0x00)) // View all tracks that aren't all 0x00 bytes
                         {
-                            t = Draw_Track(flat_large, (42 * 14), NDS.Track_Data[i], (int)ht, ds, de, NDS.cbm[i], NDS.v2info[i], d, Out_view.Checked, NDS.cbm_sector[i]);
+                            t = Draw_Track(flat_large, (42 * 14), Disk.Source.Track[i].Data, (int)ht, ds, de, Disk.Source.Track[i].Format, v2nfo, d, Out_view.Checked, NDS.cbm_sector[i]);
                             ext = $"(flat_tracks){fext}";
                             shouldDrawTrack = true;
                         }
@@ -157,7 +158,7 @@ namespace V_Max_Tool
             if (wait) Thread.Sleep(1000);
             int scale = 0;
             int activeTracks = 0;
-            for (int h = 0; h < tracks; h++) if (NDG.Track_Length[h] > min_t_len && NDS.cbm[h] < secF.Length - 1) activeTracks++;
+            for (int h = 0; h < tracks; h++) if (Disk.G64.Track[h].Length > min_t_len && Disk.Source.Track[h].Format < secF.Length - 1) activeTracks++;
             Invoke(new Action(() =>
             {
                 scale = Img_Q.SelectedIndex + 1;
@@ -178,7 +179,7 @@ namespace V_Max_Tool
             circle = new FastBitmap(imageSize, imageSize);
 
             int sampleTrack = GetSampleTrack(random);
-            string bgText = ToBinary(Encoding.ASCII.GetString(NDS.Track_Data[sampleTrack], 0, 1225));
+            string bgText = ToBinary(Encoding.ASCII.GetString(Disk.Source.Track[sampleTrack].Data, 0, 1225));
             Draw_Disk(circle, scale, imageSize, fileName, bgText);
             int skipFactor = tracks <= 42 ? 2 : 1;
             int progress = 0;
@@ -186,8 +187,9 @@ namespace V_Max_Tool
             //for (int track = 0; track < tracks && radius > 80; track++)
             for (int track = 0; track < (Src_view.Checked ? tracks : end_track) && radius > 80; track++)
             {
-                if (NDG.Track_Length[track] > min_t_len && NDS.cbm[track] < (Src_view.Checked ? tracks : end_track))
+                if (Disk.G64.Track[track].Length > min_t_len && Disk.Source.Track[track].Format < (Src_view.Checked ? tracks : end_track))
                 {
+                    var v2nfo = Disk.Source.Track[track].Spec.VMax.V2.GetV2Info();
                     int sb = 0;
                     progress++;
                     byte[] trackData = Get_Track_Data(track);
@@ -200,8 +202,8 @@ namespace V_Max_Tool
                         bool v5 = false;
                         for (int i = 0; i < dataLength; i++)
                         {
-                            if (NDS.cbm[track] == 6 && trackData[i] == 0x7b) sb++; else sb = 0;
-                            var (color, updatedV2, updatedV5) = Get_Color(trackData[i], NDS.v2info[track], track, i, density, NDS.cbm[track], v2, v5, sb);
+                            if (Disk.Source.Track[track].Format == 6 && trackData[i] == 0x7b) sb++; else sb = 0;
+                            var (color, updatedV2, updatedV5) = Get_Color(trackData[i], v2nfo, track, i, density, Disk.Source.Track[track].Format, v2, v5, sb);
                             v2 = updatedV2;
                             v5 = updatedV5;
                             colors[i] = color.ToArgb();
@@ -234,7 +236,7 @@ namespace V_Max_Tool
             while (attempts < 1000)
             {
                 track = random.Next(0, tracks - 1);
-                if (NDS.Track_Length[track] > 0) break;
+                if (Disk.Source.Track[track].Length > 0) break;
                 attempts++;
             }
 
@@ -393,43 +395,43 @@ namespace V_Max_Tool
             {
                 try
                 {
-                    int length = NDG.Track_Length[track];
+                    int length = Disk.G64.Track[track].Length;
                     temp = new byte[length];
-                    Buffer.BlockCopy(NDG.Track_Data[track], 0, temp, 0, length);
+                    Buffer.BlockCopy(Disk.G64.Track[track].Data, 0, temp, 0, length);
                 }
                 catch { }
             }
 
             if (Src_view.Checked)
             {
-                int start = NDS.D_Start[track] >> 3;
-                int end = NDS.D_End[track] >> 3;
+                int start = Disk.Source.Track[track].Start >> 3;
+                int end = Disk.Source.Track[track].End >> 3;
                 int length = end - start;
 
-                if (NDS.cbm[track] == 1 && length >= min_t_len)
+                if (Disk.Source.Track[track].Format == 1 && length >= min_t_len)
                 {
                     temp = new byte[length];
-                    Buffer.BlockCopy(NDS.Track_Data[track], start, temp, 0, length);
+                    Buffer.BlockCopy(Disk.Source.Track[track].Data, start, temp, 0, length);
                 }
                 else
                 {
-                    length = NDS.Track_Data[track].Length;
+                    length = Disk.Source.Track[track].Data.Length;
                     temp = new byte[length];
-                    Buffer.BlockCopy(NDS.Track_Data[track], 0, temp, 0, length);
+                    Buffer.BlockCopy(Disk.Source.Track[track].Data, 0, temp, 0, length);
                 }
 
-                if (NDS.Track_Data[track] != null && NDS.cbm[track] > 1 && NDS.cbm[track] < 5 && length >= min_t_len)
+                if (Disk.Source.Track[track].Data != null && Disk.Source.Track[track].Format > 1 && Disk.Source.Track[track].Format < 5 && length >= min_t_len)
                 {
-                    if (NDS.cbm[track] == 4)
+                    if (Disk.Source.Track[track].Format == 4)
                     {
-                        length = NDS.Track_Length[track];
+                        length = Disk.Source.Track[track].Length;
                         start = 0;
                     }
                     else
-                        length = (NDS.D_End[track] - NDS.D_Start[track]);
+                        length = (Disk.Source.Track[track].End - Disk.Source.Track[track].Start);
                     if (length > (4000 << 3)) length >>= 3; // (length >> 3);
                     temp = new byte[length];
-                    Buffer.BlockCopy(NDS.Track_Data[track], start, temp, 0, length);
+                    Buffer.BlockCopy(Disk.Source.Track[track].Data, start, temp, 0, length);
                 }
             }
 
@@ -532,25 +534,25 @@ namespace V_Max_Tool
                 if (vm_reverse)
                 {
                     Add_Text(d.Bitmap, "CBM", Color.FromArgb(0, 40, 40, 40), cbm_brush, new Font("Ariel", 11 * m), 1 * m, (clm += 17) * m, 60 * m, 17 * m);
-                    if (NDS.cbm.Any(s => s == 2 || s == 3))
+                    if (Disk.Source.Track.Any(s => s.Format == 2 || s.Format == 3))
                     {
                         Add_Text(d.Bitmap, "V-Max!", Color.FromArgb(0, 40, 40, 40), vmx_brush, new Font("Ariel", 11 * m), 1 * m, (clm += 17) * m, 60 * m, 17 * m);
                     }
-                    if (NDS.cbm.Any(s => s == 4))
+                    if (Disk.Source.Track.Any(s => s.Format == 4))
                     {
                         Add_Text(d.Bitmap, "Loader", Color.FromArgb(0, 40, 40, 40), ldr_brush, new Font("Ariel", 11 * m), 1 * m, (clm += 17) * m, 60 * m, 17 * m);
                     }
-                    if (NDS.cbm.Any(s => s == 5))
+                    if (Disk.Source.Track.Any(s => s.Format == 5))
                     {
                         Add_Text(d.Bitmap, "Vorpal", Color.FromArgb(0, 40, 40, 40), vpl_brush, new Font("Ariel", 11 * m), 1 * m, (clm += 17) * m, 60 * m, 17 * m);
                     }
-                    if (NDS.cbm.Any(s => s == 6) || NDS.cbm.Any(s => s == 10))
+                    if (Disk.Source.Track.Any(s => s.Format == 6 || s.Format == 10))
                     {
-                        string result = (NDS.cbm.Any(s => s == 6)) ? "Rapidlok" : "MicroProse";
+                        string result = (Disk.Source.Track.Any(s => s.Format == 6)) ? "Rapidlok" : "MicroProse";
                         Add_Text(d.Bitmap, result, Color.FromArgb(0, 40, 40, 40), rpl_brush, new Font("Ariel", 11 * m), 1 * m, (clm += 17) * m, 80 * m, 17 * m);
-                        if (NDS.cbm.Any(s => s == 6)) Add_Text(d.Bitmap, "Key", Color.FromArgb(0, 40, 40, 40), key_brush, new Font("Ariel", 11 * m), 1 * m, (clm += 17) * m, 80 * m, 17 * m);
+                        if (Disk.Source.Track.Any(s => s.Format == 6)) Add_Text(d.Bitmap, "Key", Color.FromArgb(0, 40, 40, 40), key_brush, new Font("Ariel", 11 * m), 1 * m, (clm += 17) * m, 80 * m, 17 * m);
                     }
-                    if (NDS.cbm.Any(s => s == 0))
+                    if (Disk.Source.Track.Any(s => s.Format == 0))
                     {
                         Add_Text(d.Bitmap, "Non-DOS", Color.FromArgb(0, 40, 40, 40), nds_brush, new Font("Ariel", 11 * m), 1 * m, (clm += 17) * m, 80 * m, 17 * m);
                     }

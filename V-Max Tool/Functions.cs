@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using ReMaster_Utility;
 
 namespace V_Max_Tool
 {
@@ -164,9 +165,9 @@ namespace V_Max_Tool
         {
             int ldr = 0, vpl = 0, rlk = 0, mps = 0, vmx = 0, cb = 0, bds = 0;
             for (int i = 0; i < tracks; i++) { }
-            foreach (var format in NDS.cbm)
+            foreach (var track in Disk.Source.Track)
             {
-                switch (format)
+                switch (track.Format)
                 {
                     case 1: cb++; break;
                     case 2: vmx++; break;
@@ -183,11 +184,11 @@ namespace V_Max_Tool
 
             if (ldr > 0) Loader_Track.Text = "Loader Track : Yes"; else Loader_Track.Text = "Loader Track : No";
             CBM_Tracks.Text = $"CBM tracks : {cb}";
-            if (NDS.cbm.Any(x => x == 2) || NDS.cbm.Any(x => x == 3)) Protected_Tracks.Text = $"V-Max Tracks : {vmx}";
-            if (NDS.cbm.Any(x => x == 5)) Protected_Tracks.Text = $"Vorpal Tracks : {vpl}";
-            if (NDS.cbm.Any(x => x == 6)) Protected_Tracks.Text = $"RapidLok Tracks : {rlk}";
-            if (NDS.cbm.Any(x => x == 10)) Protected_Tracks.Text = $"MicroPros Tracks : {mps}";
-            if (NDS.cbm.Any(x => x == 13)) Protected_Tracks.Text = $"BossDos Tracks : {bds}";
+            if (Disk.Source.Track.Any(x => x.Format == 2 || x.Format == 3)) Protected_Tracks.Text = $"V-Max Tracks : {vmx}";
+            if (Disk.Source.Track.Any(x => x.Format == 5)) Protected_Tracks.Text = $"Vorpal Tracks : {vpl}";
+            if (Disk.Source.Track.Any(x => x.Format == 6)) Protected_Tracks.Text = $"RapidLok Tracks : {rlk}";
+            if (Disk.Source.Track.Any(x => x.Format == 10)) Protected_Tracks.Text = $"MicroPros Tracks : {mps}";
+            if (Disk.Source.Track.Any(x => x.Format == 13)) Protected_Tracks.Text = $"BossDos Tracks : {bds}";
             Protected_Tracks.Visible = (vmx > 0 || vpl > 0 || rlk > 0 || mps > 0 || bds > 0);
         }
 
@@ -198,8 +199,8 @@ namespace V_Max_Tool
             int vpl_lead = 0;
             (v2a, v3a, vpa) = Check_Tabs();
             Advanced_Opts.Enabled = !batch;
-            if (NDS.cbm.Any(x => x == 13) || NDS.cbm.Any(x => x == 14)) end_track = tracks > 42 ? 69 : 35;
-            if (NDS.cbm.Any(x => x == 2))
+            if (Disk.Source.Track.Any(x => x.Format == 13 || x.Format == 14)) end_track = tracks > 42 ? 69 : 35;
+            if (Disk.Source.Track.Any(x => x.Format == 2))
             {
                 V2_Auto_Adj.Checked = (v2aa || V2_Auto_Adj.Checked);
                 V2_Custom.Checked = (v2cc || V2_Custom.Checked);
@@ -208,22 +209,11 @@ namespace V_Max_Tool
                 {
                     for (int i = 0; i < tracks; i++)
                     {
-                        if (NDS.v2info[i] != null)
+                        if (Disk.Source.Track[i].Spec.VMax.V2.GetV2Info().Any(x => x != 0))
                         {
-                            //if (!V2_swap_headers.Checked && !batch)
-                            //{
-                            //    V2_swap.DataSource = new string[] { "64-4E (newer)", "64-46 (weak bits)", "4E-64 (alt)" };
-                            //    if (Hex_Val(NDS.v2info[i], 0, 2) == "64-4E") { V2_swap.SelectedIndex = 0; break; }
-                            //    if (Hex_Val(NDS.v2info[i], 0, 2) == "64-46") { V2_swap.SelectedIndex = 1; break; }
-                            //    if (Hex_Val(NDS.v2info[i], 0, 2) == "4E-64") { V2_swap.SelectedIndex = 2; break; }
-                            //}
-                            //else
-                            {
-                                GetNewHeaders();
-                                //loader_fixed = false;
-                                NDG.L_Rot = false;
-                                break;
-                            }
+                            GetNewHeaders();
+                            Disk.G64.LoaderRotated = false;
+                            break;
                         }
                     }
                 }));
@@ -241,7 +231,7 @@ namespace V_Max_Tool
                 if (v2adj || rb_vm) { fnappend = mod; cbmadj = true; }
                 else { fnappend = fix; cbmadj = Adj_cbm.Checked; }
             }
-            if (NDS.cbm.Any(x => x == 3))
+            if (Disk.Source.Track.Any(x => x.Format == 3))
             {
                 V3_Auto_Adj.Checked = (v3aa || V3_Auto_Adj.Checked);
                 V3_Custom.Checked = (v3cc || V3_Custom.Checked);
@@ -259,30 +249,30 @@ namespace V_Max_Tool
                 if (v3adj) { fnappend = mod; cbmadj = true; }
                 else { fnappend = fix; cbmadj = Adj_cbm.Checked; }
             }
-            if (NDS.cbm.Any(x => x == 4))
+            if (Disk.Source.Track.Any(x => x.Format == 4))
             {
                 fl = false; // ((f_load.Checked || batch || V2_swap_headers.Checked) && !loader_fixed);
-                sl = NDS.cbm.Any(x => x == 2) || NDS.cbm.Any(x => x == 3);
+                sl = Disk.Source.Track.Any(x => x.Format == 2 || x.Format == 3);
             }
-            if (NDS.cbm.Any(ss => ss == 5))
+            if (Disk.Source.Track.Any(ss => ss.Format == 5))
             {
                 end_track = tracks > 42 ? 69 : 35;
                 vpadj = VPL_auto_adj.Checked || batch || VPL_rb.Checked;
                 fnappend = (VPL_rb.Checked || Adj_cbm.Checked || vpadj) ? mod : vorp;
                 vpl_lead = Lead_ptn.SelectedIndex;
             }
-            if (NDS.cbm.Any(ss => ss == 6))
+            if (Disk.Source.Track.Any(ss => ss.Format == 6))
             {
                 end_track = tracks > 42 ? 71 : 36;
             }
-            RL_Fix.Visible = NDS.cbm.Any(x => x == 6) || cynldr;
-            if (NDS.cbm.Any(ss => ss == 10))
+            RL_Fix.Visible = Disk.Source.Track.Any(x => x.Format == 6) || cynldr;
+            if (Disk.Source.Track.Any(ss => ss.Format == 10))
             {
                 end_track = tracks > 42 ? 69 : 35;
             }
             bool f = Check_tlen();
             int[] fmts = new int[] { 5, 6, 8, 10, 11, 12 };
-            if (!NDS.cbm.Any(x => fmts.Contains(x))) Adj_cbm.Enabled = (!NDS.cbm.Any(x => x == 4) && !NDS.Prot_Method.ToLower().Contains("(cbm)")) || DB_force.Checked;
+            if (!Disk.Source.Track.Any(x => fmts.Contains(x.Format))) Adj_cbm.Enabled = (!Disk.Source.Track.Any(x => x.Format == 4) && !Disk.ProtectionType.ToLower().Contains("(cbm)")) || DB_force.Checked;
             else Adj_cbm.Enabled = true;
             if (Adj_cbm.Checked || v2a || v3a || vpa || batch)
             {
@@ -305,11 +295,11 @@ namespace V_Max_Tool
         {
             List<int> tl = new List<int>();
             int tr = 0;
-            if (NDS.cbm.Any(x => x == 10)) return true;
+            if (Disk.Source.Track.Any(x => x.Format == 10)) return true;
             for (int i = 0; i < tracks; i++)
             {
                 tr = tracks > 42 ? i / 2 : i;
-                if (NDS.cbm[i] == 1 && NDS.sectors[i] >= Available_Sectors[tr]) tl.Add(NDS.Track_Length[i]);
+                if (Disk.Source.Track[i].Format == 1 && Disk.Source.Track[i].Sectors >= Available_Sectors[tr]) tl.Add(Disk.Source.Track[i].Length);
             }
             if (tl.Count > 0) return tl.Max() >> 3 < 8000;
             return false;
@@ -378,6 +368,7 @@ namespace V_Max_Tool
 
         void Data_Viewer(bool stop = false)
         {
+            Console.WriteLine($"Data_Viewer called @ {System.DateTime.Now}");
             if (Adv_ctrl.Controls[2] == Adv_ctrl.SelectedTab)
             {
                 if (!stop)
@@ -386,6 +377,7 @@ namespace V_Max_Tool
                     Worker_Alt = new Thread(new ThreadStart(() => Display_Data()));
                     Worker_Alt.Start();
                     Disp_Data.Text = "Stop";
+                    //Display_Data();
                 }
                 else
                 {
@@ -412,13 +404,19 @@ namespace V_Max_Tool
         void Check_Adv_Opts()
         {
             int[] pgs = new int[] { 2, 3, 5, 6 };
-            if (NDS.cbm.Any(s => pgs.Contains(s)))
+            if (Disk.Source.Track.Any(s => pgs.Contains(s.Format)))
             {
                 ManageTabPage(Advanced_Opts);
-                int? visibleControl = NDS.cbm.Contains(2) ? 2 :
-                      NDS.cbm.Contains(3) ? 3 :
-                      NDS.cbm.Contains(5) ? 5 :
-                      NDS.cbm.Contains(6) ? 6 : (int?)null;
+
+                int[] formats = Disk.Source.Track
+                    .Where(t => t != null)
+                    .Select(t => t.Format)
+                    .ToArray();
+
+                int? visibleControl = formats.Contains(2) ? 2 :
+                                      formats.Contains(3) ? 3 :
+                                      formats.Contains(5) ? 5 :
+                                      formats.Contains(6) ? 6 : (int?)null;
 
                 V2_Advanced.Visible = visibleControl == 2;
                 V3_Advanced.Visible = visibleControl == 3;
@@ -426,8 +424,9 @@ namespace V_Max_Tool
                 RPL_Advanced.Visible = visibleControl == 6;
 
             }
+
             else Tabs.TabPages.Remove(Advanced_Opts);
-            Adj_cbm.Visible = NDS.cbm.Any(s => s == 1);
+            Adj_cbm.Visible = Disk.Source.Track.Any(s => s.Format == 1);
             VBS_info.Visible = true;
             Reg_info.Visible = true;
             Other_opts.Visible = true;
@@ -760,6 +759,17 @@ namespace V_Max_Tool
             else return string.Empty;
         }
 
+        void Hex_Val(ref StringBuilder sb, byte[] data, int start = 0, int length = -1)
+        {
+            if (data == null) return;
+            if (length == -1) length = data.Length - start;
+            for (int i = 0; i < length; i++)
+            {
+                if (i > 0) sb.Append(' ');
+                sb.Append(data[start + i].ToString("X2"));
+            }
+        }
+
         int Get_Weak_Bytes(byte[] data)
         {
             if (data == null) return -1;
@@ -996,9 +1006,9 @@ namespace V_Max_Tool
         byte[] GetDiskID(bool reverse = false)
         {
             int dirtrack = tracks > 42 ? 34 : 17;
-            if (NDS.cbm[dirtrack] == 1 && NDS.Track_Data[dirtrack] != null)
+            if (Disk.Source.Track[dirtrack].Format == 1 && Disk.Source.Track[dirtrack].Data != null)
             {
-                var temp = new BitArray(Flip_Endian(NDS.Track_Data[dirtrack]));
+                var temp = new BitArray(Flip_Endian(Disk.Source.Track[dirtrack].Data));
                 (_, _, _, var dID, _) = Find_Sector(temp, 0);
                 if (dID != null)
                 {
@@ -1247,9 +1257,12 @@ namespace V_Max_Tool
             return sb.ToString();
         }
 
-        public String Byte_to_Binary(Byte[] data, bool vorpal = false)  // (use this for .NET 3.5 build) Note: only 100ms longer
+        public String Byte_to_Binary(Byte[] data, bool vorpal = false, int start = 0, int length = -1)
         {
-            BitArray bits = new BitArray(Flip_Endian(data));
+            if (data == null || data.Length == 0 || start >= data.Length) return string.Empty;
+            if (length < 0 || start + length >= data.Length) length = data.Length - start;
+
+            BitArray bits = new BitArray(Flip_Endian(CopyArray(data, start, length)));
             StringBuilder b = new StringBuilder();
             int spc = vorpal ? 2 : 8;
             for (int counter = 0; counter < bits.Length; counter++)
@@ -1263,6 +1276,23 @@ namespace V_Max_Tool
             }
             return b.ToString();
         }
+
+        //public String Byte_to_Binary(Byte[] data, bool vorpal = false)  // (use this for .NET 3.5 build) Note: only 100ms longer
+        //{
+        //    BitArray bits = new BitArray(Flip_Endian(data));
+        //    StringBuilder b = new StringBuilder();
+        //    int spc = vorpal ? 2 : 8;
+        //    for (int counter = 0; counter < bits.Length; counter++)
+        //    {
+        //        b.Append((bits[counter] ? "1" : "0"));
+        //        if ((counter + 1) % spc == 0)
+        //        {
+        //            b.Append(" ");
+        //            spc = spc < 8 ? 10 : 8;
+        //        }
+        //    }
+        //    return b.ToString();
+        //}
 
         byte SetBit(byte data, int bitPosition)
         {
@@ -1313,7 +1343,7 @@ namespace V_Max_Tool
             return 3;
         }
 
-        byte[] Flip_Endian(byte[] data)
+        public static byte[] Flip_Endian(byte[] data)
         {
             if (data == null) return null;
             int length = data.Length;
@@ -1322,8 +1352,9 @@ namespace V_Max_Tool
             return temp;
         }
 
-        int Find_Most_Frequent_Format(int[] array)
+        int Find_Most_Frequent_Format(ImportedDisk d)
         {
+            int[] array = d.GetFormats();
             if (array.Length == 0) return -1;// throw new ArgumentException("Array is empty");
             Dictionary<int, int> counts = new Dictionary<int, int>();
             foreach (int num in array)
@@ -1515,10 +1546,10 @@ namespace V_Max_Tool
         {
             try
             {
-                NDG.Track_Data[trk] = CopyFrom(data, 0, data.Length);
-                NDA.Track_Data[trk] = FillArray(data, 8192);
-                NDA.Track_Length[trk] = data.Length << 3;
-                NDG.Track_Length[trk] = data.Length;
+                Disk.G64.Track[trk].Data = CopyFrom(data, 0, data.Length);
+                Disk.Adjusted.Track[trk].Data = FillArray(data, 8192);
+                Disk.Adjusted.Track[trk].Length = data.Length << 3;
+                Disk.G64.Track[trk].Length = data.Length;
             }
             catch { }
         }
@@ -1569,13 +1600,13 @@ namespace V_Max_Tool
 
         void Shrink_Short_Sector(int trk)
         {
-            if (Original.OT[trk].Length == 0)
+            if (Disk.Original.TrackData[trk].Length == 0)
             {
-                Original.OT[trk] = new byte[NDG.Track_Data[trk].Length];
-                Buffer.BlockCopy(NDG.Track_Data[trk], 0, Original.OT[trk], 0, NDG.Track_Data[trk].Length);
+                Disk.Original.TrackData[trk] = new byte[Disk.G64.Track[trk].Data.Length];
+                Buffer.BlockCopy(Disk.G64.Track[trk].Data, 0, Disk.Original.TrackData[trk], 0, Disk.G64.Track[trk].Data.Length);
             }
-            int d = Get_Density(NDG.Track_Data[trk].Length);
-            byte[] temp = Shrink_Track(NDG.Track_Data[trk], d);
+            int d = Get_Density(Disk.G64.Track[trk].Data.Length);
+            byte[] temp = Shrink_Track(Disk.G64.Track[trk].Data, d);
             if (temp.Length > density[d])
             {
                 string pattern;
@@ -1583,9 +1614,9 @@ namespace V_Max_Tool
                 int start = 0;
                 int run = 0;
                 int cur = 0;
-                for (int i = 0; i < NDG.Track_Data[trk].Length - 1; i++)
+                for (int i = 0; i < Disk.G64.Track[trk].Data.Length - 1; i++)
                 {
-                    pattern = Hex_Val(NDG.Track_Data[trk], i, 2);
+                    pattern = Hex_Val(Disk.G64.Track[trk].Data, i, 2);
                     if (pattern == current)
                     {
                         cur++;
@@ -1603,9 +1634,9 @@ namespace V_Max_Tool
                     i++;
                 }
                 temp = new byte[density[d]];
-                int skip = NDG.Track_Data[trk].Length - density[d];
-                Buffer.BlockCopy(NDG.Track_Data[trk], 0, temp, 0, start);
-                Buffer.BlockCopy(NDG.Track_Data[trk], start + skip, temp, start, (temp.Length - 1) - start);
+                int skip = Disk.G64.Track[trk].Data.Length - density[d];
+                Buffer.BlockCopy(Disk.G64.Track[trk].Data, 0, temp, 0, start);
+                Buffer.BlockCopy(Disk.G64.Track[trk].Data, start + skip, temp, start, (temp.Length - 1) - start);
             }
             Set_Dest_Arrays(temp, trk);
         }

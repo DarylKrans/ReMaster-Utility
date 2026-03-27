@@ -26,17 +26,17 @@ namespace V_Max_Tool
             {
                 for (int t = 0; t < tracks; t++)
                 {
-                    if (NDG.Track_Data[t] != null)
+                    if (Disk.G64.Track[t].Data != null)
                     {
-                        if (NDS.cbm[t] == 1 || NDS.cbm[t] == 3)
+                        if (Disk.Source.Track[t].Format == 1 || Disk.Source.Track[t].Format == 3)
                         {
-                            if (Original.OT[t]?.Length == 0)
+                            if (Disk.Original.TrackData[t]?.Length == 0)
                             {
-                                Original.OT[t] = new byte[NDG.Track_Data[t].Length];
-                                Buffer.BlockCopy(NDG.Track_Data[t], 0, Original.OT[t], 0, NDG.Track_Data[t].Length);
+                                Disk.Original.TrackData[t] = new byte[Disk.G64.Track[t].Data.Length];
+                                Buffer.BlockCopy(Disk.G64.Track[t].Data, 0, Disk.Original.TrackData[t], 0, Disk.G64.Track[t].Data.Length);
                             }
                         }
-                        if (NDS.cbm[t] == 4) Shrink_Short_Sector(t);
+                        if (Disk.Source.Track[t].Format == 4) Shrink_Short_Sector(t);
                     }
                 }
             }
@@ -44,35 +44,35 @@ namespace V_Max_Tool
             {
                 for (int t = 0; t < tracks; t++)
                 {
-                    if (NDG.Track_Data[t] != null)
+                    if (Disk.G64.Track[t].Data != null)
                     {
-                        if (NDS.cbm[t] == 4)
+                        if (Disk.Source.Track[t].Format == 4)
                         {
-                            NDG.Track_Data[t] = new byte[Original.SG.Length];
-                            NDA.Track_Data[t] = new byte[Original.SA.Length];
-                            Buffer.BlockCopy(Original.SG, 0, NDG.Track_Data[t], 0, Original.SG.Length);
-                            Buffer.BlockCopy(Original.SA, 0, NDA.Track_Data[t], 0, Original.SA.Length);
-                            NDG.Track_Length[t] = NDG.Track_Data[t].Length;
-                            NDA.Track_Length[t] = NDG.Track_Length[t] * 8;
-                            NDG.L_Rot = false;
+                            Disk.G64.Track[t].Data = new byte[Disk.Original.LoaderG64.Length];
+                            Disk.Adjusted.Track[t].Data = new byte[Disk.Original.LoaderAdjusted.Length];
+                            Buffer.BlockCopy(Disk.Original.LoaderG64, 0, Disk.G64.Track[t].Data, 0, Disk.Original.LoaderG64.Length);
+                            Buffer.BlockCopy(Disk.Original.LoaderAdjusted, 0, Disk.Adjusted.Track[t].Data, 0, Disk.Original.LoaderAdjusted.Length);
+                            Disk.G64.Track[t].Length = Disk.G64.Track[t].Data.Length;
+                            Disk.Adjusted.Track[t].Length = Disk.G64.Track[t].Length * 8;
+                            Disk.G64.LoaderRotated = false;
                         }
-                        if (NDS.cbm[t] == 1 || (NDS.cbm[t] == 3)) // && NDS.sectors[t] < 16))
+                        if (Disk.Source.Track[t].Format == 1 || (Disk.Source.Track[t].Format == 3)) // && NDS.sectors[t] < 16))
                         {
-                            if (Original.OT[t]?.Length != 0 || Original.OT[t] != null)
+                            if (Disk.Original.TrackData[t]?.Length != 0 || Disk.Original.TrackData[t] != null)
                             {
                                 try
                                 {
-                                    NDG.Track_Data[t] = new byte[Original.OT[t].Length];
-                                    Buffer.BlockCopy(Original.OT[t], 0, NDG.Track_Data[t], 0, Original.OT[t].Length);
-                                    Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], 0, Original.OT[t].Length);
-                                    Buffer.BlockCopy(Original.OT[t], 0, NDA.Track_Data[t], Original.OT[t].Length, NDA.Track_Data[t].Length - Original.OT[t].Length);
+                                    Disk.G64.Track[t].Data = new byte[Disk.Original.TrackData[t].Length];
+                                    Buffer.BlockCopy(Disk.Original.TrackData[t], 0, Disk.G64.Track[t].Data, 0, Disk.Original.TrackData[t].Length);
+                                    Buffer.BlockCopy(Disk.Original.TrackData[t], 0, Disk.Adjusted.Track[t].Data, 0, Disk.Original.TrackData[t].Length);
+                                    Buffer.BlockCopy(Disk.Original.TrackData[t], 0, Disk.Adjusted.Track[t].Data, Disk.Original.TrackData[t].Length, Disk.Adjusted.Track[t].Data.Length - Disk.Original.TrackData[t].Length);
                                     p = false;
                                     v = true;
                                 }
                                 catch { }
                             }
-                            NDG.Track_Length[t] = NDG.Track_Data[t].Length;
-                            NDA.Track_Length[t] = NDG.Track_Length[t] * 8;
+                            Disk.G64.Track[t].Length = Disk.G64.Track[t].Data.Length;
+                            Disk.Adjusted.Track[t].Length = Disk.G64.Track[t].Length * 8;
                         }
                     }
                 }
@@ -102,7 +102,7 @@ namespace V_Max_Tool
             trk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
             int compare = 0;
             byte[] track_ID = trk % 2 == 1
-                ? ArrayConcat(v3_sector_sync, new byte[] { 0xff, 0xff }, Build_BlockHeader(trk, 255, NDS.t18_ID))
+                ? ArrayConcat(v3_sector_sync, new byte[] { 0xff, 0xff }, Build_BlockHeader(trk, 255, Disk.DiskID))
                 : new byte[] { 0x7f };
             //int d = trk < 18 ? 0 : Get_Density(trk_size) < 1 ? 1 : Get_Density(trk_size);
             //version = true;

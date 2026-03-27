@@ -5,16 +5,18 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using ReMaster_Utility;
 using ReMaster_Utility.Properties;
 
 namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
+        public ImportedDisk Disk = new ImportedDisk(0);
+
         private static Thread Draw;
         private static Thread circ;  // Thread for drawing circle disk image
         private static Thread flat;  // Thread for drawing flat tracks image
@@ -51,7 +53,9 @@ namespace V_Max_Tool
         private static string def_bg_text;
         private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
         private static ConcurrentBag<string> ErrorList = new ConcurrentBag<string>();
-        private static FontFamily customFontFamily;
+        //private static FontFamily customFontFamily;
+        private static PrivateFontCollection _C64ProMono = new PrivateFontCollection();
+        private static byte[] _C64Font;
         //private static Font customFont; // = GetCustomFont(12.0f, FontStyle.Regular);
         private const bool Set = false;
         private const bool Free = true;
@@ -261,56 +265,14 @@ namespace V_Max_Tool
 
         void Set_Arrays(int len)
         {
+
             /// NDS is the input or source array
-            NDS.Track_Data = new byte[len][];
-            NDS.Sector_Zero = new int[len];
-            NDS.Track_Length = new int[len];
-            NDS.D_Start = new int[len];
-            NDS.D_End = new int[len];
-            NDS.cbm = new int[len];
-            NDS.sectors = new int[len];
             NDS.Header_Len = new int[len];
             NDS.cbm_sector = new int[len][];
-            NDS.v2info = new byte[len][];
-            NDS.Loader = new byte[0];
-            NDS.Total_Sync = new int[len];
-            NDS.Disk_ID = new byte[len][];
-            NDS.Gap_Sector = new int[len];
-            NDS.Track_ID = new int[len];
-            NDS.Prot_Method = string.Empty;
-            NDS.t18_ID = new byte[4];
-            NDS.Adjust = new bool[len];
-            NDS.Info = new string[len][];
             NDS.Sector = new byte[len][][];
-            NDS.Cart_Protection = false;
-            NDS.External_Protection = false;
-            NDS.V3_sectors = new byte[0];
-            /// NDA is the destination or output array
-            NDA.Track_Data = new byte[len][];
-            NDA.Sector_Zero = new int[len];
-            NDA.Track_Length = new int[len];
-            NDA.D_Start = new int[len];
-            NDA.D_End = new int[len];
-            NDA.sectors = new int[len];
-            NDA.Total_Sync = new int[len];
-            /// NDG is the G64 arrays
-            NDG.Track_Length = new int[len];
-            NDG.Track_Data = new byte[len][];
-            NDG.L_Rot = false;
-            NDG.s_len = new int[len];
-            NDG.newheader = new byte[2];
-            NDG.Fat_Track = new bool[len];
-            /// Original is the arrays that keep the original track data for the Auto Adjust feature
-            Original.A = new byte[0];
-            Original.G = new byte[0];
-            Original.SA = new byte[0];
-            Original.SG = new byte[0];
-            Original.OT = new byte[len][];
-            /// DiskDir is the arrays that handle directoy entries
-            DiskDir.Entries = 0;
-            DiskDir.Sectors = new byte[0][];
-            DiskDir.Entry = new byte[0][];
-            DiskDir.FileName = new string[0];
+
+            Disk = new ImportedDisk(len);
+            Disk.Directory.Reset();
             Dir_Box.Items.Clear();
             tj_sidx = -1;
             T_jump.Items.Clear();
@@ -477,10 +439,11 @@ namespace V_Max_Tool
             else NibReadImage.Visible = NibWriteImage.Visible = NibSeparator.Visible = false;
         }
 
-        public static Font GetCustomFont(float fontSize, FontStyle fontStyle)
-        {
-            return new Font(DirFont.Families[0], fontSize, fontStyle);
-        }
+        //public static Font GetCustomFont(float fontSize, FontStyle fontStyle)
+        //{
+        //    return new Font(DirFont.Families[0], fontSize, fontStyle);
+        //}
+
         int Get_Cores()
         {
             foreach (var item in new System.Management.ManagementObjectSearcher("Select NumberOfCores from Win32_Processor").Get())
@@ -516,10 +479,7 @@ namespace V_Max_Tool
             Dir_screen.Select(2, 23);
             Dir_screen.SelectionBackColor = c64_text;
             Dir_screen.SelectionColor = C64_screen;
-            DiskDir.Entries = 0;
-            DiskDir.Sectors = new byte[0][];
-            DiskDir.Entry = new byte[0][];
-            DiskDir.FileName = new string[0];
+            Disk.Directory.Reset();
             Dir_Box.Items.Clear();
         }
 
@@ -542,8 +502,8 @@ namespace V_Max_Tool
             Read_GBox.Location = new Point(0, 0);
             Options.Controls.Add(Options_Box);
             Options_Box.Location = new Point(0, 0);
-            customFontFamily = LoadFontFromResource(Resources.C64_Pro_Mono_STYLE);
-            Font customFont = GetCustomFont(12.0f, FontStyle.Regular);
+            LoadEmbeddedFont(_C64Font = Resources.C64_Pro_Mono_STYLE);
+            Font customFont = GetFont(12.0f, FontStyle.Regular);
             usecpp = Load_Dll();
             FindNibtools();
             Init_Read_Options();
@@ -628,6 +588,7 @@ namespace V_Max_Tool
             Adj_cbm.Visible = false;
             Tabs.Visible = true;
             Data_Box.DetectUrls = false;
+            Data_Box.AllowDrop = false;
             Data_Sep.DataSource = new string[] { "None", "Tracks", "Sectors" }; //d;
             Data_Sep.SelectedIndex = 1;
             VS_hex.Checked = true;
@@ -831,22 +792,6 @@ namespace V_Max_Tool
                 inbox.TabIndex = 55;
                 inbox.TabStop = false;
                 inbox.Text = "Trk / Size / Format / Sectors / Dens";
-            }
-
-            FontFamily LoadFontFromResource(byte[] fontdata)
-            {
-                // Pin the font data array in memory
-                IntPtr fontPtr = Marshal.AllocCoTaskMem(fontdata.Length);
-                Marshal.Copy(fontdata, 0, fontPtr, fontdata.Length);
-
-                // Add the font to the PrivateFontCollection
-                DirFont.AddMemoryFont(fontPtr, fontdata.Length);
-
-                // Free the memory
-                Marshal.FreeCoTaskMem(fontPtr);
-
-                // Return the first font family in the collection
-                return DirFont.Families[0];
             }
 
             void Set_Tool_Tips()
@@ -1135,6 +1080,23 @@ namespace V_Max_Tool
             for (int i = 0; i < 255; i++) if (!weakBytes.Contains((byte)i)) list.Add((byte)i);
             list.Sort();
             nonWeak = list.ToArray();
+        }
+
+        private void LoadEmbeddedFont(byte[] stream)
+        {
+            if (stream == null || stream.Length == 0) return;
+            IntPtr fontPtr = System.Runtime.InteropServices.Marshal.AllocCoTaskMem(stream.Length);
+            System.Runtime.InteropServices.Marshal.Copy(stream, 0, fontPtr, stream.Length);
+            _C64ProMono.AddMemoryFont(fontPtr, stream.Length);
+            System.Runtime.InteropServices.Marshal.FreeCoTaskMem(fontPtr);
+        }
+
+        Font GetFont(float size = 11f, FontStyle style = FontStyle.Regular)
+        {
+            if (_C64ProMono != null && _C64ProMono.Families != null && _C64ProMono.Families.Length > 0)
+                return new Font(_C64ProMono.Families[0], size, style);
+            Font _default = new Font("Courier New", size, style);
+            return _default;
         }
     }
 }
