@@ -2329,7 +2329,8 @@ namespace V_Max_Tool
                         try
                         {
                             fmt[x] = Get_Data_Fmt2(trkData[x], x, false);
-                            if (fmt[x] == 1 || fmt[x] == 10) trkID[x] = CBM_Track_Info(trkData[x], false, x, fmt[x] == 1).Item11;
+                            //if (fmt[x] == 1 || fmt[x] == 10) trkID[x] = CBM_Track_Info(trkData[x], false, x, fmt[x] == 1).Item11;
+                            if (fmt[x] == 1 || fmt[x] == 10) trkID[x] = (int)Disk.Source.Track[x].TrackNumber; // trkID[x] = CBM_Track_Info(trkData[x], false, x, fmt[x] == 1).Item11;
                         }
                         catch (Exception ex)
                         {

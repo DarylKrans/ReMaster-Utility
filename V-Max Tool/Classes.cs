@@ -42,7 +42,6 @@ namespace V_Max_Tool
 
     public static class NDS  // Global variables for Nib file source data
     {
-        public static int[] Header_Len = new int[0];
         public static int[][] cbm_sector = new int[0][];
         public static byte[][][] Sector = new byte[0][][];
     }

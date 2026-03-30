@@ -33,8 +33,11 @@ namespace V_Max_Tool
                         Set_Arrays(tracks);
                         for (int i = 0; i < tracks; i++)
                         {
-                            Disk.Source.Track[i].Data = CopyArray(data, NIB_HEADER_LEN + (NIB_TRACK_LEN * i), NIB_TRACK_LEN);
+                            var temp = CopyArray(data, NIB_HEADER_LEN + (NIB_TRACK_LEN * i), NIB_TRACK_LEN);
+                            Disk.Source.Track[i].Data = temp;
                             Disk.Original.TrackData[i] = new byte[0];
+                            Disk.Source.Track[i].SetBits();
+                            //Disk.Source.Track[i].Bits = new BitArray(Flip_Endian(temp));
                         }
                         return true;
                     }
@@ -90,8 +93,11 @@ namespace V_Max_Tool
                                 //if (r > 0 && ln > 0) tdata = Rotate_Left(tdata, r + ln);
                                 int r = FindLongestRun_Specific(tdata, 0xff);
                                 if (r > 0) tdata = Rotate_Left(tdata, r);
-                                Disk.G64.Track[i].Spec.PreDeterminedLength = tdata.Length;
-                                Disk.Source.Track[i].Data = FillArray(tdata, NIB_TRACK_LEN);
+                                Disk.G64.Track[i].GLength = tdata.Length;
+                                var temp = FillArray(tdata, NIB_TRACK_LEN);
+                                Disk.Source.Track[i].Data = temp;
+                                Disk.Source.Track[i].SetBits();
+                                //Disk.Source.Track[i].Bits = new BitArray(Flip_Endian(temp));
                             }
                             catch { }
                         }
@@ -160,8 +166,7 @@ namespace V_Max_Tool
                     byte[] nodata = FastArray.Init(325, cbm_gap);
                     for (int i = 0; i < tracks; i++)
                     {
-
-                        Disk.Source.Track[i].Data = FastArray.Init(NIB_TRACK_LEN, 0x00);
+                        //Disk.Source.Track[i].Data = FastArray.Init(NIB_TRACK_LEN, 0x00);
                         int tsec = Available_Sectors[i];
                         int len = density[density_map[i]];
                         byte[] gap = SetSectorGap(sector_gap_length[i]);
@@ -186,7 +191,11 @@ namespace V_Max_Tool
                             int dif = len - (int)buffer.Length;
                             if (dif > 0) write.Write(FastArray.Init(dif, 0x55));
                             byte[] temp = buffer.ToArray();
-                            Disk.Source.Track[i].Data = FillArray(temp, NIB_TRACK_LEN);
+                            var tmp = FillArray(temp, NIB_TRACK_LEN);
+                            Disk.Source.Track[i].Data = tmp;
+                            Disk.Source.Track[i].SetBits();
+                            //Disk.Source.Track[i].Bits = new BitArray(Flip_Endian(tmp));
+                            //Disk.G64.Track[i].Bits = new BitArray(Flip_Endian(temp));
                         }
                     }
                     return true;

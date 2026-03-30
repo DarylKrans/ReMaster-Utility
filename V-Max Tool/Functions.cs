@@ -10,7 +10,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
-using ReMaster_Utility;
 
 namespace V_Max_Tool
 {
@@ -1091,7 +1090,7 @@ namespace V_Max_Tool
         }
         /// -------------------   Bit Operation functions   ---------------------------------------------------------------------------------
 
-        byte[] Bit2Byte(BitArray bits, int start = 0, int length = -1)
+        public static byte[] Bit2Byte(BitArray bits, int start = 0, int length = -1)
         {
             if (length < 0) length = bits.Length - start;
 

@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using ReMaster_Utility;
 using ReMaster_Utility.Properties;
 
 namespace V_Max_Tool
@@ -265,17 +264,15 @@ namespace V_Max_Tool
 
         void Set_Arrays(int len)
         {
-
-            /// NDS is the input or source array
-            NDS.Header_Len = new int[len];
-            NDS.cbm_sector = new int[len][];
-            NDS.Sector = new byte[len][][];
-
             Disk = new ImportedDisk(len);
             Disk.Directory.Reset();
             Dir_Box.Items.Clear();
             tj_sidx = -1;
             T_jump.Items.Clear();
+
+            /// NDS is the input or source array
+            NDS.cbm_sector = new int[len][];
+            NDS.Sector = new byte[len][][];
         }
 
         void AddRecentFile(string filePath)

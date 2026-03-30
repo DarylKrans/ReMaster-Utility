@@ -103,7 +103,7 @@ namespace V_Max_Tool
                     int density = 3 - Get_Density(Disk.G64.Track[i].Length);
                     SetPointer(TrackPointers, i * trackSkip, dataOffset + pointerOffset);
                     SetPointer(TrackDensities, i * trackSkip, density);
-                    if (i + pairedTrackOffset < tracks && Disk.G64.Track[i].Spec.FatTrack)
+                    if (i + pairedTrackOffset < tracks && Disk.G64.Track[i].FatTrack)
                     {
                         SetPointer(TrackPointers, (i * trackSkip) + 1, dataOffset + pointerOffset);
                         SetPointer(TrackDensities, (i * trackSkip) + 1, density);

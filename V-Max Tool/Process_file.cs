@@ -268,16 +268,16 @@ namespace V_Max_Tool
             foreach (var thread in Job) thread?.Join();
 
             /// ---  write detected formats ----
-            List<string> tfmt = new List<string>();
-            bool add = tracks > 42;
-            for (int i = 0; i < tracks; i++)
-            {
-                int ttt = tracks > 42 ? (i / 2) + 1 : i + 1;
-                tfmt.Add($"track {ttt} : {Disk.Source.Track[i].Format} {secF[Disk.Source.Track[i].Format]}");
-                if (add) i++;
-
-            }
-            File.WriteAllLines($@"c:\test\formats.txt", tfmt.ToArray());
+            //List<string> tfmt = new List<string>();
+            //bool add = tracks > 42;
+            //for (int i = 0; i < tracks; i++)
+            //{
+            //    int ttt = tracks > 42 ? (i / 2) + 1 : i + 1;
+            //    tfmt.Add($"track {ttt} : {Disk.Source.Track[i].Format} {secF[Disk.Source.Track[i].Format]}");
+            //    if (add) i++;
+            //
+            //}
+            //File.WriteAllLines($@"c:\test\formats.txt", tfmt.ToArray());
             /// ----------------------------------
             Check_Formats(); /// <- Checks and corrects falsly identified track formats
 
@@ -686,28 +686,20 @@ namespace V_Max_Tool
                         int it = 0;
                         while (Disk.Source.Track[trk].Length < 6200 << 3 && it < 10)
                         {
-                            if (it > 0) Disk.Source.Track[trk].Data = Rotate_Left(Disk.Source.Track[trk].Data, 10);
+                            if (it > 0)
+                            {
+                                Disk.Source.Track[trk].Data = Rotate_Left(Disk.Source.Track[trk].Data, 10);
+                                Disk.Source.Track[trk].SetBits();
+                            }
                             try
                             {
-                                (Disk.Source.Track[trk].Start,
-                                    Disk.Source.Track[trk].End,
-                                    Disk.Source.Track[trk].SectorZero,
-                                    Disk.Source.Track[trk].Length,
-                                    Disk.Source.Track[trk].Info,
-                                    Disk.Source.Track[trk].Sectors,
-                                    NDS.cbm_sector[trk],
-                                    Disk.Adjusted.Track[trk].TotalSync,
-                                    Disk.Source.Track[trk].TrackID,
-                                    _,
-                                    Disk.Source.Track[trk].CBMTrack,
-                                    Disk.Source.Track[trk].Adjust,
-                                    cartP, manP) = CBM_Track_Info(Disk.Source.Track[trk].Data, cksm, trk, Disk.Source.Track[trk].Format == 1);
+                                CBM_Track_Info(ref Disk.Source.Track[trk], ref cartP, ref manP);
+                                if (Disk.Source.Track[trk].TrackNumber == 18) Disk.DiskID = Disk.Source.Track[trk].TrackID;
                                 if (Disk.Source.Track[trk].Length > 8000 << 3) break;
                                 it++;
                             }
                             catch { }
                         }
-                        //if (!NDS.Cart_Protection && cartP) NDS.Cart_Protection = true;
                         if (!Disk.Cart_Protection && cartP) Disk.Cart_Protection = true;
                         if (!Disk.External_Protection && manP) Disk.External_Protection = true;
                         Disk.Adjusted.Track[trk].Sectors = Disk.Source.Track[trk].Sectors;
@@ -724,8 +716,9 @@ namespace V_Max_Tool
                     int t = tracks > 42 ? (trk / 2) : trk;
                     if (t < 38)
                     {
-                        byte[] v2nfo;
                         vmx++;
+                        //Get_V2_Track_Info(ref Disk.Source.Track[trk], ref cart);
+                        byte[] v2nfo;
                         (
                             Disk.Source.Track[trk].Data, // NDA
                             Disk.Source.Track[trk].Start,
@@ -735,7 +728,7 @@ namespace V_Max_Tool
                             Disk.Source.Track[trk].Info,
                             Disk.Source.Track[trk].Sectors,
                             Disk.Source.Track[trk].GapSector,
-                             v2nfo, NDS.Sector[trk],
+                            v2nfo, NDS.Sector[trk],
                             cart) = Get_V2_Track_Info(Disk.Source.Track[trk].Data, trk, Disk.Cart_Protection);
                         Disk.Source.Track[trk].Spec.VMax.V2.SetV2Info(v2nfo);
                         if (!Disk.Cart_Protection && cart) Disk.Cart_Protection = true;
@@ -756,7 +749,7 @@ namespace V_Max_Tool
                             Disk.Source.Track[trk].End,
                             Disk.Source.Track[trk].SectorZero,
                             len, Disk.Source.Track[trk].Sectors,
-                            NDS.Header_Len[trk],
+                            Disk.Source.Track[trk].Spec.VMax.V3.HeaderLength,
                             Disk.Source.Track[trk].GapSector,
                             cart) = Get_vmv3_track_length(Disk.Source.Track[trk].Data, trk, Disk.Cart_Protection);
                         Disk.Source.Track[trk].Length = len;
@@ -768,7 +761,7 @@ namespace V_Max_Tool
                 if (Disk.Source.Track[trk].Format == 4)
                 {
                     int q = 0;
-                    if (fext.ToLower() == ".g64") q = Disk.G64.Track[trk].Spec.PreDeterminedLength;
+                    if (fext.ToLower() == ".g64") q = Disk.G64.Track[trk].GLength;
                     else (q, Disk.Source.Track[trk].Data) = (Get_Loader_Len(Disk.Source.Track[trk].Data, 0, 80, 7000));
                     Disk.Source.Track[trk].Length = q * 8;
                     Disk.G64.Track[trk].Data = new byte[Disk.Source.Track[trk].Length / 8];
@@ -808,7 +801,8 @@ namespace V_Max_Tool
                             Disk.Source.Track[trk].Start,
                             Disk.Source.Track[trk].End,
                             Disk.Source.Track[trk].Length,
-                            NDS.Header_Len[trk],
+                            //NDS.Header_Len[trk],
+                            Disk.Source.Track[trk].SectorZero,
                             Disk.Source.Track[trk].Sectors,
                             NDS.cbm_sector[trk],
                             Disk.Source.Track[trk].Info) = Get_Vorpal_Track_Length(Disk.Source.Track[trk].Data, trk);
@@ -845,7 +839,8 @@ namespace V_Max_Tool
                             Disk.Source.Track[trk].Start,
                             Disk.Source.Track[trk].End, q,
                             Disk.Source.Track[trk].Sectors,
-                            NDS.Header_Len[trk],
+                            //NDS.Header_Len[trk],
+                            Disk.Source.Track[trk].Sectors,
                             Disk.Source.Track[trk].Info) = RapidLok_Track_Info(Disk.Source.Track[trk].Data, trk, false, new byte[] { 0x00 });
                         if (q < (8000 << 3) && tk < 36) Disk.Source.Track[trk].Length = q;
                         else
@@ -875,14 +870,14 @@ namespace V_Max_Tool
                 if (Disk.Source.Track[trk].Format == 9)
                 {
                     //byte[] RA = RainbowArts(NDS.Track_Data[trk]);
-                    byte[] RA = RainbowArts(Disk.Source.Track[trk].Data, NDS.Header_Len[trk]);
+                    byte[] RA = RainbowArts(Disk.Source.Track[trk].Data, Disk.Source.Track[trk].BitShift);
                     Disk.Source.Track[trk].Length = RA.Length << 3;
                     Set_Dest_Arrays(RA, trk);
                 }
 
                 if (Disk.Source.Track[trk].Format == 11 || Disk.Source.Track[trk].Format == 12)
                 {
-                    byte[] GMA = Securispeed(Disk.Source.Track[trk].Data, NDS.Header_Len[trk]);
+                    byte[] GMA = Securispeed(Disk.Source.Track[trk].Data, Disk.Source.Track[trk].BitShift);
                     Disk.Source.Track[trk].Length = GMA.Length << 3;
                     Set_Dest_Arrays(GMA, trk);
                 }
@@ -1177,6 +1172,7 @@ namespace V_Max_Tool
                 int track = tracks > 42 ? (trk / 2) : trk;
                 int d = Get_Density(Disk.Source.Track[trk].Length >> 3);
                 var temp = new byte[Disk.Source.Track[trk].Length >> 3];
+                bool getbits = Disk.Source.Track[trk].Bits == null;
                 Buffer.BlockCopy(Disk.Source.Track[trk].Data, Disk.Source.Track[trk].Start >> 3, temp, 0, ((Disk.Source.Track[trk].End >> 3) - (Disk.Source.Track[trk].Start >> 3)));
                 if (temp != null)
                 {
@@ -1186,7 +1182,8 @@ namespace V_Max_Tool
                         Buffer.BlockCopy(temp, 0, Disk.Original.TrackData[trk], 0, temp.Length);
                     }
                 }
-                BitArray source = new BitArray(Flip_Endian(temp));
+                //BitArray source = new BitArray(Flip_Endian(temp));
+                BitArray source = getbits ? new BitArray(Flip_Endian(temp)) : Disk.Source.Track[trk].Bits;
                 int pos = 0;
                 bool sec = false;
                 (sec, pos, _, _, _) = Find_Sector(source, 0);
@@ -1246,7 +1243,7 @@ namespace V_Max_Tool
 
                 if (isFatTrack)
                 {
-                    Disk.G64.Track[trk - htk].Spec.FatTrack = true;
+                    Disk.G64.Track[trk - htk].FatTrack = true;
                     if (fat_trk < 0) fat_trk = track;
                     if (track != Disk.Source.Track[trk].CBMTrack && track >= 34 && !Disk.Source.Track.Any(x => x.Format == 11)) end_track = trk + htk;
                 }
@@ -1410,9 +1407,8 @@ namespace V_Max_Tool
                 var v2nfo = Disk.Source.Track[trk].Spec.VMax.V2.GetV2Info();
                 if (rbv || cv2c)
                 {
-                    //var temp = Adjust_V2_Sync(NDS.Track_Data[trk], NDS.D_Start[trk], NDS.D_End[trk], NDS.v2info[trk], false, trk);
                     var temp = Adjust_V2_Sync(Disk.Source.Track[trk].Data, Disk.Source.Track[trk].Length, v2nfo, true, NDS.Sector[trk], Disk.Source.Track[trk].Sectors, fix_weak, patch, trk);
-                    //if (NDS.v2info[trk].Length > 0 && NDS.Loader.Length == 0)
+                    //var temp = Adjust_V2_Sync(ref Disk.Source.Track[trk], true, fix_weak, patch, trk);
                     if (!v2nfo.Any(x => x == 0) && Disk.Loader.Length == 0)
                     {
                         Disk.Loader = new byte[3];
@@ -1434,6 +1430,7 @@ namespace V_Max_Tool
                     var tdata = new byte[0];
                     (tdata, Disk.Adjusted.Track[trk].Start, Disk.Adjusted.Track[trk].End, Disk.Adjusted.Track[trk].SectorZero) =
                         Rebuild_V2(Disk.Original.TrackData[trk], Disk.Source.Track[trk].Sectors, v2nfo, trk, Disk.G64.NewHeader, NDS.Sector[trk], fix_weak);
+                    //tdata = Rebuild_V2(ref Disk.Source.Track[trk], Disk.Original.TrackData[trk], ref Disk.Adjusted.Track[trk], Disk.G64.NewHeader, fix_weak);
                     //tdata = new byte[7100];
                     Set_Dest_Arrays(tdata, trk);
                 }
@@ -1545,12 +1542,11 @@ namespace V_Max_Tool
                 if (avp) temp = Rebuild_Vorpal(Disk.Original.TrackData[trk], trk, lead);
                 else
                 {
-                    BitArray source = new BitArray(Flip_Endian(Disk.Source.Track[trk].Data));
                     BitArray dest = new BitArray(Disk.Source.Track[trk].Length + 1);
-                    int pos = NDS.Header_Len[trk];
+                    int pos = Disk.Source.Track[trk].SectorZero;
                     for (int i = 0; i < Disk.Source.Track[trk].Length + 1; i++)
                     {
-                        dest[i] = source[pos++];
+                        dest[i] = Disk.Source.Track[trk].Bits[pos++];
                         if (pos == Disk.Source.Track[trk].End + 1) pos = Disk.Source.Track[trk].Start;
                     }
                     temp = Bit2Byte(dest);
@@ -1580,7 +1576,7 @@ namespace V_Max_Tool
 
             void Process_Rainbow(int trk)
             {
-                var temp = RainbowArts(Disk.Source.Track[trk].Data, NDS.Header_Len[trk]);
+                var temp = RainbowArts(Disk.Source.Track[trk].Data, Disk.Source.Track[trk].BitShift);
                 Set_Dest_Arrays(temp, trk);
             }
 
@@ -1929,7 +1925,7 @@ namespace V_Max_Tool
                         if (i + 1 < dataLength && data[i] == 0xff && data[i + 1] == securispeed[1] &&
                             MatchSeq(data, securispeed, i) && padding)
                         {
-                            if (modNDS) NDS.Header_Len[track] = h;
+                            if (modNDS) Disk.Source.Track[track].BitShift = h;
                             return 11;
                         }
                         // Check for GMA
@@ -1946,7 +1942,7 @@ namespace V_Max_Tool
                             }
                             if (m && padding)
                             {
-                                if (modNDS) NDS.Header_Len[track] = h;
+                                if (modNDS) Disk.Source.Track[track].BitShift = h;
                                 return 12;
                             }
                         }
@@ -1962,7 +1958,7 @@ namespace V_Max_Tool
                                 }
                                 if (sync_count >= 108 && sync_count <= 132 && padding)
                                 {
-                                    if (modNDS) NDS.Header_Len[track] = h;
+                                    if (modNDS) Disk.Source.Track[track].BitShift = h;
                                     return 9;
                                 }
                             }
@@ -1974,7 +1970,7 @@ namespace V_Max_Tool
                                 {
                                     if (++ptn > 60)
                                     {
-                                        if (modNDS) NDS.Header_Len[track] = h;
+                                        if (modNDS) Disk.Source.Track[track].BitShift = h;
                                         return 9;
                                     }
                                 }
@@ -2065,7 +2061,9 @@ namespace V_Max_Tool
                     {
                         jump_to[jmp] = db_Text.Length;
                         jmp++;
-                        BitArray trk_data = new BitArray(Flip_Endian(Disk.G64.Track[i].Data));
+                        bool getbits = Disk.G64.Track[i].Bits == null;
+                        //BitArray trk_data = new BitArray(Flip_Endian(Disk.G64.Track[i].Data));
+                        BitArray trk_data = getbits ? new BitArray(Flip_Endian(Disk.G64.Track[i].Data)) : Disk.G64.Track[i].Bits;
                         int[] known_formats = new int[] { 1, 2, 3, 4, 5, 6, 10, 13, 14 };
                         if (Disk.Source.Track[i].Format == 1) if (Disk.Source.Track[i].Sectors >= 5) Disp_CBM(i, trk, trk_data, false); else Disp_STD_GCR(i, trk, trk_data);
                         if (Disk.Source.Track[i].Format == 5) Disp_VPL(i, trk, trk_data);

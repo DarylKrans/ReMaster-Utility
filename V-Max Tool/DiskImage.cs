@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ReMaster_Utility
+namespace V_Max_Tool
 {
     //int[] positions = Disk.{Source/Adjusted/G64}.track[x].GetSectorValues(s => s.Data.Pos);
     //int[] headers = Disk.{Source/Adjusted/G64}.track[x].GetSectorValues(s => s.Header.Pos);
@@ -27,8 +27,14 @@ namespace ReMaster_Utility
         public byte[] TrackID { get; set; } = new byte[0];
         public string[] Info { get; set; } = new string[0];
         public int Sectors { get; set; } = 0;
+        public int GLength { get; set; } = 0;   // Used when importing G64 to set 'Length'
         public BitArray Bits { get; set; } = null;
-        public List<Disk_Sector> Sector = new List<Disk_Sector>();
+        //public BitArray Bits => Data.Length > 0 ? new BitArray(V_Max_Tool.Form1.Flip_Endian(Data)) : null;
+        public List<Sector> Sector = new List<Sector>();
+
+        // Various Protection Modifiers/Info
+        public bool FatTrack { get; set; } = false;
+        public int BitShift { get; set; } = 0;
         public ProtectionSpecifics Spec = new ProtectionSpecifics();
 
         public Disk_Track(double trackNumber = 0)
@@ -36,18 +42,33 @@ namespace ReMaster_Utility
             TrackNumber = trackNumber;
         }
 
-        public int[] GetIntValues(Func<Disk_Sector, int> selector)
+        public void SetBits()
+        {
+            Bits = new BitArray(Form1.Flip_Endian(Data));
+        }
+
+        public void SetData(int start = 0, int length = -1)
+        {
+            Data = Form1.Bit2Byte(Bits, start, length);
+        }
+
+        public void ClearBits()
+        {
+            Bits = null;
+        }
+
+        public int[] GetIntValues(Func<Sector, int> selector)
         {
             return Sector.Select(selector).ToArray();
         }
 
-        public bool[] GetBoolValues(Func<Disk_Sector, bool> selector)
+        public bool[] GetBoolValues(Func<Sector, bool> selector)
         {
             return Sector.Select(selector).ToArray();
         }
     }
 
-    public class Disk_Sector
+    public class Sector
     {
         /// *** Not implemented yet! ***
         // int Format
@@ -57,34 +78,23 @@ namespace ReMaster_Utility
         /// ----------------------------
         public int Format { get; set; } = 0;
         public int ID { get; set; } = -1;
-        public Sector_HeaderData Header = new Sector_HeaderData();
-        public Sector_BlockData Data = new Sector_BlockData();
-    }
+        public int ErrorCode { get; set; } = 1;
+        public Info Header = new Info();
+        public Info Data = new Info();
 
-    public class Sector_HeaderData
-    {
-        public int Pos { get; set; } = -1;
-        public int SyncLen { get; set; } = 0;
-        public byte[] GCR { get; set; } = new byte[0];
-        public byte[] Decoded { get; set; } = new byte[0];
-        public bool Checksum { get; set; } = false;
-        public int SyncPos => Pos - SyncLen;
-    }
-
-    public class Sector_BlockData
-    {
-        public int Pos { get; set; } = -1;
-        public int SyncLen { get; set; } = 0;
-        public byte[] GCR { get; set; } = new byte[0];
-        public byte[] Decoded { get; set; } = new byte[0];
-        public bool Checksum { get; set; } = false;
-        public int SyncPos => Pos - SyncLen;
+        public class Info
+        {
+            public int Pos { get; set; } = -1;
+            public int SyncLen { get; set; } = 0;
+            public byte[] GCR { get; set; } = new byte[0];
+            public byte[] Decoded { get; set; } = new byte[0];
+            public bool Checksum { get; set; } = false;
+            public int SyncPos => Pos - SyncLen;
+        }
     }
 
     public class ProtectionSpecifics
     {
-        public bool FatTrack { get; set; } = false;
-        public int PreDeterminedLength {  get; set; } = 0;
         public PirateSlayer Slayer = new PirateSlayer();
         public VMAX VMax = new VMAX();
         public RapidLok RL = new RapidLok();
@@ -132,6 +142,7 @@ namespace ReMaster_Utility
             public class Version3
             {
                 public byte[] SectorCount { get; set; } = new byte[0]; // Track 18's list of v-max sectors for each track
+                public int HeaderLength { get; set; } = 0;
             }
         }
 
@@ -159,8 +170,8 @@ namespace ReMaster_Utility
         public bool Cart_Protection { get; set; } = false;
         public bool External_Protection { get; set; } = false;
         public string ProtectionType { get; set; } = string.Empty;
-        public byte[] DiskID { get; set; } = new byte[0];
-        public byte[] Loader { get; set; } = new byte[0]; 
+        public byte[] DiskID { get; set; } = new byte[] { 0x30, 0x30, 0x0f, 0x0f };
+        public byte[] Loader { get; set; } = new byte[0];
 
         public ImportedDisk(int len = 0)
         {
