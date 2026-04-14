@@ -193,7 +193,8 @@ namespace V_Max_Tool
                     if (secnum == sector)
                     {
                         var sec_data = Bit2Byte(source, p, inc);
-                        var decoded = Decode_Vorpal_GCR(sec_data);
+                        //var decoded = Decode_Vorpal_GCR(sec_data);
+                        (var decoded, _) = Decode_CBM_GCR(sec_data, 5);
                         bool isone = source[p + 1290];
                         bool pass = GetVorpal_Checksum(decoded, CopyFrom(sec_data, 160, 2));
                         return dec ? (decoded, pass, isone, p) : (sec_data, pass, isone, p);
@@ -237,10 +238,21 @@ namespace V_Max_Tool
             return BitCopy(new BitArray(Flip_Endian(b)), 0, 9);
         }
 
+        //bool GetVorpal_Checksum(byte[] data, byte[] GCR_value)
+        //{
+        //    var cksm = 0;
+        //    var ck = CombineNibbles_VPL(VPL_decode_high[GCR_value[0] >> 3], VPL_decode_low[((GCR_value[0] << 2) | (GCR_value[1] >> 6)) & 0x1f]);
+        //    for (int i = 0; i < 128; i++) cksm ^= data[i];
+        //    return ck == cksm;
+        //}
+
         bool GetVorpal_Checksum(byte[] data, byte[] GCR_value)
         {
+            var dummy = 0;
             var cksm = 0;
-            var ck = CombineNibbles_VPL(VPL_decode_high[GCR_value[0] >> 3], VPL_decode_low[((GCR_value[0] << 2) | (GCR_value[1] >> 6)) & 0x1f]);
+            var ck = CombineNibbles(ref dummy
+                , (byte)(GCR_value[0] >> 3), (byte)(((GCR_value[0] << 2) | (GCR_value[1] >> 6)) & 0x1f)
+                , VPL_decode_high, VPL_decode_low);
             for (int i = 0; i < 128; i++) cksm ^= data[i];
             return ck == cksm;
         }
@@ -298,7 +310,8 @@ namespace V_Max_Tool
                                     last_sec = cur_pos + 17 + secLen + 20;
                                     if (!batch)
                                     {
-                                        byte[] secdata = Decode_Vorpal_GCR(Bit2Byte(source, cur_pos + 17, secLen));
+                                        //byte[] secdata = Decode_Vorpal_GCR(Bit2Byte(source, cur_pos + 17, secLen));
+                                        (byte[] secdata, _) = Decode_CBM_GCR(Bit2Byte(source, cur_pos + 17, secLen), 5);
                                         var ckm = GetVorpal_Checksum(secdata, Bit2Byte(source, cur_pos + 17 + secLen, 10));
                                         vcksm = ckm ? "(OK)" : "(Failed!)";
                                         if (!ckm) err.Add(sectors);

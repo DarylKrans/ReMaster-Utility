@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -16,7 +17,7 @@ namespace V_Max_Tool
     {
         //private readonly int[] vpl_density = { 7750, 7106, 6635, 6230 }; // <- original values used by ReMaster for faster writing RPM
         private static bool Auto_Adjust = true; // <- Sets the Auto Adjust feature for V-Max and Vorpal images (for best remastering results)
-        private static readonly string ver = " v1.3";
+        private static readonly string ver = " v1.4 (test build - 04132026)";
         private static readonly string fix = "_ReMaster";
         private static readonly string mod = "_ReMaster"; // _(modified)";
         private static readonly string vorp = "_ReMaster"; //(aligned)";
@@ -135,6 +136,9 @@ namespace V_Max_Tool
             RunBusy(Init);
             Set_ListBox_Items(true, true);
 
+            //byte[] f = File.ReadAllBytes($@"c:\test\testheader.bin");
+            //Text = Hex_Val(Decode_CBM_GCR(f).decoded);
+
             ///---------- Cart-Patch sector processing helpers
             //Bossdos(File.ReadAllBytes($@"c:\test\bd_raw4.bin"));
             //secF
@@ -199,6 +203,7 @@ namespace V_Max_Tool
         {
             Disable_Core_Controls(true);
             Blk_pan.Enabled = false;
+            TurnOffBMSecView();
             try
             {
                 Data_Box.Clear();
@@ -209,6 +214,7 @@ namespace V_Max_Tool
                 if (ext == ".nib" || ext == ".nbz") process = Import_NIB(file, ext == ".nbz");
                 if (ext == ".g64" || ext == ".z64") process = Import_G64(file, ext == ".z64");
                 if (ext == ".d64") process = Import_D64(file);
+                if (Disk != null) Disk.FileName = file;
                 if (process) Process(get, "");
             }
             catch (Exception ex)
@@ -240,10 +246,10 @@ namespace V_Max_Tool
 
             void Process(bool get, string l2)
             {
+                Console.WriteLine($"----------\nFileName : {Path.GetFileName(Disk.FileName)}\n----------");
                 Batch_List_Box.Visible = false;
                 Dir_screen.Clear();
                 Dir_screen.Text = "LOAD\"$\",8\nSEARCHING FOR $\nLOADING";
-                //loader_fixed = false;
                 Worker_Main?.Abort();
                 Worker_Main = new Thread(new ThreadStart(() => Do_work(file)));
                 Worker_Main.Start();
@@ -254,41 +260,53 @@ namespace V_Max_Tool
         {
             Stopwatch parse = new Stopwatch();
             Stopwatch proc = new Stopwatch();
+            string process = "Parse_Nib_Data";
             try
             {
+                Stopwatch _parse = Stopwatch.StartNew();
+                Console.WriteLine("Parsing Image");
                 parse = Parse_Nib_Data();
+                _parse.Stop();
+                Console.WriteLine($"Parsing Completed in ({_parse.Elapsed.TotalSeconds:0.0000}ms)");
             }
             catch { }
             if (!error)
             {
                 Invoke(new Action(() =>
                 {
-                    try
+                    process = "Process_Nib_Data";
+                    //try
                     {
                         proc = Process_Nib_Data(true, false, true);
                         if (DB_timers.Checked) Invoke(new Action(() => label2.Text = $"Parse time : {parse.Elapsed.TotalMilliseconds} ms, Process time : {proc.Elapsed.TotalMilliseconds} ms, Total {parse.Elapsed.TotalMilliseconds + proc.Elapsed.TotalMilliseconds} ms"));
+                        process = "Set_ListBox_Items";
                         Set_ListBox_Items(false, false);
+                        process = "Set_Dir";
                         Set_Dir(Get_Disk_Directory());
+                        process = "Set_Blockmap";
                         Set_BlockMap();
                         Source.Visible = Output.Visible = true;
                         label1.Text = $"{fname}{fext}";
                         M_render.Enabled = true;
+                        process = "Set_Buttons_Active";
                         Set_Buttons_Active();
                         Blk_pan.Enabled = true;
+                        process = "AddRecentFile";
                         if (recent) AddRecentFile(file);
                         P_Cart.Visible = Disk.Cart_Protection || (RemMan && Disk.External_Protection);
                     }
-                    catch (Exception ex)
+                    //catch (Exception ex)
                     {
                         if (!batch)
                         {
-                            using (Message_Center center = new Message_Center(this)) // center message box
-                            {
-                                string t = "Something went wrong!";
-                                string s = ex.Message;
-                                MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            }
-                            Reset_to_Defaults();
+                            //using (Message_Center center = new Message_Center(this)) // center message box
+                            //{
+                            //    string t = "Something went wrong!";
+                            //    string s = $"{ex.Message}\nin process {process}";
+                            //    Console.WriteLine(s);
+                            //    MessageBox.Show(s, t, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            //}
+                            //Reset_to_Defaults();
                         }
                     }
                     if (!batch && ErrorList.Count > 0)
@@ -300,7 +318,7 @@ namespace V_Max_Tool
                         s += norepair ? "\nThis image cannot be repaired (yet)\nOutput image may not work" : "\n Would you like to (attempt) repairing?";
                         using (Message_Center center = new Message_Center(this)) // center message box
                         {
-                            string t = "File Integrity Warning!";
+                            string t = $"File Integrity Warning!";
                             DialogResult result = MessageBox.Show(s, t, norepair ? MessageBoxButtons.OK : MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                             if (result == DialogResult.Yes) Fix_Errors();
                         }
@@ -1074,6 +1092,17 @@ namespace V_Max_Tool
         private void ReAlign_v3_CheckedChanged(object sender, EventArgs e)
         {
             V3_Auto_Adjust();
+        }
+
+        private void FontCbox_CheckedChanged(object sender, EventArgs e)
+        {
+            SetBlockMapFonts();
+            if (Adv_ctrl.SelectedTab.Name == "Data_View") Data_Viewer();
+            if (Disk.Source.Track.Length > 0)
+            {
+                Default_Dir_Screen();
+                Set_Dir(Get_Disk_Directory());
+            }
         }
     }
 }

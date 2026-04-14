@@ -182,7 +182,7 @@ namespace V_Max_Tool
             return (newkey, _key);
         }
 
-        (byte[], int, int, int, int, int, string[]) RapidLok_Track_Info(byte[] data, int trk, bool build, byte[] track_ID, int rl_7b_len = 0)
+        (byte[] data, int start, int end, int len, int sectors, int sblen, string[] info) RapidLok_Track_Info(byte[] data, int trk, bool build, byte[] track_ID, int rl_7b_len = 0)
         {
             bool sevenb = false, trk_id = false, start_found = false, end_found = false, sync = false;
             int d_start = 0, d_end = 0, sectors = 0, pos = 0, sevenb_pos = 0, snc_cnt = 0; //, dpos = 0;

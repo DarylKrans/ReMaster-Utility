@@ -558,7 +558,8 @@ namespace V_Max_Tool
             PVbox.ForeColor = c64_text;
             PVbox.Location = new Point(BrowseDB.Width - 17, 0);
             PVbox.Height = BrowseDB.Height - 38;
-            PVbox.Font = new Font(DirFont.Families[0], 7.875f, FontStyle.Regular);
+            //PVbox.Font = new Font(DirFont.Families[0], 7.875f, FontStyle.Regular);
+            PVbox.Font = GetFont(7.875f);
             PVbox.BringToFront();
             PVbox.Visible = false;
             dbSearch.BringToFront();

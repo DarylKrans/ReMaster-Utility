@@ -78,26 +78,26 @@ namespace V_Max_Tool
                 if (Encoding.ASCII.GetString(g64_header, 0, 8) == "GCR-1541")
                 {
                     tracks = Math.Min(Convert.ToInt32(g64_header[9]), 82);
+                    int gTrack = tracks;
                     Set_Arrays(tracks);
                     for (int i = 0; i < tracks; i++)
                     {
                         Disk.Original.TrackData[i] = new byte[0];
                         int pos = BitConverter.ToInt32(g64_header, 12 + (i * 4));
+                        int den = BitConverter.ToInt32(g64_header, 20 + (gTrack << 2) + (i * 4));
                         if (pos != 0)
                         {
                             try
                             {
                                 short ts = BitConverter.ToInt16(decomp, pos);
                                 var tdata = CopyArray(decomp, pos + 2, ts);
-                                //(int r, int ln) = FindLongestRun_General(tdata);
-                                //if (r > 0 && ln > 0) tdata = Rotate_Left(tdata, r + ln);
                                 int r = FindLongestRun_Specific(tdata, 0xff);
                                 if (r > 0) tdata = Rotate_Left(tdata, r);
                                 Disk.G64.Track[i].GLength = tdata.Length;
                                 var temp = FillArray(tdata, NIB_TRACK_LEN);
                                 Disk.Source.Track[i].Data = temp;
+                                Disk.Source.Track[i].Density = den;
                                 Disk.Source.Track[i].SetBits();
-                                //Disk.Source.Track[i].Bits = new BitArray(Flip_Endian(temp));
                             }
                             catch { }
                         }

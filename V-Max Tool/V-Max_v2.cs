@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml.Linq;
 
 namespace V_Max_Tool
 {
@@ -73,10 +72,10 @@ namespace V_Max_Tool
                                         Pos = dpos + 1,
                                         Checksum = checksum
                                     },
-                                   Header = new Sector.Info
-                                   {
-                                       Pos = pos + 1
-                                   }
+                                    Header = new Sector.Info
+                                    {
+                                        Pos = pos + 1
+                                    }
                                 });
                             }
                             else if (t && sec < 22) pos += (300 + dpos - 1) << 3;
@@ -374,24 +373,24 @@ namespace V_Max_Tool
             List<string> sf = new List<string>();
             for (int i = 0; i < sectors; i++)
             {
-                    if (!use_new_Headers)
+                if (!use_new_Headers)
+                {
+                    header[i] = Hex2Byte(vm2_ver[t_info[3]][i]);
+                    sec_dat[i] = sector_data[i];
+                }
+                else
+                {
+                    bool older = header2 == 0x46;
+                    header[i] = Hex2Byte(vm2_ver[0][i]);
+                    sec_dat[i] = CopyArray(sector_data[i]);
+                    for (int j = 0; j < sec_dat[i].Length; j++)
                     {
-                        header[i] = Hex2Byte(vm2_ver[t_info[3]][i]);
-                        sec_dat[i] = sector_data[i];
+                        if (sec_dat[i][j] == 0xa3) sec_dat[i][j] = 0xad;
+                        if (sec_dat[i][j] == 0xe2) sec_dat[i][j] = 0xea;
                     }
-                    else
-                    {
-                        bool older = header2 == 0x46;
-                        header[i] = Hex2Byte(vm2_ver[0][i]);
-                        sec_dat[i] = CopyArray(sector_data[i]);
-                        for (int j = 0; j < sec_dat[i].Length; j++)
-                        {
-                            if (sec_dat[i][j] == 0xa3) sec_dat[i][j] = 0xad;
-                            if (sec_dat[i][j] == 0xe2) sec_dat[i][j] = 0xea;
-                        }
-                    }
-                    //if (track_num == 19 && i == 14 && P_Cart.Checked) sec_dat[i] = Find_Cart_Protection_v2_Compressed(sector_data[i], true, use_new_Headers).Item2;
-                    if (P_Cart.Checked || batch) sec_dat[i] = Find_Cart_Protection_v2(sec_dat[i], track_num == 19, use_new_Headers).Item2;
+                }
+                //if (track_num == 19 && i == 14 && P_Cart.Checked) sec_dat[i] = Find_Cart_Protection_v2_Compressed(sector_data[i], true, use_new_Headers).Item2;
+                if (P_Cart.Checked || batch) sec_dat[i] = Find_Cart_Protection_v2(sec_dat[i], track_num == 19, use_new_Headers).Item2;
             }
             int hlen = (((t_dens - (sec_dat.Where(x => x != null).Sum(x => x.Length) + t_sync + 15)) / sectors) >> 1) - 1;
             using (var buffer = new MemoryStream())
@@ -409,7 +408,7 @@ namespace V_Max_Tool
                 if (t_dens - (int)buffer.Position > 0) write.Write(FastArray.Init(t_dens - (int)buffer.Position, 0x55));
                 return (buffer.ToArray(), 0, (int)buffer.Length, sectors);
             }
-        
+
             byte[] Build_Header(byte[] ID, int len)
             {
                 var secn = FastArray.Init(len << 1, ID[0]);
@@ -654,16 +653,16 @@ namespace V_Max_Tool
                 pos++;
             }
             all_headers[0] += $" {snc}";
-        
+
             if (data_end < data_start) data_end = source.Length;
-        
+
             byte[] tmpdata = Bit2Byte(source, data_start, data_end - data_start);
             int rotate = FindTrackGap(tmpdata, true, new byte[] { 0x64 });
             if (rotate > 0) tmpdata = Rotate_Left(tmpdata, rotate);
             byte[] tdata = FillArray(tmpdata ?? (new byte[0]), 8192);
             if (!batch && err.Count > 0) foreach (var e in err) ErrorList.Add($"Checksum failed on track {tr}, sector {e}");
             return (tdata, data_start >> 3, data_end >> 3, sec_zero >> 3, tmpdata.Length << 3, all_headers.ToArray(), headers.Count, 0, track_info, sec_data.ToArray(), cartP);
-        
+
             void Get_Header_Bytes(byte[] hdr)
             {
                 start_byte = hdr[0];
@@ -681,7 +680,7 @@ namespace V_Max_Tool
                     }
                 }
             }
-        
+
             void Check_Ver(byte[] hdr)
             {
                 for (int i = 0; i < v_check.Length; i++)
@@ -694,7 +693,7 @@ namespace V_Max_Tool
                 }
                 track_info[3] = (byte)vs;
             }
-        
+
             bool Get_Checksum(byte[] d)
             {
                 if (d == null) return false;
@@ -880,7 +879,7 @@ namespace V_Max_Tool
             int r = 0;
             source = new BitArray(Flip_Endian(Rotate_Left(Bit2Byte(source), r)));
             byte[] temp_data = Bit2Byte(source);
-        
+
             if (Fix_Sync) /// <- if the "Fix_Sync" bool is true, otherwise just return track info without any adjustments
             {
                 byte[] ignore = new byte[] { 0x7e, 0x7f, 0xff, 0x5f, 0xbf, 0x57, 0x5b }; /// possible sync markers to ignore when building track
@@ -915,7 +914,7 @@ namespace V_Max_Tool
                     else snc = 0;
                     if ((cmp & 0xff) == start_byte)
                     {
-        
+
                         try
                         {
                             var a = Bit2Byte(source, posi - 7, Math.Min(60 << 3, source.Length - posi));
@@ -936,11 +935,11 @@ namespace V_Max_Tool
                                 int num = (a[1] ^ a[2]);
                                 byte sb0 = (byte)((cmp >> 16) & 0xff);
                                 byte sb1 = (byte)((cmp >> 8) & 0xff);
-        
+
                                 cursnc = sec == 0 ? true : ((sb0 & 0x07) == 0x03 && sb1 == 0xff)
                                     || (ignore.Any(x => x == sb0) || ignore.Any(x => x == sb1));
                                 if ((times == 0 && sb0 == 0x7f && sb1 == 0x7f) || times == 2) dbl = true;
-        
+
                                 while (a[hlen] != end_byte) hlen++;
                                 var headlen = V2_Custom.Checked ? sector_header : hlen - 1;
                                 var newpos = posi + 1 + (hlen << 3);
@@ -1009,7 +1008,7 @@ namespace V_Max_Tool
                     if (post.Length > 0) BitAppend(new BitArray(Flip_Endian(post)), dest);
                     return Bit2Byte(new BitArray(dest.ToArray()));
                 }
-        
+
                 byte[] Build_Header(byte s, byte e, byte[] f, int len)
                 {
                     using (var buff = new MemoryStream())

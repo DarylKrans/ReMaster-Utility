@@ -5,12 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Management.Instrumentation;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
-using static V_Max_Tool.ImportedDisk;
 
 /// CBM Block Header structure
 /// 8 plain bytes converted to 10 GCR bytes
@@ -72,6 +69,10 @@ namespace V_Max_Tool
         private static readonly byte cbm_gap = 0x55;
         int SelectionLength = 0;
 
+
+        //private static HashSet<byte[]> vldHashes = new HashSet<byte[]>();
+        private static HashSet<byte[]> _vHash = new HashSet<byte[]>();
+
         byte[] Rebuild_CBM(byte[] data, int sectors, byte[] Disk_ID, int t_density, int trk, int start, bool cyan = false)
         {
             if (!(data?.Length > 0)) return null;
@@ -121,48 +122,115 @@ namespace V_Max_Tool
             return buffer.ToArray();
         }
 
-        void CBM_Track_Info(ref Disk_Track T, ref bool cart, ref bool manual)
+        (bool cart, bool manual) CBM_Track_Info(ref Disk_Track T, bool countErrors = true)
         {
             int track = (int)T.TrackNumber;
             if (T.Bits == null)
             {
-                if (T.Data == null || T.Data.Length == 0) return;
+                if (T.Data == null || T.Data.Length == 0) return (false, false);
                 T.Bits = new BitArray(Flip_Endian(T.Data));
             }
             BitArray source = T.Bits;
-            int pos = 0, trackID = 0, sncCnt = 0, tSync = 0, minSnc = 10, blkLen = 325 << 3;
-            bool startFound = false, endFound = false, sezZero = false, sSync = false, secZero = false;
-            bool manP = false, cartP = false;  // tracks manual lookup / cartridge check bools
+            byte[] _psec = track == 18 ? new byte[] { 0x55, 0x5b, 0x5d } : new byte[] { 0x55 };
+            int pos = 0, trackID = 0, sncCnt = 0, tSync = 0, minSnc = 10, blkLen = 325 << 3, vplLen = 513 << 3;
+            bool startFound = false, endFound = false, secZero = false, vpLDR = false;
+            bool manP = false, cartP = false, mps = false, vpl = false;  // tracks manual lookup / cartridge check bools
             string repeatSector = string.Empty;
+            byte[] _trackID = new byte[0];
+            byte _fbyte = 0;
             List<string> err = new List<string>();
             List<string> headers = new List<string>();
             List<int> sectors = new List<int>();
             List<Sector> _sectors = new List<Sector>();
-            Compare(ref T, ref cart, ref manual, pos);
+            List<uint> _vldPos = new List<uint>();
+            // - Main loop to find sectors
+            Compare(ref T, pos);
             while (pos < source.Length - 32)
             {
                 if (source[pos]) sncCnt++;
                 else
                 {
-                    if (sncCnt >= minSnc) Compare(ref T, ref cart, ref manual, pos);
+                    if (sncCnt >= minSnc) Compare(ref T, pos);
                     sncCnt = 0;
                 }
                 if (endFound) break;
                 pos++;
             }
-            manual = manP;
-            cart = cartP;
+            // - Main loop end. All unique sectors found (doesn't account for duplicates -some protections may fail)
+            if (!endFound)
+            {
+                if (startFound && !endFound && T.Start == 0)
+                {
+                    T.End = (density[density_map[track - 1]] + 80) << 3;
+                    T.Adjust = false;
+                }
+                else T.End = source.Length - 1;
+            }
+            // Find highest sector ID found
+            int _maxID = _sectors.Max(s => s.ID);
+            int maxSector = Math.Max(_maxID, Available_Sectors[(int)T.TrackNumber] - 1);
+            int _firstNotFound = -1;
+            // Add missing sectors with ErrorCode 2 (header not found)
+            for (int i = 0; i <= maxSector; i++)
+            {
+                if (!_sectors.Any(s => s.ID == i))
+                {
+                    if (debug) Console.WriteLine($"Track {track} Sector {i} : Not Found!");
+                    if (_firstNotFound == -1) _firstNotFound = i;
+                    _sectors.Add(new Sector
+                    {
+                        ID = i,
+                        ErrorCode = 2,
+                        //Format = 0 // Only set to 0 if Sector class 'Format' default is -1
+                    });
+                }
+            }
+            if (_vldPos.Count == 4) GetVorpalLoaderSectors(ref T, _firstNotFound, _vldPos.ToArray());
+
+            if (debug)
+            {
+                if (track == 18 && vpLDR) Console.WriteLine($"track {track} max Sector ID {_maxID}, First not found {_firstNotFound} has Vorpal Loader? ({_vldPos.Count == 4 || vpLDR}) Uses Standard headers? ({T.Spec.VL.Sectors < 0})");
+                if (T.Spec.VL.Sectors > 0)
+                {
+
+                    Console.WriteLine("---------- Vorpal Loader Injection (no sector headers) -----------");
+                    Console.WriteLine($"Inject loader at sector {T.Spec.VL.InjectAt} Total Sectors {T.Spec.VL.Sectors}");
+                    foreach (var s in T.Spec.VL.Sector)
+                    {
+                        bool cksm = s.Data.Checksum; // VerifyHash(s.Data.Hash, _vHash);
+                        string info = $"Track Pos: {s.Data.Pos >> 3}, Sync Length: {s.Data.SyncLen} (bits), Sector Pos: {s.ID}, GCR Length: {s.Data.GCR.Length} (bytes), Loader ID byte: ${Hex_Val(s.Data.GCR, 0, 1)} Valid? {cksm}";
+                        Console.WriteLine(info);
+                    }
+                    Console.WriteLine("------------------------------------------------------------------");
+                }
+                else if (vpLDR)
+                {
+                    foreach (var s in _sectors.Where(x => x.Format == 3))
+                    {
+                        bool cksm = s.Data.Checksum; // VerifyHash(s.Data.Hash, _vHash);
+                        foreach (var h in _vHash) if (MatchSeq(h, s.Data.Hash)) { cksm = true; break; }
+                        Console.WriteLine($"{Hex_Val(s.Data.Hash)} {cksm}");
+                    }
+                }
+            }
+
+            if (T.CBMTrack == 0 && trackID != 0) T.CBMTrack = trackID;
+            if (!secZero && _trackID.Length == 4) T.TrackID = _trackID;
+            if (mps) T.Format = 10;
+            if (vpl) T.Format = 15;
             T.Length = T.End - T.Start;
             T.Sectors = sectors.Count;
             T.Sector = _sectors;
+            FindGaps(ref T);
             AddInfo(ref T);
-            if (!batch && err.Count > 0)
+            if (!batch && countErrors && err.Count > 0)
             {
                 int errtk = track;
                 foreach (var s in err) ErrorList.Add($"Parity failed on track {errtk} sector {s}");
             }
+            return (cartP, manP);
 
-            void Compare(ref Disk_Track _T, ref bool _cart, ref bool _man, int p)
+            void Compare(ref Disk_Track _T, int p)
             {
                 if (p + 80 < source.Length)
                 {
@@ -171,11 +239,13 @@ namespace V_Max_Tool
                     if (_gcr[0] == 0x52 && dec[2] < 21 && dec[3] > 0 && dec[3] <= 42)
                     {
                         int secID = dec[2];
+                        trackID = dec[3]; // save for later incase needed
                         if (!sectors.Any(x => x == secID))
                         {
                             sectors.Add(secID);
                             if (!startFound)
                             {
+                                if (_trackID.Length == 0) _trackID = CopyArray(dec, 4, 4);
                                 startFound = true;
                                 _T.Start = p - sncCnt;
                             }
@@ -188,20 +258,33 @@ namespace V_Max_Tool
                             }
                             (bool blkSync, int sncLen, int blkPos) = CheckforBlockSync(p + 80);
                             Sector sector = new Sector { ID = secID };
-                            bool hdrCksum = GetCBMChecksum(dec, 2, 4, 1);
+                            (bool hdrCksum, byte actual, byte compare) = GetCBMChecksum(dec, 2, 4, 1);
                             sector.Header = new Sector.Info
                             {
                                 Pos = p,
                                 SyncLen = sncCnt,
                                 GCR = _gcr,
                                 Decoded = dec,
-                                Checksum = hdrCksum
+                                Checksum = hdrCksum,
+                                ChecksumActual = actual,
+                                ChecksumExpected = compare
                             };
-                            if (blkSync && sncLen != -1 && blkPos != -1) GetCBMSector(ref sector, sncLen, blkPos);
-                            if (!blkSync && sncLen == -2 && blkPos == -2)
+                            if (blkPos != -1)
                             {
-                                GetMicroProseSector(ref sector, track, p + 80);
+                                _fbyte = Bit2Byte(source, blkPos == -2 ? p + 80 : blkPos, 8)[0];
+                                if (_psec.Contains(_fbyte))
+                                {
+                                    if (_fbyte == 0x55)
+                                    {
+                                        if (blkSync && sncLen != -1 && blkPos != -1) GetCBMSector(ref sector, sncLen, blkPos);
+                                        if (!blkSync && sncLen == -2 && blkPos == -2) GetMicroProseSector(ref sector, track, p + 80);
+                                    }
+                                    else if (_fbyte == 0x5b || _fbyte == 0x5d)
+                                        GetVorpalLoader(ref sector, sncLen, blkPos);
+                                }
+                                if (sector.Data.Checksum) pos += _fbyte == 0x55 ? blkLen : vplLen;
                             }
+                            else pos += 80;
                             _sectors.Add(sector);
                         }
                         else
@@ -216,8 +299,14 @@ namespace V_Max_Tool
                             _T.End = p - sncCnt;
                         }
                     }
+                    else if (sncCnt >= 10 && track == 18 && (_gcr[0] == 0x5b || _gcr[0] == 0x5d))
+                    {
+                        uint _p = ((uint)p << 16) | (uint)sncCnt;
+                        _vldPos.Add(_p);
+                    }
                 }
             }
+
 
             (bool hasSync, int length, int position) CheckforBlockSync(int p)
             {
@@ -240,49 +329,71 @@ namespace V_Max_Tool
 
             void GetCBMSector(ref Sector _sector, int _sncLen, int _blkPos)
             {
+                if (_blkPos + blkLen >= source.Length) return;
                 var _gcr = Bit2Byte(source, _blkPos, blkLen);
                 (var _dec, var _illegal) = Decode_CBM_GCR(_gcr);
-                bool checksum = GetCBMChecksum(_dec, 1, 256, 257);
+                (bool checksum, byte actual, byte compare) = GetCBMChecksum(_dec, 1, 256, 257);
+                _sector.Format = 0;
                 if (_illegal > 30)
                 {
-                    (var _decv, var _checksumv, var _illegalv) = Decode_eVPL(CopyArray(_gcr, 3));
+                    (var _decv, var _checksumv, var _illegalv, var _expected, var _actual) = Decode_eVPL(CopyArray(_gcr, 3));
                     if (_illegalv < 10)
                     {
                         _sector.Format = 1;
                         checksum = _checksumv;
                         _dec = _decv;
                         _illegal = _illegalv;
+                        actual = _actual;
+                        compare = _expected;
+                        if (!vpl) vpl = true;
                     }
                 }
                 if (!checksum && _sector.Format > 0) err.Add($"{_sector.ID}");
+                byte[] gap = new byte[0];
                 if (_sector.Format < 1 && !cartP)
                 {
-                    cartP = Find_VMax_Cart_CBM(CopyArray(_dec, 1, 256), track, _sector.ID).has_cart;
+                    cartP = Find_VMax_Cart_CBM(_dec, track, _sector.ID).has_cart;
                 }
-                AddSector(ref _sector, _blkPos, _sncLen, _gcr, _dec, checksum);
+                AddSector(ref _sector, _blkPos, _sncLen, _gcr, _dec, checksum, actual, compare, _illegal);
             }
 
-            void GetMicroProseSector(ref Sector _sector, int trackNum, int p)
+            void GetVorpalLoader(ref Sector _sector, int _sncLen, int _blkPos)
             {
-                _sector.Format = 2;
-                var _gcr = Bit2Byte(source, p, blkLen);
-                var _dec = Decode_CBM_GCR(_gcr).decoded;
-                bool checksum = GetCBMChecksum(_dec, 1, 256, 257);
-                if (!checksum) err.Add($"{_sector.ID}");
-                if (!manP) manP = Find_MPS_Manual(ArrayConcat(_sector.Header.GCR, _gcr), trackNum, _sector.ID).has_manual;
-                AddSector(ref _sector, p, 0, _gcr, _dec, checksum);
+                if (_blkPos + vplLen >= source.Length) return;
+                var _gcr = Bit2Byte(source, _blkPos, vplLen);
+                var _dec = Decode_VorpalLoader(_gcr);
+                _sector.Format = 3;
+                AddSector(ref _sector, _blkPos, _sncLen, _gcr, _dec, true, 0x00, 0x00);
+                _sector.Data.GetHash();
+                _sector.Data.Checksum = VerifyHash(_sector.Data.Hash, _vHash);
+                vpLDR = true;
+
             }
-            
-            bool GetCBMChecksum(byte[] data, int start, int length, int parity)
+
+            void GetMicroProseSector(ref Sector _sector, int trackNum, int _pos)
             {
-                if (data == null || data.Length < Math.Max(start + length, parity)) return false;
+                if (_pos + blkLen >= source.Length) return;
+                _sector.Format = 2;
+                var _gcr = Bit2Byte(source, _pos, blkLen);
+                var _dec = Decode_CBM_GCR(_gcr).decoded;
+                (bool checksum, byte actual, byte compare) = GetCBMChecksum(_dec, 1, 256, 257);
+                if (!checksum) err.Add($"{_sector.ID}");
+                if (!manP) manP = Find_MPS_Manual(ArrayConcat(_sector.Header.Decoded, _dec), trackNum, _sector.ID).has_manual;
+                AddSector(ref _sector, _pos, 0, _gcr, _dec, checksum, actual, compare);
+                if (!mps) mps = true;
+            }
+
+            (bool, byte actual, byte expected) GetCBMChecksum(byte[] data, int start, int length, int parity)
+            {
+                if (data == null || data.Length < Math.Max(start + length, parity)) return (false, 0, 0);
                 byte compare = data[parity];
                 byte checksum = 0;
                 for (int i = start; i < (start + length); i++) checksum ^= data[i];
-                return checksum == compare;
+                return (checksum == compare, checksum, compare);
             }
 
-            void AddSector(ref Sector _sector, int position, int _snc, byte[] _gcr, byte[] _dec, bool _checksum)
+            void AddSector(ref Sector _sector, int position, int _snc, byte[] _gcr
+                , byte[] _dec, bool _checksum, byte actual, byte compare, int _illegal = 0)
             {
                 _sector.Data = new Sector.Info
                 {
@@ -290,8 +401,69 @@ namespace V_Max_Tool
                     GCR = _gcr,
                     Decoded = _dec,
                     Checksum = _checksum,
-                    SyncLen = _snc
+                    SyncLen = _snc,
+                    Illegal = _illegal,
+                    ChecksumActual = actual,
+                    ChecksumExpected = compare
                 };
+            }
+
+            void FindGaps(ref Disk_Track _T)
+            {
+                for (int i = 0; i < _T.Sector.Count; i++)
+                {
+                    byte[] hGap = new byte[0], sGap = new byte[0];
+                    int hGlen = 0, sGlen = 0;
+                    var _h = _T.Sector[i].Header;
+                    var _s = _T.Sector[i].Data;
+                    var _h1 = i + 1 < _T.Sector.Count ? _T.Sector[i + 1].Header : null;
+
+                    if (_h.GCR.Length == 10)
+                    {
+                        var _hpos = _h.Pos + (_h.GCR.Length << 3);
+                        hGlen = _s.Pos - _s.SyncLen - _hpos;
+                        if (hGlen < 0) hGlen = 0;
+                        else hGap = Bit2Byte(source, _hpos, hGlen);
+                    }
+
+                    if (_h1 != null)
+                    {
+                        var startPos = _s.Pos + (_s.GCR.Length << 3);
+                        sGlen = _h1.Pos - _h1.SyncLen - 1 - startPos;
+
+                        if (sGlen < 0) sGlen = 0;
+                        else sGap = Bit2Byte(source, startPos, sGlen);
+                    }
+                    _s.TailGap = sGap;
+                    _h.TailLength = hGlen;
+                    _h.TailGap = hGap;
+                    _s.TailLength = sGlen;
+                }
+            }
+
+            void GetVorpalLoaderSectors(ref Disk_Track _T, int _first, uint[] sec_pos)
+            {
+                List<Sector> _vLoader = new List<Sector>();
+                for (int i = 0; i < sec_pos.Length; i++)
+                {
+                    int snc = (int)sec_pos[i] & 0xffff;
+                    int _pos = (int)(sec_pos[i] >> 16) & 0xffff;
+                    Sector s = new Sector { ID = _first };
+                    GetVorpalLoader(ref s, snc, _pos);
+                    var h = _sectors.FirstOrDefault(x => x.ID == _first);
+                    if (h != null)
+                    {
+                        s.Header = h.Header;
+                        h.Format = s.Format;
+                    }
+                    _vLoader.Add(s);
+                    _first++;
+                }
+                if (_vLoader.Count == 4)
+                {
+                    _T.Spec.VL.InjectAt = _first - _vLoader.Count;
+                    _T.Spec.VL.Sector = _vLoader;
+                }
             }
 
             void AddInfo(ref Disk_Track _T)
@@ -299,228 +471,35 @@ namespace V_Max_Tool
                 if (!batch)
                 {
                     tSync = 0;
-                    for (int i = 0; i < _sectors.Count; i++)
+                    for (int i = 0; i < _T.Sector.Count; i++)
                     {
-                        var sz = _sectors[i].ID == 0 ? "*" : string.Empty;
-                        var dec_hdr = Hex_Val(_sectors[i].Header.Decoded, 2, 4);
-                        var hcsm = _sectors[i].Header.Checksum ? "OK" : "Failed!";
-                        var scsm = _sectors[i].Data.Checksum ? "OK" : "Failed!";
-                        tSync += (_sectors[i].Header.SyncLen + _sectors[i].Data.SyncLen) / (_sectors[i].Format == 2 ? 1 : 2);
-                        headers.Add($"Sector ({_sectors[i].ID}){sz} Header-ID [ {dec_hdr} ] Header" +
-                                    $" ({hcsm}) Sector ({scsm}) Track Position ({_sectors[i].Header.Pos >> 3})");
+                        var _sector = _T.GetSector(i);
+                        if (_sector.ErrorCode == 2) headers.Add($"Sector ({_sector.ID}) (Failed!) Header not found!");
+                        else
+                        {
+                            var f = _sector.Format;
+                            bool hasData = _sector.Header.GCR.Length > 4;
+                            var sz = _sector.ID == 0 ? "*" : string.Empty;
+                            var dec_hdr = hasData ? Hex_Val(_sector.Header.Decoded, 2, 4) : "not found!";
+                            var hcsm = (f == 3 && _sector.Header.GCR.Length == 0) ? "N/A" : _sector.Header.Checksum ? "OK" : "Failed!";
+                            var scsm = _sector.Data.GCR.Length > 0 ? _sector.Data.Checksum ? "OK" : "Failed!" : "No Block Data";
+                            var hID = f != 3 ? $"Header-ID [ {dec_hdr} ] Header ({hcsm})" : "Vorpal Loader";
+                            tSync += (_sector.Header.SyncLen + _sector.Data.SyncLen) / (_sector.Format == 2 ? 1 : 2);
+                            headers.Add($"Sector ({_sector.ID}){sz} {hID} Sector ({scsm}) Track Position ({(f != 3 ? _sector.Header.Pos >> 3 : _sector.Data.Pos >> 3)})");
+                        }
                     }
                     if (repeatSector.Length > 0) headers.Add(repeatSector);
                     headers.Add($"Track length ({(_T.End - _T.Start) >> 3}) Sectors ({sectors.Count}) Avg sync length ({tSync / sectors.Count} bits)");
                     _T.Info = headers.ToArray();
                 }
             }
-        }
 
-        //(int, int, int, int, string[], int, int[], int, byte[], int[], int, bool, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
-        //(int, int, int, int, string[], int, int[], int, byte[], int[], int, bool, bool, bool) CBM_Track_Info(byte[] data, bool checksums, int trk = -1, bool cbm = false)
-        //{
-        //    //int[] ptracks = new int[] { 5, 39 };
-        //    //int[] psector = new int[] { 8, 13 };
-        //    List<string> err = new List<string>();
-        //    int track = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-        //    string[] csm = new string[] { "OK", "Failed!" };
-        //    string decoded_header;
-        //    int sectors = 0;
-        //    int[] s_st = new int[valid_cbm.Length];
-        //    int pos = 0;
-        //    int track_id = 0;
-        //    int sync_count = 0;
-        //    int data_start = 0;
-        //    int sector_zero = 0;
-        //    int data_end = 0;
-        //    int total_sync = 0;
-        //    int comp = 32;
-        //    bool sec_zero = false;
-        //    bool sync = false;
-        //    bool start_found = false;
-        //    bool end_found = false;
-        //    bool dont_adj = true;
-        //    bool s_cksm = false;
-        //    bool h_cksm = false;
-        //    bool cartP = false;
-        //    bool manP = false;
-        //    byte[] cartC;
-        //    byte[] dec_hdr;
-        //    byte[] sec_hdr = new byte[10];
-        //    byte[] Disk_ID = new byte[4];
-        //    BitArray source = new BitArray(Flip_Endian(data));
-        //    List<int> list = new List<int>();
-        //    List<int> spos = new List<int>();
-        //    List<string> dchr = new List<string>();
-        //    List<string> headers = new List<string>();
-        //    int[] s_pos = new int[22];
-        //    byte[] d = new byte[4];
-        //    var sect = 0;
-        //    Compare(pos);
-        //    while (pos < source.Length - 32)
-        //    {
-        //        if (source[pos])
-        //        {
-        //            sync_count++;
-        //            if (sync_count == 10) sync = true;
-        //        }
-        //        if (!source[pos])
-        //        {
-        //            if (sync) Compare(pos);
-        //            if (end_found) { add_total(); break; }
-        //            add_total();
-        //            sync = false;
-        //            sync_count = 0;
-        //        }
-        //        pos++;
-        //    }
-        //    if (!end_found)
-        //    {
-        //        if (start_found && !end_found && data_start == 0)
-        //        {
-        //            data_end = (density[density_map[trk]] + 80) << 3;
-        //            dont_adj = false;
-        //        }
-        //        else data_end = source.Length; // pos;
-        //        if (!start_found) data_start = s_pos[0];
-        //        sectors = list.Count;
-        //        if (!batch)
-        //        {
-        //            try
-        //            {
-        //                headers.Add($"Track length ({(data_end - data_start) >> 3}) Sectors ({list.Count}) Avg sync length ({(total_sync + sync_count) / (list.Count * 2)} bits)");
-        //            }
-        //            catch { }
-        //        }
-        //        headers.Add($"data start ({data_start >> 3}) data end ({data_end >> 3}) <- assumed since no repeat sector was found in the NIB track.");
-        //    }
-        //    var len = (data_end - data_start);
-        //    if (!batch && !cbm && err.Count > 0)
-        //    {
-        //        int errtk = tracks > 42 ? (trk / 2) + 1 : trk + 1;
-        //        foreach (string s in err) ErrorList.Add($"Parity failed on track {errtk} sector {s}");
-        //    }
-        //    //File.WriteAllLines($@"c:\test\track{trk}headers.txt", lister.ToArray());
-        //    return (data_start, data_end, sector_zero, len, headers.ToArray(), sectors, s_st, total_sync, Disk_ID, s_pos, track_id, dont_adj, cartP, manP);
-        //
-        //    void add_total()
-        //    {
-        //        if (sync && sync_count < 80) total_sync += sync_count;
-        //    }
-        //
-        //    void Compare(int p)
-        //    {
-        //        d = Bit2Byte(source, pos, comp);
-        //        bool skip = false;
-        //        if (pos == 0 && d[0] == 0x52)
-        //        {
-        //            int test = pos;
-        //            int sc = 0;
-        //
-        //            while (test < 3000 && test < source.Length)
-        //            {
-        //                if (source[test]) sc++;
-        //                if (!source[test])
-        //                {
-        //                    if (sc > 12 && sc < 60 && test + comp < source.Length)
-        //                    {
-        //                        byte[] dd = Bit2Byte(source, test, comp);
-        //                        if (dd[0] != 0x52) break;
-        //                        if (dd[0] == 0x52) { skip = true; break; }
-        //                    }
-        //                    sc = 0;
-        //                }
-        //                test++;
-        //            }
-        //        }
-        //        if (d[0] == 0x52 && !skip && pos + 80 < source.Length)
-        //        {
-        //            for (int i = 1; i < sz.Length; i++) d[i] &= sz[i];
-        //            dec_hdr = Decode_CBM_GCR(Bit2Byte(source, pos, 80)).decoded;
-        //            sect = Convert.ToInt32(dec_hdr[2]);
-        //
-        //            if (dec_hdr[2] < 21 && (dec_hdr[3] > 0 && dec_hdr[3] < 43))
-        //            {
-        //                if (!list.Any(s => s == sect))
-        //                {
-        //                    dchr.Add($"pos {pos / 8} sec {sect} {Hex_Val(dec_hdr)}");
-        //                    if (track_id == 0) track_id = Convert.ToInt32(dec_hdr[3]);
-        //                    if (track_id < 1 || track_id > 42) track_id = 0;
-        //                    decoded_header = Hex_Val(dec_hdr);
-        //                    s_pos[dec_hdr[2]] = pos;
-        //                    h_cksm = Check_Header(dec_hdr);
-        //                    string sz = "";
-        //                    if (dec_hdr[2] == 0x00) sz = "*";
-        //                    if (!start_found) { data_start = pos; start_found = true; }
-        //                    if (!sec_zero && dec_hdr[2] == 0x00)
-        //                    {
-        //                        Buffer.BlockCopy(dec_hdr, 4, Disk_ID, 0, 4);
-        //                        if (track == 18) // was 17
-        //                        {
-        //                            Disk.DiskID = new byte[4];
-        //                            Buffer.BlockCopy(dec_hdr, 4, Disk.DiskID, 0, 4);
-        //                        }
-        //                        //sector_zero = pos;
-        //                        sector_zero = pos - sync_count;
-        //                        sec_zero = true;
-        //                    }
-        //                    if (checksums) GetChecksum();
-        //                    if (!batch) headers.Add($"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
-        //                        $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])}) Track Position ({pos >> 3})");
-        //                }
-        //                else
-        //                {
-        //                    if (list.Any(s => s == sect))
-        //                    {
-        //                        string sz = "";
-        //                        if (dec_hdr[2] == 0x00) sz = "*";
-        //                        decoded_header = Hex_Val(dec_hdr);
-        //                        h_cksm = Check_Header(dec_hdr);
-        //                        if (checksums) GetChecksum();
-        //                        if (!batch)
-        //                        {
-        //                            headers[0] = $"Sector ({sect}){sz} Header-ID [ {decoded_header} ] Header" +
-        //                                $" ({(h_cksm ? csm[0] : csm[1])}) Sector ({(s_cksm ? csm[0] : csm[1])}) Track Position ({data_start >> 3})";
-        //                            headers.Add($"pos {p / 8} ** repeat ** Sector ({(Decode_CBM_GCR(Bit2Byte(source, pos, 5 << 3))).decoded[2]})");
-        //                        }
-        //                        if (data_start == 0) data_end = pos;
-        //                        else data_end = pos;
-        //                        end_found = true;
-        //                        if (!batch) headers.Add($"Track length ({(data_end - data_start) >> 3}) Sectors ({list.Count}) Avg sync length ({(total_sync + sync_count) / (list.Count * 2)} bits)");
-        //                        sectors = list.Count;
-        //                    }
-        //                }
-        //                list.Add(sect);
-        //
-        //                void GetChecksum()
-        //                {
-        //                    if (cbm)
-        //                    {
-        //                        //s_cksm = Decode_CBM_Sector(data, sect, true, source, data_start).checksum;
-        //                        (cartC, s_cksm) = Decode_CBM_Sector(data, sect, true, source, data_start);
-        //                        if (!s_cksm)
-        //                        {
-        //                            //byte[] ddd = new byte[0];
-        //                            s_cksm = Decode_eVPL(CopyArray(Decode_CBM_Sector(data, sect, false, source, data_start).data, 3)).checksum;
-        //                        }
-        //                        if (CBM_Fix.Checked && !s_cksm) err.Add($"{sect}");
-        //                        if (!cartP) cartP = Find_VMax_Cart_CBM(cartC, track, sect).has_cart;
-        //                    }
-        //                    else
-        //                    {
-        //                        //s_cksm = Decode_MicroProse_Sector(source, sect).checksum;
-        //                        byte[] s_dat = new byte[0];
-        //                        (s_dat, s_cksm, _) = Decode_MicroProse_Sector(source, sect, false);
-        //                        (bool hp, byte[] ns) = Find_MPS_Manual(s_dat, track, sect);
-        //                        if (!manP && hp) manP = true;
-        //                        //if (hp) File.WriteAllBytes($@"c:\test\t{track}_s{sect}.bin", s_dat);
-        //                        if (!s_cksm) err.Add($"{sect}");
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
+            bool VerifyHash(byte[] sector, HashSet<byte[]> hash)
+            {
+                foreach (var h in hash) if (MatchSeq(h, sector)) return true;
+                return false;
+            }
+        }
 
         bool Check_Header(byte[] data)
         {
@@ -532,7 +511,6 @@ namespace V_Max_Tool
         byte[] Adjust_Sync_CBM(byte[] data, int expected_sync, int minimum_sync, int exception, int Data_Start_Pos, int Data_End_Pos, int Sec_0, int Track_Len, int Track_Num, bool adjust = true)
         {
             if (Track_Num == Track_Num - 0) { }
-            ;
             if (exception > expected_sync && expected_sync > minimum_sync)
             {
                 byte[] tempp = Flip_Endian(data);
@@ -751,11 +729,11 @@ namespace V_Max_Tool
             }
         }
 
-        byte[] Replace_MPS_Sector(byte[] data, int sector, byte[] new_sector)
+        BitArray Replace_MPS_Sector(BitArray source, int sector, byte[] new_sector)
         {
-            if (data == null) return null;
-            if (new_sector == null || sector < 0) return data;
-            BitArray source = new BitArray(Flip_Endian(data));
+            if (source == null) return null;
+            if (new_sector == null || sector < 0) return source;
+            //BitArray source = new BitArray(Flip_Endian(data));
             (var fsec, _, var pos) = Decode_MicroProse_Sector(source, sector, false);
             if (pos > -1 && fsec != null)
             {
@@ -764,10 +742,9 @@ namespace V_Max_Tool
                 {
                     BitArray nsec = new BitArray(Flip_Endian(new_sector));
                     for (int i = 0; i < nsec.Length; i++) source[pos + i] = nsec[i];
-                    return Bit2Byte(source);
                 }
             }
-            return data;
+            return source;
 
             byte[] Build_MPS_Sector(byte[] old_sec, byte[] sect)
             {
@@ -779,6 +756,35 @@ namespace V_Max_Tool
                 return Encode_CBM_GCR(old_sec);
             }
         }
+
+        //byte[] Replace_MPS_Sector(byte[] data, int sector, byte[] new_sector)
+        //{
+        //    if (data == null) return null;
+        //    if (new_sector == null || sector < 0) return data;
+        //    BitArray source = new BitArray(Flip_Endian(data));
+        //    (var fsec, _, var pos) = Decode_MicroProse_Sector(source, sector, false);
+        //    if (pos > -1 && fsec != null)
+        //    {
+        //        if (new_sector.Length == 256) new_sector = Build_MPS_Sector(Decode_CBM_GCR(fsec).decoded, new_sector);
+        //        if (new_sector != null)
+        //        {
+        //            BitArray nsec = new BitArray(Flip_Endian(new_sector));
+        //            for (int i = 0; i < nsec.Length; i++) source[pos + i] = nsec[i];
+        //            return Bit2Byte(source);
+        //        }
+        //    }
+        //    return data;
+        //
+        //    byte[] Build_MPS_Sector(byte[] old_sec, byte[] sect)
+        //    {
+        //        if (sect == null || old_sec == null) return null;
+        //        byte checksum = 0;
+        //        for (int i = 0; i < sect.Length; i++) checksum ^= sect[i];
+        //        Buffer.BlockCopy(sect, 0, old_sec, 9, sect.Length);
+        //        old_sec[265] = checksum;
+        //        return Encode_CBM_GCR(old_sec);
+        //    }
+        //}
 
         byte[] Build_Sector(byte[] sect, bool badChecksum = false)
         {
@@ -1098,7 +1104,7 @@ namespace V_Max_Tool
                 {
                     Stopwatch po = Process_Nib_Data(true, false, false, false, true);
                     Set_Dir(Get_Disk_Directory());
-                    Set_BlockMap();
+                    //Set_BlockMap();
                     Set_ListBox_Items(false, false);
                     Set_Buttons_Active();
                     Batch_List_Box.Visible = false;
@@ -1191,7 +1197,7 @@ namespace V_Max_Tool
         {
             if (bam != null && track < 35 && sector < Available_Sectors[track])
             {
-                int getbyte = (sector / 8) + 1;
+                int getbyte = (sector >> 3) + 1;
                 int getbit = sector % 8;
                 int pos = (track << 2) + getbyte;
                 return GetBitStatus(bam[pos], getbit);
@@ -1201,15 +1207,11 @@ namespace V_Max_Tool
 
         byte[] GetBam()
         {
-            int dirtrack = tracks > 42 ? 34 : 17;
-            if (Disk.Source.Track[dirtrack].Format == 1)
-            {
-                (byte[] data, _) = Decode_CBM_Sector(Disk.G64.Track[dirtrack].Data, 0, true);
-                byte[] bam = new byte[140];
-                Buffer.BlockCopy(data, 4, bam, 0, bam.Length);
-                return bam;
-            }
-            return null;
+            byte[] data = Disk.Source.Track
+                .FirstOrDefault(t => t.TrackNumber == 18 && t.Format == 1)
+                ?.Sector.FirstOrDefault(s => s.ID == 0)
+                ?.Data.Decoded ?? null;
+            return data != null ? CopyArray(data, 5, 140) : null;
         }
 
         void UpdateBam(byte[] bam)

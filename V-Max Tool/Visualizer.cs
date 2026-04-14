@@ -762,11 +762,21 @@ namespace V_Max_Tool
 
         private void Adv_Ctrl_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (BamDispPan.Visible && !Adv_ctrl.SelectedTab.Name.ToLower().Contains("blockmap")) TurnOffBMSecView();
             if (!busy)
             {
                 if (Adv_ctrl.Controls[2] == Adv_ctrl.SelectedTab && !displayed) Data_Viewer();
                 if (Adv_ctrl.Controls[0] == Adv_ctrl.SelectedTab && !drawn) Check_Before_Draw(false);
             }
+        }
+
+        void TurnOffBMSecView()
+        {
+            BamDispPan.Visible = false;
+            if (viewedIndex >= 0) Update_BlockMap(blockMap[viewedIndex].Track, blockMap[viewedIndex].Sector, viewedColor);
+            clickedIndex = -1;
+            viewedIndex = -1;
+            lastDispEnc = false;
         }
 
         private void Src_view_CheckedChanged(object sender, EventArgs e)

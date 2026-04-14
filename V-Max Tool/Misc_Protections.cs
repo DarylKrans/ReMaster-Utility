@@ -68,7 +68,7 @@ namespace V_Max_Tool
                 Title   = "Into the Eagles Nest",
                 Track   = 5,
                 Sector  = 0,
-                Offset  = 0xA2,
+                Offset  = 0xA3,
                 Search  = new byte[] { 0xEC, 0x8E, 0xB7 },
                 Replace = new byte[] { 0xF0, 0x5F },
                 Parity      = 0x37,
@@ -80,7 +80,7 @@ namespace V_Max_Tool
                 Title   = "Ms. Pac-Man",
                 Track   = 5,
                 Sector  = 0,
-                Offset  = 0x5A,
+                Offset  = 0x5B,
                 Search  = new byte[] { 0xD9, 0xB2, 0xFE },
                 Replace = new byte[] { 0xD0, 0x75 },
                 Parity      = 0x85,
@@ -92,7 +92,7 @@ namespace V_Max_Tool
                 Title   = "Dig Dug / Pole Position",
                 Track   = 5,
                 Sector  = 6,
-                Offset  = 0x55,
+                Offset  = 0x56,
                 Search  = new byte[] { 0xB5, 0x54, 0x08 },
                 Replace = new byte[] { 0xA5 },
                 Parity      = 0x34,
@@ -104,7 +104,7 @@ namespace V_Max_Tool
                 Title   = "Xevious",
                 Track   = 5,
                 Sector  = 6,
-                Offset  = 0xE1,
+                Offset  = 0xE2,
                 Search  = new byte[] { 0xDC, 0xA0, 0xBE },
                 Replace = new byte[] { 0xE5, 0x44 },
                 Parity      = 0x5E,
@@ -116,7 +116,7 @@ namespace V_Max_Tool
                 Title   = "Paperboy",
                 Track   = 5,
                 Sector  = 8,
-                Offset  = 0xB3,
+                Offset  = 0xB4,
                 Search  = new byte[] { 0xE0, 0x5A, 0x61 },
                 Replace = new byte[] { 0xF0 },
                 Parity      = 0x2A,
@@ -128,7 +128,7 @@ namespace V_Max_Tool
                 Title   = "Deja Vu",
                 Track   = 10,
                 Sector  = 0,
-                Offset  = 0x80,
+                Offset  = 0x81,
                 Search  = new byte[] { 0xD1, 0x47, 0x22 },
                 Replace = new byte[] { 0xA4, 0x44 },
                 Parity      = 0xAB,
@@ -140,7 +140,7 @@ namespace V_Max_Tool
                 Title   = "Bop n Rumble",
                 Track   = 19,
                 Sector  = 0,
-                Offset  = 0xA3,
+                Offset  = 0xA4,
                 Search  = new byte[] { 0xB5, 0x54, 0x2B },
                 Replace = new byte[] { 0xA5 },
                 Parity      = 0xAB,
@@ -152,7 +152,7 @@ namespace V_Max_Tool
                 Title   = "Gauntlet",
                 Track   = 39,
                 Sector  = 13,
-                Offset  = 0x71,
+                Offset  = 0x72,
                 Search  = new byte[] { 0x42, 0x10, 0xAD },
                 Replace = new byte[] { 0x48 },
                 Parity      = 0xC5,
@@ -162,27 +162,25 @@ namespace V_Max_Tool
 
         (bool has_manual, byte[] patched) Find_MPS_Manual(byte[] data, int track, int sector)
         {
-            if (data == null || data.Length != 335) return (false, data);
+            if (data == null || data.Length != 268) return (false, data);
             var patch = MicroproseManualPatches.FirstOrDefault(p => p.Track == track && p.Sector == sector);
             if (patch == null) return (false, data);
-            var decoded = Decode_CBM_GCR(data).decoded;
-            if (!MatchSeq(decoded, patch.Search, patch.Offset) || decoded[0x109] != patch.Parity) return (false, data);
-            Buffer.BlockCopy(patch.Replace, 0, decoded, patch.Offset, patch.Replace.Length);
-            byte csm = 0;
-            for (int i = 9; i < 265; i++) csm ^= decoded[i];
-            decoded[265] = csm;
-            return (true, Encode_CBM_GCR(decoded));
+            if (!MatchSeq(data, patch.Search, patch.Offset) || data[0x109] != patch.Parity) return (false, data);
+            Buffer.BlockCopy(patch.Replace, 0, data, patch.Offset, patch.Replace.Length);
+            data[265] = 0;
+            for (int i = 9; i < 265; i++) data[265] ^= data[i];
+            return (true, Encode_CBM_GCR(data));
         }
 
         (bool has_cart, byte[] patched) Find_VMax_Cart_CBM(byte[] data, int track, int sector)
         {
-            if (data == null || data.Length != 256) return (false, data);
+            if (data == null || data.Length != 260) return (false, data);
             foreach (var patch in VMaxCartPatches.Where(p => p.Track == track && p.Sector == sector))
             {
-                if (!MatchSeq(data, patch.Search, patch.Offset) || data[0xFF] != patch.Parity) continue;
+                if (!MatchSeq(data, patch.Search, patch.Offset) || data[0x100] != patch.Parity) continue;
                 byte[] patched = CopyArray(data);
                 Buffer.BlockCopy(patch.Replace, 0, patched, patch.Offset, patch.Replace.Length);
-                patched[0xff] = patch.NewParity;
+                patched[0x100] = patch.NewParity;
                 return (true, patched);
             }
             return (false, data);

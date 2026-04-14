@@ -748,7 +748,7 @@ namespace V_Max_Tool
             return destination;
         }
 
-        string Hex_Val(byte[] data, int start = 0, int end = -1)
+        public static string Hex_Val(byte[] data, int start = 0, int end = -1)
         {
             if (data != null)
             {
@@ -981,7 +981,7 @@ namespace V_Max_Tool
                         (byte[] decoded, int illegal) = Decode_CBM_GCR(sec_data);
                         if (illegal > 6)
                         {
-                            (byte[] vpdecoded, bool cksm, int ill) = Decode_eVPL(CopyArray(sec_data, 3));
+                            (byte[] vpdecoded, bool cksm, int ill, _, _) = Decode_eVPL(CopyArray(sec_data, 3));
                             if (cksm && ill < 10) return (!decode ? sec_data : vpdecoded, error, pos);
                             //(decoded, chksum) = Decode_eVPL(CopyArray(sec_data, 3));
                             //if (chksum) return (!decode ? sec_data : decoded, error, pos);
@@ -1384,7 +1384,7 @@ namespace V_Max_Tool
             return (false);
         }
 
-        static bool MatchSeq(byte[] source, byte[] pattern, int startIndex = 0)
+        public static bool MatchSeq(byte[] source, byte[] pattern, int startIndex = 0)
         {
             //if (source == null || pattern == null || startIndex < 0 || startIndex + pattern.Length > 0) return false;
             //if ((source != null && pattern != null) && startIndex < 0 || startIndex + pattern.Length > source.Length)
@@ -1541,16 +1541,25 @@ namespace V_Max_Tool
             else return data;
         }
 
-        void Set_Dest_Arrays(byte[] data, int trk)
+        void Set_Dest_Arrays(byte[] data, int trk, bool set = false)
         {
             try
             {
                 Disk.G64.Track[trk].Data = CopyFrom(data, 0, data.Length);
                 Disk.Adjusted.Track[trk].Data = FillArray(data, 8192);
                 Disk.Adjusted.Track[trk].Length = data.Length << 3;
+                Disk.G64.Track[trk].Bits = new BitArray(Flip_Endian(data));
+                Disk.G64.Track[trk].Format = Disk.Source.Track[trk].Format;
+                /// New Test Area
+                if (Disk.Source.Track[trk].Format == 1 || Disk.Source.Track[trk].Format == 10 || Disk.Source.Track[trk].Format == 15)
+                {
+                    CBM_Track_Info(ref Disk.G64.Track[trk], false);
+                }
+                /// -------------
+
                 Disk.G64.Track[trk].Length = data.Length;
             }
-            catch { }
+            catch (Exception ex) { Console.WriteLine($"Set_Dest_Arrays() : Track {trk} : {ex.Message}"); }
         }
 
         byte[] Create_Empty_Sector(byte fill = 0x01)

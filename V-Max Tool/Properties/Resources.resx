@@ -211,6 +211,9 @@
   <data name="v2stub" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>v2stub.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="vldHash" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>vldHash.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="vmv2dt1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>vmv2dt1.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

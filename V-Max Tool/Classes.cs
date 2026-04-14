@@ -1059,6 +1059,7 @@ namespace V_Max_Tool
         public int Track { get; set; }
         public int Sector { get; set; }
         public Color Color { get; set; }
+        public Color Original { get; set; }
         public string Tip { get; set; }
 
         public BlockMapInfo(TaggedRectangle rect, int track, int sector, Color color, string tip)

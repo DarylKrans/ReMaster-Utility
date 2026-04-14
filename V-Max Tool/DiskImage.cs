@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace V_Max_Tool
 {
@@ -28,9 +30,10 @@ namespace V_Max_Tool
         public string[] Info { get; set; } = new string[0];
         public int Sectors { get; set; } = 0;
         public int GLength { get; set; } = 0;   // Used when importing G64 to set 'Length'
+        public int Density { get; set; } = 0;
         public BitArray Bits { get; set; } = null;
-        //public BitArray Bits => Data.Length > 0 ? new BitArray(V_Max_Tool.Form1.Flip_Endian(Data)) : null;
         public List<Sector> Sector = new List<Sector>();
+        public int[] IDList => Sector != null ? Sector.Where(x => x != null).Select(x => x.ID).ToArray() : new int[0];
 
         // Various Protection Modifiers/Info
         public bool FatTrack { get; set; } = false;
@@ -66,19 +69,29 @@ namespace V_Max_Tool
         {
             return Sector.Select(selector).ToArray();
         }
+
+        public Sector GetSector(int _ID = 0)
+        {
+            bool _vl = Spec.VL.IDList.Length == 4;
+            var sector = _vl && Spec.VL.IDList.Any(x => x == _ID)
+                ? Spec.VL.Sector.FirstOrDefault(x => x.ID == _ID)
+                : Sector.FirstOrDefault(x => x.ID == _ID);
+            return sector;
+        }
+
     }
 
     public class Sector
     {
-        /// *** Not implemented yet! ***
         // int Format
-        // CBM Sectors   : 0 = Standard, 1 = Early Vorpal, 2 = Microprose
+        // CBM Sectors   : 0 = Standard, 1 = Early Vorpal, 2 = Microprose, 3 = Vorpal Loader
+        /// *** Not implemented yet! ***
         // V-Max Sectors : 0 = older GCR (weak-bits), 1 = newer GCR
         // RapidLok Sectors : 0 = Version 1, 1 = Version 2-7
         /// ----------------------------
-        public int Format { get; set; } = 0;
+        public int Format { get; set; } = 0; // 0
         public int ID { get; set; } = -1;
-        public int ErrorCode { get; set; } = 1;
+        public int ErrorCode { get; set; } = 0;
         public Info Header = new Info();
         public Info Data = new Info();
 
@@ -88,8 +101,20 @@ namespace V_Max_Tool
             public int SyncLen { get; set; } = 0;
             public byte[] GCR { get; set; } = new byte[0];
             public byte[] Decoded { get; set; } = new byte[0];
+            public byte[] TailGap { get; set; } = new byte[0];
             public bool Checksum { get; set; } = false;
+            public byte ChecksumExpected { get; set; } = 0;  // what it should be
+            public byte ChecksumActual { get; set; } = 0;    // what was calculated
+            public int Illegal { get; set; } = 0;
             public int SyncPos => Pos - SyncLen;
+            public int TailLength { get; set; } = 0;
+            public byte[] Hash { get; set; } = new byte[0];
+
+            public void GetHash()
+            {
+                if (Decoded == null || Decoded.Length == 0) Hash = new byte[0];
+                else using (var sha256 = SHA256.Create()) Hash = sha256.ComputeHash(Decoded);
+            }
         }
     }
 
@@ -98,6 +123,7 @@ namespace V_Max_Tool
         public PirateSlayer Slayer = new PirateSlayer();
         public VMAX VMax = new VMAX();
         public RapidLok RL = new RapidLok();
+        public VorpalLoader VL = new VorpalLoader();
 
         public class VMAX
         {
@@ -156,11 +182,21 @@ namespace V_Max_Tool
         {
             public byte[] Key { get; set; } = new byte[0];
             public bool GCRVersion { get; set; } = false;  // False = RL v1, True = RL v2-7
+            public int SpecialSector { get; set; } = 0;
+        }
+
+        public class VorpalLoader
+        {
+            public int InjectAt { get; set; } = -1; // Loader injected at this sector position
+            public int Sectors => Sector != null ? Sector.Count : -1;
+            public int[] IDList => Sector != null ? Sector.Where(x => x != null).Select(x => x.ID).ToArray() : new int[0];
+            public List<Sector> Sector { get; set; }
         }
     }
 
     public class ImportedDisk
     {
+        public string FileName { get; set; } = string.Empty;
         public Image_Source Source { get; set; }
         public Image_Adjusted Adjusted { get; set; }
         public Image_G64 G64 { get; set; }
@@ -197,6 +233,61 @@ namespace V_Max_Tool
             List<int> formats = new List<int>();
             foreach (var fmt in Source.Track) formats.Add(fmt.Format);
             return formats.ToArray();
+        }
+
+        public byte[] GetSectorData(double trackNum, int sectorID, bool decoded = false)
+        {
+            var sector = Source.Track
+                .FirstOrDefault(t => t?.TrackNumber == trackNum)
+                ?.Sector.FirstOrDefault(s => s.ID == sectorID);
+            return (decoded ? sector?.Data.Decoded : sector?.Data.GCR) ?? new byte[0];
+        }
+
+        public void SetErrorCodes(bool source = true)
+        {
+            List<string> l = new List<string>();
+            List<string> g = new List<string>();
+            var cbmSectors = (source ? Source.Track : G64.Track)
+                .SelectMany(t => t.Sector
+                .Select(s => (t, s)));
+
+            foreach (var (_t, _s) in cbmSectors)
+            {
+                try
+                {
+                    int errCode = 1;
+                    if (_s.Format >= 0)
+                    {
+                        int expLen = _s.Format == 3 ? 256 : _s.Format == 1 ? 240 : 260;
+                        if (_s.Header.GCR == null || _s.Header.GCR.Length < 10) errCode = 2;
+                        else if (_s.Header.Decoded == null || _s.Header.Decoded.Length == 0) errCode = 2;
+                        else if (!_s.Header.Checksum) errCode = 9;
+                        else if (_t.TrackID != null && !ID(DiskID, _t.TrackID)) errCode = 11;
+                        else if (_s.Data.Decoded == null || _s.Data.Decoded.Length < expLen) errCode = 4;
+                        else if (!_s.Data.Checksum) errCode = 5;
+                        else if (_s.Data.GCR == null || _s.Data.GCR.Length < 325) errCode = 6;
+                        _s.ErrorCode = errCode;
+                        if (Form1.debug)
+                        {
+                            g.Add($"t {_t.TrackNumber} s {_s.ID} header gap len ({_s.Header.TailLength}) {Form1.Hex_Val(_s.Header.TailGap)} sector gap len  ({_s.Data.TailLength}) {Form1.Hex_Val(_s.Data.TailGap)} {_s.Data.Decoded.Length} cksm {Form1.Hex_Val(new byte[] { _s.Header.ChecksumActual, _s.Header.ChecksumExpected, _s.Data.ChecksumActual, _s.Data.ChecksumExpected })}");
+                            l.Add($"track {_t.TrackNumber} sector {_s.ID} Errorcode : {Form1.c1541error[_s.ErrorCode]} - Format {Form1.CBM_Fmt[_s.Format]} {_s.Data.Decoded.Length} {Form1.Hex_Val(DiskID)} {Form1.Hex_Val(_t.TrackID)}");
+                        }
+                    }
+                    else Console.WriteLine($"Track {_t.TrackNumber}, Sector {_s.ID}, Unknown format : {_s.Format}");
+                }
+                catch (Exception e) { Console.WriteLine($"{e.Message}"); }
+            }
+            if (Form1.debug)
+            {
+                if (l.Count > 0) File.WriteAllLines($@"c:\test\errorcodes_{source}.txt", l.ToArray());
+                if (g.Count > 0) File.WriteAllLines($@"c:\test\gaps_{source}.txt", g.ToArray());
+            }
+
+            bool ID(byte[] d, byte[] t)
+            {
+                if (d.Length < 2 || t.Length < 2) return false;
+                return d[0] == t[0] && d[1] == t[1];
+            }
         }
 
         public class Image_Source  // Global variables for Nib file source data

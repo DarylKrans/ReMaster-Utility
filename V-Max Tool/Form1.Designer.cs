@@ -157,14 +157,16 @@
             this.Dir_screen = new System.Windows.Forms.RichTextBox();
             this.BlockMap = new System.Windows.Forms.TabPage();
             this.BlkMap_Panel = new System.Windows.Forms.Panel();
-            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
-            this.CSTfmt = new V_Max_Tool.CustomLabel();
-            this.ErrorBlk = new V_Max_Tool.CustomLabel();
-            this.AllocBlk = new V_Max_Tool.CustomLabel();
-            this.FreeBlk = new V_Max_Tool.CustomLabel();
+            this.BM_Format = new System.Windows.Forms.Label();
+            this.BME_6 = new System.Windows.Forms.Label();
+            this.BME_4 = new System.Windows.Forms.Label();
+            this.BME_11 = new System.Windows.Forms.Label();
+            this.BME_5 = new System.Windows.Forms.Label();
+            this.BME_9 = new System.Windows.Forms.Label();
+            this.BME_2 = new System.Windows.Forms.Label();
+            this.BLK_Legend = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
-            this.track_label = new V_Max_Tool.CustomLabel();
             this.Save_Dialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RPL_Advanced = new System.Windows.Forms.GroupBox();
@@ -301,6 +303,14 @@
             this.W_syncred = new System.Windows.Forms.CheckBox();
             this.W_align = new System.Windows.Forms.ComboBox();
             this.WTA = new System.Windows.Forms.CheckBox();
+            this.BamDispPan = new System.Windows.Forms.Panel();
+            this.BamSplitPan1 = new System.Windows.Forms.Panel();
+            this.BamSplit = new System.Windows.Forms.SplitContainer();
+            this.BamDB2 = new System.Windows.Forms.RichTextBox();
+            this.BamDB3 = new System.Windows.Forms.RichTextBox();
+            this.BamDB1 = new System.Windows.Forms.RichTextBox();
+            this.FontCbox = new System.Windows.Forms.CheckBox();
+            this.label28 = new System.Windows.Forms.Label();
             this.GB_NewDisk = new V_Max_Tool.Gbox();
             this.S_Interleave = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
@@ -310,6 +320,11 @@
             this.label20 = new System.Windows.Forms.Label();
             this.ND_id = new System.Windows.Forms.TextBox();
             this.ND_name = new System.Windows.Forms.TextBox();
+            this.Blk_pan = new V_Max_Tool.CustomBufferedPanel();
+            this.CSTfmt = new V_Max_Tool.CustomLabel();
+            this.AllocBlk = new V_Max_Tool.CustomLabel();
+            this.FreeBlk = new V_Max_Tool.CustomLabel();
+            this.track_label = new V_Max_Tool.CustomLabel();
             ((System.ComponentModel.ISupportInitialize)(this.V2_hlenD0)).BeginInit();
             this.Tabs.SuspendLayout();
             this.Main.SuspendLayout();
@@ -373,6 +388,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.W_tgap)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.W_rpm)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.W_tskew)).BeginInit();
+            this.BamDispPan.SuspendLayout();
+            this.BamSplitPan1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.BamSplit)).BeginInit();
+            this.BamSplit.Panel1.SuspendLayout();
+            this.BamSplit.Panel2.SuspendLayout();
+            this.BamSplit.SuspendLayout();
             this.GB_NewDisk.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -2046,9 +2067,16 @@
             // BlkMap_Panel
             // 
             this.BlkMap_Panel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.BlkMap_Panel.Controls.Add(this.BM_Format);
+            this.BlkMap_Panel.Controls.Add(this.BME_6);
+            this.BlkMap_Panel.Controls.Add(this.BME_4);
+            this.BlkMap_Panel.Controls.Add(this.BME_11);
+            this.BlkMap_Panel.Controls.Add(this.BME_5);
+            this.BlkMap_Panel.Controls.Add(this.BME_9);
+            this.BlkMap_Panel.Controls.Add(this.BME_2);
+            this.BlkMap_Panel.Controls.Add(this.BLK_Legend);
             this.BlkMap_Panel.Controls.Add(this.Blk_pan);
             this.BlkMap_Panel.Controls.Add(this.CSTfmt);
-            this.BlkMap_Panel.Controls.Add(this.ErrorBlk);
             this.BlkMap_Panel.Controls.Add(this.AllocBlk);
             this.BlkMap_Panel.Controls.Add(this.FreeBlk);
             this.BlkMap_Panel.Controls.Add(this.label21);
@@ -2060,71 +2088,85 @@
             this.BlkMap_Panel.Size = new System.Drawing.Size(568, 670);
             this.BlkMap_Panel.TabIndex = 0;
             // 
-            // Blk_pan
+            // BM_Format
             // 
-            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
-            this.Blk_pan.BorderThickness = 2;
-            this.Blk_pan.Location = new System.Drawing.Point(48, 25);
-            this.Blk_pan.Margin = new System.Windows.Forms.Padding(2);
-            this.Blk_pan.Name = "Blk_pan";
-            this.Blk_pan.Size = new System.Drawing.Size(513, 573);
-            this.Blk_pan.TabIndex = 2;
+            this.BM_Format.AutoSize = true;
+            this.BM_Format.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
+            this.BM_Format.Location = new System.Drawing.Point(80, 628);
+            this.BM_Format.Name = "BM_Format";
+            this.BM_Format.Size = new System.Drawing.Size(44, 13);
+            this.BM_Format.TabIndex = 20;
+            this.BM_Format.Text = "sec_fmt";
             // 
-            // CSTfmt
+            // BME_6
             // 
-            this.CSTfmt.AutoSize = true;
-            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
-            this.CSTfmt.Location = new System.Drawing.Point(10, 148);
-            this.CSTfmt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.CSTfmt.Name = "CSTfmt";
-            this.CSTfmt.NewText = "";
-            this.CSTfmt.RotateAngle = 0;
-            this.CSTfmt.Size = new System.Drawing.Size(91, 15);
-            this.CSTfmt.TabIndex = 12;
-            this.CSTfmt.Text = "Custom Format";
+            this.BME_6.AutoSize = true;
+            this.BME_6.ForeColor = System.Drawing.Color.Gainsboro;
+            this.BME_6.Location = new System.Drawing.Point(436, 627);
+            this.BME_6.Name = "BME_6";
+            this.BME_6.Size = new System.Drawing.Size(78, 13);
+            this.BME_6.TabIndex = 15;
+            this.BME_6.Text = "Decoding Error";
             // 
-            // ErrorBlk
+            // BME_4
             // 
-            this.ErrorBlk.AutoSize = true;
-            this.ErrorBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ErrorBlk.ForeColor = System.Drawing.Color.Crimson;
-            this.ErrorBlk.Location = new System.Drawing.Point(10, 253);
-            this.ErrorBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.ErrorBlk.Name = "ErrorBlk";
-            this.ErrorBlk.NewText = "";
-            this.ErrorBlk.RotateAngle = 0;
-            this.ErrorBlk.Size = new System.Drawing.Size(67, 15);
-            this.ErrorBlk.TabIndex = 11;
-            this.ErrorBlk.Text = "Block Error";
+            this.BME_4.AutoSize = true;
+            this.BME_4.ForeColor = System.Drawing.Color.Gainsboro;
+            this.BME_4.Location = new System.Drawing.Point(170, 627);
+            this.BME_4.Name = "BME_4";
+            this.BME_4.Size = new System.Drawing.Size(113, 13);
+            this.BME_4.TabIndex = 16;
+            this.BME_4.Text = "Data Block Not Found";
             // 
-            // AllocBlk
+            // BME_11
             // 
-            this.AllocBlk.AutoSize = true;
-            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
-            this.AllocBlk.Location = new System.Drawing.Point(8, 341);
-            this.AllocBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.AllocBlk.Name = "AllocBlk";
-            this.AllocBlk.NewText = "";
-            this.AllocBlk.RotateAngle = 0;
-            this.AllocBlk.Size = new System.Drawing.Size(90, 15);
-            this.AllocBlk.TabIndex = 10;
-            this.AllocBlk.Text = "Allocated Block";
+            this.BME_11.AutoSize = true;
+            this.BME_11.ForeColor = System.Drawing.Color.Gainsboro;
+            this.BME_11.Location = new System.Drawing.Point(437, 609);
+            this.BME_11.Name = "BME_11";
+            this.BME_11.Size = new System.Drawing.Size(90, 13);
+            this.BME_11.TabIndex = 19;
+            this.BME_11.Text = "Disk ID Mismatch";
             // 
-            // FreeBlk
+            // BME_5
             // 
-            this.FreeBlk.AutoSize = true;
-            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
-            this.FreeBlk.Location = new System.Drawing.Point(8, 453);
-            this.FreeBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.FreeBlk.Name = "FreeBlk";
-            this.FreeBlk.NewText = "";
-            this.FreeBlk.RotateAngle = 0;
-            this.FreeBlk.Size = new System.Drawing.Size(65, 15);
-            this.FreeBlk.TabIndex = 9;
-            this.FreeBlk.Text = "Free Block";
+            this.BME_5.AutoSize = true;
+            this.BME_5.ForeColor = System.Drawing.Color.Gainsboro;
+            this.BME_5.Location = new System.Drawing.Point(301, 627);
+            this.BME_5.Name = "BME_5";
+            this.BME_5.Size = new System.Drawing.Size(108, 13);
+            this.BME_5.TabIndex = 18;
+            this.BME_5.Text = "Data Checksum Error";
+            // 
+            // BME_9
+            // 
+            this.BME_9.AutoSize = true;
+            this.BME_9.ForeColor = System.Drawing.Color.Gainsboro;
+            this.BME_9.Location = new System.Drawing.Point(301, 609);
+            this.BME_9.Name = "BME_9";
+            this.BME_9.Size = new System.Drawing.Size(120, 13);
+            this.BME_9.TabIndex = 17;
+            this.BME_9.Text = "Header Checksum Error";
+            // 
+            // BME_2
+            // 
+            this.BME_2.AutoSize = true;
+            this.BME_2.ForeColor = System.Drawing.Color.Gainsboro;
+            this.BME_2.Location = new System.Drawing.Point(170, 609);
+            this.BME_2.Name = "BME_2";
+            this.BME_2.Size = new System.Drawing.Size(125, 13);
+            this.BME_2.TabIndex = 14;
+            this.BME_2.Text = "Block Header Not Found";
+            // 
+            // BLK_Legend
+            // 
+            this.BLK_Legend.AutoSize = true;
+            this.BLK_Legend.ForeColor = System.Drawing.Color.Gainsboro;
+            this.BLK_Legend.Location = new System.Drawing.Point(59, 609);
+            this.BLK_Legend.Name = "BLK_Legend";
+            this.BLK_Legend.Size = new System.Drawing.Size(97, 13);
+            this.BLK_Legend.TabIndex = 13;
+            this.BLK_Legend.Text = "Block Color Coding";
             // 
             // label21
             // 
@@ -2149,20 +2191,6 @@
             this.label17.Size = new System.Drawing.Size(49, 17);
             this.label17.TabIndex = 1;
             this.label17.Text = "Sector";
-            // 
-            // track_label
-            // 
-            this.track_label.AutoSize = true;
-            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.track_label.Location = new System.Drawing.Point(1, 43);
-            this.track_label.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.track_label.Name = "track_label";
-            this.track_label.NewText = null;
-            this.track_label.RotateAngle = 0;
-            this.track_label.Size = new System.Drawing.Size(109, 20);
-            this.track_label.TabIndex = 0;
-            this.track_label.Text = "customLabel1";
             // 
             // panel1
             // 
@@ -2870,6 +2898,8 @@
             // Options_Box
             // 
             this.Options_Box.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.Options_Box.Controls.Add(this.label28);
+            this.Options_Box.Controls.Add(this.FontCbox);
             this.Options_Box.Controls.Add(this.ParseLog);
             this.Options_Box.Controls.Add(this.ProtDetectMethod);
             this.Options_Box.Controls.Add(this.label26);
@@ -2888,14 +2918,14 @@
             this.Options_Box.Margin = new System.Windows.Forms.Padding(2);
             this.Options_Box.Name = "Options_Box";
             this.Options_Box.Padding = new System.Windows.Forms.Padding(2);
-            this.Options_Box.Size = new System.Drawing.Size(403, 187);
+            this.Options_Box.Size = new System.Drawing.Size(403, 193);
             this.Options_Box.TabIndex = 41;
             this.Options_Box.TabStop = false;
             // 
             // ParseLog
             // 
             this.ParseLog.AutoSize = true;
-            this.ParseLog.Location = new System.Drawing.Point(8, 211);
+            this.ParseLog.Location = new System.Drawing.Point(8, 218);
             this.ParseLog.Margin = new System.Windows.Forms.Padding(2);
             this.ParseLog.Name = "ParseLog";
             this.ParseLog.Size = new System.Drawing.Size(287, 17);
@@ -2907,7 +2937,7 @@
             // 
             this.ProtDetectMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ProtDetectMethod.FormattingEnabled = true;
-            this.ProtDetectMethod.Location = new System.Drawing.Point(168, 228);
+            this.ProtDetectMethod.Location = new System.Drawing.Point(168, 235);
             this.ProtDetectMethod.Margin = new System.Windows.Forms.Padding(2);
             this.ProtDetectMethod.Name = "ProtDetectMethod";
             this.ProtDetectMethod.Size = new System.Drawing.Size(218, 21);
@@ -2916,7 +2946,7 @@
             // label26
             // 
             this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(6, 230);
+            this.label26.Location = new System.Drawing.Point(6, 237);
             this.label26.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label26.Name = "label26";
             this.label26.Size = new System.Drawing.Size(159, 13);
@@ -2928,7 +2958,7 @@
             this.EnableDBMenu.AutoSize = true;
             this.EnableDBMenu.Checked = true;
             this.EnableDBMenu.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.EnableDBMenu.Location = new System.Drawing.Point(8, 192);
+            this.EnableDBMenu.Location = new System.Drawing.Point(8, 199);
             this.EnableDBMenu.Margin = new System.Windows.Forms.Padding(2);
             this.EnableDBMenu.Name = "EnableDBMenu";
             this.EnableDBMenu.Size = new System.Drawing.Size(255, 17);
@@ -2954,7 +2984,7 @@
             this.label24.AutoSize = true;
             this.label24.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.label24.ForeColor = System.Drawing.Color.DarkBlue;
-            this.label24.Location = new System.Drawing.Point(82, 176);
+            this.label24.Location = new System.Drawing.Point(82, 183);
             this.label24.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(222, 13);
@@ -2966,7 +2996,7 @@
             this.label5.AutoSize = true;
             this.label5.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.label5.ForeColor = System.Drawing.Color.DarkBlue;
-            this.label5.Location = new System.Drawing.Point(122, 139);
+            this.label5.Location = new System.Drawing.Point(122, 146);
             this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(134, 13);
@@ -2977,7 +3007,7 @@
             // 
             this.No_Warn.AutoSize = true;
             this.No_Warn.ForeColor = System.Drawing.Color.Brown;
-            this.No_Warn.Location = new System.Drawing.Point(8, 154);
+            this.No_Warn.Location = new System.Drawing.Point(8, 161);
             this.No_Warn.Margin = new System.Windows.Forms.Padding(2);
             this.No_Warn.Name = "No_Warn";
             this.No_Warn.Size = new System.Drawing.Size(379, 17);
@@ -3870,6 +3900,91 @@
             this.WTA.UseVisualStyleBackColor = true;
             this.WTA.CheckedChanged += new System.EventHandler(this.WAdv_CheckedChanged);
             // 
+            // BamDispPan
+            // 
+            this.BamDispPan.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.BamDispPan.Controls.Add(this.BamSplitPan1);
+            this.BamDispPan.Controls.Add(this.BamDB1);
+            this.BamDispPan.Location = new System.Drawing.Point(1525, 34);
+            this.BamDispPan.Name = "BamDispPan";
+            this.BamDispPan.Size = new System.Drawing.Size(307, 188);
+            this.BamDispPan.TabIndex = 44;
+            // 
+            // BamSplitPan1
+            // 
+            this.BamSplitPan1.AutoScroll = true;
+            this.BamSplitPan1.Controls.Add(this.BamSplit);
+            this.BamSplitPan1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.BamSplitPan1.Location = new System.Drawing.Point(0, 96);
+            this.BamSplitPan1.Name = "BamSplitPan1";
+            this.BamSplitPan1.Size = new System.Drawing.Size(303, 100);
+            this.BamSplitPan1.TabIndex = 3;
+            // 
+            // BamSplit
+            // 
+            this.BamSplit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.BamSplit.Location = new System.Drawing.Point(38, 25);
+            this.BamSplit.Name = "BamSplit";
+            // 
+            // BamSplit.Panel1
+            // 
+            this.BamSplit.Panel1.Controls.Add(this.BamDB2);
+            // 
+            // BamSplit.Panel2
+            // 
+            this.BamSplit.Panel2.Controls.Add(this.BamDB3);
+            this.BamSplit.Size = new System.Drawing.Size(303, 127);
+            this.BamSplit.SplitterDistance = 253;
+            this.BamSplit.TabIndex = 1;
+            // 
+            // BamDB2
+            // 
+            this.BamDB2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.BamDB2.Location = new System.Drawing.Point(0, 0);
+            this.BamDB2.Name = "BamDB2";
+            this.BamDB2.Size = new System.Drawing.Size(251, 74);
+            this.BamDB2.TabIndex = 0;
+            this.BamDB2.Text = "";
+            // 
+            // BamDB3
+            // 
+            this.BamDB3.Dock = System.Windows.Forms.DockStyle.Top;
+            this.BamDB3.Location = new System.Drawing.Point(0, 0);
+            this.BamDB3.Name = "BamDB3";
+            this.BamDB3.Size = new System.Drawing.Size(44, 96);
+            this.BamDB3.TabIndex = 0;
+            this.BamDB3.Text = "";
+            // 
+            // BamDB1
+            // 
+            this.BamDB1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.BamDB1.Location = new System.Drawing.Point(0, 0);
+            this.BamDB1.Name = "BamDB1";
+            this.BamDB1.Size = new System.Drawing.Size(303, 96);
+            this.BamDB1.TabIndex = 2;
+            this.BamDB1.Text = "";
+            // 
+            // FontCbox
+            // 
+            this.FontCbox.AutoSize = true;
+            this.FontCbox.Location = new System.Drawing.Point(190, 38);
+            this.FontCbox.Name = "FontCbox";
+            this.FontCbox.Size = new System.Drawing.Size(140, 17);
+            this.FontCbox.TabIndex = 51;
+            this.FontCbox.Text = "Use C64 Pro Mono Font";
+            this.FontCbox.UseVisualStyleBackColor = true;
+            this.FontCbox.CheckedChanged += new System.EventHandler(this.FontCbox_CheckedChanged);
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label28.Location = new System.Drawing.Point(207, 57);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(111, 12);
+            this.label28.TabIndex = 52;
+            this.label28.Text = "(Block Map & Data Viewer)";
+            // 
             // GB_NewDisk
             // 
             this.GB_NewDisk.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
@@ -3972,11 +4087,78 @@
             this.ND_name.TabIndex = 0;
             this.ND_name.Text = "NEW DISK";
             // 
+            // Blk_pan
+            // 
+            this.Blk_pan.BorderColor = System.Drawing.Color.Black;
+            this.Blk_pan.BorderThickness = 2;
+            this.Blk_pan.Location = new System.Drawing.Point(48, 25);
+            this.Blk_pan.Margin = new System.Windows.Forms.Padding(2);
+            this.Blk_pan.Name = "Blk_pan";
+            this.Blk_pan.Size = new System.Drawing.Size(513, 573);
+            this.Blk_pan.TabIndex = 2;
+            // 
+            // CSTfmt
+            // 
+            this.CSTfmt.AutoSize = true;
+            this.CSTfmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CSTfmt.ForeColor = System.Drawing.Color.MediumOrchid;
+            this.CSTfmt.Location = new System.Drawing.Point(8, 221);
+            this.CSTfmt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.CSTfmt.Name = "CSTfmt";
+            this.CSTfmt.NewText = "";
+            this.CSTfmt.RotateAngle = 0;
+            this.CSTfmt.Size = new System.Drawing.Size(91, 15);
+            this.CSTfmt.TabIndex = 12;
+            this.CSTfmt.Text = "Custom Format";
+            // 
+            // AllocBlk
+            // 
+            this.AllocBlk.AutoSize = true;
+            this.AllocBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AllocBlk.ForeColor = System.Drawing.Color.Cyan;
+            this.AllocBlk.Location = new System.Drawing.Point(8, 341);
+            this.AllocBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.AllocBlk.Name = "AllocBlk";
+            this.AllocBlk.NewText = "";
+            this.AllocBlk.RotateAngle = 0;
+            this.AllocBlk.Size = new System.Drawing.Size(90, 15);
+            this.AllocBlk.TabIndex = 10;
+            this.AllocBlk.Text = "Allocated Block";
+            // 
+            // FreeBlk
+            // 
+            this.FreeBlk.AutoSize = true;
+            this.FreeBlk.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FreeBlk.ForeColor = System.Drawing.Color.Lime;
+            this.FreeBlk.Location = new System.Drawing.Point(8, 453);
+            this.FreeBlk.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.FreeBlk.Name = "FreeBlk";
+            this.FreeBlk.NewText = "";
+            this.FreeBlk.RotateAngle = 0;
+            this.FreeBlk.Size = new System.Drawing.Size(65, 15);
+            this.FreeBlk.TabIndex = 9;
+            this.FreeBlk.Text = "Free Block";
+            // 
+            // track_label
+            // 
+            this.track_label.AutoSize = true;
+            this.track_label.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.track_label.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.track_label.Location = new System.Drawing.Point(1, 43);
+            this.track_label.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.track_label.Name = "track_label";
+            this.track_label.NewText = null;
+            this.track_label.RotateAngle = 0;
+            this.track_label.Size = new System.Drawing.Size(109, 20);
+            this.track_label.TabIndex = 0;
+            this.track_label.Text = "customLabel1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1924, 771);
+            this.ClientSize = new System.Drawing.Size(1924, 847);
+            this.Controls.Add(this.BamDispPan);
             this.Controls.Add(this.Write_GBox);
             this.Controls.Add(this.Read_GBox);
             this.Controls.Add(this.Options_Box);
@@ -4087,6 +4269,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.W_tgap)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.W_rpm)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.W_tskew)).EndInit();
+            this.BamDispPan.ResumeLayout(false);
+            this.BamSplitPan1.ResumeLayout(false);
+            this.BamSplit.Panel1.ResumeLayout(false);
+            this.BamSplit.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.BamSplit)).EndInit();
+            this.BamSplit.ResumeLayout(false);
             this.GB_NewDisk.ResumeLayout(false);
             this.GB_NewDisk.PerformLayout();
             this.ResumeLayout(false);
@@ -4243,7 +4431,6 @@
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label21;
         private CustomLabel FreeBlk;
-        private CustomLabel ErrorBlk;
         private CustomLabel AllocBlk;
         private CustomLabel CSTfmt;
         private System.Windows.Forms.ComboBox Sec_Interleave;
@@ -4376,5 +4563,21 @@
         private System.Windows.Forms.CheckBox V3_Cust_Sync;
         private System.Windows.Forms.CheckBox ReAlign_v3;
         private System.Windows.Forms.RichTextBox Data_Box;
+        private System.Windows.Forms.Panel BamDispPan;
+        private System.Windows.Forms.RichTextBox BamDB2;
+        private System.Windows.Forms.SplitContainer BamSplit;
+        private System.Windows.Forms.RichTextBox BamDB3;
+        private System.Windows.Forms.RichTextBox BamDB1;
+        private System.Windows.Forms.Label BLK_Legend;
+        private System.Windows.Forms.Label BME_11;
+        private System.Windows.Forms.Label BME_5;
+        private System.Windows.Forms.Label BME_9;
+        private System.Windows.Forms.Label BME_4;
+        private System.Windows.Forms.Label BME_6;
+        private System.Windows.Forms.Label BME_2;
+        private System.Windows.Forms.Label BM_Format;
+        private System.Windows.Forms.Panel BamSplitPan1;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.CheckBox FontCbox;
     }
 }

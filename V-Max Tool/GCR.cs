@@ -9,11 +9,7 @@ namespace V_Max_Tool
 {
     public partial class Form1 : Form
     {
-        /// <summary>
-        ///  ------------------ CBM standard GCR Encode/Decode routines --------------------- 
-        /// </summary>
-
-        private static readonly byte[] GCR_encode =
+        private static readonly byte[] CBM_encode =
         {
             0x0a, 0x0b, 0x12, 0x13,
             0x0e, 0x0f, 0x16, 0x17,
@@ -21,7 +17,7 @@ namespace V_Max_Tool
             0x0d, 0x1d, 0x1e, 0x15
         };
 
-        private static readonly byte[] GCR_decode_high =
+        private static readonly byte[] CBM_Decode_High =
         {
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0x80, 0x00, 0x10, 0xff, 0xc0, 0x40, 0x50,
@@ -29,7 +25,7 @@ namespace V_Max_Tool
             0xff, 0x90, 0xa0, 0xb0, 0xff, 0xd0, 0xe0, 0xff
         };
 
-        private static readonly byte[] GCR_decode_low =
+        private static readonly byte[] CBM_Decode_Low =
         {
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0x08, 0x00, 0x01, 0xff, 0x0c, 0x04, 0x05,
@@ -37,136 +33,53 @@ namespace V_Max_Tool
             0xff, 0x09, 0x0a, 0x0b, 0xff, 0x0d, 0x0e, 0xff
         };
 
-        (byte[] decoded, int illegal) Decode_CBM_GCR(byte[] gcr)
+        byte[] VM0_encode = new byte[16]
         {
-            if (gcr == null) return (null, -1);
-            byte[] plain = new byte[(gcr.Length / 5) << 2];
-            int illegal = 0;
-            for (int i = 0; i < gcr.Length / 5; i++)
-            {
-                int baseIndex = i * 5;
-                byte b1 = gcr[baseIndex];
-                byte b2 = gcr[baseIndex + 1];
-                plain[(i << 2) + 0] = CombineNibbles((byte)(b1 >> 3), (byte)(((b1 << 2) | (b2 >> 6)) & 0x1f));
-                b1 = gcr[baseIndex + 1];
-                b2 = gcr[baseIndex + 2];
-                plain[(i << 2) + 1] = CombineNibbles((byte)((b1 >> 1) & 0x1f), (byte)(((b1 << 4) | (b2 >> 4)) & 0x1f));
-                b1 = gcr[baseIndex + 2];
-                b2 = gcr[baseIndex + 3];
-                plain[(i << 2) + 2] = CombineNibbles((byte)(((b1 << 1) | (b2 >> 7)) & 0x1f), (byte)((b2 >> 2) & 0x1f));
-                b1 = gcr[baseIndex + 3];
-                b2 = gcr[baseIndex + 4];
-                plain[(i << 2) + 3] = CombineNibbles((byte)(((b1 << 3) | (b2 >> 5)) & 0x1f), (byte)(b2 & 0x1f));
-            }
-            return (plain, illegal); // > 6);
-
-            byte CombineNibbles(byte hnib, byte lnib)
-            {
-                hnib = GCR_decode_high[hnib];
-                lnib = GCR_decode_low[lnib];
-                if (hnib == 0xff || lnib == 0xff)
-                {
-                    illegal++;
-                    return 0x00;
-                }
-                else return (byte)(hnib | lnib);
-            }
-        }
-
-        byte[] Encode_CBM_GCR(byte[] plain) //, bool checksum = false)
-        {
-            int l = plain.Length >> 2;
-            //if (checksum && plain.Length >= 257)
-            //{
-            //    byte c = 0;
-            //    for (int i = 1; i < 256; i++) c ^= plain[i];
-            //    plain[256] = c;
-            //}
-            byte[] gcr = new byte[l * 5];
-            for (int i = 0; i < l; i++)
-            {
-                int baseIndex = i << 2;
-                byte p1 = plain[baseIndex];
-                byte p2 = plain[baseIndex + 1];
-                byte p3 = plain[baseIndex + 2];
-                byte p4 = plain[baseIndex + 3];
-                gcr[0 + (i * 5)] = (byte)((GCR_encode[p1 >> 4] << 3) | (GCR_encode[p1 & 0x0f] >> 2));
-                gcr[1 + (i * 5)] = (byte)((GCR_encode[p1 & 0x0f] << 6) | (GCR_encode[p2 >> 4] << 1) | (GCR_encode[p2 & 0x0f] >> 4));
-                gcr[2 + (i * 5)] = (byte)((GCR_encode[p2 & 0x0f] << 4) | (GCR_encode[p3 >> 4] >> 1));
-                gcr[3 + (i * 5)] = (byte)((GCR_encode[p3 >> 4] << 7) | (GCR_encode[p3 & 0x0f] << 2) | (GCR_encode[p4 >> 4] >> 3));
-                gcr[4 + (i * 5)] = (byte)((GCR_encode[p4 >> 4] << 5) | GCR_encode[p4 & 0x0f]);
-            }
-            return gcr;
-        }
-
-        /// <summary>
-        ///  ------------------ Vorpal (early) GCR Encode/Decode routines --------------- 
-        /// </summary>
-        /// 
-
-        Dictionary<byte, byte> eVPL_gcrTable = new Dictionary<byte, byte> // GCR byte in, 6-bit nybble out
-        {
-            { 0x49, 0x00 }, { 0x56, 0x01 }, { 0x4B, 0x02 }, { 0x5A, 0x03 }, { 0x99, 0x04 }, { 0xAA, 0x05 }, { 0x9B, 0x06 }, { 0xAD, 0x07 },
-            { 0x4E, 0x08 }, { 0x5D, 0x09 }, { 0x53, 0x0A }, { 0x65, 0x0B }, { 0x9E, 0x0C }, { 0xB2, 0x0D }, { 0xA6, 0x0E }, { 0xB5, 0x0F },
-            { 0x69, 0x10 }, { 0x76, 0x11 }, { 0x6B, 0x12 }, { 0x7A, 0x13 }, { 0xB9, 0x14 }, { 0xCE, 0x15 }, { 0xBB, 0x16 }, { 0xD3, 0x17 },
-            { 0x6E, 0x18 }, { 0x92, 0x19 }, { 0x73, 0x1A }, { 0x95, 0x1B }, { 0xC9, 0x1C }, { 0xD6, 0x1D }, { 0xCB, 0x1E }, { 0xDA, 0x1F },
-            { 0x4A, 0x20 }, { 0x59, 0x21 }, { 0x4D, 0x22 }, { 0x5B, 0x23 }, { 0x9A, 0x24 }, { 0xAB, 0x25 }, { 0x9D, 0x26 }, { 0xAE, 0x27 },
-            { 0x52, 0x28 }, { 0x5E, 0x29 }, { 0x55, 0x2A }, { 0x66, 0x2B }, { 0xA5, 0x2C }, { 0xB3, 0x2D }, { 0xA9, 0x2E }, { 0xB6, 0x2F },
-            { 0x6A, 0x30 }, { 0x79, 0x31 }, { 0x6D, 0x32 }, { 0x7B, 0x33 }, { 0xBA, 0x34 }, { 0xD2, 0x35 }, { 0xBD, 0x36 }, { 0xD5, 0x37 },
-            { 0x72, 0x38 }, { 0x93, 0x39 }, { 0x75, 0x3A }, { 0x96, 0x3B }, { 0xCA, 0x3C }, { 0xD9, 0x3D }, { 0xCD, 0x3E }, { 0xDB, 0x3F },
+            0x0F, 0x0A, 0x1E, 0x12,
+            0x09, 0x17, 0x13, 0x1D,
+            0x15, 0x19, 0x1A, 0x0D,
+            0x1B, 0x16, 0x0E, 0x0B
         };
 
-        (byte[] sector, bool checksum, int illegal) Decode_eVPL(byte[] data)
+        byte[] VM0_highTable = new byte[32]
         {
-            if (data == null || data.Length < 4) return (new byte[0], false, 240);
-            byte[] gcr = new byte[4];
-            byte parity = 0;
-            int illegal = 0, chunks = data.Length >> 2, ppos = chunks << 2;
-            List<byte> output = new List<byte>();
-            for (int i = 0; i < chunks; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    gcr[j] = parity = (byte)(eVPL_gcrTable.TryGetValue(data[(i << 2) + j], out byte val) ? val ^ parity : 0xff);
-                    if (gcr[j] == 0xff) illegal++;
-                }
-                output.AddRange(new byte[]
-                {
-                    (byte)(gcr[0] | ((gcr[1] & 0x03) << 6)),
-                    (byte)(((gcr[1] >> 2) & 0x0F) | ((gcr[2] & 0x0F) << 4)),
-                    (byte)(((gcr[2] >> 4) & 0x03) | (gcr[3] << 2))
-                });
-            }
-            return (output.ToArray(), data.Length >= ppos && eVPL_gcrTable.FirstOrDefault(x => x.Value == parity).Key == data[ppos], illegal);
-        }
+            0xAE,0x00,0x02,0x02,0x2F,0x04,0x3A,0x03,
+            0xFF,0x40,0x10,0xF0,0xFF,0xB0,0xE0,0x00,
+            0xFF,0xFF,0x30,0x60,0xFF,0x80,0xD0,0x50,
+            0xFF,0x90,0xA0,0xC0,0xFF,0x70,0x20,0xFF
+        };
 
-        byte[] Encode_eVpl(byte[] data, bool full_325 = false)
+        byte[] VM0_lowTable = new byte[32]
         {
-            if (data == null || data.Length < 3) return new byte[0];
-            byte parity = 0; int EncodeLen = (data.Length / 3) * 3;
-            List<byte> output = new List<byte>();
-            if (full_325) output.AddRange(new byte[] { 0x55, 0xd4, 0xad });
-            for (int i = 0; i < EncodeLen; i += 3)
-            {
-                AddOutput((byte)(data[i] & 0x3f));
-                AddOutput((byte)(((data[i + 1] << 2) | (data[i] >> 6)) & 0x3f));
-                AddOutput((byte)((((data[i + 1] >> 4) & 0x0f) | ((data[i + 2] & 0x03) << 4)) & 0x3f));
-                AddOutput((byte)((data[i + 2] >> 2) & 0x3f));
-            }
-            output.Add(eVPL_gcrTable.FirstOrDefault(x => x.Value == parity).Key);
-            if (full_325) output.Add(0x55);
-            return output.ToArray();
+            0xFF,0x90,0xA0,0xC0,0xFF,0x70,0x20,0xFF,
+            0xFF,0x04,0x01,0x0F,0xFF,0x0B,0x0E,0x00,
+            0xFF,0xFF,0x03,0x06,0xFF,0x08,0x0D,0x05,
+            0xFF,0x09,0x0A,0x0C,0xFF,0x07,0x02,0xFF
+        };
 
-            void AddOutput(byte gcr)
-            {
-                output.Add(eVPL_gcrTable.FirstOrDefault(x => x.Value == (byte)(gcr ^ parity)).Key);
-                parity = gcr;
-            }
-        }
+        byte[] VM1_encode = new byte[16]
+        {
+            0x0E, 0x0A, 0x09, 0x1D,
+            0x1B, 0x16, 0x1A, 0x19,
+            0x13, 0x17, 0x0F, 0x1E,
+            0x0D, 0x0B, 0x12, 0x15
+        };
 
-        /// <summary>
-        ///  ------------------ Vorpal (newer) GCR Encode/Decode routines --------------------- 
-        /// </summary>
+        byte[] VM1_highTable = new byte[32]
+        {
+            0x00,0x00,0x86,0x04,0xEE,0x03,0x3A,0x03,
+            0x02,0x20,0x10,0xD0,0xFF,0xC0,0x00,0xA0,
+            0xFF,0x50,0xE0,0x80,0xFF,0xF0,0x50,0x90,
+            0x10,0x70,0x60,0x40,0xFF,0x30,0xB0,0xFF
+        };
+
+        byte[] VM1_lowTable = new byte[32]
+        {
+            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+            0xFF,0x02,0x01,0x0D,0xFF,0x0C,0x00,0x0A,
+            0xFF,0x05,0x0E,0x08,0xFF,0x0F,0x05,0x09,
+            0x01,0x07,0x06,0x04,0xFF,0x03,0x0B,0xFF
+        };
 
         private static readonly byte[] VPL_encode = new byte[16]
         {
@@ -192,84 +105,83 @@ namespace V_Max_Tool
             0xff, 0xb0, 0xc0, 0xd0, 0xff, 0xe0, 0xf0, 0xff,
         };
 
-        byte CombineNibbles_VPL(byte highNibble, byte lowNibble)
+        private static readonly byte[] RapidLok_Decode_Low =
         {
-            if (highNibble == 0xff || lowNibble == 0xff) return 0x00;
-            else return (byte)(highNibble | lowNibble);
-        }
+            0x0f, 0x07, 0x0d, 0x05,
+            0x0b, 0x03, 0x09, 0x01,
+            0x0e, 0x06, 0x0c, 0x04,
+            0x0a, 0x02, 0x08, 0x00
+        };
 
-        byte[] Decode_Vorpal_GCR(byte[] gcr)
+        private static readonly byte[] RapidLok_Decode_High =
         {
-            byte[] plain = new byte[(gcr.Length / 5) << 2];
-            for (int i = 0; i < gcr.Length / 5; i++)
-            {
-                int baseIndex = i * 5;
-                byte b1 = gcr[baseIndex];
-                byte b2 = gcr[baseIndex + 1];
-                plain[(i << 2) + 0] = CombineNibbles_VPL(VPL_decode_high[b1 >> 3], VPL_decode_low[((b1 << 2) | (b2 >> 6)) & 0x1f]);
-                b1 = gcr[baseIndex + 1];
-                b2 = gcr[baseIndex + 2];
-                plain[(i << 2) + 1] = CombineNibbles_VPL(VPL_decode_high[(b1 >> 1) & 0x1f], VPL_decode_low[((b1 << 4) | (b2 >> 4)) & 0x1f]);
-                b1 = gcr[baseIndex + 2];
-                b2 = gcr[baseIndex + 3];
-                plain[(i << 2) + 2] = CombineNibbles_VPL(VPL_decode_high[((b1 << 1) | (b2 >> 7)) & 0x1f], VPL_decode_low[(b2 >> 2) & 0x1f]);
-                b1 = gcr[baseIndex + 3];
-                b2 = gcr[baseIndex + 4];
-                plain[(i << 2) + 3] = CombineNibbles_VPL(VPL_decode_high[((b1 << 3) | (b2 >> 5)) & 0x1f], VPL_decode_low[b2 & 0x1f]);
-            }
-            return plain;
-        }
-        BitArray Encode_Vorpal_GCR(byte[] sector, bool Calculate_Checksum, bool nextBit)
-        {
-            if (sector == null) return null;
-            int index = 0, checksum = 0;
-            if (Calculate_Checksum)
-            {
-                foreach (byte b in sector) checksum ^= b;
-                sector = ArrayConcat(sector, new byte[] { (byte)checksum });
-            }
-            byte[] nybl = new byte[sector.Length << 1];
-            for (int i = 0; i < sector.Length; i++)
-            {
-                nybl[index++] = VPL_encode[(sector[i] >> 4) & 0x0F];
-                nybl[index++] = VPL_encode[sector[i] & 0x0F];
-            }
-            BitArray encoded = new BitArray(sector.Length * 10);
-            for (int i = 0; i < nybl.Length; i++)
-            {
-                index = i * 5;
-                if (nybl[i] == 0x0f && (i < nybl.Length - 1 && (nybl[i + 1] & 0x10) != 0 || i == nybl.Length - 1 && nextBit)) nybl[i] = 0x0c;
-                if (nybl[i] == 0x17 && (i < nybl.Length - 1 && (nybl[i + 1] & 0x10) != 0 || i == nybl.Length - 1 && nextBit)) nybl[i] = 0x14;
-                if (nybl[i] == 0x1d && i > 0 && (nybl[i - 1] & 0x01) != 0) nybl[i] = 0x05;
-                if (nybl[i] == 0x1e && i > 0 && (nybl[i - 1] & 0x01) != 0) nybl[i] = 0x06;
-                for (int j = 0; j < 5; j++) encoded[index + (4 - j)] = (nybl[i] & (1 << j)) != 0;
-            }
-            return encoded;
-        }
+            0xf0, 0x70, 0xd0, 0x50,
+            0xb0, 0x30, 0x90, 0x10,
+            0xe0, 0x60, 0xc0, 0x40,
+            0xa0, 0x20, 0x80, 0x00
+        };
 
-        ///
-        /// ------------------- BossDos GCR Encode/Decode routines ----------------------
-        ///
+        Dictionary<byte, byte> eVPL_gcrTable = new Dictionary<byte, byte> // GCR byte in, 6-bit nybble out
+        {
+            { 0x49, 0x00 }, { 0x56, 0x01 }, { 0x4B, 0x02 }, { 0x5A, 0x03 },
+            { 0x99, 0x04 }, { 0xAA, 0x05 }, { 0x9B, 0x06 }, { 0xAD, 0x07 },
+            { 0x4E, 0x08 }, { 0x5D, 0x09 }, { 0x53, 0x0A }, { 0x65, 0x0B },
+            { 0x9E, 0x0C }, { 0xB2, 0x0D }, { 0xA6, 0x0E }, { 0xB5, 0x0F },
+            { 0x69, 0x10 }, { 0x76, 0x11 }, { 0x6B, 0x12 }, { 0x7A, 0x13 },
+            { 0xB9, 0x14 }, { 0xCE, 0x15 }, { 0xBB, 0x16 }, { 0xD3, 0x17 },
+            { 0x6E, 0x18 }, { 0x92, 0x19 }, { 0x73, 0x1A }, { 0x95, 0x1B },
+            { 0xC9, 0x1C }, { 0xD6, 0x1D }, { 0xCB, 0x1E }, { 0xDA, 0x1F },
+            { 0x4A, 0x20 }, { 0x59, 0x21 }, { 0x4D, 0x22 }, { 0x5B, 0x23 },
+            { 0x9A, 0x24 }, { 0xAB, 0x25 }, { 0x9D, 0x26 }, { 0xAE, 0x27 },
+            { 0x52, 0x28 }, { 0x5E, 0x29 }, { 0x55, 0x2A }, { 0x66, 0x2B },
+            { 0xA5, 0x2C }, { 0xB3, 0x2D }, { 0xA9, 0x2E }, { 0xB6, 0x2F },
+            { 0x6A, 0x30 }, { 0x79, 0x31 }, { 0x6D, 0x32 }, { 0x7B, 0x33 },
+            { 0xBA, 0x34 }, { 0xD2, 0x35 }, { 0xBD, 0x36 }, { 0xD5, 0x37 },
+            { 0x72, 0x38 }, { 0x93, 0x39 }, { 0x75, 0x3A }, { 0x96, 0x3B },
+            { 0xCA, 0x3C }, { 0xD9, 0x3D }, { 0xCD, 0x3E }, { 0xDB, 0x3F },
+        };
+
+        Dictionary<byte, byte> VMax_gcrTable = new Dictionary<byte, byte> // converts raw GCR (key) into 6-bit nybbles (value)
+        {
+            { 0x92, 0x3B }, { 0x93, 0x3A }, { 0x96, 0x3C }, { 0x97, 0x35 },
+            { 0x99, 0x39 }, { 0x9B, 0x34 }, { 0x9C, 0x38 }, { 0x9D, 0x33 },
+            { 0x9E, 0x32 }, { 0x9F, 0x31 }, { 0xA4, 0x3E }, { 0xA5, 0x3F },
+            { 0xA6, 0x3D }, { 0xA7, 0x30 }, { 0xA9, 0x37 }, { 0xAA, 0x36 },
+            { 0xAB, 0x2F }, { 0xAC, 0x2E }, { 0xAD, 0x2C }, { 0xAE, 0x2D },
+            { 0xAF, 0x2B }, { 0xB2, 0x22 }, { 0xB4, 0x25 }, { 0xB5, 0x2A },
+            { 0xB6, 0x28 }, { 0xB7, 0x29 }, { 0xB9, 0x24 }, { 0xBA, 0x27 },
+            { 0xBB, 0x26 }, { 0xBC, 0x21 }, { 0xBD, 0x23 }, { 0xBE, 0x20 },
+            { 0xC9, 0x1F }, { 0xCA, 0x1E }, { 0xCB, 0x1D }, { 0xCC, 0x1B },
+            { 0xCD, 0x1C }, { 0xCE, 0x1A }, { 0xCF, 0x19 }, { 0xD3, 0x16 },
+            { 0xD7, 0x17 }, { 0xD9, 0x14 }, { 0xDB, 0x15 }, { 0xDC, 0x12 },
+            { 0xDD, 0x13 }, { 0xDE, 0x11 }, { 0xDF, 0x18 }, { 0xE4, 0x0F },
+            { 0xE5, 0x10 }, { 0xE6, 0x0E }, { 0xE7, 0x0D }, { 0xE9, 0x0C },
+            { 0xEA, 0x0A }, { 0xEB, 0x0B }, { 0xEC, 0x08 }, { 0xED, 0x09 },
+            { 0xEE, 0x07 }, { 0xEF, 0x06 }, { 0xF2, 0x05 }, { 0xF3, 0x04 },
+            { 0xF4, 0x02 }, { 0xF5, 0x03 }, { 0xF6, 0x01 }, { 0xF7, 0x00 },
+            // Bytes used by older V-Max v2 (containing weak bits)
+            { 0xA3, 0x2c }, { 0xE2, 0x0A}
+        };
 
         byte[] BDS_LookUp_Table = new byte[] // Used on sector data (don't use for Loader data)
-       {
-            0xFF, 0xF7, 0xFD, 0xF5, 0xFB, 0xF3, 0xF9, 0xF1, 0xFE, 0xF6, 0xFC, 0xF4, 0xFA, 0xF2, 0xF8, 0xF0,
-            0xEF, 0xE7, 0xED, 0xE5, 0xEB, 0xE3, 0xE9, 0xE1, 0xEE, 0xE6, 0xEC, 0xE4, 0xEA, 0xE2, 0xE8, 0xE0,
-            0xDF, 0xD7, 0xDD, 0xD5, 0xDB, 0xD3, 0xD9, 0xD1, 0xDE, 0xD6, 0xDC, 0xD4, 0xDA, 0xD2, 0xD8, 0xD0,
-            0xCF, 0xC7, 0xCD, 0xC5, 0xCB, 0xC3, 0xC9, 0xC1, 0xCE, 0xC6, 0xCC, 0xC4, 0xCA, 0xC2, 0xC8, 0xC0,
-            0xBF, 0xB7, 0xBD, 0xB5, 0xBB, 0xB3, 0xB9, 0xB1, 0xBE, 0xB6, 0xBC, 0xB4, 0xBA, 0xB2, 0xB8, 0xB0,
-            0xAF, 0xA7, 0xAD, 0xA5, 0xAB, 0xA3, 0xA9, 0xA1, 0xAE, 0xA6, 0xAC, 0xA4, 0xAA, 0xA2, 0xA8, 0xA0,
-            0x9F, 0x97, 0x9D, 0x95, 0x9B, 0x93, 0x99, 0x91, 0x9E, 0x96, 0x9C, 0x94, 0x9A, 0x92, 0x98, 0x90,
-            0x8F, 0x87, 0x8D, 0x85, 0x8B, 0x83, 0x89, 0x81, 0x8E, 0x86, 0x8C, 0x84, 0x8A, 0x82, 0x88, 0x80,
-            0x7F, 0x77, 0x7D, 0x75, 0x7B, 0x73, 0x79, 0x71, 0x7E, 0x76, 0x7C, 0x74, 0x7A, 0x72, 0x78, 0x70,
-            0x6F, 0x67, 0x6D, 0x65, 0x6B, 0x63, 0x69, 0x61, 0x6E, 0x66, 0x6C, 0x64, 0x6A, 0x62, 0x68, 0x60,
-            0x5F, 0x57, 0x5D, 0x55, 0x5B, 0x53, 0x59, 0x51, 0x5E, 0x56, 0x5C, 0x54, 0x5A, 0x52, 0x58, 0x50,
-            0x4F, 0x47, 0x4D, 0x45, 0x4B, 0x43, 0x49, 0x41, 0x4E, 0x46, 0x4C, 0x44, 0x4A, 0x42, 0x48, 0x40,
-            0x3F, 0x37, 0x3D, 0x35, 0x3B, 0x33, 0x39, 0x31, 0x3E, 0x36, 0x3C, 0x34, 0x3A, 0x32, 0x38, 0x30,
-            0x2F, 0x27, 0x2D, 0x25, 0x2B, 0x23, 0x29, 0x21, 0x2E, 0x26, 0x2C, 0x24, 0x2A, 0x22, 0x28, 0x20,
-            0x1F, 0x17, 0x1D, 0x15, 0x1B, 0x13, 0x19, 0x11, 0x1E, 0x16, 0x1C, 0x14, 0x1A, 0x12, 0x18, 0x10,
-            0x0F, 0x07, 0x0D, 0x05, 0x0B, 0x03, 0x09, 0x01, 0x0E, 0x06, 0x0C, 0x04, 0x0A, 0x02, 0x08, 0x00,
-       };
+        {
+             0xFF, 0xF7, 0xFD, 0xF5, 0xFB, 0xF3, 0xF9, 0xF1, 0xFE, 0xF6, 0xFC, 0xF4, 0xFA, 0xF2, 0xF8, 0xF0,
+             0xEF, 0xE7, 0xED, 0xE5, 0xEB, 0xE3, 0xE9, 0xE1, 0xEE, 0xE6, 0xEC, 0xE4, 0xEA, 0xE2, 0xE8, 0xE0,
+             0xDF, 0xD7, 0xDD, 0xD5, 0xDB, 0xD3, 0xD9, 0xD1, 0xDE, 0xD6, 0xDC, 0xD4, 0xDA, 0xD2, 0xD8, 0xD0,
+             0xCF, 0xC7, 0xCD, 0xC5, 0xCB, 0xC3, 0xC9, 0xC1, 0xCE, 0xC6, 0xCC, 0xC4, 0xCA, 0xC2, 0xC8, 0xC0,
+             0xBF, 0xB7, 0xBD, 0xB5, 0xBB, 0xB3, 0xB9, 0xB1, 0xBE, 0xB6, 0xBC, 0xB4, 0xBA, 0xB2, 0xB8, 0xB0,
+             0xAF, 0xA7, 0xAD, 0xA5, 0xAB, 0xA3, 0xA9, 0xA1, 0xAE, 0xA6, 0xAC, 0xA4, 0xAA, 0xA2, 0xA8, 0xA0,
+             0x9F, 0x97, 0x9D, 0x95, 0x9B, 0x93, 0x99, 0x91, 0x9E, 0x96, 0x9C, 0x94, 0x9A, 0x92, 0x98, 0x90,
+             0x8F, 0x87, 0x8D, 0x85, 0x8B, 0x83, 0x89, 0x81, 0x8E, 0x86, 0x8C, 0x84, 0x8A, 0x82, 0x88, 0x80,
+             0x7F, 0x77, 0x7D, 0x75, 0x7B, 0x73, 0x79, 0x71, 0x7E, 0x76, 0x7C, 0x74, 0x7A, 0x72, 0x78, 0x70,
+             0x6F, 0x67, 0x6D, 0x65, 0x6B, 0x63, 0x69, 0x61, 0x6E, 0x66, 0x6C, 0x64, 0x6A, 0x62, 0x68, 0x60,
+             0x5F, 0x57, 0x5D, 0x55, 0x5B, 0x53, 0x59, 0x51, 0x5E, 0x56, 0x5C, 0x54, 0x5A, 0x52, 0x58, 0x50,
+             0x4F, 0x47, 0x4D, 0x45, 0x4B, 0x43, 0x49, 0x41, 0x4E, 0x46, 0x4C, 0x44, 0x4A, 0x42, 0x48, 0x40,
+             0x3F, 0x37, 0x3D, 0x35, 0x3B, 0x33, 0x39, 0x31, 0x3E, 0x36, 0x3C, 0x34, 0x3A, 0x32, 0x38, 0x30,
+             0x2F, 0x27, 0x2D, 0x25, 0x2B, 0x23, 0x29, 0x21, 0x2E, 0x26, 0x2C, 0x24, 0x2A, 0x22, 0x28, 0x20,
+             0x1F, 0x17, 0x1D, 0x15, 0x1B, 0x13, 0x19, 0x11, 0x1E, 0x16, 0x1C, 0x14, 0x1A, 0x12, 0x18, 0x10,
+             0x0F, 0x07, 0x0D, 0x05, 0x0B, 0x03, 0x09, 0x01, 0x0E, 0x06, 0x0C, 0x04, 0x0A, 0x02, 0x08, 0x00,
+        };
 
         byte[] BDS_55 = new byte[] // First GCR pair for BossDos
         {
@@ -327,6 +239,178 @@ namespace V_Max_Tool
             0xBA, 0xBB, 0xBE, 0xBF,
         };
 
+        /// <summary>
+        ///  ------------------ CBM standard GCR Encode/Decode routines --------------------- 
+        /// </summary>
+
+        (byte[] decoded, int illegal) Decode_CBM_GCR(byte[] gcr, int type = 0)
+        {
+            if (gcr == null) return (null, -1);
+            byte[] high, low;
+            switch (type)
+            {
+                case 5: high = VPL_decode_high; low = VPL_decode_low; break;
+                default: high = CBM_Decode_High; low = CBM_Decode_Low; break;
+            }
+            byte[] plain = new byte[(gcr.Length / 5) << 2];
+            int illegal = 0;
+            for (int i = 0; i < gcr.Length / 5; i++)
+            {
+                int baseIndex = i * 5;
+                byte b1 = gcr[baseIndex];
+                byte b2 = gcr[baseIndex + 1];
+                plain[(i << 2) + 0] = CombineNibbles(ref illegal,
+                    (byte)(b1 >> 3), (byte)(((b1 << 2) | (b2 >> 6)) & 0x1f), high, low);
+                b1 = gcr[baseIndex + 1];
+                b2 = gcr[baseIndex + 2];
+                plain[(i << 2) + 1] = CombineNibbles(ref illegal,
+                    (byte)((b1 >> 1) & 0x1f), (byte)(((b1 << 4) | (b2 >> 4)) & 0x1f), high, low);
+                b1 = gcr[baseIndex + 2];
+                b2 = gcr[baseIndex + 3];
+                plain[(i << 2) + 2] = CombineNibbles(ref illegal,
+                    (byte)(((b1 << 1) | (b2 >> 7)) & 0x1f), (byte)((b2 >> 2) & 0x1f), high, low);
+                b1 = gcr[baseIndex + 3];
+                b2 = gcr[baseIndex + 4];
+                plain[(i << 2) + 3] = CombineNibbles(ref illegal,
+                    (byte)(((b1 << 3) | (b2 >> 5)) & 0x1f), (byte)(b2 & 0x1f), high, low);
+            }
+            return (plain, illegal);
+        }
+
+        byte CombineNibbles(ref int illegal, byte hnib, byte lnib, byte[] high, byte[] low)
+        {
+            hnib = high[hnib];
+            lnib = low[lnib];
+            if (hnib == 0xff || lnib == 0xff)
+            {
+                illegal++;
+                return 0x00;
+            }
+            else return (byte)(hnib | lnib);
+        }
+
+        byte[] Encode_CBM_GCR(byte[] plain) //, bool checksum = false)
+        {
+            int l = plain.Length >> 2;
+            byte[] gcr = new byte[l * 5];
+            for (int i = 0; i < l; i++)
+            {
+                int baseIndex = i << 2;
+                byte p1 = plain[baseIndex];
+                byte p2 = plain[baseIndex + 1];
+                byte p3 = plain[baseIndex + 2];
+                byte p4 = plain[baseIndex + 3];
+                gcr[0 + (i * 5)] = (byte)((CBM_encode[p1 >> 4] << 3) | (CBM_encode[p1 & 0x0f] >> 2));
+                gcr[1 + (i * 5)] = (byte)((CBM_encode[p1 & 0x0f] << 6) | (CBM_encode[p2 >> 4] << 1) | (CBM_encode[p2 & 0x0f] >> 4));
+                gcr[2 + (i * 5)] = (byte)((CBM_encode[p2 & 0x0f] << 4) | (CBM_encode[p3 >> 4] >> 1));
+                gcr[3 + (i * 5)] = (byte)((CBM_encode[p3 >> 4] << 7) | (CBM_encode[p3 & 0x0f] << 2) | (CBM_encode[p4 >> 4] >> 3));
+                gcr[4 + (i * 5)] = (byte)((CBM_encode[p4 >> 4] << 5) | CBM_encode[p4 & 0x0f]);
+            }
+            return gcr;
+        }
+
+        /// <summary>
+        ///  ------------------ Vorpal (early) GCR Encode/Decode routines --------------- 
+        /// </summary>
+        /// 
+
+        (byte[] sector, bool checksum, int illegal, byte expected, byte actual) Decode_eVPL(byte[] data)
+        {
+            if (data == null || data.Length < 4) return (new byte[0], false, 240, 0, 0);
+            byte[] gcr = new byte[4];
+            byte parity = 0;
+            int illegal = 0, chunks = data.Length >> 2, ppos = chunks << 2;
+            List<byte> output = new List<byte>();
+            for (int i = 0; i < chunks; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    gcr[j] = parity = (byte)(eVPL_gcrTable.TryGetValue(data[(i << 2) + j], out byte val) ? val ^ parity : 0xff);
+                    if (gcr[j] == 0xff) illegal++;
+                }
+                output.AddRange(new byte[]
+                {
+                    (byte)(gcr[0] | ((gcr[1] & 0x03) << 6)),
+                    (byte)(((gcr[1] >> 2) & 0x0F) | ((gcr[2] & 0x0F) << 4)),
+                    (byte)(((gcr[2] >> 4) & 0x03) | (gcr[3] << 2))
+                });
+            }
+            byte actual = eVPL_gcrTable.FirstOrDefault(x => x.Value == parity).Key;
+            byte expected = data.Length >= ppos ? data[ppos] : (byte)0;
+            bool checksumValid = data.Length >= ppos && actual == expected;
+            return (output.ToArray(), checksumValid, illegal, expected, actual);
+        }
+
+        byte[] Encode_eVpl(byte[] data, bool full_325 = false)
+        {
+            if (data == null || data.Length < 3) return new byte[0];
+            byte parity = 0; int EncodeLen = (data.Length / 3) * 3;
+            List<byte> output = new List<byte>();
+            if (full_325) output.AddRange(new byte[] { 0x55, 0xd4, 0xad });
+            for (int i = 0; i < EncodeLen; i += 3)
+            {
+                AddOutput((byte)(data[i] & 0x3f));
+                AddOutput((byte)(((data[i + 1] << 2) | (data[i] >> 6)) & 0x3f));
+                AddOutput((byte)((((data[i + 1] >> 4) & 0x0f) | ((data[i + 2] & 0x03) << 4)) & 0x3f));
+                AddOutput((byte)((data[i + 2] >> 2) & 0x3f));
+            }
+            output.Add(eVPL_gcrTable.FirstOrDefault(x => x.Value == parity).Key);
+            if (full_325) output.Add(0x55);
+            return output.ToArray();
+
+            void AddOutput(byte gcr)
+            {
+                output.Add(eVPL_gcrTable.FirstOrDefault(x => x.Value == (byte)(gcr ^ parity)).Key);
+                parity = gcr;
+            }
+        }
+
+        /// <summary>
+        ///  ------------------ Vorpal (newer) GCR Encode/Decode routines --------------------- 
+        /// </summary>
+
+        byte[] Decode_VorpalLoader(byte[] data)
+        {
+            if (data == null || data.Length != 513) return null;
+            int pos = 1;
+            List<byte> dec = new List<byte>();
+            while (pos < data.Length - 1)
+                dec.Add((byte)(data[pos++] ^ data[pos++]));
+            return dec.ToArray();
+        }
+
+        BitArray Encode_Vorpal_GCR(byte[] sector, bool Calculate_Checksum, bool nextBit)
+        {
+            if (sector == null) return null;
+            int index = 0, checksum = 0;
+            if (Calculate_Checksum)
+            {
+                foreach (byte b in sector) checksum ^= b;
+                sector = ArrayConcat(sector, new byte[] { (byte)checksum });
+            }
+            byte[] nybl = new byte[sector.Length << 1];
+            for (int i = 0; i < sector.Length; i++)
+            {
+                nybl[index++] = VPL_encode[(sector[i] >> 4) & 0x0F];
+                nybl[index++] = VPL_encode[sector[i] & 0x0F];
+            }
+            BitArray encoded = new BitArray(sector.Length * 10);
+            for (int i = 0; i < nybl.Length; i++)
+            {
+                index = i * 5;
+                if (nybl[i] == 0x0f && (i < nybl.Length - 1 && (nybl[i + 1] & 0x10) != 0 || i == nybl.Length - 1 && nextBit)) nybl[i] = 0x0c;
+                if (nybl[i] == 0x17 && (i < nybl.Length - 1 && (nybl[i + 1] & 0x10) != 0 || i == nybl.Length - 1 && nextBit)) nybl[i] = 0x14;
+                if (nybl[i] == 0x1d && i > 0 && (nybl[i - 1] & 0x01) != 0) nybl[i] = 0x05;
+                if (nybl[i] == 0x1e && i > 0 && (nybl[i - 1] & 0x01) != 0) nybl[i] = 0x06;
+                for (int j = 0; j < 5; j++) encoded[index + (4 - j)] = (nybl[i] & (1 << j)) != 0;
+            }
+            return encoded;
+        }
+
+        ///
+        /// ------------------- BossDos GCR Encode/Decode routines ----------------------
+        ///
+
 
         byte Decode_BDS_Pair(byte a, byte b)
         {
@@ -371,22 +455,6 @@ namespace V_Max_Tool
         /// <summary>
         ///  ------------------ RapidLok GCR Encode/Decode routines --------------------- 
         /// </summary>
-
-        private static readonly byte[] RapidLok_Decode_Low =
-        {
-            0x0f, 0x07, 0x0d, 0x05,
-            0x0b, 0x03, 0x09, 0x01,
-            0x0e, 0x06, 0x0c, 0x04,
-            0x0a, 0x02, 0x08, 0x00
-        };
-
-        private static readonly byte[] RapidLok_Decode_High =
-        {
-            0xf0, 0x70, 0xd0, 0x50,
-            0xb0, 0x30, 0x90, 0x10,
-            0xe0, 0x60, 0xc0, 0x40,
-            0xa0, 0x20, 0x80, 0x00
-        };
 
         (byte[] sector, bool checksum, bool version) Decode_RL_Data(byte[] sector)
         {
@@ -560,21 +628,6 @@ namespace V_Max_Tool
         /// <summary>
         ///  ------------------ V-Max GCR Encode/Decode routines --------------------- 
         /// </summary>
-        /// 
-
-        Dictionary<byte, byte> VMax_gcrTable = new Dictionary<byte, byte> // converts raw GCR (key) into 6-bit nybbles (value)
-        {
-            { 0x92, 0x3B }, { 0x93, 0x3A }, { 0x96, 0x3C }, { 0x97, 0x35 }, { 0x99, 0x39 }, { 0x9B, 0x34 }, { 0x9C, 0x38 }, { 0x9D, 0x33 },
-            { 0x9E, 0x32 }, { 0x9F, 0x31 }, { 0xA4, 0x3E }, { 0xA5, 0x3F }, { 0xA6, 0x3D }, { 0xA7, 0x30 }, { 0xA9, 0x37 }, { 0xAA, 0x36 },
-            { 0xAB, 0x2F }, { 0xAC, 0x2E }, { 0xAD, 0x2C }, { 0xAE, 0x2D }, { 0xAF, 0x2B }, { 0xB2, 0x22 }, { 0xB4, 0x25 }, { 0xB5, 0x2A },
-            { 0xB6, 0x28 }, { 0xB7, 0x29 }, { 0xB9, 0x24 }, { 0xBA, 0x27 }, { 0xBB, 0x26 }, { 0xBC, 0x21 }, { 0xBD, 0x23 }, { 0xBE, 0x20 },
-            { 0xC9, 0x1F }, { 0xCA, 0x1E }, { 0xCB, 0x1D }, { 0xCC, 0x1B }, { 0xCD, 0x1C }, { 0xCE, 0x1A }, { 0xCF, 0x19 }, { 0xD3, 0x16 },
-            { 0xD7, 0x17 }, { 0xD9, 0x14 }, { 0xDB, 0x15 }, { 0xDC, 0x12 }, { 0xDD, 0x13 }, { 0xDE, 0x11 }, { 0xDF, 0x18 }, { 0xE4, 0x0F },
-            { 0xE5, 0x10 }, { 0xE6, 0x0E }, { 0xE7, 0x0D }, { 0xE9, 0x0C }, { 0xEA, 0x0A }, { 0xEB, 0x0B }, { 0xEC, 0x08 }, { 0xED, 0x09 },
-            { 0xEE, 0x07 }, { 0xEF, 0x06 }, { 0xF2, 0x05 }, { 0xF3, 0x04 }, { 0xF4, 0x02 }, { 0xF5, 0x03 }, { 0xF6, 0x01 }, { 0xF7, 0x00 },
-            // Bytes used by older V-Max v2 (containing weak bits)
-            { 0xA3, 0x2c }, { 0xE2, 0x0A}
-        };
 
         byte[] Decode_VmaxGCR(byte[] rawGcr)    // Decode V-Max (custom) Sectors
         {
@@ -598,10 +651,8 @@ namespace V_Max_Tool
         byte[] Decode_VmaxGCR_Linear(byte[] rawGcr)    // Decode V-Max (custom) Sectors
         {
             if (rawGcr == null) return null;
-            //int chunks = rawGcr.Length >> 2;
             byte aa, bb, cc;
             List<byte> output = new List<byte>();
-            //byte[] output = new byte[chunks * 3];
             for (int i = 0; i < rawGcr.Length; i += 4)
             {
                 try
@@ -618,26 +669,6 @@ namespace V_Max_Tool
             }
             return output.ToArray();
         }
-
-        //byte[] Decode_VmaxGCR_Linear2(byte[] rawGcr)    // Decode V-Max (custom) Sectors
-        //{
-        //    if (rawGcr == null) return null;
-        //    int chunks = rawGcr.Length >> 2;
-        //    List<byte> output = new List<byte>();
-        //    //byte[] output = new byte[chunks * 3];
-        //    for (int i = 0; i < rawGcr.Length; i += 4)
-        //    {
-        //        try
-        //        {
-        //            byte mask = (byte)(VMax_gcrTable.TryGetValue(rawGcr[i], out var val) ? val : 0xff);
-        //            output.Add((byte)(mask << 2 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 1], out val) ? val : 0xff)));
-        //            output.Add((byte)(mask << 4 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 2], out val) ? val : 0xff)));
-        //            output.Add((byte)(mask << 6 ^ (VMax_gcrTable.TryGetValue(rawGcr[i + 3], out val) ? val : 0xff)));
-        //        }
-        //        catch { }
-        //    }
-        //    return output.ToArray();
-        //}
 
         byte[] Encode_VmaxGCR(byte[] data, bool Calculate_Checksum = false, bool older = false)
         {

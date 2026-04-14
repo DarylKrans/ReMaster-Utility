@@ -48,9 +48,9 @@ namespace V_Max_Tool
         private static readonly Color c64_text = Color.FromArgb(135, 122, 237);
         private static bool usecpp = true;
         private static bool CPP_LZ = true;
-        private static bool debug = false;
+        public static bool debug = false;
         private static string def_bg_text;
-        private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
+        //private static readonly PrivateFontCollection DirFont = new PrivateFontCollection();
         private static ConcurrentBag<string> ErrorList = new ConcurrentBag<string>();
         //private static FontFamily customFontFamily;
         private static PrivateFontCollection _C64ProMono = new PrivateFontCollection();
@@ -118,7 +118,7 @@ namespace V_Max_Tool
 
         private static readonly int[] vm2_Sectors_by_density = { 22, 20 };
         private static readonly int[] Sectors_by_density = { 21, 19, 18, 17 };
-        private static readonly string[] ErrorCodes =
+        public static readonly string[] ErrorCodes =
         {
             "null",
             "Sector OK",            // 01
@@ -131,19 +131,19 @@ namespace V_Max_Tool
             "ID mismatch"           // 0b (11)
         };
 
-        private static readonly string[] c1541error =
+        public static readonly string[] c1541error =
         {
-            "",
+            string.Empty,
             "0, Sector OK",
             "20, Block header not found",
             "21, Sync not found",
             "22, Data block not found",
             "23, Checksum error in data",
             "24, Byte decoding error",
-            "",
-            "",
+            string.Empty,
+            string.Empty,
             "27, Checksum error in header",
-            "",
+            string.Empty,
             "29, Disk ID mismatch"
         };
 
@@ -273,6 +273,9 @@ namespace V_Max_Tool
             /// NDS is the input or source array
             NDS.cbm_sector = new int[len][];
             NDS.Sector = new byte[len][][];
+
+            lastHovered = 0;
+            lastHoveredColor = Color.Black;
         }
 
         void AddRecentFile(string filePath)
@@ -376,7 +379,8 @@ namespace V_Max_Tool
                 $"W_verb={W_verb.Checked}",
                 $"Enable_DB={EnableDBMenu.Checked}",
                 $"Prot_DetectMethod={ProtDetectMethod.SelectedIndex}",
-                $"Parse_Log={ParseLog.Checked}"
+                $"Parse_Log={ParseLog.Checked}",
+                $"Use_Font={FontCbox.Checked}"
             };
             File.WriteAllLines(TEMP.settings, lines);
         }
@@ -410,6 +414,7 @@ namespace V_Max_Tool
                     case "Enable_DB": EnableDBMenu.Checked = bool.Parse(value); break;
                     case "Prot_DetectMethod": ProtDetectMethod.SelectedIndex = int.Parse(value); break;
                     case "Parse_Log": ParseLog.Checked = bool.Parse(value); break;
+                    case "Use_Font": FontCbox.Checked = bool.Parse(value); break;
                 }
             }
         }
@@ -500,7 +505,7 @@ namespace V_Max_Tool
             Options.Controls.Add(Options_Box);
             Options_Box.Location = new Point(0, 0);
             LoadEmbeddedFont(_C64Font = Resources.C64_Pro_Mono_STYLE);
-            Font customFont = GetFont(12.0f, FontStyle.Regular);
+            //Font customFont = GetFont(12.0f, FontStyle.Regular);
             usecpp = Load_Dll();
             FindNibtools();
             Init_Read_Options();
@@ -525,7 +530,7 @@ namespace V_Max_Tool
             Dir_Box.DrawMode = DrawMode.OwnerDrawFixed;
             Dir_Box.CheckOnClick = true;
             Dir_Box.UseCompatibleTextRendering = true;
-            Dir_Box.Font = Dir_screen.Font = customFont;
+            //Dir_Box.Font = Dir_screen.Font = GetFont(12); // customFont;
             Dir_Box.BackColor = C64_screen;
             Dir_Box.ForeColor = c64_text;
             Dir_Box.Location = new System.Drawing.Point(1, 12);
@@ -672,9 +677,11 @@ namespace V_Max_Tool
             RL_success.Text = string.Empty;
             RM_cyan.Visible = false;
             RM_cyan.Left = 8;
+            // Setup Vorpal Loader hashes (pre-cached from known loaders) - Used to verify integrity since there is no parity
+            byte[] _vhash = XOR(Resources.vldHash, 0xaf);
+            for (int i = 0; i < _vhash.Length >> 5; i++) _vHash.Add(CopyArray(_vhash, i * 32, 32));
             Img_Q.DataSource = Img_Quality;
             Img_Q.SelectedIndex = 2;
-            Width = PreferredSize.Width;
             Flat_Interp.Visible = Flat_View.Checked;
             Circle_View.Checked = Out_view.Checked = true;
             label4.Visible = Img_Q.Visible = Circle_View.Checked;
@@ -694,7 +701,6 @@ namespace V_Max_Tool
             Draw_Init_Img(def_bg_text);
             Default_Dir_Screen();
             Set_Auto_Opts();
-            BlockMap_Setup();
             Cores = Get_Cores();
             Set_Cores();
             Set_Tool_Tips();
@@ -706,12 +712,18 @@ namespace V_Max_Tool
             Build_WeakTable();
             ProtDetectMethod.DataSource = new string[] { "Scan source on add (slower)", "Parse file-name for protection type", "Don't detect" };
             RunBusy(() => LoadSettings());
+            BlockMap_Setup();
+            SetBlockMapFonts();
+            //Dir_Box.Font = Dir_screen.Font = GetFont(12); // customFont;
+            // set window width AFTER initializing settings :)  
+            Width = PreferredSize.Width;
 
             //Setup_Database_Window();
             //RecoverDatabase();
 
             try
             {
+                //File.WriteAllBytes($@"c:\test\vldHash1.bin", XOR(File.ReadAllBytes($@"c:\test\vldHash.bin"), 0xaf));
                 //File.WriteAllBytes($@"c:\test\hmsg.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\msg.txt")), 0xaf));
                 //File.WriteAllBytes($@"c:\test\v2stub.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\v2stub")), 0x5a));
                 //File.WriteAllBytes($@"c:\test\compressed\fload.bin", XOR(Compress(File.ReadAllBytes($@"c:\test\loaders\fload")), 0xf1));
@@ -1081,11 +1093,21 @@ namespace V_Max_Tool
 
         private void LoadEmbeddedFont(byte[] stream)
         {
-            if (stream == null || stream.Length == 0) return;
+            Console.WriteLine("-------------\nLoading Embedded Font\n-------------");
+            if (stream == null || stream.Length == 0)
+            {
+                Console.WriteLine("Stream == null!");
+                return;
+            }
             IntPtr fontPtr = System.Runtime.InteropServices.Marshal.AllocCoTaskMem(stream.Length);
             System.Runtime.InteropServices.Marshal.Copy(stream, 0, fontPtr, stream.Length);
             _C64ProMono.AddMemoryFont(fontPtr, stream.Length);
             System.Runtime.InteropServices.Marshal.FreeCoTaskMem(fontPtr);
+            if (_C64ProMono.Families.Length > 0)
+            {
+                Console.WriteLine($"{_C64ProMono.Families[0].Name} <- Loaded successfully!");
+            }
+            else Console.WriteLine("Failed to load custom font!");
         }
 
         Font GetFont(float size = 11f, FontStyle style = FontStyle.Regular)
